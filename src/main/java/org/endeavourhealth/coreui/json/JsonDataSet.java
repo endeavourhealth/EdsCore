@@ -2,6 +2,7 @@ package org.endeavourhealth.coreui.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -12,6 +13,7 @@ public class JsonDataSet {
     private String description = null;
     private String attributes = null;
     private String queryDefinition = null;
+    private List<Object> composition = null;
     private Map<UUID, String> dpas = null;
 
     public JsonDataSet() {
@@ -62,4 +64,8 @@ public class JsonDataSet {
     public void setDpas(Map<UUID, String> dpas) {
         this.dpas = dpas;
     }
+
+    public List<Object> getComposition() { return composition; }
+
+    public void setComposition (List<Object> composition) {this.composition = composition; }
 }

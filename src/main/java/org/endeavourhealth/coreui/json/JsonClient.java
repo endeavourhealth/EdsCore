@@ -6,11 +6,10 @@ import org.keycloak.representations.idm.RoleRepresentation;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class JsonClient {
-    private UUID uuid = null;
+    private String uuid = null;
     private String name = null;
     private String description = null;
     private List<JsonEndUserRole> clientRoles = null;
@@ -19,14 +18,15 @@ public final class JsonClient {
     }
 
     public JsonClient(ClientRepresentation keycloakClientRepresentation, List<RoleRepresentation> keycloakClientRoles) {
-        this.uuid = UUID.fromString(keycloakClientRepresentation.getId());
-        this.name = keycloakClientRepresentation.getName();
+        this.uuid = keycloakClientRepresentation.getId();  //maybe be non UUID, i.e. eds-ui
+        this.name = keycloakClientRepresentation.getName() == null ? keycloakClientRepresentation.getClientId() : keycloakClientRepresentation.getName();
+
         this.description = keycloakClientRepresentation.getDescription();
 
         //set the linked client roles
         this.clientRoles = new ArrayList<>();
         for (RoleRepresentation userClientRole : keycloakClientRoles) {
-            JsonEndUserRole endUserClientRole = new JsonEndUserRole(userClientRole, true);
+            JsonEndUserRole endUserClientRole = new JsonEndUserRole(userClientRole);
             this.setClientRole(endUserClientRole);
         }
     }
@@ -34,11 +34,11 @@ public final class JsonClient {
     /**
      * gets/sets
      */
-    public UUID getUuid() {
+    public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(UUID uuid) {
+    public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 

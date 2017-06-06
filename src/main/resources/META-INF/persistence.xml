@@ -106,5 +106,13 @@
             <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
         </properties>
     </persistence-unit>
+    <persistence-unit name="KeycloakDB">
+        <class>org.endeavourhealth.core.mySQLDatabase.models.GroupRoleMappingEntity</class>
+        <properties>
+            <property name="hibernate.connection.url"
+                      value="jdbc:mysql://localhost:3306/keycloak"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
+        </properties>
+    </persistence-unit>
 
 </persistence>

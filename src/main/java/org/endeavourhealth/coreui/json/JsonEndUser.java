@@ -20,7 +20,6 @@ public final class JsonEndUser {
     private String email = null;
     private String mobile = null;
     private String photo = null;
-    private String totp = null;
     private String defaultOrgId = null;   //v1 organisation-id attribute for patient-explorer reports
 
     private Boolean superUser = null; //using non-primative types because serialisation to JSON can skip nulls, if we want
@@ -40,9 +39,9 @@ public final class JsonEndUser {
         this.forename = keycloakUser.getFirstName();
         this.surname = keycloakUser.getLastName();
         this.email = keycloakUser.getEmail();
-        this.totp = keycloakUser.isTotp()==true ? "yes" : "no";
 
         //Extract attributes such as mobile and photo, remove start and end [] chars
+        //Map<String, List<String>> userAttributes = keycloakUser.getAttributes();   //<------3.0.0.FINAL change
         Map<String, Object> userAttributes = keycloakUser.getAttributes();
         if (userAttributes != null) {
             for (String attributeKey : userAttributes.keySet()) {
@@ -188,9 +187,4 @@ public final class JsonEndUser {
     public String getDefaultOrgId() {return defaultOrgId; }
 
     public void setDefaultOrgId(String defaultOrgId) { this.defaultOrgId = defaultOrgId;}
-
-    public String getTOTP() {return totp; }
-
-    public void setTOTP(String totp) { this.totp = totp;}
-
 }

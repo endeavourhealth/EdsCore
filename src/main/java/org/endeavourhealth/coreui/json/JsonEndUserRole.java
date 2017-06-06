@@ -12,17 +12,19 @@ public final class JsonEndUserRole {
     private UUID uuid = null;
     private String name = null;
     private String description = null;
+    private JsonGroup group = null;
     private JsonOrganisation organisation = null;
     private List<JsonEndUserRole> clientRoles = null;
 
     public JsonEndUserRole() {
     }
 
-    public JsonEndUserRole(RoleRepresentation keycloakUserRoleRepresentation, Boolean isClientRole) {
+    public JsonEndUserRole(RoleRepresentation keycloakUserRoleRepresentation) {
         this.uuid = UUID.fromString(keycloakUserRoleRepresentation.getId());
         this.name = keycloakUserRoleRepresentation.getName();
         this.description = keycloakUserRoleRepresentation.getDescription();
-        this.organisation = new JsonOrganisation();     //TODO: needs linking to the Role/Organisation table
+        this.group = new JsonGroup();    //TODO: get Keycloak group mapping for role
+        this.organisation = new JsonOrganisation();     //TODO: needs linking to the Role/Organisation table?
         this.clientRoles = new ArrayList<>();
     }
 
@@ -69,4 +71,8 @@ public final class JsonEndUserRole {
     public JsonOrganisation getOrganisation () { return this.organisation; }
 
     public void setOrganisation(JsonOrganisation organisation) {this.organisation = organisation; }
+
+    public JsonGroup getGroup () { return this.group; }
+
+    public void setGroup(JsonGroup group) {this.group = group; }
 }
