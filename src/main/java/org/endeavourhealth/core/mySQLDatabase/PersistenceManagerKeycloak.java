@@ -1,5 +1,8 @@
 package org.endeavourhealth.core.mySQLDatabase;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import org.endeavourhealth.common.config.ConfigManager;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -27,15 +30,10 @@ public class PersistenceManagerKeycloak {
             return;
         }
 
-//        JsonNode json = ConfigManager.getConfigurationAsJson("KeycloakDB");
-//        String url = json.get("url").asText();
-//        String user = json.get("username").asText();
-//        String pass = json.get("password").asText();
-
-        //TODO: move to config db entry
-        String url = "jdbc:mysql://keycloak-v3-devmysql.csjxcq8rzerp.eu-west-2.rds.amazonaws.com:3306/keycloak";
-        String user = "<USERNAME>";
-        String pass = "<PASSWORD>";
+        JsonNode json = ConfigManager.getConfigurationAsJson("keycloak_db");
+        String url = json.get("url").asText();
+        String user = json.get("username").asText();
+        String pass = json.get("password").asText();
 
         Map<String, Object> properties = new HashMap<>();
         //properties.put("hibernate.temp.use_jdbc_metadata_defaults", "false");
