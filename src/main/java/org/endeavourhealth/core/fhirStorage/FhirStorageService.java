@@ -15,6 +15,8 @@ import org.endeavourhealth.core.rdbms.eds.PatientSearchHelper;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Patient;
 import org.hl7.fhir.instance.model.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Date;
 import java.util.UUID;
@@ -22,6 +24,7 @@ import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
 public class FhirStorageService {
+    private static final Logger LOG = LoggerFactory.getLogger(FhirStorageService.class);
     private static final String SCHEMA_VERSION = "0.1";
 
     private final ResourceRepository repository;
@@ -90,10 +93,19 @@ public class FhirStorageService {
 
         //call out to our patient search and person matching services
         if (resource instanceof Patient) {
+
+            LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
+
             PatientLinkHelper.updatePersonId((Patient)resource);
+
+            LOG.info("Updating PATIENT_SEARCH with PATIENT resource " + resource.getId());
+
             PatientSearchHelper.update(serviceId, systemId, (Patient)resource);
 
         } else if (resource instanceof EpisodeOfCare) {
+
+            LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
+
             PatientSearchHelper.update(serviceId, systemId, (EpisodeOfCare)resource);
         }
 
