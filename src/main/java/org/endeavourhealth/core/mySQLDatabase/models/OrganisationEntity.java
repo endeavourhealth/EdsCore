@@ -177,7 +177,7 @@ public class OrganisationEntity {
 
         for (int i = 0; i < organisationEntities.size(); i++) {
             OrganisationEntity organisationEntity = organisationEntities.get(i);
-            entityManager.persist(organisationEntity);
+            entityManager.merge(organisationEntity);
             if (i % batchSize == 0){
                 entityManager.flush();
                 entityManager.clear();
