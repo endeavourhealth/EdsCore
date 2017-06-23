@@ -39,6 +39,7 @@ public class PatientSearchLocalIdentifier implements Serializable {
         this.systemId = systemId;
     }
 
+    @Id
     @Column(name = "local_id")
     public String getLocalId() {
         return localId;

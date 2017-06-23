@@ -60,8 +60,19 @@ public class PatientSearchHelper {
 
         //only if we have a patient resource do we need to update the local identifiers
         if (fhirPatient != null) {
-            List<PatientSearchLocalIdentifier> localIdentifiers = createOrUpdateLocalIdentifiers(serviceId, systemId, fhirPatient, entityManager);
-            for (PatientSearchLocalIdentifier localIdentifier: localIdentifiers) {
+
+            List<PatientSearchLocalIdentifier> identifiersToSave = new ArrayList<>();
+            List<PatientSearchLocalIdentifier> identifiersToDelete = new ArrayList<>();
+
+            createOrUpdateLocalIdentifiers(serviceId, systemId, fhirPatient, entityManager, identifiersToSave, identifiersToDelete);
+
+            //do the deletes
+            for (PatientSearchLocalIdentifier localIdentifier: identifiersToDelete) {
+                entityManager.remove(localIdentifier);
+            }
+
+            //do the saves
+            for (PatientSearchLocalIdentifier localIdentifier: identifiersToSave) {
 
                 //adding try/catch to investigate a problem that has happened once but can't be replicated
                 //entityManager.persist(localIdentifier);
@@ -89,6 +100,113 @@ public class PatientSearchHelper {
         entityManager.getTransaction().commit();
     }
 
+    private static void createOrUpdateLocalIdentifiers(UUID serviceId, UUID systemId, Patient fhirPatient,
+                                                       EntityManager entityManager,
+                                                       List<PatientSearchLocalIdentifier> identifiersToSave,
+                                                       List<PatientSearchLocalIdentifier> identifiersToDelete) {
+
+        String patientId = findPatientId(fhirPatient, null);
+
+        String sql = "select c"
+                + " from "
+                + " PatientSearchLocalIdentifier c"
+                + " where c.serviceId = :service_id"
+                + " and c.systemId = :system_id"
+                + " and c.patientId = :patient_id";
+
+        Query query = entityManager.createQuery(sql, PatientSearchLocalIdentifier.class)
+                .setParameter("service_id", serviceId.toString())
+                .setParameter("system_id", systemId.toString())
+                .setParameter("patient_id", patientId);
+
+        List<PatientSearchLocalIdentifier> list = query.getResultList();
+
+        if (fhirPatient.hasIdentifier()) {
+            for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
+
+                if (!fhirIdentifier.getSystem().equalsIgnoreCase(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
+                    String system = fhirIdentifier.getSystem();
+                    String value = fhirIdentifier.getValue();
+
+                    PatientSearchLocalIdentifier localIdentifier = null;
+                    for (PatientSearchLocalIdentifier r: list) {
+                        if (r.getLocalIdSystem().equals(system)
+                            && r.getLocalId().equals(value)) {
+
+                            localIdentifier = r;
+                            break;
+                        }
+                    }
+
+                    if (localIdentifier != null) {
+                        //if the record already exists, remove it from the list so we know not to delete it
+                        list.remove(localIdentifier);
+
+                    } else {
+                        //if there's no record for this local ID, create a new record
+                        localIdentifier = new PatientSearchLocalIdentifier();
+                        localIdentifier.setServiceId(serviceId.toString());
+                        localIdentifier.setSystemId(systemId.toString());
+                        localIdentifier.setPatientId(patientId);
+                        localIdentifier.setLocalIdSystem(system);
+                        localIdentifier.setLocalId(value);
+                    }
+
+                    //always update the timestamp, so we know it's up to date
+                    localIdentifier.setLastUpdated(new Date());
+
+                    //add to the list to be saved
+                    identifiersToSave.add(localIdentifier);
+                }
+            }
+        }
+
+        //any identifiers still in the list should now be deleted, since they're no longer in the patient
+        for (PatientSearchLocalIdentifier localIdentifier: list) {
+            identifiersToDelete.add(localIdentifier);
+        }
+
+    }
+
+    /*private static void performUpdateInTransaction(UUID serviceId, UUID systemId, Patient fhirPatient, EpisodeOfCare fhirEpisode, EntityManager entityManager) throws Exception {
+
+        entityManager.getTransaction().begin();
+
+        PatientSearch patientSearch = createOrUpdatePatientSearch(serviceId, systemId, fhirPatient, fhirEpisode, entityManager);
+        entityManager.persist(patientSearch);
+
+        //only if we have a patient resource do we need to update the local identifiers
+        if (fhirPatient != null) {
+            List<PatientSearchLocalIdentifier> localIdentifiers = createOrUpdateLocalIdentifiers(serviceId, systemId, fhirPatient, entityManager);
+            for (PatientSearchLocalIdentifier localIdentifier: localIdentifiers) {
+
+                //adding try/catch to investigate a problem that has happened once but can't be replicated
+                //entityManager.persist(localIdentifier);
+                try {
+                    entityManager.persist(localIdentifier);
+
+                    entityManager.
+
+                } catch (Exception ex) {
+                    String msg = ex.getMessage();
+                    if (msg.indexOf("A different object with the same identifier value was already associated with the session") > -1) {
+
+                        LOG.error("Failed to persist PatientSearchLocalIdentifier for service " + localIdentifier.getServiceId()
+                                + " system " + localIdentifier.getSystemId()
+                                + " patient " + localIdentifier.getPatientId()
+                                + " ID system " + localIdentifier.getLocalIdSystem()
+                                + " ID value " + localIdentifier.getLocalId()
+                                + " date " + localIdentifier.getLastUpdated().getTime());
+
+                        LOG.error("Entity being persisted is in entity cache = " + entityManager.contains(localIdentifier));
+                    }
+                    throw ex;
+                }
+            }
+        }
+
+        entityManager.getTransaction().commit();
+    }
 
     private static List<PatientSearchLocalIdentifier> createOrUpdateLocalIdentifiers(UUID serviceId, UUID systemId, Patient fhirPatient, EntityManager entityManager) {
         String patientId = findPatientId(fhirPatient, null);
@@ -138,7 +256,7 @@ public class PatientSearchHelper {
         }
 
         return list;
-    }
+    }*/
 
     private static PatientSearch createOrUpdatePatientSearch(UUID serviceId, UUID systemId, Patient fhirPatient, EpisodeOfCare fhirEpisode, EntityManager entityManager) throws Exception {
         String patientId = findPatientId(fhirPatient, fhirEpisode);
