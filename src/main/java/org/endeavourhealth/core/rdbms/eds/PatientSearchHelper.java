@@ -661,20 +661,23 @@ public class PatientSearchHelper {
         EntityManager entityManager = EdsConnection.getEntityManager();
 
         List<PatientSearch> results = null;
+        String name1;
+        String name2;
+        String sql;
 
         //if just one name, then treat as a surname
         if (names.size() == 1) {
 
-            String surname = names.get(0) + "%";
+					name1 = names.get(0).replace(",","") + "%";
 
-            String sql = "select c"
+            sql = "select c"
                 + " from"
                 + " PatientSearch c"
-                + " where lower(c.surname) LIKE lower(:surname)"
+                + " where (lower(c.surname) LIKE lower(:name1) or lower(c.forenames) LIKE lower(:name1))"
                 + " and c.serviceId IN :serviceIds";
 
             Query query = entityManager.createQuery(sql, PatientSearch.class)
-                .setParameter("surname", surname)
+                .setParameter("name1", name1)
                 .setParameter("serviceIds", serviceIds);
 
             results = query.getResultList();
@@ -683,19 +686,22 @@ public class PatientSearchHelper {
 
             //if multiple tokens, then treat all but the last as forenames
             names = new ArrayList(names);
-            String surname = names.remove(names.size()-1) + "%";
-            String forenames = String.join("% ", names) + "%";
+					name1 = names.remove(names.size()-1).replace(",","") + "%";
+					name2 = String.join("% ", names).replace(",","") + "%";
 
-            String sql = "select c"
+            sql = "select c"
                 + " from"
                 + " PatientSearch c"
-                + " where lower(c.surname) LIKE lower(:surname)"
-                + " and lower(c.forenames) LIKE lower(:forenames)"
+                + " where ("
+									+ "(lower(c.surname) LIKE lower(:name2) and lower(c.forenames) LIKE lower(:name1))"
+									+ " or "
+									+ "(lower(c.surname) LIKE lower(:name1) and lower(c.forenames) LIKE lower(:name2))"
+								+ ")"
                 + " and c.serviceId IN :serviceIds";
 
             Query query = entityManager.createQuery(sql, PatientSearch.class)
-                .setParameter("surname", surname)
-                .setParameter("forenames", forenames)
+                .setParameter("name1", name1)
+                .setParameter("name2", name2)
                 .setParameter("serviceIds", serviceIds);
 
             results = query.getResultList();
