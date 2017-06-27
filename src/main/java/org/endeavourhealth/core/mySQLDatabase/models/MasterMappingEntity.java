@@ -292,6 +292,24 @@ public class MasterMappingEntity {
         }
     }
 
+    public static void bulkSaveMappings(List<MasterMappingEntity> mappings) throws Exception {
+        EntityManager entityManager = PersistenceManager.getEntityManager();
+        int batchSize = 50;
+        entityManager.getTransaction().begin();
+
+        for(int i = 0; i < mappings.size(); ++i) {
+            MasterMappingEntity mapping = mappings.get(i);
+            entityManager.merge(mapping);
+            if(i % batchSize == 0) {
+                entityManager.flush();
+                entityManager.clear();
+            }
+        }
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
     @Id
     @Column(name = "ChildUuid", nullable = false, length = 36)
     public String getChildUuid() {

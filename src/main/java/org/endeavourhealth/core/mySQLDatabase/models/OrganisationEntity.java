@@ -51,6 +51,8 @@ public class OrganisationEntity {
     private byte bulkImported;
     private byte bulkItemUpdated;
     private String bulkConflictedWith;
+    private Byte organisationClass;
+    private Byte organisationType;
 
     public static void deleteUneditedBulkOrganisations() throws Exception {
         EntityManager entityManager = PersistenceManager.getEntityManager();
@@ -132,6 +134,8 @@ public class OrganisationEntity {
         organisationEntity.setIcoCode(organisation.getIcoCode());
         organisationEntity.setIgToolkitStatus(organisation.getIgToolkitStatus());
         organisationEntity.setIsService((byte) (organisation.getIsService().equals("1") ? 1 : 0));
+        organisationEntity.setOrganisationClass(organisation.getOrganisationClass());
+        organisationEntity.setOrganisationType(organisation.getOrganisationType());
         organisationEntity.setBulkItemUpdated((byte)1);
         if (organisation.getDateOfRegistration() != null) {
             organisationEntity.setDateOfRegistration(Date.valueOf(organisation.getDateOfRegistration()));
@@ -156,6 +160,8 @@ public class OrganisationEntity {
         organisationEntity.setIsService((byte) (organisation.getIsService().equals("1") ? 1 : 0));
         organisationEntity.setBulkImported((byte) (organisation.getBulkImported().equals("1") ? 1 : 0));
         organisationEntity.setBulkItemUpdated((byte) (organisation.getBulkItemUpdated().equals("1") ? 1 : 0));
+        organisationEntity.setOrganisationClass(organisation.getOrganisationClass());
+        organisationEntity.setOrganisationType(organisation.getOrganisationType());
         if (organisation.getDateOfRegistration() != null) {
             organisationEntity.setDateOfRegistration(Date.valueOf(organisation.getDateOfRegistration()));
         }
@@ -309,7 +315,7 @@ public class OrganisationEntity {
     }
 
     @Basic
-    @Column(name = "date_of_registration", nullable = false)
+    @Column(name = "date_of_registration", nullable = true)
     public Date getDateOfRegistration() {
         return dateOfRegistration;
     }
@@ -425,5 +431,25 @@ public class OrganisationEntity {
         result = 31 * result + (evidenceOfRegistration != null ? evidenceOfRegistration.hashCode() : 0);
         result = 31 * result + (uuid != null ? uuid.hashCode() : 0);
         return result;
+    }
+
+    @Basic
+    @Column(name = "organisation_class", nullable = true)
+    public Byte getOrganisationClass() {
+        return organisationClass;
+    }
+
+    public void setOrganisationClass(Byte organisationClass) {
+        this.organisationClass = organisationClass;
+    }
+
+    @Basic
+    @Column(name = "organisation_type", nullable = true)
+    public Byte getOrganisationType() {
+        return organisationType;
+    }
+
+    public void setOrganisationType(Byte organisationType) {
+        this.organisationType = organisationType;
     }
 }
