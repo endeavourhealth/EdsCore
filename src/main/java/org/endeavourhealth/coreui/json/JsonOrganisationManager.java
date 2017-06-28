@@ -20,8 +20,7 @@ public final class JsonOrganisationManager {
     private String bulkImported = null;
     private String bulkItemUpdated = null;
     private String bulkConflictedWith = null;
-    private Byte organisationClass = null;
-    private Byte organisationType = null;
+    private String type = null;
     private Map<UUID, String> regions = null;
     private Map<UUID, String> parentOrganisations = null;
     private Map<UUID, String> childOrganisations = null;
@@ -172,19 +171,11 @@ public final class JsonOrganisationManager {
         this.bulkConflictedWith = bulkConflictedWith;
     }
 
-    public Byte getOrganisationClass() {
-        return organisationClass;
+    public String getType() {
+        return type;
     }
 
-    public void setOrganisationClass(Byte organisationClass) {
-        this.organisationClass = organisationClass;
-    }
-
-    public Byte getOrganisationType() {
-        return organisationType;
-    }
-
-    public void setOrganisationType(Byte organisationType) {
-        this.organisationType = organisationType;
+    public void setType(String type) {
+        this.type = type;
     }
 }
