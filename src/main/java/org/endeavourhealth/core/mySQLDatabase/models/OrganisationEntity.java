@@ -92,7 +92,9 @@ public class OrganisationEntity {
         return ret;
     }
 
-    public static List<OrganisationEntity> getAllOrganisations(boolean services) throws Exception {
+    public static List<OrganisationEntity> getOrganisations(String expression, boolean searchServices,
+                                                  Integer pageNumber, Integer pageSize,
+                                                  String orderColumn, boolean descending) throws Exception {
         EntityManager entityManager = PersistenceManager.getEntityManager();
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
@@ -100,11 +102,23 @@ public class OrganisationEntity {
         Root<OrganisationEntity> rootEntry = cq.from(OrganisationEntity.class);
 
         //Services are just organisations with the isService flag set to true;
-        Predicate predicate = cb.equal(rootEntry.get("isService"), (byte) (services ? 1 : 0));
+        Predicate predicate= cb.equal(rootEntry.get("isService"), (byte) (searchServices ? 1 : 0));
 
-        cq.where(predicate).orderBy(cb.asc(rootEntry.get("name")));
+        if (!expression.equals("")){
+            predicate = cb.and(cb.equal(rootEntry.get("isService"), (byte) (searchServices ? 1 : 0)), (cb.or(cb.like(cb.upper(rootEntry.get("name")), "%" + expression.toUpperCase() + "%"),
+                    cb.like(cb.upper(rootEntry.get("odsCode")), "%" + expression.toUpperCase() + "%"),
+                    cb.like(cb.upper(rootEntry.get("alternativeName")), "%" + expression.toUpperCase() + "%"),
+                    cb.like(cb.upper(rootEntry.get("icoCode")), "%" + expression.toUpperCase() + "%"))));
+        }
+
+        if (descending)
+            cq.where(predicate).orderBy(cb.desc(rootEntry.get(orderColumn)));
+        else
+            cq.where(predicate).orderBy(cb.asc(rootEntry.get(orderColumn)));
+
         TypedQuery<OrganisationEntity> query = entityManager.createQuery(cq);
-
+        query.setFirstResult((pageNumber - 1) * pageSize);
+        query.setMaxResults(pageSize);
         List<OrganisationEntity> ret = query.getResultList();
 
         entityManager.close();
@@ -203,11 +217,11 @@ public class OrganisationEntity {
         entityManager.close();
     }
 
-    public static List<OrganisationEntity> search(String expression, boolean searchServices) throws Exception {
+    public static Long getTotalNumberOfOrganisations(String expression, boolean searchServices) throws Exception {
         EntityManager entityManager = PersistenceManager.getEntityManager();
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        CriteriaQuery<OrganisationEntity> cq = cb.createQuery(OrganisationEntity.class);
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
         Root<OrganisationEntity> rootEntry = cq.from(OrganisationEntity.class);
 
         Predicate predicate = cb.and(cb.equal(rootEntry.get("isService"), (byte) (searchServices ? 1 : 0)), (cb.or(cb.like(cb.upper(rootEntry.get("name")), "%" + expression.toUpperCase() + "%"),
@@ -215,9 +229,13 @@ public class OrganisationEntity {
                 cb.like(cb.upper(rootEntry.get("alternativeName")), "%" + expression.toUpperCase() + "%"),
                 cb.like(cb.upper(rootEntry.get("icoCode")), "%" + expression.toUpperCase() + "%"))));
 
-        cq.where(predicate).orderBy(cb.asc(rootEntry.get("name")));
-        TypedQuery<OrganisationEntity> query = entityManager.createQuery(cq);
-        List<OrganisationEntity> ret = query.getResultList();
+        cq.select((cb.countDistinct(rootEntry)));
+
+        if (!expression.equals(""))
+            cq.where(predicate);
+
+        Long ret = entityManager.createQuery(cq).getSingleResult();
+
 
         entityManager.close();
 
