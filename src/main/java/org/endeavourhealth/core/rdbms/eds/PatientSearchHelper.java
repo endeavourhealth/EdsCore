@@ -731,5 +731,50 @@ public class PatientSearchHelper {
         }
     }
 
+    public static void deletePatient(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception {
 
+        EntityManager entityManager = EdsConnection.getEntityManager();
+
+        try {
+            String patientId = findPatientId(fhirPatient, null);
+
+            entityManager.getTransaction().begin();
+
+            String sql = "delete"
+                    + " from"
+                    + " PatientSearchLocalIdentifier c"
+                    + " where c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId"
+                    + " and c.patientId = :patientId";
+
+            Query query = entityManager.createQuery(sql)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString())
+                    .setParameter("patientId", patientId);
+            query.executeUpdate();
+
+            sql = "delete"
+                    + " from"
+                    + " PatientSearch c"
+                    + " where c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId"
+                    + " and c.patientId = :patientId";
+
+            query = entityManager.createQuery(sql)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString())
+                    .setParameter("patientId", patientId);
+            query.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    private static void performDeletePatientInTransaction(UUID serviceId, UUID systemId, Patient fhirPatient, EntityManager entityManager) throws Exception {
+
+
+    }
 }

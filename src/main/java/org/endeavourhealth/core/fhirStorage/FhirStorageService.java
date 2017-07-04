@@ -64,13 +64,13 @@ public class FhirStorageService {
         return new FhirResponse(resource);
     }*/
 
-    public FhirResponse delete(Resource resource) throws UnprocessableEntityException, SerializationException {
+    public FhirResponse delete(Resource resource) throws Exception {
         delete(resource, null, null);
 
         return new FhirResponse(resource);
     }
 
-    public FhirResponse exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws UnprocessableEntityException, SerializationException {
+    public FhirResponse exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         delete(resource, exchangeId, batchId);
         return new FhirResponse(resource);
     }
@@ -152,11 +152,17 @@ public class FhirStorageService {
         return false;
     }
 
-    private void delete(Resource resource, UUID exchangeId, UUID batchId) throws UnprocessableEntityException, SerializationException {
+    private void delete(Resource resource, UUID exchangeId, UUID batchId) throws Exception {
         Validate.resourceId(resource);
 
         ResourceEntry entry = createResourceEntry(resource, exchangeId, batchId);
         repository.delete(entry);
+
+        //if we're deleting the patient, then delete the row from the patient_search table
+        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
+        if (resource instanceof Patient) {
+            PatientSearchHelper.deletePatient(serviceId, systemId, (Patient)resource);
+        }
     }
 
     private ResourceEntry createResourceEntry(Resource resource, UUID exchangeId, UUID batchId) throws UnprocessableEntityException, SerializationException {
