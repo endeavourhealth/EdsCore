@@ -425,7 +425,7 @@ public class PatientSearchHelper {
 
 
 
-    public static void delete(UUID serviceId, UUID systemId) throws Exception {
+    public static void deleteForService(UUID serviceId, UUID systemId) throws Exception {
 
         EntityManager entityManager = EdsConnection.getEntityManager();
         entityManager.getTransaction().begin();
