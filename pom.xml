@@ -4,7 +4,7 @@
 
     <groupId>org.endeavourhealth.common</groupId>
     <artifactId>core</artifactId>
-    <version>1.15-SNAPSHOT</version>
+    <version>1.16-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -23,7 +23,6 @@
         <hibernate.version>5.2.5.Final</hibernate.version>
         <keycloak.version>2.0.0.Final</keycloak.version>
         <mysql.version>6.0.5</mysql.version>
-        <slack-integration.version>1.2.1</slack-integration.version>
         <swagger.version>1.5.10</swagger.version>
     </properties>
 
@@ -58,12 +57,6 @@
             <version>${eds-utility.version}</version>
         </dependency>
 
-        <!--Slack-->
-        <dependency>
-            <groupId>net.gpedro.integrations.slack</groupId>
-            <artifactId>slack-webhook</artifactId>
-            <version>${slack-integration.version}</version>
-        </dependency>
 
         <!-- Keycloak -->
         <dependency>
