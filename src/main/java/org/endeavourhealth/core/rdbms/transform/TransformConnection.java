@@ -37,7 +37,7 @@ public class TransformConnection {
             return;
         }
 
-        JsonNode json = ConfigManager.getConfigurationAsJson(enterpriseConfigName, "enterprise");
+        JsonNode json = ConfigManager.getConfigurationAsJson(enterpriseConfigName, "subscriber");
         String url = json.get("transform_url").asText();
         String user = json.get("transform_username").asText();
         String pass = json.get("transform_password").asText();

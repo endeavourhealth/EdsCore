@@ -112,7 +112,7 @@ public class FhirDeletionService {
                 Row row = rs.one();
                 UUID exchangeId = row.get(0, UUID.class);
                 Integer batchesCreated = row.get(1, Integer.class);
-                LOG.trace("Exchange " + exchangeId + " has " + batchesCreated + " batches");
+                //LOG.trace("Exchange " + exchangeId + " has " + batchesCreated + " batches");
 
                 if (batchesCreated != null) {
                     countBatchesToDelete += batchesCreated;
