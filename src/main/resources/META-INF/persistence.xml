@@ -70,6 +70,7 @@
         <class>org.endeavourhealth.core.rdbms.reference.LsoaLookup</class>
         <class>org.endeavourhealth.core.rdbms.reference.MsoaLookup</class>
         <class>org.endeavourhealth.core.rdbms.reference.DeprivationLookup</class>
+        <class>org.endeavourhealth.core.rdbms.reference.EncounterCode</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
