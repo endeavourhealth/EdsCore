@@ -11,7 +11,7 @@ public class EncounterCode {
 
     private long code;
     private String term;
-    private String mapping;
+    private String mapping; //note mapping is the same as term except with forced upper case
 
     @Id
     @Column(name = "code", nullable = false)
