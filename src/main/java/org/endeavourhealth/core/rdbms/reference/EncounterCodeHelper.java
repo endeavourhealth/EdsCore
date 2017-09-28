@@ -118,6 +118,7 @@ public class EncounterCodeHelper {
         encounterCode.setCode(code);
         encounterCode.setTerm(term);
         encounterCode.setMapping(mapping);
+        LOG.debug("Saving new encounter code " + code + " with term '" + term + "'");
 
         try {
             entityManager.getTransaction().begin();
