@@ -22,10 +22,20 @@ public class EncounterCodeHelper {
     private static volatile Integer lastPrefixAssigned = null;
 
     public static EncounterCode findOrCreateCode(String term) throws Exception {
-        return findOrCreateCode(term, NUMBER_ATTEMPTS);
+
+        EntityManager entityManager = ReferenceConnection.getEntityManager();
+
+        EncounterCode ret = null;
+        try {
+            ret = findOrCreateCode(term, entityManager, NUMBER_ATTEMPTS);
+        } finally {
+            entityManager.close();
+        }
+
+        return ret;
     }
 
-    private static EncounterCode findOrCreateCode(String term, int attemptsRamaining) throws Exception {
+    private static EncounterCode findOrCreateCode(String term, EntityManager entityManager, int attemptsRamaining) throws Exception {
 
         if (Strings.isNullOrEmpty(term)) {
             return null;
@@ -38,12 +48,9 @@ public class EncounterCodeHelper {
         //always look up using a upper case version of the term
         String mapping = term.trim().toUpperCase();
 
-        EntityManager entityManager = ReferenceConnection.getEntityManager();
-
         //first look for an existing one
         EncounterCode ret = getEncounterCode(entityManager, mapping);
         if (ret != null) {
-            entityManager.close();
             return ret;
         }
 
@@ -57,13 +64,11 @@ public class EncounterCodeHelper {
             //we were going to use, we'll get an exception, so try the find again
             attemptsRamaining --;
             if (attemptsRamaining > 0) {
-                return findOrCreateCode(term, attemptsRamaining);
+                return findOrCreateCode(term, entityManager, attemptsRamaining);
             }
 
             //if we've tried the above a few times and still failed, we've probably got a DB problem
             throw ex;
-        } finally {
-            entityManager.close();
         }
     }
 
