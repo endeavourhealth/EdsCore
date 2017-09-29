@@ -12,6 +12,8 @@ import java.util.List;
 public class EncounterCodeHelper {
     private static final Logger LOG = LoggerFactory.getLogger(EncounterCodeHelper.class);
 
+    private static final int NUMBER_ATTEMPTS = 50; //tried with only five attempts but it kept failing due to other queue readers
+
     private static final int MAX_LEN_TERM = 255;
 
     private static final String CODE_NAMESPACE = "9999999";
@@ -20,7 +22,7 @@ public class EncounterCodeHelper {
     private static volatile Integer lastPrefixAssigned = null;
 
     public static EncounterCode findOrCreateCode(String term) throws Exception {
-        return findOrCreateCode(term, 5);
+        return findOrCreateCode(term, NUMBER_ATTEMPTS);
     }
 
     private static EncounterCode findOrCreateCode(String term, int attemptsRamaining) throws Exception {
