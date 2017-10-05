@@ -27,6 +27,14 @@ public class ResourceIdHelper {
         Query query = entityManager.createQuery(sql, ResourceId.class)
                 .setParameter("scopeId", scope).setParameter("resourceType", resource).setParameter("uniqueId", uniqueId);
 
+        if (query == null) {
+            LOG.trace("Failed to create query");
+            LOG.trace("scopeId [" + scope +"]");
+            LOG.trace("resourceType [" + resource+"]");
+            LOG.trace("uniqueId [" + uniqueId+"]");
+            throw new IllegalStateException("Failed to create query");
+        }
+
         List results = query.getResultList();
         if (results.isEmpty())
             return null;
