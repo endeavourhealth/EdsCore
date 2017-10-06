@@ -46,6 +46,12 @@ public class EdsConnection {
         properties.put("hibernate.hikari.dataSource.user", user);
         properties.put("hibernate.hikari.dataSource.password", pass);
 
+        if (json.has("class"))
+            properties.put("hibernate.hikari.dataSourceClassName", json.get("class").asText());
+
+        if (json.has("dialect"))
+            properties.put("hibernate.dialect", json.get("dialect").asText());
+
         entityManagerFactory = Persistence.createEntityManagerFactory("EdsDb", properties);
     }
 }
