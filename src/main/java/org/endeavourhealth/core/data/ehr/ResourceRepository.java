@@ -196,9 +196,19 @@ public class ResourceRepository extends Repository {
         return Lists.newArrayList(accessor.getResourcesByPatient(serviceId, systemId, patientId, resourceType));
     }
 
+    public List<ResourceByPatient> getResourcesByPatientAllSystems(UUID serviceId, UUID patientId, String resourceType) {
+        ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
+        return Lists.newArrayList(accessor.getResourcesByPatientAllSystems(serviceId, patientId, resourceType));
+    }
+
     public List<ResourceByService> getResourcesByService(UUID serviceId, UUID systemId, String resourceType, List<UUID> resourceIds) {
         ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
         return Lists.newArrayList(accessor.getResourcesByService(serviceId, systemId, resourceType, resourceIds));
+    }
+
+    public List<ResourceByService> getResourcesByServiceAllSystems(UUID serviceId, String resourceType, List<UUID> resourceIds) {
+        ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
+        return Lists.newArrayList(accessor.getResourcesByServiceAllSystems(serviceId, resourceType, resourceIds));
     }
 
     public List<ResourceByExchangeBatch> getResourcesForBatch(UUID batchId) {
