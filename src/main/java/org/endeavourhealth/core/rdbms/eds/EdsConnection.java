@@ -23,6 +23,13 @@ public class EdsConnection {
         return entityManagerFactory.createEntityManager();
     }
 
+    public static void shutdown() {
+        if (entityManagerFactory != null) {
+            entityManagerFactory.close();
+            entityManagerFactory = null;
+        }
+    }
+
     private static synchronized void createEntityManager() throws Exception {
 
         if (entityManagerFactory != null
