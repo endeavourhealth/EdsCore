@@ -1,6 +1,8 @@
 package org.endeavourhealth.core.rdbms.reference;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.core.rdbms.ConnectionManager;
+import org.endeavourhealth.core.rdbms.reference.models.PostcodeLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,12 +13,9 @@ import javax.persistence.Query;
 public class PostcodeHelper {
     private static final Logger LOG = LoggerFactory.getLogger(PostcodeHelper.class);
 
-
-
-
     public static PostcodeLookup getPostcodeReference(String postcode) throws Exception {
 
-        EntityManager entityManager = ReferenceConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
         try {
             return getPostcodeReference(postcode, entityManager);
         } finally {

@@ -7,7 +7,7 @@ import com.datastax.driver.mapping.annotations.Table;
 
 import java.util.UUID;
 
-@Table(keyspace = "transform", name = "resource_id_map_by_eds_id")
+@Table(keyspace = "subscriber", name = "resource_id_map_by_eds_id")
 public class ResourceIdMapByEdsId {
 
     @ClusteringColumn(0)

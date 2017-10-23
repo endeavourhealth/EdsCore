@@ -15,7 +15,7 @@ import org.endeavourhealth.core.data.ehr.ExchangeBatchRepository;
 import org.endeavourhealth.core.data.ehr.ResourceRepository;
 import org.endeavourhealth.core.data.ehr.models.ExchangeBatch;
 import org.endeavourhealth.core.data.ehr.models.ResourceByExchangeBatch;
-import org.endeavourhealth.core.data.ehr.models.ResourceEntry;
+import org.endeavourhealth.core.rdbms.ehr.models.ResourceSavingWrapper;
 import org.endeavourhealth.core.rdbms.eds.PatientSearchHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class FhirDeletionService {
         for (UUID systemId: exchangeIdsToDeleteBySystem.keySet()) {
             LOG.trace("Deleting remaining data for service ID {} and system ID {}", service.getId(), systemId);
 
-            //delete any transform summary, since all errors are now gone
+            //delete any subscriber summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
             if (summary != null) {
                 auditRepository.delete(summary);
@@ -152,7 +152,7 @@ public class FhirDeletionService {
             for (ResourceByExchangeBatch resource : resourceByExchangeBatchList) {
 
                 //populate the resource entry util class with the keys we'll need to delete the resource
-                ResourceEntry resourceEntry = new ResourceEntry();
+                ResourceSavingWrapper resourceEntry = new ResourceSavingWrapper();
                 resourceEntry.setServiceId(service.getId());
                 resourceEntry.setSystemId(systemId);
                 resourceEntry.setResourceType(resource.getResourceType());
@@ -167,7 +167,7 @@ public class FhirDeletionService {
             }
         }
 
-        //mark any transform audits as deleted
+        //mark any subscriber audits as deleted
         List<ExchangeTransformAudit> transformAudits = auditRepository.getAllExchangeTransform(service.getId(), systemId, exchangeId);
         for (ExchangeTransformAudit transformAudit: transformAudits) {
             if (transformAudit.getDeleted() == null) {
@@ -187,14 +187,14 @@ public class FhirDeletionService {
     /*public void deleteData() throws Exception {
         LOG.info("Deleting data for service " + service.getId());
 
-        //get all the transform audits and sum up the number of batches ever created, so we know what we're aiming to delete
+        //get all the subscriber audits and sum up the number of batches ever created, so we know what we're aiming to delete
         List<ExchangeTransformAudit> transformAudits = getTransformAudits();
         int countBatches = 0;
         for (ExchangeTransformAudit exchangeAudit: transformAudits)
             if (exchangeAudit.getNumberBatchesCreated() != null)
                 countBatches += exchangeAudit.getNumberBatchesCreated();
 
-        LOG.trace("Found " + transformAudits.size() + " transform audits with " + countBatches + " batches to delete");
+        LOG.trace("Found " + transformAudits.size() + " subscriber audits with " + countBatches + " batches to delete");
 
         //first, get rid of all the FHIR resource data
         int countBatchesDone = 0;
@@ -247,7 +247,7 @@ public class FhirDeletionService {
                 auditRepository.save(exchangeEvent);
             }
 
-            //mark the transform audit as deleted
+            //mark the subscriber audit as deleted
             exchangeAudit.setDeleted(new Date());
             auditRepository.save(exchangeAudit);
         }
@@ -260,7 +260,7 @@ public class FhirDeletionService {
         for (UUID systemId: getSystemsIds()) {
             LOG.trace("Deleting remaining data for service ID {} and system ID {}", service.getId(), systemId);
 
-            //delete any transform summary, since all errors are now gone
+            //delete any subscriber summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
             if (summary != null) {
                 auditRepository.delete(summary);
@@ -352,9 +352,9 @@ public class FhirDeletionService {
      */
     class DeleteResourceTask implements Callable {
 
-        private ResourceEntry resourceEntry = null;
+        private ResourceSavingWrapper resourceEntry = null;
 
-        public DeleteResourceTask(ResourceEntry resourceEntry) {
+        public DeleteResourceTask(ResourceSavingWrapper resourceEntry) {
             this.resourceEntry = resourceEntry;
         }
 

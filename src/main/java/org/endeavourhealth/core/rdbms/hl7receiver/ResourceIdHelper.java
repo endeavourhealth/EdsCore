@@ -1,5 +1,7 @@
 package org.endeavourhealth.core.rdbms.hl7receiver;
 
+import org.endeavourhealth.core.rdbms.ConnectionManager;
+import org.endeavourhealth.core.rdbms.hl7receiver.models.ResourceId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +14,7 @@ public class ResourceIdHelper {
     private static final Logger LOG = LoggerFactory.getLogger(ResourceIdHelper.class);
 
     public static ResourceId getResourceId(String scope, String resource, String uniqueId) throws Exception {
-        EntityManager entityManager = HL7ReceiverConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
 
         if (!entityManager.isOpen())
             throw new IllegalStateException("No connection to HL7 DB");
@@ -47,7 +49,7 @@ public class ResourceIdHelper {
     }
 
     public static void saveResourceId(ResourceId resourceId)  throws Exception {
-        EntityManager entityManager = HL7ReceiverConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
 
         try {
             entityManager.getTransaction().begin();

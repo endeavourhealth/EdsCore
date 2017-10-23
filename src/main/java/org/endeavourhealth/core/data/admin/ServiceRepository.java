@@ -104,7 +104,7 @@ public class ServiceRepository extends Repository {
 		}
 	}
 
-	public Service getByOrganisationNationalId(String nationalId) {
+	/*public Service getByOrganisationNationalId(String nationalId) {
 		OrganisationRepository organisationRepository = new OrganisationRepository();
 		Organisation organisation = organisationRepository.getByNationalId(nationalId);
 		if (organisation == null)
@@ -117,6 +117,6 @@ public class ServiceRepository extends Repository {
 		} else {
 			return null;
 		}
-	}
+	}*/
 }
 

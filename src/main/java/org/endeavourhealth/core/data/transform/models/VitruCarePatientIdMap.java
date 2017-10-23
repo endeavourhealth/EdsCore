@@ -7,7 +7,7 @@ import com.datastax.driver.mapping.annotations.Table;
 import java.util.Date;
 import java.util.UUID;
 
-@Table(keyspace = "transform", name = "vitrucare_patient_id_map")
+@Table(keyspace = "subscriber", name = "vitrucare_patient_id_map")
 public class VitruCarePatientIdMap {
 
     @PartitionKey

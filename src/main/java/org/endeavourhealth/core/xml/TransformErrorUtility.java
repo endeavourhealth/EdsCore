@@ -24,7 +24,7 @@ public class TransformErrorUtility {
     public static final String ARG_FATAL_ERROR = "FatalError";
     public static final String ARG_WAITING = "WaitingForPreviousErrorToClear";
 
-    //transform-specific arguments
+    //subscriber-specific arguments
     //public static final String ARG_EMIS_CSV_DIRECTORY= "CsvDirectory";
     public static final String ARG_EMIS_CSV_FILE = "CsvFile";
     public static final String ARG_EMIS_CSV_RECORD_NUMBER = "Record";

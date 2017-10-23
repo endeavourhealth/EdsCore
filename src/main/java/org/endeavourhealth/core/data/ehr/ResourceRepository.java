@@ -11,11 +11,14 @@ import org.endeavourhealth.core.data.ehr.accessors.ResourceAccessor;
 import org.endeavourhealth.core.data.ehr.accessors.ResourceHistoryAccessor;
 import org.endeavourhealth.core.data.ehr.models.*;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
+import org.endeavourhealth.core.data.ehr.models.ResourceNotFoundException;
+import org.endeavourhealth.core.rdbms.ehr.models.ResourceSavingWrapper;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -25,14 +28,14 @@ public class ResourceRepository extends Repository {
     private static final Logger LOG = LoggerFactory.getLogger(ResourceRepository.class);
     private static final ParserPool PARSER_POOL = new ParserPool();
 
-    public void save(ResourceEntry resourceEntry){
+    public void save(ResourceSavingWrapper resourceEntry){
         if (resourceEntry == null) throw new IllegalArgumentException("resourceEntry is null");
 
         ResourceHistory resourceHistory = new ResourceHistory();
         resourceHistory.setResourceId(resourceEntry.getResourceId());
         resourceHistory.setResourceType(resourceEntry.getResourceType());
         resourceHistory.setVersion(resourceEntry.getVersion());
-        resourceHistory.setCreatedAt(resourceEntry.getCreatedAt());
+        resourceHistory.setCreatedAt(new Date(resourceEntry.getCreatedAt().getMillis()));
         resourceHistory.setServiceId(resourceEntry.getServiceId());
         resourceHistory.setSystemId(resourceEntry.getSystemId());
         resourceHistory.setIsDeleted(false);
@@ -61,7 +64,7 @@ public class ResourceRepository extends Repository {
         resourceByService.setResourceType(resourceEntry.getResourceType());
         resourceByService.setResourceId(resourceEntry.getResourceId());
         resourceByService.setCurrentVersion(resourceEntry.getVersion());
-        resourceByService.setUpdatedAt(resourceEntry.getCreatedAt());
+        resourceByService.setUpdatedAt(new Date(resourceEntry.getCreatedAt().getMillis()));
         resourceByService.setPatientId(resourceEntry.getPatientId());
         resourceByService.setSchemaVersion(resourceEntry.getSchemaVersion());
         resourceByService.setResourceMetadata(resourceEntry.getResourceMetadata());
@@ -83,14 +86,14 @@ public class ResourceRepository extends Repository {
     }
 
 
-    public void delete(ResourceEntry resourceEntry){
+    public void delete(ResourceSavingWrapper resourceEntry){
         if (resourceEntry == null) throw new IllegalArgumentException("resourceEntry is null");
 
         ResourceHistory resourceHistory = new ResourceHistory();
         resourceHistory.setResourceId(resourceEntry.getResourceId());
         resourceHistory.setResourceType(resourceEntry.getResourceType());
         resourceHistory.setVersion(resourceEntry.getVersion());
-        resourceHistory.setCreatedAt(resourceEntry.getCreatedAt());
+        resourceHistory.setCreatedAt(new Date(resourceEntry.getCreatedAt().getMillis()));
         resourceHistory.setServiceId(resourceEntry.getServiceId());
         resourceHistory.setSystemId(resourceEntry.getSystemId());
         resourceHistory.setIsDeleted(true);
@@ -114,7 +117,7 @@ public class ResourceRepository extends Repository {
         resourceByService.setResourceType(resourceEntry.getResourceType());
         resourceByService.setResourceId(resourceEntry.getResourceId());
         resourceByService.setCurrentVersion(resourceEntry.getVersion()); //was missing - so it wasn't clear when something was deleted
-        resourceByService.setUpdatedAt(resourceEntry.getCreatedAt()); //was missing - so it wasn't clear when something was deleted
+        resourceByService.setUpdatedAt(new Date(resourceEntry.getCreatedAt().getMillis()));
         save(resourceByService);
 
         if (resourceEntry.getExchangeId() != null && resourceEntry.getBatchId() != null) {
@@ -250,7 +253,7 @@ public class ResourceRepository extends Repository {
         }
     }
 
-    public void hardDelete(ResourceEntry keys) {
+    public void hardDelete(ResourceSavingWrapper keys) {
 
         Mapper<ResourceHistory> mapperResourceHistory = getMappingManager().mapper(ResourceHistory.class);
         mapperResourceHistory.delete(keys.getResourceId(), keys.getResourceType(), keys.getVersion());
@@ -293,9 +296,8 @@ public class ResourceRepository extends Repository {
         return Lists.newArrayList(accessor.getResourcesByService(serviceId, systemId, resourceType));
     }
 
-    //TODO - to be removed
-    public ResourceByExchangeBatch getFirstResourceByExchangeBatch(String resourceType, UUID resourceId) {
+    /*public ResourceByExchangeBatch getFirstResourceByExchangeBatch(String resourceType, UUID resourceId) {
         ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
         return accessor.getFirstResourceByExchangeBatch(resourceType, resourceId);
-    }
+    }*/
 }

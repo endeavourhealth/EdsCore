@@ -7,7 +7,7 @@ import com.datastax.driver.mapping.annotations.Table;
 
 import java.util.UUID;
 
-@Table(keyspace = "transform", name = "emis_csv_code_map")
+@Table(keyspace = "subscriber", name = "emis_csv_code_map")
 public class EmisCsvCodeMap {
 
     @PartitionKey(0)

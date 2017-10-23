@@ -1,6 +1,8 @@
 package org.endeavourhealth.core.rdbms.reference;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.core.rdbms.ConnectionManager;
+import org.endeavourhealth.core.rdbms.reference.models.EncounterCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ public class EncounterCodeHelper {
 
     public static EncounterCode findOrCreateCode(String term) throws Exception {
 
-        EntityManager entityManager = ReferenceConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
         EncounterCode ret = null;
         try {

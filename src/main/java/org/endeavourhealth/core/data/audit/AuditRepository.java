@@ -116,7 +116,7 @@ public class AuditRepository extends Repository{
 
         ExchangeTransformAudit firstExchangeAudit = iterator.next();
 
-        //if the first exchange transform has been deleted (i.e. the data was deleted from the EHR DB), we need
+        //if the first exchange subscriber has been deleted (i.e. the data was deleted from the EHR DB), we need
         //to find the first non-deleted one to see if the data has been re-played
         if (firstExchangeAudit.getDeleted() != null) {
             for (ExchangeTransformAudit audit: getAllExchangeTransformAudits(serviceId, systemId)) {

@@ -2,6 +2,10 @@ package org.endeavourhealth.core.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.IdentifierHelper;
+import org.endeavourhealth.core.rdbms.ConnectionManager;
+import org.endeavourhealth.core.rdbms.eds.models.PatientLink;
+import org.endeavourhealth.core.rdbms.eds.models.PatientLinkHistory;
+import org.endeavourhealth.core.rdbms.eds.models.PatientLinkPerson;
 import org.hl7.fhir.instance.model.Patient;
 
 import javax.persistence.EntityManager;
@@ -17,7 +21,7 @@ public class PatientLinkHelper {
         String newPersonId = null;
         String previousPersonId = null;
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         //get the current person ID for the patient
         PatientLink patientLink = getPatientLink(patientId, entityManager);
@@ -108,7 +112,7 @@ public class PatientLinkHelper {
 
     public static String getPersonId(String patientId) throws Exception {
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         PatientLink patientLink = getPatientLink(patientId, entityManager);
         entityManager.close();
@@ -121,7 +125,7 @@ public class PatientLinkHelper {
     }
 
     public static List<String> getPatientIds(String personId) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"
@@ -144,7 +148,7 @@ public class PatientLinkHelper {
     }
 
     public static List<PatientLinkPair> getChangesSince(Date timestamp) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"

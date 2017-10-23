@@ -2,9 +2,12 @@ package org.endeavourhealth.core.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.*;
-import org.endeavourhealth.core.data.ehr.ResourceNotFoundException;
+import org.endeavourhealth.core.data.ehr.models.ResourceNotFoundException;
 import org.endeavourhealth.core.data.ehr.ResourceRepository;
 import org.endeavourhealth.core.fhirStorage.metadata.ReferenceHelper;
+import org.endeavourhealth.core.rdbms.ConnectionManager;
+import org.endeavourhealth.core.rdbms.eds.models.PatientSearch;
+import org.endeavourhealth.core.rdbms.eds.models.PatientSearchLocalIdentifier;
 import org.hl7.fhir.instance.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +30,7 @@ public class PatientSearchHelper {
 
     private static void update(UUID serviceId, UUID systemId, Patient fhirPatient, EpisodeOfCare fhirEpisode) throws Exception {
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
             performUpdateInTransaction(serviceId, systemId, fhirPatient, fhirEpisode, entityManager);
@@ -427,7 +430,7 @@ public class PatientSearchHelper {
 
     public static void deleteForService(UUID serviceId, UUID systemId) throws Exception {
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         entityManager.getTransaction().begin();
 
         String sql = "delete"
@@ -457,7 +460,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByNhsNumber(String nhsNumber) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"
@@ -473,7 +476,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByLocalId(UUID serviceId, UUID systemId, String localId) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
             + " from"
@@ -497,7 +500,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByLocalId(Set<String> serviceIds, String localId) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
             + " from"
@@ -519,7 +522,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByDateOfBirth(UUID serviceId, UUID systemId, Date dateOfBirth) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"
@@ -539,7 +542,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
             + " from"
@@ -557,7 +560,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByNhsNumber(UUID serviceId, UUID systemId, String nhsNumber) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"
@@ -577,7 +580,7 @@ public class PatientSearchHelper {
     }
 
     public static List<PatientSearch> searchByNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
             + " from"
@@ -600,7 +603,7 @@ public class PatientSearchHelper {
             throw new IllegalArgumentException("Names cannot be empty");
         }
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         List<PatientSearch> results = null;
 
@@ -658,7 +661,7 @@ public class PatientSearchHelper {
             throw new IllegalArgumentException("Names cannot be empty");
         }
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         List<PatientSearch> results = null;
         String name1;
@@ -712,7 +715,7 @@ public class PatientSearchHelper {
     }
 
     public static PatientSearch searchByPatientId(UUID patientId) throws Exception {
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         String sql = "select c"
                 + " from"
@@ -733,7 +736,7 @@ public class PatientSearchHelper {
 
     public static void deletePatient(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception {
 
-        EntityManager entityManager = EdsConnection.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
             String patientId = findPatientId(fhirPatient, null);

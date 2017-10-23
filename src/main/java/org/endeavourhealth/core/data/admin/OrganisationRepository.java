@@ -56,14 +56,14 @@ public class OrganisationRepository extends Repository {
 		return organisation.getId();
 	}
 
-	public Set<Organisation> getByIds(Set<UUID> ids) {
+	/*public Set<Organisation> getByIds(Set<UUID> ids) {
 		Set<Organisation> orgs = new HashSet<>();
 		for (UUID id: ids) {
 			Organisation org = getById(id);
 			orgs.add(org);
 		}
 		return orgs;
-	}
+	}*/
 
 	public Organisation getById(UUID id) {
 		Mapper<Organisation> mapper = getMappingManager().mapper(Organisation.class);
@@ -102,10 +102,10 @@ public class OrganisationRepository extends Repository {
 		return accessor.getAll();
 	}
 
-	public Iterable<OrganisationEndUserLink> getByUserId(UUID userId) {
+	/*public Iterable<OrganisationEndUserLink> getByUserId(UUID userId) {
 		OrganisationAccessor accessor = getMappingManager().createAccessor(OrganisationAccessor.class);
 		return accessor.getOrganisationEndUserLinkByEndUserId(userId);
-	}
+	}*/
 
 	public Iterable<Organisation> search(String searchData) {
 		String rangeEnd = searchData + 'z';

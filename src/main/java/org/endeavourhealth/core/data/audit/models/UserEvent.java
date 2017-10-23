@@ -4,6 +4,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
+import org.endeavourhealth.core.rdbms.audit.models.IAuditModule;
 
 import java.util.Date;
 import java.util.UUID;

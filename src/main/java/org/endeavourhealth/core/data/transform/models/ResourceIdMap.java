@@ -7,7 +7,7 @@ import com.datastax.driver.mapping.annotations.Table;
 
 import java.util.UUID;
 
-@Table(keyspace = "transform", name = "resource_id_map")
+@Table(keyspace = "subscriber", name = "resource_id_map")
 public class ResourceIdMap {
 
     @PartitionKey

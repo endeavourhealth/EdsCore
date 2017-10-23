@@ -12,6 +12,6 @@ import java.util.UUID;
 @Accessor
 public interface VitruCareAccessor {
 
-    @Query("SELECT * FROM transform.vitrucare_patient_id_map WHERE eds_patient_id = :eds_patient_id")
+    @Query("SELECT * FROM subscriber.vitrucare_patient_id_map WHERE eds_patient_id = :eds_patient_id")
     Result<VitruCarePatientIdMap> getVitruCareIdMapping(@Param("eds_patient_id") UUID edsPatientId);
 }

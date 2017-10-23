@@ -10,11 +10,11 @@ import org.endeavourhealth.core.data.transform.models.EmisCsvCodeMap;
 @Accessor
 public interface EmisAccessor {
 
-    @Query("SELECT * FROM transform.emis_csv_code_map WHERE data_sharing_agreement_guid = :data_sharing_agreement_guid AND medication = :medication AND code_id = :code_id LIMIT 1")
+    @Query("SELECT * FROM subscriber.emis_csv_code_map WHERE data_sharing_agreement_guid = :data_sharing_agreement_guid AND medication = :medication AND code_id = :code_id LIMIT 1")
     Result<EmisCsvCodeMap> getMostRecentCode(@Param("data_sharing_agreement_guid") String dataSharingAgreementGuid,
 																						 @Param("medication") boolean medication,
 																						 @Param("code_id") Long codeId);
 
-    @Query("SELECT * FROM transform.emis_admin_resource_cache WHERE data_sharing_agreement_guid = :data_sharing_agreement_guid")
+    @Query("SELECT * FROM subscriber.emis_admin_resource_cache WHERE data_sharing_agreement_guid = :data_sharing_agreement_guid")
     Result<EmisAdminResourceCache> getCachedResources(@Param("data_sharing_agreement_guid") String dataSharingAgreementGuid);
 }

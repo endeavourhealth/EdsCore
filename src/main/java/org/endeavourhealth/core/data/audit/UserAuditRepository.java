@@ -10,6 +10,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.common.cassandra.Repository;
 import org.endeavourhealth.core.data.audit.models.*;
+import org.endeavourhealth.core.rdbms.audit.models.AuditAction;
+import org.endeavourhealth.core.rdbms.audit.models.AuditModule;
+import org.endeavourhealth.core.rdbms.audit.models.IAuditModule;
 
 import java.util.*;
 import java.util.stream.Collectors;

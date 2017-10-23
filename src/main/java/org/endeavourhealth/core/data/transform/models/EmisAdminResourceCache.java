@@ -5,7 +5,7 @@ import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
 
-@Table(keyspace = "transform", name = "emis_admin_resource_cache")
+@Table(keyspace = "subscriber", name = "emis_admin_resource_cache")
 public class EmisAdminResourceCache {
 
     @PartitionKey(0)

@@ -35,9 +35,8 @@ public class ExchangeBatchRepository extends Repository {
         return mapper.get(exchangeId, batchId);
     }
 
-    //TODO - to be removed
-    public ExchangeBatch retrieveFirstForBatchId(UUID batchId) {
+    /*public ExchangeBatch retrieveFirstForBatchId(UUID batchId) {
         ExchangeBatchAccessor accessor = getMappingManager().createAccessor(ExchangeBatchAccessor.class);
         return accessor.getFirstForBatchId(batchId);
-    }
+    }*/
 }

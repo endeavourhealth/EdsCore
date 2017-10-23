@@ -3,7 +3,7 @@ package org.endeavourhealth.core.fhirStorage;
 import com.datastax.driver.core.utils.UUIDs;
 import org.endeavourhealth.common.utility.JsonSerializer;
 import org.endeavourhealth.core.data.ehr.ResourceRepository;
-import org.endeavourhealth.core.data.ehr.models.ResourceEntry;
+import org.endeavourhealth.core.rdbms.ehr.models.ResourceSavingWrapper;
 import org.endeavourhealth.core.data.ehr.models.ResourceHistory;
 import org.endeavourhealth.core.fhirStorage.exceptions.SerializationException;
 import org.endeavourhealth.core.fhirStorage.exceptions.UnprocessableEntityException;
@@ -15,6 +15,7 @@ import org.endeavourhealth.core.rdbms.eds.PatientSearchHelper;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Patient;
 import org.hl7.fhir.instance.model.Resource;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ public class FhirStorageService {
     private void store(Resource resource, UUID exchangeId, UUID batchId, boolean isNewResource) throws Exception {
         Validate.resourceId(resource);
 
-        ResourceEntry entry = createResourceEntry(resource, exchangeId, batchId);
+        ResourceSavingWrapper entry = createResourceEntry(resource, exchangeId, batchId);
 
         //if we're updating a resource but there's no change, don't commit the save
         //this is because Emis send us up to thousands of duplicated resources each day
@@ -87,7 +88,7 @@ public class FhirStorageService {
             return;
         }
 
-        FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
+        FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), new Date(entry.getCreatedAt().getMillis()));
 
         repository.save(entry);
 
@@ -114,7 +115,7 @@ public class FhirStorageService {
         }*/
     }
 
-    private boolean shouldSaveResource(ResourceEntry entry, boolean isNewResource) throws Exception {
+    private boolean shouldSaveResource(ResourceSavingWrapper entry, boolean isNewResource) throws Exception {
 
         //if it's a brand new resource, we always want to save it
         if (isNewResource) {
@@ -155,7 +156,7 @@ public class FhirStorageService {
     private void delete(Resource resource, UUID exchangeId, UUID batchId) throws Exception {
         Validate.resourceId(resource);
 
-        ResourceEntry entry = createResourceEntry(resource, exchangeId, batchId);
+        ResourceSavingWrapper entry = createResourceEntry(resource, exchangeId, batchId);
         repository.delete(entry);
 
         //if we're deleting the patient, then delete the row from the patient_search table
@@ -165,12 +166,12 @@ public class FhirStorageService {
         }
     }
 
-    private ResourceEntry createResourceEntry(Resource resource, UUID exchangeId, UUID batchId) throws UnprocessableEntityException, SerializationException {
+    private ResourceSavingWrapper createResourceEntry(Resource resource, UUID exchangeId, UUID batchId) throws UnprocessableEntityException, SerializationException {
         ResourceMetadata metadata = MetadataFactory.createMetadata(resource);
-        Date entryDate = new Date();
+        DateTime entryDate = new DateTime();
         String resourceJson = FhirSerializationHelper.serializeResource(resource);
 
-        ResourceEntry entry = new ResourceEntry();
+        ResourceSavingWrapper entry = new ResourceSavingWrapper();
         entry.setResourceId(FhirResourceHelper.getResourceId(resource));
         entry.setResourceType(FhirResourceHelper.getResourceType(resource));
         entry.setVersion(createTimeBasedVersion());
