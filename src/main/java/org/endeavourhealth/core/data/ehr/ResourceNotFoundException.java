@@ -1,4 +1,4 @@
-package org.endeavourhealth.core.data.ehr.models;
+package org.endeavourhealth.core.data.ehr;
 
 import org.hl7.fhir.instance.model.ResourceType;
 

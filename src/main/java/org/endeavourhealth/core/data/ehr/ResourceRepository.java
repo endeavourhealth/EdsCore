@@ -11,7 +11,6 @@ import org.endeavourhealth.core.data.ehr.accessors.ResourceAccessor;
 import org.endeavourhealth.core.data.ehr.accessors.ResourceHistoryAccessor;
 import org.endeavourhealth.core.data.ehr.models.*;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
-import org.endeavourhealth.core.data.ehr.models.ResourceNotFoundException;
 import org.endeavourhealth.core.rdbms.ehr.models.ResourceSavingWrapper;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;

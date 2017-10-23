@@ -2,7 +2,7 @@ package org.endeavourhealth.core.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.*;
-import org.endeavourhealth.core.data.ehr.models.ResourceNotFoundException;
+import org.endeavourhealth.core.data.ehr.ResourceNotFoundException;
 import org.endeavourhealth.core.data.ehr.ResourceRepository;
 import org.endeavourhealth.core.fhirStorage.metadata.ReferenceHelper;
 import org.endeavourhealth.core.rdbms.ConnectionManager;
