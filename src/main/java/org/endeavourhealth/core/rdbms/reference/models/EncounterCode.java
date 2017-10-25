@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "encounter_code", schema = "public")
-public class EncounterCode {
+public class EncounterCode  implements Serializable {
 
     private long code;
     private String term;

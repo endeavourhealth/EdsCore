@@ -6,10 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "vitru_care_patient_id_map", schema = "public", catalog = "transform")
-public class VitruCarePatientIdMap {
+public class VitruCarePatientIdMap  implements Serializable {
 
     private String edsPatientId = null;
     private String serviceId = null;

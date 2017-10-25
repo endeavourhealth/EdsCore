@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "deprivation_lookup", schema = "public", catalog = "reference")
-public class DeprivationLookup {
+public class DeprivationLookup implements Serializable {
 
     private String lsoaCode = null;
     private Integer imdRank = null;

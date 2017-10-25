@@ -6,10 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "exchange_transform_audit", schema = "public", catalog = "audit")
-public class ExchangeTransformAudit {
+public class ExchangeTransformAudit implements Serializable {
 
     private String serviceId = null;
     private String systemId = null;

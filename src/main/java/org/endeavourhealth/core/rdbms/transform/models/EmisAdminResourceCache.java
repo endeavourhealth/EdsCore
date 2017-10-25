@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "emis_admin_resource_cache", schema = "public", catalog = "transform")
-public class EmisAdminResourceCache {
+public class EmisAdminResourceCache implements Serializable {
 
     private String dataSharingAgreementGuid = null;
     private String emisGuid = null;

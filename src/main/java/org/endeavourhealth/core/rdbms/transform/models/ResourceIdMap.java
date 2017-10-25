@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "resource_id_map", schema = "public", catalog = "transform")
-public class ResourceIdMap {
+public class ResourceIdMap  implements Serializable {
 
     private String serviceId = null;
     private String systemId = null;

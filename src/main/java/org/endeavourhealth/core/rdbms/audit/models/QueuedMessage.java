@@ -6,10 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "queued_message", schema = "public", catalog = "audit")
-public class QueuedMessage {
+public class QueuedMessage  implements Serializable {
 
     private String id = null;
     private String messageBody = null;

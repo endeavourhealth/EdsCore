@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "postcode_lookup", schema = "public", catalog = "reference")
-public class PostcodeLookup {
+public class PostcodeLookup  implements Serializable {
 
     private String postcodeNoSpace = null;
     private String postcode = null;

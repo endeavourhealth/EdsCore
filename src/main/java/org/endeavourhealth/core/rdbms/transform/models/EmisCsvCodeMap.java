@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "emis_csv_code_map", schema = "public", catalog = "transform")
-public class EmisCsvCodeMap {
+public class EmisCsvCodeMap  implements Serializable {
 
     private String dataSharingAgreementGuid = null;
     private boolean medication = false;

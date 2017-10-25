@@ -6,10 +6,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "audit", schema = "public", catalog = "admin")
-public class Audit {
+public class Audit  implements Serializable {
 
     private String id = null;
     private String organisationId = null;

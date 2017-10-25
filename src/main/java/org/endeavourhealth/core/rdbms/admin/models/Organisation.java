@@ -7,6 +7,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -14,7 +15,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "organisation", schema = "public", catalog = "admin")
-public class Organisation {
+public class Organisation  implements Serializable {
 
     private String id = null;
     private String name = null;
