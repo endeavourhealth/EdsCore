@@ -1,9 +1,10 @@
 package org.endeavourhealth.coreui.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.endeavourhealth.core.data.audit.models.UserEvent;
+import org.endeavourhealth.core.database.dal.audit.models.UserEvent;
 
-import java.util.*;
+import java.util.Date;
+import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public final class JsonUserEvent {

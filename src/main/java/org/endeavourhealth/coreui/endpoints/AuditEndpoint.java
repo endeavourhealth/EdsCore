@@ -8,13 +8,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.endeavourhealth.core.data.audit.UserAuditRepository;
-import org.endeavourhealth.core.rdbms.audit.models.AuditAction;
-import org.endeavourhealth.core.rdbms.audit.models.AuditModule;
-import org.endeavourhealth.core.data.audit.models.UserEvent;
 import org.endeavourhealth.common.security.KeycloakConfigUtils;
 import org.endeavourhealth.common.security.SecurityUtils;
 import org.endeavourhealth.common.security.keycloak.client.KeycloakClient;
+import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.audit.UserAuditDalI;
+import org.endeavourhealth.core.database.dal.audit.models.AuditAction;
+import org.endeavourhealth.core.database.dal.audit.models.AuditModule;
+import org.endeavourhealth.core.database.dal.audit.models.UserEvent;
 import org.endeavourhealth.coreui.json.JsonEndUser;
 import org.endeavourhealth.coreui.json.JsonUserEvent;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -28,7 +29,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Api(value = "Audit", authorizations = {
@@ -37,7 +41,7 @@ import java.util.stream.Collectors;
 @Path("/audit")
 public final class AuditEndpoint extends AbstractEndpoint {
 	private static final Logger LOG = LoggerFactory.getLogger(AuditEndpoint.class);
-	private static final UserAuditRepository userAuditRepository = new UserAuditRepository(AuditModule.EdsUiModule.Audit);
+	private static final UserAuditDalI userAuditRepository = DalProvider.factoryUserAuditDal(AuditModule.EdsUiModule.Audit);
 
 	private String keycloakRealm;
 	private String authServerBaseUrl;
@@ -156,7 +160,7 @@ public final class AuditEndpoint extends AbstractEndpoint {
 		AbstractEndpoint.clearLogbackMarkers();
 		return Response
 				.ok()
-				.entity(userAuditRepository.getModuleList())
+				.entity(AuditModule.getModuleList())
 				.build();
 	}
 
@@ -175,7 +179,7 @@ public final class AuditEndpoint extends AbstractEndpoint {
 		AbstractEndpoint.clearLogbackMarkers();
 		return Response
 				.ok()
-				.entity(userAuditRepository.getSubModuleList(module))
+				.entity(AuditModule.getSubModuleList(module))
 				.build();
 	}
 
@@ -193,7 +197,7 @@ public final class AuditEndpoint extends AbstractEndpoint {
 		AbstractEndpoint.clearLogbackMarkers();
 		return Response
 				.ok()
-				.entity(userAuditRepository.getActionList())
+				.entity(AuditAction.getActionList())
 				.build();
 	}
 }

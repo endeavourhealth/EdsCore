@@ -1,7 +1,7 @@
 package org.endeavourhealth.core.fhirStorage;
 
 import org.endeavourhealth.common.cache.ParserPool;
-import org.endeavourhealth.core.data.ehr.HasResourceDataJson;
+import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.hl7.fhir.instance.model.Meta;
 import org.hl7.fhir.instance.model.PrimitiveType;
 import org.hl7.fhir.instance.model.Resource;
@@ -50,7 +50,7 @@ public class FhirResourceHelper {
         meta.setLastUpdated(createdAt);
     }
 
-    public static Resource deserialiseResouce(HasResourceDataJson resourceWrapper) throws Exception {
+    public static Resource deserialiseResouce(ResourceWrapper resourceWrapper) throws Exception {
         String json = resourceWrapper.getResourceData();
         return deserialiseResouce(json);
     }

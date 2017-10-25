@@ -708,9 +708,9 @@
         <xs:attribute name="UserName" type="xs:string"/>
         <!--UserName is a user name of the person who performed the event. If omitted, the current SystmOne user will be used-->
         <xs:attribute name="DoneBy" type="xs:string"/>
-        <!--DoneBy allows a free-text person or organisation to be stated as the source of the data-->
+        <!--DoneBy allows a free-text person or organisation to be stated as the source of the cassandra-->
         <xs:attribute name="DoneAt" type="xs:string"/>
-        <!--DoneAt allows a free-text location to be stated as the source of the data-->
+        <!--DoneAt allows a free-text location to be stated as the source of the cassandra-->
         <xs:attribute name="Software" type="xs:string"/>
         <xs:attribute name="Method" type="EventMethod"/>
         <xs:attribute name="LinkedReferralUID" type="xs:string"/>

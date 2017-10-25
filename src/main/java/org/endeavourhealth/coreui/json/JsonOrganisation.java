@@ -1,7 +1,7 @@
 package org.endeavourhealth.coreui.json;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.endeavourhealth.core.data.admin.models.Organisation;
+import org.endeavourhealth.core.database.dal.admin.models.Organisation;
 
 import java.util.Map;
 import java.util.UUID;

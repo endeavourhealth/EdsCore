@@ -2,7 +2,7 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
 
     <!--copied from file with the same name in COMMON repo-->
-    <persistence-unit name="ConfigurationDb">
+    <!--<persistence-unit name="ConfigurationDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.common.config.ConfigEntity</class>
         <properties>
@@ -20,15 +20,15 @@
             <property name="hibernate.hikari.dataSource.user" value="postgres"/>
             <property name="hibernate.hikari.dataSource.password" value=""/>
         </properties>
-    </persistence-unit>
+    </persistence-unit>-->
 
     <persistence-unit name="EdsDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.rdbms.eds.models.PatientSearch</class>
-        <class>org.endeavourhealth.core.rdbms.eds.models.PatientSearchLocalIdentifier</class>
-        <class>org.endeavourhealth.core.rdbms.eds.models.PatientLink</class>
-        <class>org.endeavourhealth.core.rdbms.eds.models.PatientLinkHistory</class>
-        <class>org.endeavourhealth.core.rdbms.eds.models.PatientLinkPerson</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLink</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkHistory</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkPerson</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
@@ -42,15 +42,15 @@
         </properties>
     </persistence-unit>
 
-    <persistence-unit name="TransformDb">
+    <persistence-unit name="SubscriberDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.EnterpriseIdMap</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.EnterpriseOrganisationIdMap</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.HouseholdIdMap</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.PseudoIdMap</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.EnterpriseAge</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.EnterprisePersonIdMap</class>
-        <class>org.endeavourhealth.core.rdbms.subscriber.models.EnterprisePersonUpdateHistory</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsEnterpriseIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsEnterpriseOrganisationIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsHouseholdIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsPseudoIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsEnterpriseAge</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsEnterprisePersonIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriber.models.RdbmsEnterprisePersonUpdateHistory</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
@@ -66,11 +66,11 @@
 
     <persistence-unit name="ReferenceDB">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.rdbms.reference.models.PostcodeLookup</class>
-        <class>org.endeavourhealth.core.rdbms.reference.models.LsoaLookup</class>
-        <class>org.endeavourhealth.core.rdbms.reference.models.MsoaLookup</class>
-        <class>org.endeavourhealth.core.rdbms.reference.models.DeprivationLookup</class>
-        <class>org.endeavourhealth.core.rdbms.reference.models.EncounterCode</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsPostcodeLookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoaLookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoaLookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsDeprivationLookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsEncounterCode</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
@@ -84,7 +84,7 @@
         </properties>
     </persistence-unit>
     <persistence-unit name="KeycloakDB">
-        <class>org.endeavourhealth.core.mySQLDatabase.models.GroupRoleMappingEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.keycloak.models.GroupRoleMappingEntity</class>
         <properties>
             <property name="hibernate.connection.url"
                       value="jdbc:mysql://localhost:3306/keycloak"/>
@@ -94,7 +94,7 @@
 
     <persistence-unit name="HL7ReceiverDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.rdbms.hl7receiver.models.ResourceId</class>
+        <class>org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="true" />

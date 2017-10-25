@@ -1,22 +1,20 @@
 package org.endeavourhealth.core.fhirStorage;
 
-import com.datastax.driver.core.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
-import org.endeavourhealth.common.cassandra.CassandraConnector;
 import org.endeavourhealth.common.utility.ThreadPool;
 import org.endeavourhealth.common.utility.ThreadPoolError;
-import org.endeavourhealth.core.data.admin.models.Service;
-import org.endeavourhealth.core.data.audit.AuditRepository;
-import org.endeavourhealth.core.data.audit.models.ExchangeEvent;
-import org.endeavourhealth.core.data.audit.models.ExchangeTransformAudit;
-import org.endeavourhealth.core.data.audit.models.ExchangeTransformErrorState;
-import org.endeavourhealth.core.data.ehr.ExchangeBatchRepository;
-import org.endeavourhealth.core.data.ehr.ResourceRepository;
-import org.endeavourhealth.core.data.ehr.models.ExchangeBatch;
-import org.endeavourhealth.core.data.ehr.models.ResourceByExchangeBatch;
-import org.endeavourhealth.core.rdbms.ehr.models.ResourceSavingWrapper;
-import org.endeavourhealth.core.rdbms.eds.PatientSearchHelper;
+import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.admin.models.Service;
+import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
+import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeBatch;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeEvent;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformAudit;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformErrorState;
+import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
+import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
+import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,9 +26,10 @@ import java.util.stream.Collectors;
 public class FhirDeletionService {
     private static final Logger LOG = LoggerFactory.getLogger(FhirDeletionService.class);
 
-    private final ExchangeBatchRepository exchangeBatchRepository = new ExchangeBatchRepository();
-    private final AuditRepository auditRepository = new AuditRepository();
-    private final ResourceRepository resourceRepository = new ResourceRepository();
+    private final ExchangeBatchDalI exchangeBatchRepository = DalProvider.factoryExchangeBatchDal();
+    private final ExchangeDalI auditRepository = DalProvider.factoryExchangeDal();
+    private final ResourceDalI resourceRepository = DalProvider.factoryResourceDal();
+    private final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearchDal();
     private final Service service;
 
     private String progress = null;
@@ -46,7 +45,7 @@ public class FhirDeletionService {
     }
 
     public void deleteData() throws Exception {
-        LOG.info("Deleting data for service " + service.getId());
+        LOG.info("Deleting cassandra for service " + service.getId());
 
         retrieveExchangeIds();
 
@@ -73,10 +72,10 @@ public class FhirDeletionService {
         List<ThreadPoolError> errors = threadPool.waitAndStop();
         handleErrors(errors);
 
-        //then tidy remove any remaining data and mark the audits as deleted
+        //then tidy remove any remaining cassandra and mark the audits as deleted
         this.progress = "Resources deleted - finishing up";
         for (UUID systemId: exchangeIdsToDeleteBySystem.keySet()) {
-            LOG.trace("Deleting remaining data for service ID {} and system ID {}", service.getId(), systemId);
+            LOG.trace("Deleting remaining cassandra for service ID {} and system ID {}", service.getId(), systemId);
 
             //delete any subscriber summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
@@ -85,13 +84,54 @@ public class FhirDeletionService {
             }
 
             //get rid of the patient identity record too (patient_identifier_by_local_id)
-            PatientSearchHelper.deleteForService(service.getId(), systemId);
+            patientSearchDal.deleteForService(service.getId(), systemId);
         }
 
         this.isComplete = true;
     }
 
     private void retrieveExchangeIds() throws Exception {
+
+        exchangeIdsToDeleteBySystem = new HashMap<>();
+        countBatchesToDelete = 0;
+
+        HashSet<UUID> hsExchangeIds = new HashSet<>();
+
+        ExchangeDalI exchangeDal = DalProvider.factoryExchangeDal();
+
+        for (UUID systemId: getSystemsIds()) {
+
+            List<UUID> exchangeIds = new ArrayList<>();
+
+            List<ExchangeTransformAudit> audits = exchangeDal.getAllExchangeTransformAuditsForService(service.getId(), systemId);
+            for (ExchangeTransformAudit audit: audits) {
+
+                UUID exchangeId = audit.getExchangeId();
+                Integer batchesCreated = audit.getNumberBatchesCreated();
+
+                if (batchesCreated != null) {
+                    countBatchesToDelete += batchesCreated.intValue();
+                }
+
+                if (!hsExchangeIds.contains(exchangeId)) {
+                    hsExchangeIds.add(exchangeId);
+                    exchangeIds.add(exchangeId);
+                }
+            }
+
+            //the exchange IDs will come off the DB in reverse order (i.e. most recent first, so reverse them)
+            List reversed = new ArrayList<>();
+            for (int i=exchangeIds.size()-1; i>=0; i--) {
+                reversed.add(exchangeIds.get(i));
+            }
+
+            exchangeIdsToDeleteBySystem.put(systemId, reversed);
+        }
+    }
+
+
+
+    /*private void retrieveExchangeIds() throws Exception {
 
         exchangeIdsToDeleteBySystem = new HashMap<>();
         countBatchesToDelete = 0;
@@ -132,33 +172,33 @@ public class FhirDeletionService {
 
             exchangeIdsToDeleteBySystem.put(systemId, reversed);
         }
-    }
+    }*/
 
 
     private void deleteExchange(UUID systemId, UUID exchangeId) throws Exception {
 
         //get all batches received for each exchange
         List<UUID> batchIds = getBatchIds(exchangeId);
-        LOG.trace("Deleting data for exchangeId " + exchangeId + " with " + batchIds.size() + " batches");
+        LOG.trace("Deleting cassandra for exchangeId " + exchangeId + " with " + batchIds.size() + " batches");
 
         for (UUID batchId : batchIds) {
 
             countBatchesDeleted ++;
             progress = new DecimalFormat("###.##").format(((double)countBatchesDeleted / (double)countBatchesToDelete) * 100d) + "%";
 
-            List<ResourceByExchangeBatch> resourceByExchangeBatchList = resourceRepository.getResourcesForBatch(batchId);
-            //LOG.trace("Deleting data for BatchId " + batchId + " " + progress + " (" + resourceByExchangeBatchList.size() + " resources)");
+            List<ResourceWrapper> resourceByExchangeBatchList = resourceRepository.getResourcesForBatch(batchId);
+            //LOG.trace("Deleting cassandra for BatchId " + batchId + " " + progress + " (" + resourceByExchangeBatchList.size() + " resources)");
 
-            for (ResourceByExchangeBatch resource : resourceByExchangeBatchList) {
+            for (ResourceWrapper resource : resourceByExchangeBatchList) {
 
                 //populate the resource entry util class with the keys we'll need to delete the resource
-                ResourceSavingWrapper resourceEntry = new ResourceSavingWrapper();
+                ResourceWrapper resourceEntry = new ResourceWrapper();
                 resourceEntry.setServiceId(service.getId());
                 resourceEntry.setSystemId(systemId);
                 resourceEntry.setResourceType(resource.getResourceType());
                 resourceEntry.setResourceId(resource.getResourceId());
                 resourceEntry.setVersion(resource.getVersion());
-                resourceEntry.setBatchId(batchId);
+                resourceEntry.setExchangeBatchId(batchId);
 
                 //bump the actual delete from the DB into the threadpool
                 DeleteResourceTask callable = new DeleteResourceTask(resourceEntry);
@@ -168,7 +208,7 @@ public class FhirDeletionService {
         }
 
         //mark any subscriber audits as deleted
-        List<ExchangeTransformAudit> transformAudits = auditRepository.getAllExchangeTransform(service.getId(), systemId, exchangeId);
+        List<ExchangeTransformAudit> transformAudits = auditRepository.getAllExchangeTransformAudits(service.getId(), systemId, exchangeId);
         for (ExchangeTransformAudit transformAudit: transformAudits) {
             if (transformAudit.getDeleted() == null) {
                 transformAudit.setDeleted(new Date());
@@ -180,12 +220,12 @@ public class FhirDeletionService {
         ExchangeEvent exchangeEvent = new ExchangeEvent();
         exchangeEvent.setExchangeId(exchangeId);
         exchangeEvent.setTimestamp(new Date());
-        exchangeEvent.setEventDesc("All data deleted from repository");
+        exchangeEvent.setEventDesc("All cassandra deleted from repository");
         auditRepository.save(exchangeEvent);
     }
 
     /*public void deleteData() throws Exception {
-        LOG.info("Deleting data for service " + service.getId());
+        LOG.info("Deleting cassandra for service " + service.getId());
 
         //get all the subscriber audits and sum up the number of batches ever created, so we know what we're aiming to delete
         List<ExchangeTransformAudit> transformAudits = getTransformAudits();
@@ -196,7 +236,7 @@ public class FhirDeletionService {
 
         LOG.trace("Found " + transformAudits.size() + " subscriber audits with " + countBatches + " batches to delete");
 
-        //first, get rid of all the FHIR resource data
+        //first, get rid of all the FHIR resource cassandra
         int countBatchesDone = 0;
         ThreadPool threadPool = new ThreadPool(5, 1000);
         HashSet<UUID> exchangeIdsDone = new HashSet<>();
@@ -219,7 +259,7 @@ public class FhirDeletionService {
                     progress = new DecimalFormat("###.##").format(((double)countBatchesDone / (double)countBatches) * 100d) + "%";
 
                     List<ResourceByExchangeBatch> resourceByExchangeBatchList = resourceRepository.getResourcesForBatch(batchId);
-                    LOG.trace("Deleting data for BatchId " + batchId + " " + progress + " (" + resourceByExchangeBatchList.size() + " resources)");
+                    LOG.trace("Deleting cassandra for BatchId " + batchId + " " + progress + " (" + resourceByExchangeBatchList.size() + " resources)");
 
                     for (ResourceByExchangeBatch resource : resourceByExchangeBatchList) {
 
@@ -243,7 +283,7 @@ public class FhirDeletionService {
                 ExchangeEvent exchangeEvent = new ExchangeEvent();
                 exchangeEvent.setExchangeId(exchangeAudit.getExchangeId());
                 exchangeEvent.setTimestamp(new Date());
-                exchangeEvent.setEventDesc("All data deleted from repository");
+                exchangeEvent.setEventDesc("All cassandra deleted from repository");
                 auditRepository.save(exchangeEvent);
             }
 
@@ -255,10 +295,10 @@ public class FhirDeletionService {
         List<ThreadPoolError> errors = threadPool.waitAndStop();
         handleErrors(errors);
 
-        //then tidy remove any remaining data and mark the audits as deleted
+        //then tidy remove any remaining cassandra and mark the audits as deleted
         this.progress = "Resources deleted - finishing up";
         for (UUID systemId: getSystemsIds()) {
-            LOG.trace("Deleting remaining data for service ID {} and system ID {}", service.getId(), systemId);
+            LOG.trace("Deleting remaining cassandra for service ID {} and system ID {}", service.getId(), systemId);
 
             //delete any subscriber summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
@@ -299,7 +339,7 @@ public class FhirDeletionService {
         return ret;
     }
 
-    private List<UUID> getBatchIds(UUID exchangeId) {
+    private List<UUID> getBatchIds(UUID exchangeId) throws Exception {
 
         List<ExchangeBatch> batches = exchangeBatchRepository.retrieveForExchangeId(exchangeId);
 
@@ -352,9 +392,9 @@ public class FhirDeletionService {
      */
     class DeleteResourceTask implements Callable {
 
-        private ResourceSavingWrapper resourceEntry = null;
+        private ResourceWrapper resourceEntry = null;
 
-        public DeleteResourceTask(ResourceSavingWrapper resourceEntry) {
+        public DeleteResourceTask(ResourceWrapper resourceEntry) {
             this.resourceEntry = resourceEntry;
         }
 

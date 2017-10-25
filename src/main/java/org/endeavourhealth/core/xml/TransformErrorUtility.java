@@ -1,8 +1,9 @@
 package org.endeavourhealth.core.xml;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.data.audit.AuditRepository;
-import org.endeavourhealth.core.data.audit.models.ExchangeTransformAudit;
+import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformAudit;
 import org.endeavourhealth.core.xml.transformError.Arg;
 import org.endeavourhealth.core.xml.transformError.Error;
 import org.endeavourhealth.core.xml.transformError.ExceptionLine;
@@ -52,10 +53,11 @@ public class TransformErrorUtility {
         transformAudit.setErrorXml(TransformErrorSerializer.writeToXml(container));
     }*/
 
-    public static void save(ExchangeTransformAudit transformAudit, TransformError errors) {
+    public static void save(ExchangeTransformAudit transformAudit, TransformError errors) throws Exception {
 
         transformAudit.setErrorXml(TransformErrorSerializer.writeToXml(errors));
-        new AuditRepository().save(transformAudit);
+        ExchangeDalI exchangeDal = DalProvider.factoryExchangeDal();
+        exchangeDal.save(transformAudit);
     }
 
     /**

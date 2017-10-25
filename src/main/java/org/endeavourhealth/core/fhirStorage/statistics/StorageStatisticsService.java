@@ -1,27 +1,28 @@
 package org.endeavourhealth.core.fhirStorage.statistics;
 
-import org.endeavourhealth.core.data.ehr.ResourceMetadataIterator;
-import org.endeavourhealth.core.data.ehr.ResourceRepository;
+import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
+import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
 import org.endeavourhealth.core.fhirStorage.metadata.PatientMetadata;
+import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 public class StorageStatisticsService {
-    private static final String PATIENT_RESOURCE_TYPE_NAME = "Patient";
 
-    private final ResourceRepository repository;
+    private final ResourceDalI repository;
 
     public StorageStatisticsService() {
-        this.repository = new ResourceRepository();
+        this.repository = DalProvider.factoryResourceDal();
     }
 
-    public PatientStatistics getPatientStatistics(UUID serviceId, UUID systemId) {
+    public PatientStatistics getPatientStatistics(UUID serviceId, UUID systemId) throws Exception {
         return createPatientStatistics(serviceId, systemId);
     }
 
-    public List<ResourceStatistics> getResourceStatistics(UUID serviceId, UUID systemId, List<String> resourceTypes) {
+    public List<ResourceStatistics> getResourceStatistics(UUID serviceId, UUID systemId, List<String> resourceTypes) throws Exception {
         List<ResourceStatistics> results = new ArrayList<>();
 
         for (String resourceType :resourceTypes) {
@@ -31,14 +32,14 @@ public class StorageStatisticsService {
         return results;
     }
 
-    private PatientStatistics createPatientStatistics(UUID serviceId, UUID systemId) {
+    private PatientStatistics createPatientStatistics(UUID serviceId, UUID systemId) throws Exception {
         long totalCount = 0;
         long activeCount = 0;
         long deceasedCount = 0;
 
         ResourceMetadataIterator<PatientMetadata> patientMetadataIterator = repository.getMetadataByService(serviceId,
                 systemId,
-                PATIENT_RESOURCE_TYPE_NAME,
+                ResourceType.Patient.toString(),
                 PatientMetadata.class);
 
         while(patientMetadataIterator.hasNext()) {
@@ -63,7 +64,7 @@ public class StorageStatisticsService {
         return statistics;
     }
 
-    private ResourceStatistics createResourceStatistics(UUID serviceId, UUID systemId, String resourceType) {
+    private ResourceStatistics createResourceStatistics(UUID serviceId, UUID systemId, String resourceType) throws Exception {
         ResourceStatistics statistics = new ResourceStatistics(resourceType);
         statistics.setTotalCount(repository.getResourceCountByService(serviceId, systemId, resourceType));
         return statistics;
