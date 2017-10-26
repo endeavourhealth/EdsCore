@@ -5,8 +5,8 @@ import org.endeavourhealth.common.cassandra.Repository;
 import org.endeavourhealth.core.database.cassandra.transform.accessors.ResourceIdMapAccessor;
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraResourceIdMap;
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraResourceIdMapByEdsId;
-import org.endeavourhealth.core.database.dal.transform.ResourceIdTransformDalI;
-import org.endeavourhealth.core.database.dal.transform.models.ResourceIdMap;
+import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceIdMap;
 
 import java.util.Iterator;
 import java.util.UUID;

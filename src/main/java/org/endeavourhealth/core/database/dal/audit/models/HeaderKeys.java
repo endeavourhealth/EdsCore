@@ -20,7 +20,7 @@ public abstract class HeaderKeys {
 
     public static final String MessageFormat = "MessageFormat";
 
-    // Transform
+    // PublisherTransform
     public static final String BatchIdsJson = "BatchIds";
     public static final String DestinationAddress = "DestinationAddress";
     public static final String TransformBatch = "TransformBatch";

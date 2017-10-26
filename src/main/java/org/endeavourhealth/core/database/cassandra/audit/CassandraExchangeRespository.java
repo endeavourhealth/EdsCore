@@ -147,7 +147,7 @@ public class CassandraExchangeRespository extends Repository implements Exchange
 
         CassandraExchangeTransformAudit firstExchangeAudit = iterator.next();
 
-        //if the first exchange subscriber has been deleted (i.e. the cassandra was deleted from the EHR DB), we need
+        //if the first exchange subscriberTransform has been deleted (i.e. the cassandra was deleted from the EHR DB), we need
         //to find the first non-deleted one to see if the cassandra has been re-played
         if (firstExchangeAudit.getDeleted() != null) {
             List<CassandraExchangeTransformAudit> audits = Lists.newArrayList(accessor.getAllExchangeTransformAudits(serviceId, systemId));

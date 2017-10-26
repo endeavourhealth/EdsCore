@@ -4,7 +4,7 @@ import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
-import org.endeavourhealth.core.database.dal.transform.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisCsvCodeMap;
 
 import java.util.UUID;
 

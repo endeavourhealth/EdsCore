@@ -18,7 +18,7 @@ public class Exchange {
     private Map<String, String> headers = null;
     private UUID serviceId = null;
     private String body = null;
-    private Exception exception; //not persisted, but used as a holding variable for logging
+    private Exception exception; //not persisted, but used as a holding variable for logback
 
     public Exchange() {}
 

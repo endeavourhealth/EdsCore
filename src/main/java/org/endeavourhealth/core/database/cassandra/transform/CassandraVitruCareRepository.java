@@ -4,7 +4,7 @@ import com.datastax.driver.mapping.Mapper;
 import org.endeavourhealth.common.cassandra.Repository;
 import org.endeavourhealth.core.database.cassandra.transform.accessors.VitruCareAccessor;
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraVitruCarePatientIdMap;
-import org.endeavourhealth.core.database.dal.transform.VitruCareTransformDalI;
+import org.endeavourhealth.core.database.dal.subscriberTransform.VitruCareTransformDalI;
 
 import java.util.Date;
 import java.util.Iterator;

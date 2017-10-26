@@ -10,7 +10,7 @@
 		</xs:sequence>
 	</xs:complexType>
 
-	<!--<xs:complexType name="logging">
+	<!--<xs:complexType name="logback">
 		<xs:sequence>
 			<xs:element name="keyspace" type="xs:string"/>
 		</xs:sequence>
@@ -26,7 +26,7 @@
 	<xs:complexType name="engineConfiguration">
 		<xs:sequence>
 			<xs:element name="cassandra" type="cassandra"/>
-			<!--<xs:element name="logging" type="logging"/>-->
+			<!--<xs:element name="logback" type="logback"/>-->
 			<!--<xs:element name="audit" type="audit"/>-->
 		</xs:sequence>
 	</xs:complexType>

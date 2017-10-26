@@ -10,7 +10,7 @@ public class EnterpriseConnector {
 
     public static Connection openConnection(String enterpriseConfigName) throws Exception {
 
-        JsonNode config = ConfigManager.getConfigurationAsJson(enterpriseConfigName, "subscriber");
+        JsonNode config = ConfigManager.getConfigurationAsJson(enterpriseConfigName, "subscriberTransform");
 
         String driverClass = config.get("driverClass").asText();
         String url = config.get("enterprise_url").asText();

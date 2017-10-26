@@ -77,7 +77,7 @@ public class FhirDeletionService {
         for (UUID systemId: exchangeIdsToDeleteBySystem.keySet()) {
             LOG.trace("Deleting remaining cassandra for service ID {} and system ID {}", service.getId(), systemId);
 
-            //delete any subscriber summary, since all errors are now gone
+            //delete any subscriberTransform summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
             if (summary != null) {
                 auditRepository.delete(summary);
@@ -207,7 +207,7 @@ public class FhirDeletionService {
             }
         }
 
-        //mark any subscriber audits as deleted
+        //mark any subscriberTransform audits as deleted
         List<ExchangeTransformAudit> transformAudits = auditRepository.getAllExchangeTransformAudits(service.getId(), systemId, exchangeId);
         for (ExchangeTransformAudit transformAudit: transformAudits) {
             if (transformAudit.getDeleted() == null) {
@@ -227,14 +227,14 @@ public class FhirDeletionService {
     /*public void deleteData() throws Exception {
         LOG.info("Deleting cassandra for service " + service.getId());
 
-        //get all the subscriber audits and sum up the number of batches ever created, so we know what we're aiming to delete
+        //get all the subscriberTransform audits and sum up the number of batches ever created, so we know what we're aiming to delete
         List<ExchangeTransformAudit> transformAudits = getTransformAudits();
         int countBatches = 0;
         for (ExchangeTransformAudit exchangeAudit: transformAudits)
             if (exchangeAudit.getNumberBatchesCreated() != null)
                 countBatches += exchangeAudit.getNumberBatchesCreated();
 
-        LOG.trace("Found " + transformAudits.size() + " subscriber audits with " + countBatches + " batches to delete");
+        LOG.trace("Found " + transformAudits.size() + " subscriberTransform audits with " + countBatches + " batches to delete");
 
         //first, get rid of all the FHIR resource cassandra
         int countBatchesDone = 0;
@@ -287,7 +287,7 @@ public class FhirDeletionService {
                 auditRepository.save(exchangeEvent);
             }
 
-            //mark the subscriber audit as deleted
+            //mark the subscriberTransform audit as deleted
             exchangeAudit.setDeleted(new Date());
             auditRepository.save(exchangeAudit);
         }
@@ -300,7 +300,7 @@ public class FhirDeletionService {
         for (UUID systemId: getSystemsIds()) {
             LOG.trace("Deleting remaining cassandra for service ID {} and system ID {}", service.getId(), systemId);
 
-            //delete any subscriber summary, since all errors are now gone
+            //delete any subscriberTransform summary, since all errors are now gone
             ExchangeTransformErrorState summary = auditRepository.getErrorState(service.getId(), systemId);
             if (summary != null) {
                 auditRepository.delete(summary);
@@ -322,8 +322,14 @@ public class FhirDeletionService {
 
         //if we've had multiple exceptions, this will only log the first, but the first exception is the one that's interesting
         for (ThreadPoolError error: errors) {
-            Exception exception = error.getException();
-            throw exception;
+            Throwable cause = error.getException();
+            //the cause may be an Exception or Error so we need to explicitly
+            //cast to the right type to throw it without changing the method signature
+            if (cause instanceof Exception) {
+                throw (Exception)cause;
+            } else if (cause instanceof Error) {
+                throw (Error)cause;
+            }
         }
     }
 

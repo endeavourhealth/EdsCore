@@ -19,14 +19,15 @@ import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
 import org.endeavourhealth.core.database.dal.audit.QueuedMessageDalI;
 import org.endeavourhealth.core.database.dal.audit.UserAuditDalI;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
+import org.endeavourhealth.core.database.dal.coding.CodingDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
+import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.EmisTransformDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
 import org.endeavourhealth.core.database.dal.reference.*;
-import org.endeavourhealth.core.database.dal.subscriber.*;
-import org.endeavourhealth.core.database.dal.transform.EmisTransformDalI;
-import org.endeavourhealth.core.database.dal.transform.ResourceIdTransformDalI;
-import org.endeavourhealth.core.database.dal.transform.VitruCareTransformDalI;
+import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsOrganisationDal;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsPatientCohortDal;
@@ -35,14 +36,15 @@ import org.endeavourhealth.core.database.rdbms.audit.RdbmsExchangeBatchDal;
 import org.endeavourhealth.core.database.rdbms.audit.RdbmsExchangeDal;
 import org.endeavourhealth.core.database.rdbms.audit.RdbmsQueuedMessageDal;
 import org.endeavourhealth.core.database.rdbms.audit.RdbmsUserAuditDal;
+import org.endeavourhealth.core.database.rdbms.coding.RdbmsCodingDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
+import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsEmisTransformDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.reference.*;
-import org.endeavourhealth.core.database.rdbms.subscriber.*;
-import org.endeavourhealth.core.database.rdbms.transform.RdbmsEmisTransformDal;
-import org.endeavourhealth.core.database.rdbms.transform.RdbmsResourceIdDal;
-import org.endeavourhealth.core.database.rdbms.transform.RdbmsVitruCareTransformDal;
+import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,12 +63,12 @@ public class DalProvider {
         }
     }
 
-    public static VitruCareTransformDalI factoryVitruCareTransformDal() {
+    public static VitruCareTransformDalI factoryVitruCareTransformDal(String subscriberConfigName) {
         if (useCassandra()) {
             return new CassandraVitruCareRepository();
 
         } else {
-            return new RdbmsVitruCareTransformDal();
+            return new RdbmsVitruCareTransformDal(subscriberConfigName);
         }
     }
 
@@ -211,6 +213,14 @@ public class DalProvider {
 
     public static ReferenceCopierDalI factoryReferenceCopierDal() {
         return new RdbmsReferenceCopierDal();
+    }
+
+    public static LogbackDalI factoryLogbackDal() {
+        return new RdbmsLogbackDal();
+    }
+
+    public static CodingDalI factoryCodingDal() {
+        return new RdbmsCodingDal();
     }
 
     private static boolean useCassandra() {
