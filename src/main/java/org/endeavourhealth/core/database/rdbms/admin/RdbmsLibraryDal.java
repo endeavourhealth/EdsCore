@@ -26,270 +26,290 @@ public class RdbmsLibraryDal implements LibraryDalI {
     public void save(List<Object> entities) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-        entityManager.getTransaction().begin();
+        try {
+            entityManager.getTransaction().begin();
 
-        for (Object entity: entities) {
+            for (Object entity : entities) {
 
-            if (entity instanceof Audit) {
-                RdbmsAudit dbObj = new RdbmsAudit((Audit)entity);
-                entityManager.persist(entity);
+                if (entity instanceof Audit) {
+                    RdbmsAudit dbObj = new RdbmsAudit((Audit) entity);
+                    entityManager.persist(dbObj);
 
-            } else if (entity instanceof Item) {
-                RdbmsItem dbObj = new RdbmsItem((Item)entity);
-                entityManager.persist(entity);
+                } else if (entity instanceof Item) {
+                    RdbmsItem dbObj = new RdbmsItem((Item) entity);
+                    entityManager.persist(dbObj);
 
-            } else if (entity instanceof ActiveItem) {
-                RdbmsActiveItem dbObj = new RdbmsActiveItem((ActiveItem)entity);
-                entityManager.persist(entity);
+                } else if (entity instanceof ActiveItem) {
+                    RdbmsActiveItem dbObj = new RdbmsActiveItem((ActiveItem) entity);
+                    entityManager.persist(dbObj);
 
-            } else if (entity instanceof ItemDependency) {
-                RdbmsItemDependency dbObj = new RdbmsItemDependency((ItemDependency)entity);
-                entityManager.persist(entity);
+                } else if (entity instanceof ItemDependency) {
+                    RdbmsItemDependency dbObj = new RdbmsItemDependency((ItemDependency) entity);
+                    entityManager.persist(dbObj);
 
-            } else {
-                throw new IllegalArgumentException("Unexpected object type " + entity.getClass());
+                } else {
+                    throw new IllegalArgumentException("Unexpected object type " + entity.getClass());
+                }
             }
-        }
 
-        entityManager.getTransaction().commit();
-        entityManager.close();
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public Item getItemByKey(UUID id, UUID auditId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsItem c"
-                + " where c.id = :id"
-                + " and c.auditId = :audit_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsItem.class)
-                .setParameter("id", id.toString())
-                .setParameter("audit_id", auditId.toString());
-
-        Item ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsItem c"
+                    + " where c.id = :id"
+                    + " and c.auditId = :audit_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsItem.class)
+                    .setParameter("id", id.toString())
+                    .setParameter("audit_id", auditId.toString());
+
             RdbmsItem result = (RdbmsItem)query.getSingleResult();
-            ret = new Item(result);
+            return new Item(result);
 
         } catch (NoResultException ex) {
-            //do nothing
-        }
+            return null;
 
-        entityManager.close();
-        return ret;
+        } finally {
+            entityManager.close();
+        }
     }
 
     public Audit getAuditByKey(UUID id) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsAudit c"
-                + " where c.id = :id";
-
-        Query query = entityManager.createQuery(sql, RdbmsAudit.class)
-                .setParameter("id", id.toString());
-
-        Audit ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsAudit c"
+                    + " where c.id = :id";
+
+            Query query = entityManager.createQuery(sql, RdbmsAudit.class)
+                    .setParameter("id", id.toString());
+
             RdbmsAudit result = (RdbmsAudit)query.getSingleResult();
-            ret = new Audit(result);
+            return new Audit(result);
 
         } catch (NoResultException ex) {
-            //do nothing
-        }
+            return null;
 
-        entityManager.close();
-        return ret;
+        } finally {
+            entityManager.close();
+        }
     }
 
     public ActiveItem getActiveItemByItemId(UUID itemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsActiveItem c"
-                + " where c.itemId = :item_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
-                .setParameter("item_id", itemId.toString());
-
-        ActiveItem ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsActiveItem c"
+                    + " where c.itemId = :item_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
+                    .setParameter("item_id", itemId.toString());
+
             RdbmsActiveItem result = (RdbmsActiveItem)query.getSingleResult();
-            ret = new ActiveItem(result);
+            return new ActiveItem(result);
 
         } catch (NoResultException ex) {
-            //do nothing
-        }
+            return null;
 
-        entityManager.close();
-        return ret;
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ActiveItem> getActiveItemByOrgAndTypeId(UUID organisationId, Integer itemTypeId, Boolean isDeleted) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsActiveItem c"
-                + " where c.organisationId = :organisation_id"
-                + " and c.itemTypeId = :item_type_id"
-                + " and c.isDeleted = :is_deleted";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsActiveItem c"
+                    + " where c.organisationId = :organisation_id"
+                    + " and c.itemTypeId = :item_type_id"
+                    + " and c.isDeleted = :is_deleted";
 
-        Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
-                .setParameter("organisation_id", organisationId)
-                .setParameter("item_type_id", itemTypeId)
-                .setParameter("is_deleted", isDeleted);
+            Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
+                    .setParameter("organisation_id", organisationId.toString())
+                    .setParameter("item_type_id", itemTypeId)
+                    .setParameter("is_deleted", isDeleted);
 
-        List<RdbmsActiveItem> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsActiveItem> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ActiveItem(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ActiveItem(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
-    /*public List<ActiveItem> getActiveItemByTypeId(Integer itemTypeId, Boolean isDeleted) throws Exception {
-        LibraryAccessor accessor = getMappingManager().createAccessor(LibraryAccessor.class);
-        return accessor.getActiveItemByTypeId(itemTypeId, isDeleted);
-    }*/
-
-    /*public List<ActiveItem> getActiveItemByOrg(UUID organisationId) throws Exception {
-        LibraryAccessor accessor = getMappingManager().createAccessor(LibraryAccessor.class);
-        return accessor.getActiveItemByOrg(organisationId);
-    }*/
 
     public List<ActiveItem> getActiveItemByAuditId(UUID auditId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsActiveItem c"
-                + " where c.auditOd = :audit_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsActiveItem c"
+                    + " where c.auditId = :audit_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
-                .setParameter("audit_id", auditId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
+                    .setParameter("audit_id", auditId.toString());
 
-        List<RdbmsActiveItem> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsActiveItem> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ActiveItem(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ActiveItem(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ActiveItem> getActiveItemByTypeId(Integer itemTypeId, Boolean isDeleted) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsActiveItem c"
-                + " where c.itemTypeId = :item_type_id"
-                + " and c.isDeleted = :is_deleted";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsActiveItem c"
+                    + " where c.itemTypeId = :item_type_id"
+                    + " and c.isDeleted = :is_deleted";
 
-        Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
-                .setParameter("item_type_id", itemTypeId)
-                .setParameter("is_deleted", isDeleted);
+            Query query = entityManager.createQuery(sql, RdbmsActiveItem.class)
+                    .setParameter("item_type_id", itemTypeId)
+                    .setParameter("is_deleted", isDeleted);
 
-        List<RdbmsActiveItem> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsActiveItem> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ActiveItem(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ActiveItem(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ItemDependency> getItemDependencyByItemId(UUID itemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsItemDependency c"
-                + " where c.itemId = :item_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsItemDependency c"
+                    + " where c.itemId = :item_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
-                .setParameter("item_id", itemId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
+                    .setParameter("item_id", itemId.toString());
 
-        List<RdbmsItemDependency> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsItemDependency> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ItemDependency(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ItemDependency(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ItemDependency> getItemDependencyByTypeId(UUID itemId, UUID auditId, Integer dependencyTypeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsItemDependency c"
-                + " where c.itemId = :item_id"
-                + " and c.auditId = :audit_id"
-                + " and c.dependencyTypeId = :dependency_type_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsItemDependency c"
+                    + " where c.itemId = :item_id"
+                    + " and c.auditId = :audit_id"
+                    + " and c.dependencyTypeId = :dependency_type_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
-                .setParameter("item_id", itemId.toString())
-                .setParameter("audit_id", auditId.toString())
-                .setParameter("dependency_type_id", dependencyTypeId);
+            Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
+                    .setParameter("item_id", itemId.toString())
+                    .setParameter("audit_id", auditId.toString())
+                    .setParameter("dependency_type_id", dependencyTypeId);
 
-        List<RdbmsItemDependency> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsItemDependency> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ItemDependency(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ItemDependency(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ItemDependency> getItemDependencyByDependentItemId(UUID dependentItemId, Integer dependencyTypeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsItemDependency c"
-                + " where c.dependentItemId = :dependent_item_id"
-                + " and c.dependencyTypeId = :dependency_type_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsItemDependency c"
+                    + " where c.dependentItemId = :dependent_item_id"
+                    + " and c.dependencyTypeId = :dependency_type_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
-                .setParameter("dependent_item_id", dependentItemId.toString())
-                .setParameter("dependency_type_id", dependencyTypeId);
+            Query query = entityManager.createQuery(sql, RdbmsItemDependency.class)
+                    .setParameter("dependent_item_id", dependentItemId.toString())
+                    .setParameter("dependency_type_id", dependencyTypeId);
 
-        List<RdbmsItemDependency> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsItemDependency> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ItemDependency(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ItemDependency(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<Audit> getAuditByOrgAndDateDesc(UUID organisationId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsAudit c"
-                + " where c.organisationId = :organisation_id"
-                + " order by c.timestamp DESC";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsAudit c"
+                    + " where c.organisationId = :organisation_id"
+                    + " order by c.timestamp DESC";
 
-        Query query = entityManager.createQuery(sql, RdbmsAudit.class)
-                .setParameter("organisation_id", organisationId)
-                .setMaxResults(5);
+            Query query = entityManager.createQuery(sql, RdbmsAudit.class)
+                    .setParameter("organisation_id", organisationId.toString())
+                    .setMaxResults(5);
 
-        List<RdbmsAudit> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsAudit> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new Audit(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new Audit(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 }

@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "pseudo_id_map", schema = "public")
+@Table(name = "pseudo_id_map")
 public class RdbmsPseudoIdMap implements Serializable {
 
     private String patientId = null;

@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraExchangeBatch;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeBatch;
 
@@ -26,7 +27,9 @@ public class ExchangeBatch {
         this.exchangeId = UUID.fromString(proxy.getExchangeId());
         this.batchId = UUID.fromString(proxy.getBatchId());
         this.insertedAt = proxy.getInsertedAt();
-        this.edsPatientId = UUID.fromString(proxy.getEdsPatientId());
+        if (!Strings.isNullOrEmpty(proxy.getEdsPatientId())) {
+            this.edsPatientId = UUID.fromString(proxy.getEdsPatientId());
+        }
     }
 
     public UUID getExchangeId() {

@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "logging_event_property", schema = "public", catalog = "logback")
+@Table(name = "logging_event_property")
 @IdClass(RdbmsLoggingEventPropertyPK.class)
 public class RdbmsLoggingEventProperty implements Serializable {
 

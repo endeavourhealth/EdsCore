@@ -18,8 +18,8 @@ public class CassandraPatientCohort {
     @Column(name = "service_id")
     private UUID serviceId;
     @ClusteringColumn(0)
-    @Column(name = "patient_id")
-    private UUID patientId;
+    @Column(name = "nhs_number")
+    private String nhsNumber;
     @ClusteringColumn(1)
     @Column(name = "version")
     private UUID version;
@@ -46,12 +46,12 @@ public class CassandraPatientCohort {
         this.serviceId = serviceId;
     }
 
-    public UUID getPatientId() {
-        return patientId;
+    public String getNhsNumber() {
+        return nhsNumber;
     }
 
-    public void setPatientId(UUID patientId) {
-        this.patientId = patientId;
+    public void setNhsNumber(String nhsNumber) {
+        this.nhsNumber = nhsNumber;
     }
 
     public UUID getVersion() {

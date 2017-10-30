@@ -8,9 +8,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "user_event", schema = "public")
+@Table(name = "user_event")
 public class RdbmsUserEvent implements Serializable {
 
+    private String id = null;
     private String userId = null;
     private String organisationId = null;
     private String module = null;
@@ -18,6 +19,16 @@ public class RdbmsUserEvent implements Serializable {
     private String action = null;
     private Date timestamp = null;
     private String data = null;
+
+    @Id
+    @Column(name = "id", nullable = false)
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @Id
     @Column(name = "user_id", nullable = false)
@@ -49,7 +60,7 @@ public class RdbmsUserEvent implements Serializable {
     }
 
     @Id
-    @Column(name = "sub_module", nullable = false)
+    @Column(name = "sub_module", nullable = true)
     public String getSubModule() {
         return subModule;
     }

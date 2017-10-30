@@ -13,6 +13,7 @@ import org.hl7.fhir.instance.model.Patient;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import java.util.*;
 
 public class RdbmsPatientLinkDal implements PatientLinkDalI {
@@ -158,7 +159,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
                 + " where c.updated >= :timestamp";
 
         Query query = entityManager.createQuery(sql, RdbmsPatientLinkHistory.class)
-                .setParameter("timestamp", timestamp);
+                .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
 
         List<RdbmsPatientLinkHistory> links = query.getResultList();
 

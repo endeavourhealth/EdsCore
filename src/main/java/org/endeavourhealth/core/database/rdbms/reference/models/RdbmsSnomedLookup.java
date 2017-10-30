@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "snomed_lookup", schema = "public")
+@Table(name = "snomed_lookup")
 public class RdbmsSnomedLookup implements Serializable {
 
     private String conceptId = null;

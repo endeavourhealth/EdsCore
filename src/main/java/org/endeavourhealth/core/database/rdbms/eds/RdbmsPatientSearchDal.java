@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -542,7 +543,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " and c.systemId = :systemId";
 
         Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("dateOfBirth", dateOfBirth)
+                .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
                 .setParameter("serviceId", serviceId.toString())
                 .setParameter("systemId", systemId.toString());
 
@@ -564,7 +565,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             + " and c.serviceId IN :serviceIds";
 
         Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-            .setParameter("dateOfBirth", dateOfBirth)
+            .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
             .setParameter("serviceIds", serviceIds);
 
         List<RdbmsPatientSearch> results = query.getResultList();

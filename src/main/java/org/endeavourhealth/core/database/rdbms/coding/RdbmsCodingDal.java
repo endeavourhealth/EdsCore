@@ -15,97 +15,109 @@ public class RdbmsCodingDal implements CodingDalI {
     public List<Concept> search(String term, int maxResultsSize, int start) throws Exception {
         EntityManager entityManager = ConnectionManager.getCodingEntityManager();
 
-        String sql = "select c" +
-                " from " +
-                "    RdbmsConcept c" +
-                " where" +
-                "    c.display like :term " +
-                " order by "+
-                "    length(c.display) ";
+        try {
+            String sql = "select c" +
+                    " from " +
+                    "    RdbmsConcept c" +
+                    " where" +
+                    "    c.display like :term " +
+                    " order by " +
+                    "    length(c.display) ";
 
-        Query query = entityManager.createQuery(sql, RdbmsConcept.class)
-                .setParameter("term", "%"+term+"%")
-                .setFirstResult(start * maxResultsSize)
-                .setMaxResults(maxResultsSize);
+            Query query = entityManager.createQuery(sql, RdbmsConcept.class)
+                    .setParameter("term", "%" + term + "%")
+                    .setFirstResult(start * maxResultsSize)
+                    .setMaxResults(maxResultsSize);
 
-        List<RdbmsConcept> ret = query.getResultList();
+            List<RdbmsConcept> ret = query.getResultList();
 
-        entityManager.close();
+            return ret
+                    .stream()
+                    .map(T -> new Concept(T))
+                    .collect(Collectors.toList());
 
-        return ret
-                .stream()
-                .map(T -> new Concept(T))
-                .collect(Collectors.toList());
+        } finally {
+            entityManager.close();
+        }
     }
 
     public Concept getConcept(String code) throws Exception {
         EntityManager entityManager = ConnectionManager.getCodingEntityManager();
 
-        String sql = "select c" +
-                " from " +
-                "    RdbmsConcept c" +
-                " where" +
-                "    c.code = :code ";
+        try {
+            String sql = "select c" +
+                    " from " +
+                    "    RdbmsConcept c" +
+                    " where" +
+                    "    c.code = :code ";
 
-        Query query = entityManager.createQuery(sql, RdbmsConcept.class)
-                .setParameter("code", code);
+            Query query = entityManager.createQuery(sql, RdbmsConcept.class)
+                    .setParameter("code", code);
 
-        List<RdbmsConcept> ret = query.getResultList();
+            List<RdbmsConcept> ret = query.getResultList();
 
-        entityManager.close();
+            if (ret.size() > 0) {
+                RdbmsConcept result = ret.get(0);
+                return new Concept(result);
+            } else {
+                return null;
+            }
 
-        if (ret.size() > 0) {
-            RdbmsConcept result = ret.get(0);
-            return new Concept(result);
-        } else {
-            return null;
+        } finally {
+            entityManager.close();
         }
     }
 
     public List<Concept> getChildren(String code) throws Exception {
         EntityManager entityManager = ConnectionManager.getCodingEntityManager();
 
-        String sql = "select r" +
-                " from RdbmsConcept c" +
-                " join RdbmsConceptPcLink l on l.parent_pid = c.pid " +
-                " join RdbmsConcept r on r.pid = l.child_pid " +
-                " where" +
-                "    c.code = :code ";
+        try {
+            String sql = "select r" +
+                    " from RdbmsConcept c" +
+                    " join RdbmsConceptPcLink l on l.parent_pid = c.pid " +
+                    " join RdbmsConcept r on r.pid = l.child_pid " +
+                    " where" +
+                    "    c.code = :code ";
 
-        Query query = entityManager.createQuery(sql, RdbmsConcept.class)
-                .setParameter("code", code);
+            Query query = entityManager.createQuery(sql, RdbmsConcept.class)
+                    .setParameter("code", code);
 
-        List<RdbmsConcept> ret = query.getResultList();
+            List<RdbmsConcept> ret = query.getResultList();
 
-        entityManager.close();
+            return ret
+                    .stream()
+                    .map(T -> new Concept(T))
+                    .collect(Collectors.toList());
 
-        return ret
-                .stream()
-                .map(T -> new Concept(T))
-                .collect(Collectors.toList());
+        } finally {
+            entityManager.close();
+        }
     }
 
 
     public List<Concept> getParents(String code) throws Exception {
         EntityManager entityManager = ConnectionManager.getCodingEntityManager();
 
-        String sql = "select r" +
-                " from RdbmsConcept c" +
-                " join RdbmsConceptPcLink l on l.child_pid = c.pid " +
-                " join RdbmsConcept r on r.pid = l.parent_pid " +
-                " where" +
-                "    c.code = :code ";
+        try {
+            String sql = "select r" +
+                    " from RdbmsConcept c" +
+                    " join RdbmsConceptPcLink l on l.child_pid = c.pid " +
+                    " join RdbmsConcept r on r.pid = l.parent_pid " +
+                    " where" +
+                    "    c.code = :code ";
 
-        Query query = entityManager.createQuery(sql, RdbmsConcept.class)
-                .setParameter("code", code);
+            Query query = entityManager.createQuery(sql, RdbmsConcept.class)
+                    .setParameter("code", code);
 
-        List<RdbmsConcept> ret = query.getResultList();
+            List<RdbmsConcept> ret = query.getResultList();
 
-        entityManager.close();
+            return ret
+                    .stream()
+                    .map(T -> new Concept(T))
+                    .collect(Collectors.toList());
 
-        return ret
-                .stream()
-                .map(T -> new Concept(T))
-                .collect(Collectors.toList());
+        } finally {
+            entityManager.close();
+        }
     }
 }

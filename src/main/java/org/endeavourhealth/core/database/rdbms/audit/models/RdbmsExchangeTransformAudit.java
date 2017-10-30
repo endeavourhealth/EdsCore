@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "exchange_transform_audit", schema = "public")
+@Table(name = "exchange_transform_audit")
 public class RdbmsExchangeTransformAudit implements Serializable {
 
     private String id = null;
@@ -22,7 +22,7 @@ public class RdbmsExchangeTransformAudit implements Serializable {
     private String errorXml = null;
     private boolean resubmitted = false;
     private Date deleted = null;
-    private Integer numberBatchesCreated = -1;
+    private Integer numberBatchesCreated = null;
 
     public RdbmsExchangeTransformAudit() {}
 
@@ -39,6 +39,7 @@ public class RdbmsExchangeTransformAudit implements Serializable {
         this.numberBatchesCreated = proxy.getNumberBatchesCreated();
     }
 
+    @Id
     @Column(name = "id", nullable = false)
     public String getId() {
         return id;
@@ -78,8 +79,7 @@ public class RdbmsExchangeTransformAudit implements Serializable {
         this.exchangeId = exchangeId;
     }
 
-    @Id
-    @Column(name = "started", nullable = true)
+    @Column(name = "started", nullable = false)
     public Date getStarted() {
         return started;
     }

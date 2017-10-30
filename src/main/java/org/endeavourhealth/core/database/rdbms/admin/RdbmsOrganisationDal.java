@@ -1,15 +1,20 @@
 package org.endeavourhealth.core.database.rdbms.admin;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.admin.OrganisationDalI;
 import org.endeavourhealth.core.database.dal.admin.models.Organisation;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
+import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.util.*;
 
 public class RdbmsOrganisationDal implements OrganisationDalI {
@@ -49,87 +54,156 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
         RdbmsOrganisation dbOrganisation = new RdbmsOrganisation(organisation);
 
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-        entityManager.getTransaction().begin();
-        entityManager.persist(dbOrganisation);
+        PreparedStatement psOrganisation = null;
+        PreparedStatement psService = null;
 
-        RdbmsServiceDal serviceDal = new RdbmsServiceDal();
+        try {
+            entityManager.getTransaction().begin();
 
-        // Process removed services
-        for (UUID serviceUuid : deletions) {
-            Service service = serviceDal.getById(serviceUuid);
-            Map<UUID, String> map = service.getOrganisations();
-            map.remove(orgUuid);
+            //have to use prepared statements to avoid having to do a retrieve before every update
+            //entityManager.persist(dbService);
+            //entityManager.persist(dbOrganisation);
 
-            RdbmsService dbService = new RdbmsService(service);
-            entityManager.persist(dbService);
+            psOrganisation = createSaveOrganisationPreparedStatement(entityManager);
+            addToSaveOrganisationPreparedStatement(psOrganisation, dbOrganisation);
+
+            RdbmsServiceDal serviceDal = new RdbmsServiceDal();
+            psService = RdbmsServiceDal.createSaveServicePreparedStatement(entityManager);
+
+            // Process removed services
+            for (UUID serviceUuid : deletions) {
+                Service service = serviceDal.getById(serviceUuid);
+                Map<UUID, String> map = service.getOrganisations();
+                map.remove(orgUuid);
+
+                RdbmsService dbService = new RdbmsService(service);
+                RdbmsServiceDal.addToSaveServicePreparedStatement(psService, dbService);
+            }
+
+            // Process added services
+            for (UUID serviceUuid : additions) {
+                Service service = serviceDal.getById(serviceUuid);
+                Map<UUID, String> map = service.getOrganisations();
+                map.put(orgUuid, organisation.getName());
+
+                RdbmsService dbService = new RdbmsService(service);
+                RdbmsServiceDal.addToSaveServicePreparedStatement(psService, dbService);
+            }
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (psOrganisation != null) {
+                psOrganisation.close();
+            }
+            if (psService != null) {
+                psService.close();
+            }
         }
-
-        // Process added services
-        for (UUID serviceUuid : additions) {
-            Service service = serviceDal.getById(serviceUuid);
-            Map<UUID, String> map = service.getOrganisations();
-            map.put(orgUuid, organisation.getName());
-
-            RdbmsService dbService = new RdbmsService(service);
-            entityManager.persist(dbService);
-        }
-
-        entityManager.getTransaction().commit();
-        entityManager.close();
 
         return orgUuid;
     }
 
 
+    public static PreparedStatement createSaveOrganisationPreparedStatement(EntityManager entityManager) throws Exception {
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "INSERT INTO organisation"
+                + " (id, name, national_id, services)"
+                + " VALUES (?, ?, ?, ?)"
+                + " ON DUPLICATE KEY UPDATE"
+                + " name = VALUES(name),"
+                + " national_id = VALUES(national_id),"
+                + " services = VALUES(services);";
+
+        return connection.prepareStatement(sql);
+    }
+
+    public static void addToSaveOrganisationPreparedStatement(PreparedStatement ps, RdbmsOrganisation organisation) throws Exception {
+
+        ps.setString(1, organisation.getId());
+        ps.setString(2, organisation.getName());
+        if (!Strings.isNullOrEmpty(organisation.getNationalId())) {
+            ps.setString(3, organisation.getNationalId());
+        } else {
+            ps.setNull(3, Types.VARCHAR);
+        }
+        if (!Strings.isNullOrEmpty(organisation.getServices())) {
+            ps.setString(4, organisation.getServices());
+        } else {
+            ps.setNull(4, Types.VARCHAR);
+        }
+
+        ps.executeUpdate();
+    }
+
+
+    private static PreparedStatement createDeleteServicePreparedStatement(EntityManager entityManager) throws Exception {
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "DELETE FROM organisation"
+                + " WHERE id = ?";;
+
+        return connection.prepareStatement(sql);
+    }
+
+    private static void addToDeleteServicePreparedStatement(PreparedStatement ps, RdbmsOrganisation organisation) throws Exception {
+        ps.setString(1, organisation.getId());
+
+        ps.executeUpdate();
+    }
+
 
     public Organisation getById(UUID id) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsOrganisation c"
-                + " where c.id = :id";
-
-        Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
-                .setParameter("id", id.toString());
-
-        Organisation ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsOrganisation c"
+                    + " where c.id = :id";
+
+            Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
+                    .setParameter("id", id.toString());
+
+
             RdbmsOrganisation result = (RdbmsOrganisation)query.getSingleResult();
-            ret = new Organisation(result);
+            return new Organisation(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public Organisation getByNationalId(String nationalId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsOrganisation c"
-                + " where c.nationalId = :id";
-
-        Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
-                .setParameter("id", nationalId);
-
-        Organisation ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsOrganisation c"
+                    + " where c.nationalId = :id";
+
+            Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
+                    .setParameter("id", nationalId);
+
             RdbmsOrganisation result = (RdbmsOrganisation)query.getSingleResult();
-            ret = new Organisation(result);
+            return new Organisation(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public void delete(Organisation organisation) throws Exception {
@@ -137,68 +211,93 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
         RdbmsOrganisation dbOrganisation = new RdbmsOrganisation(organisation);
 
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-        entityManager.getTransaction().begin();
-        entityManager.remove(dbOrganisation);
+        PreparedStatement psOrganisation = null;
+        PreparedStatement psService = null;
 
-        //also need to update any linked services
-        RdbmsServiceDal serviceDalDal = new RdbmsServiceDal();
+        try {
+            entityManager.getTransaction().begin();
 
-        for (UUID serviceUuid : organisation.getServices().keySet()) {
-            Service service = serviceDalDal.getById(serviceUuid);
-            Map<UUID, String> map = service.getOrganisations();
-            map.remove(organisation.getId());
+            psOrganisation = createDeleteServicePreparedStatement(entityManager);
+            addToDeleteServicePreparedStatement(psOrganisation, dbOrganisation);
+            //entityManager.remove(dbOrganisation);
 
-            RdbmsService dbService = new RdbmsService(service);
-            entityManager.persist(dbService);
+            //also need to update any linked services
+            RdbmsServiceDal serviceDalDal = new RdbmsServiceDal();
+            psService = RdbmsServiceDal.createSaveServicePreparedStatement(entityManager);
+
+            for (UUID serviceUuid : organisation.getServices().keySet()) {
+                Service service = serviceDalDal.getById(serviceUuid);
+                Map<UUID, String> map = service.getOrganisations();
+                map.remove(organisation.getId());
+
+                RdbmsService dbService = new RdbmsService(service);
+                RdbmsServiceDal.addToSaveServicePreparedStatement(psService, dbService);
+            }
+
+            entityManager.getTransaction().commit();
+        } finally {
+            entityManager.close();
+            if (psOrganisation != null) {
+                psOrganisation.close();
+            }
+            if (psService != null) {
+                psService.close();
+            }
         }
 
-        entityManager.getTransaction().commit();
-        entityManager.close();
     }
 
     public List<Organisation> getAll() throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsOrganisation c";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsOrganisation c";
 
-        Query query = entityManager.createQuery(sql, RdbmsOrganisation.class);
+            Query query = entityManager.createQuery(sql, RdbmsOrganisation.class);
 
-        List<RdbmsOrganisation> results = query.getResultList();
-        entityManager.close();
+            List<RdbmsOrganisation> results = query.getResultList();
 
-        //can't use stream as the constructor throws an exception
-        List<Organisation> ret = new ArrayList<>();
-        for (RdbmsOrganisation result: results) {
-            ret.add(new Organisation(result));
+            //can't use stream as the constructor throws an exception
+            List<Organisation> ret = new ArrayList<>();
+            for (RdbmsOrganisation result : results) {
+                ret.add(new Organisation(result));
+            }
+
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-
-        return ret;
     }
 
 
     public List<Organisation> search(String searchData) throws Exception {
         EntityManager entityManager = ConnectionManager.getAdminEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsOrganisation c"
-                + " where c.name like :id_like"
-                + " or c.nationalId = :id_like";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsOrganisation c"
+                    + " where c.name like :id_like"
+                    + " or c.nationalId = :id_like";
 
-        Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
-                .setParameter("id_like", searchData + "%");
+            Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
+                    .setParameter("id_like", searchData + "%");
 
-        List<RdbmsOrganisation> results = query.getResultList();
-        entityManager.close();
+            List<RdbmsOrganisation> results = query.getResultList();
 
-        //can't use stream as the constructor throws an exception
-        List<Organisation> ret = new ArrayList<>();
-        for (RdbmsOrganisation result: results) {
-            ret.add(new Organisation(result));
+            //can't use stream as the constructor throws an exception
+            List<Organisation> ret = new ArrayList<>();
+            for (RdbmsOrganisation result : results) {
+                ret.add(new Organisation(result));
+            }
+
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-
-        return ret;
     }
 }

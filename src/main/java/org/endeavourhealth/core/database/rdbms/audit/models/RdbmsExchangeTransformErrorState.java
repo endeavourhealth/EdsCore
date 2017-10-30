@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "exchange_transform_error_state", schema = "public")
+@Table(name = "exchange_transform_error_state")
 public class RdbmsExchangeTransformErrorState implements Serializable {
 
     private String serviceId = null;

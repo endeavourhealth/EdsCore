@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "resource_current", schema = "public")
+@Table(name = "resource_current")
 public class RdbmsResourceCurrent implements Serializable {
 
     private String serviceId = null;
@@ -31,7 +31,12 @@ public class RdbmsResourceCurrent implements Serializable {
         this.resourceType = proxy.getResourceType();
         this.resourceId = proxy.getResourceId().toString();
         this.updatedAt = proxy.getCreatedAt();
-        this.patientId = proxy.getPatientId().toString();
+        if (proxy.getPatientId() != null) {
+            this.patientId = proxy.getPatientId().toString();
+        } else {
+            //the patient ID is part of the primary key on one of the tables so can't be null
+            this.setPatientId("");
+        }
         this.resourceData = proxy.getResourceData();
         this.resourceChecksum = proxy.getResourceChecksum();
         this.resourceMetadata = proxy.getResourceMetadata();
@@ -87,7 +92,7 @@ public class RdbmsResourceCurrent implements Serializable {
     }
 
     @Id
-    @Column(name = "patient_id", nullable = false)
+    @Column(name = "patient_id", nullable = true)
     public String getPatientId() {
         return patientId;
     }
@@ -122,5 +127,46 @@ public class RdbmsResourceCurrent implements Serializable {
     public void setResourceMetadata(String resourceMetadata) {
         this.resourceMetadata = resourceMetadata;
     }
+/*
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof RdbmsResourceCurrent)) {
+            return false;
+        }
 
+        RdbmsResourceCurrent otherObj = (RdbmsResourceCurrent)other;
+
+        if (!getServiceId().equals(otherObj.getSystemId())) {
+            return false;
+        }
+        if (!getSystemId().equals(otherObj.getSystemId())) {
+            return false;
+        }
+        if (!getResourceType().equals(otherObj.getResourceType())) {
+            return false;
+        }
+        if (!getResourceId().equals(otherObj.getResourceId())) {
+            return false;
+        }
+        if ((getPatientId() == null) != (otherObj.getPatientId() == null)
+
+        //..service, system, type, id, patient
+
+
+        if ( !cat.getLitterId().equals( getLitterId() ) ) return false;
+        if ( !cat.getMother().equals( getMother() ) ) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result;
+        result = getMother().hashCode();
+        result = 29 * result + getLitterId();
+        return result;
+    }*/
 }

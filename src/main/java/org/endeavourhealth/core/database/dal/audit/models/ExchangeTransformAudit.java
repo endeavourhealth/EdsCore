@@ -17,7 +17,7 @@ public class ExchangeTransformAudit {
     private String errorXml = null;
     private boolean resubmitted = false;
     private Date deleted = null;
-    private Integer numberBatchesCreated = -1;
+    private Integer numberBatchesCreated = null;
 
     public ExchangeTransformAudit() {}
 

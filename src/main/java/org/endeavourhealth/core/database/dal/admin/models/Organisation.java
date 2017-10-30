@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.core.database.cassandra.admin.models.CassandraOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
@@ -31,11 +32,13 @@ public class Organisation {
 
         this.services = new HashMap<>();
         String json = proxy.getServices();
-        Map<String, String> map = ObjectMapperPool.getInstance().readValue(json, HashMap.class);
-        for (String key: map.keySet()) {
-            UUID uuid = UUID.fromString(key);
-            String name = map.get(key);
-            this.services.put(uuid, name);
+        if (!Strings.isNullOrEmpty(json)) {
+            Map<String, String> map = ObjectMapperPool.getInstance().readValue(json, HashMap.class);
+            for (String key : map.keySet()) {
+                UUID uuid = UUID.fromString(key);
+                String name = map.get(key);
+                this.services.put(uuid, name);
+            }
         }
     }
 

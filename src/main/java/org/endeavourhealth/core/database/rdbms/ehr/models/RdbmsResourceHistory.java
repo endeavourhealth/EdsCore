@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "resource_history", schema = "public")
+@Table(name = "resource_history")
 public class RdbmsResourceHistory implements Serializable {
 
     private String serviceId = null;
@@ -23,20 +23,27 @@ public class RdbmsResourceHistory implements Serializable {
     private Long resourceChecksum = null;
     private boolean isDeleted = false;
     private String exchangeBatchId = null;
+    private String version = null;
     
     public RdbmsResourceHistory() {}
     
     public RdbmsResourceHistory(ResourceWrapper proxy) {
-        serviceId = proxy.getServiceId().toString();
-        systemId = proxy.getSystemId().toString();
-        resourceType = proxy.getResourceType();
-        resourceId = proxy.getResourceId().toString();
-        createdAt = proxy.getCreatedAt();
-        patientId = proxy.getPatientId().toString();
-        resourceData = proxy.getResourceData();
-        resourceChecksum = proxy.getResourceChecksum();
-        isDeleted = proxy.isDeleted();
-        exchangeBatchId = proxy.getExchangeBatchId().toString();
+        this.serviceId = proxy.getServiceId().toString();
+        this.systemId = proxy.getSystemId().toString();
+        this.resourceType = proxy.getResourceType();
+        this.resourceId = proxy.getResourceId().toString();
+        this.createdAt = proxy.getCreatedAt();
+        if (proxy.getPatientId() != null) {
+            this.setPatientId(proxy.getPatientId().toString());
+        } else {
+            //the patient ID is part of the primary key on one of the tables so can't be null
+            this.setPatientId("");
+        }
+        this.resourceData = proxy.getResourceData();
+        this.resourceChecksum = proxy.getResourceChecksum();
+        this.isDeleted = proxy.isDeleted();
+        this.exchangeBatchId = proxy.getExchangeBatchId().toString();
+        this.version = proxy.getVersion().toString();
     }
 
     @Column(name = "service_id", nullable = false)
@@ -130,5 +137,15 @@ public class RdbmsResourceHistory implements Serializable {
 
     public void setExchangeBatchId(String exchangeBatchId) {
         this.exchangeBatchId = exchangeBatchId;
+    }
+
+    @Id
+    @Column(name = "version", nullable = false)
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

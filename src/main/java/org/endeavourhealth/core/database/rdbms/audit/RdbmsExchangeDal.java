@@ -1,5 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
+import com.datastax.driver.core.utils.UUIDs;
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
 import org.endeavourhealth.core.database.dal.audit.models.Exchange;
 import org.endeavourhealth.core.database.dal.audit.models.ExchangeEvent;
@@ -10,12 +12,16 @@ import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchange;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeEvent;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformAudit;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformErrorState;
+import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,19 +32,65 @@ public class RdbmsExchangeDal implements ExchangeDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsExchangeDal.class);
 
     public void save(Exchange exchange) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        entityManager.persist(exchange);
-        entityManager.close();
+        RdbmsExchange dbObj = new RdbmsExchange(exchange);
+
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange"
+                    + " (id, timestamp, headers, service_id, body)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " timestamp = VALUES(timestamp),"
+                    + " headers = VALUES(headers),"
+                    + " service_id = VALUES(service_id),"
+                    + " body = VALUES(body);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, dbObj.getId());
+            ps.setTimestamp(2, new java.sql.Timestamp(dbObj.getTimestamp().getTime()));
+            ps.setString(3, dbObj.getHeaders());
+            ps.setString(4, dbObj.getServiceId());
+            ps.setString(5, dbObj.getBody());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 
     public void save(ExchangeEvent event) throws Exception {
 
         RdbmsExchangeEvent dbObj = new RdbmsExchangeEvent(event);
+        dbObj.setId(UUIDs.timeBased().toString()); //not set by the proxy constructor but needed
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        entityManager.persist(dbObj);
-        entityManager.close();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(dbObj);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
+
     }
 
     public void save(ExchangeTransformAudit exchangeTransformAudit) throws Exception {
@@ -46,8 +98,71 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         RdbmsExchangeTransformAudit dbObj = new RdbmsExchangeTransformAudit(exchangeTransformAudit);
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        entityManager.persist(dbObj);
-        entityManager.close();
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange_transform_audit"
+                    + " (id, service_id, system_id, exchange_id, started, ended, error_xml, resubmitted, deleted, number_batches_created)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " started = VALUES(started),"
+                    + " ended = VALUES(ended),"
+                    + " error_xml = VALUES(error_xml),"
+                    + " resubmitted = VALUES(resubmitted),"
+                    + " deleted = VALUES(deleted),"
+                    + " number_batches_created = VALUES(number_batches_created);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, dbObj.getId());
+            ps.setString(2, dbObj.getServiceId());
+            ps.setString(3, dbObj.getSystemId());
+            ps.setString(4, dbObj.getExchangeId());
+            if (dbObj.getStarted() != null) {
+                ps.setTimestamp(5, new java.sql.Timestamp(dbObj.getStarted().getTime()));
+            } else {
+                ps.setNull(5, Types.TIMESTAMP);
+            }
+            if (dbObj.getEnded() != null) {
+                ps.setTimestamp(6, new java.sql.Timestamp(dbObj.getEnded().getTime()));
+            } else {
+                ps.setNull(6, Types.TIMESTAMP);
+            }
+            if (!Strings.isNullOrEmpty(dbObj.getErrorXml())) {
+                ps.setString(7, dbObj.getErrorXml());
+            } else {
+                ps.setNull(7, Types.VARCHAR);
+            }
+            ps.setBoolean(8, dbObj.isResubmitted());
+            if (dbObj.getDeleted() != null) {
+                ps.setTimestamp(9, new java.sql.Timestamp(dbObj.getDeleted().getTime()));
+            } else {
+                ps.setNull(9, Types.TIMESTAMP);
+            }
+            if (dbObj.getNumberBatchesCreated() != null) {
+                ps.setInt(10, dbObj.getNumberBatchesCreated());
+            } else {
+                ps.setNull(10, Types.INTEGER);
+            }
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
+
     }
 
     public void save(ExchangeTransformErrorState errorState) throws Exception {
@@ -55,121 +170,176 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         RdbmsExchangeTransformErrorState dbObj = new RdbmsExchangeTransformErrorState(errorState);
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        entityManager.persist(dbObj);
-        entityManager.close();
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange_transform_error_state"
+                    + " (service_id, system_id, exchange_ids_in_error)"
+                    + " VALUES (?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_ids_in_error = VALUES(exchange_ids_in_error);";
+
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, dbObj.getServiceId());
+            ps.setString(2, dbObj.getSystemId());
+            ps.setString(3, dbObj.getExchangeIdsInError());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 
 
     public Exchange getExchange(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchange c"
-                + " where c.id = :id";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchange.class)
-                .setParameter("id", exchangeId.toString());
-
-        Exchange ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchange c"
+                    + " where c.id = :id";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchange.class)
+                    .setParameter("id", exchangeId.toString());
+
             RdbmsExchange result = (RdbmsExchange)query.getSingleResult();
-            ret = new Exchange(result);
+            return new Exchange(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
 
     public void delete(ExchangeTransformErrorState errorState) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        entityManager.remove(errorState);
-        entityManager.close();
+        RdbmsExchangeTransformErrorState dbObj = new RdbmsExchangeTransformErrorState(errorState);
+
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support deleting without retrieving
+            //entityManager.remove(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "DELETE FROM exchange_transform_error_state"
+                    + " WHERE service_id = ?"
+                    + " AND system_id = ?;";
+
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, dbObj.getServiceId());
+            ps.setString(2, dbObj.getSystemId());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 
     public ExchangeTransformAudit getMostRecentExchangeTransform(UUID serviceId, UUID systemId, UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.exchangeId = :exchange_id"
-                + " order by c.started DESC";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setParameter("exchange_id", exchangeId.toString())
-                .setMaxResults(1);
-
-        ExchangeTransformAudit ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.exchangeId = :exchange_id"
+                    + " order by c.started DESC";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setMaxResults(1);
+
             RdbmsExchangeTransformAudit result = (RdbmsExchangeTransformAudit)query.getSingleResult();
-            ret = new ExchangeTransformAudit(result);
+            return new ExchangeTransformAudit(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public ExchangeTransformErrorState getErrorState(UUID serviceId, UUID systemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformErrorState c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformErrorState.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setMaxResults(1);
-
-        ExchangeTransformErrorState ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformErrorState c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformErrorState.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setMaxResults(1);
+
             RdbmsExchangeTransformErrorState result = (RdbmsExchangeTransformErrorState)query.getSingleResult();
-            ret = new ExchangeTransformErrorState(result);
+            return new ExchangeTransformErrorState(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public List<ExchangeTransformErrorState> getAllErrorStates() throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformErrorState c";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformErrorState c";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class);
-        List<RdbmsExchangeTransformErrorState> results = query.getResultList();
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformErrorState.class);
+            List<RdbmsExchangeTransformErrorState> results = query.getResultList();
 
-        entityManager.close();
+            //can't use streams as the constructor is declared as throwing an exception
+            List<ExchangeTransformErrorState> ret = new ArrayList<>();
+            for (RdbmsExchangeTransformErrorState result : results) {
+                ret.add(new ExchangeTransformErrorState(result));
+            }
+            return ret;
 
-        //can't use streams as the constructor is declared as throwing an exception
-        List<ExchangeTransformErrorState> ret = new ArrayList<>();
-        for (RdbmsExchangeTransformErrorState result: results) {
-            ret.add(new ExchangeTransformErrorState(result));
+        } finally {
+            entityManager.close();
         }
-        return ret;
     }
 
     public boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception {
@@ -177,289 +347,263 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         //we assume a service is started if we've previously processed an exchange without error
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.errorXml is null"
-                + " and c.started is not null";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setMaxResults(1);
-
-        boolean started = false;
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.errorXml is null"
+                    + " and c.deleted is null"
+                    + " and c.started is not null";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setMaxResults(1);
+
             RdbmsExchangeTransformAudit o = (RdbmsExchangeTransformAudit)query.getSingleResult();
-            started = true;
+            //if we find an audit, we've started
+            return true;
 
         } catch (NoResultException ex) {
-            started = false;
+            return false;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return started;
     }
-
-    /*public ExchangeTransformAudit getAnyExchangeTransformAudit(UUID serviceId, UUID systemId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
-        String sql = "select c"
-                + " from"
-                + " ExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id";
-
-        Query query = entityManager.createQuery(sql, ExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setMaxResults(1);
-
-        ExchangeTransformAudit ret = null;
-        try {
-            ret = (ExchangeTransformAudit)query.getSingleResult();
-
-        } catch (NoResultException ex) {
-            //do nothing
-        }
-
-        entityManager.close();
-
-        return ret;
-    }*/
 
 
     public List<ExchangeTransformAudit> getAllExchangeTransformAudits(UUID serviceId, UUID systemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString());
 
-        List<RdbmsExchangeTransformAudit> ret = query.getResultList();
-        entityManager.close();
-        return ret
-                .stream()
-                .map(T -> new ExchangeTransformAudit(T))
-                .collect(Collectors.toList());
+            List<RdbmsExchangeTransformAudit> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeTransformAudit(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ExchangeTransformAudit> getAllExchangeTransformAudits(UUID serviceId, UUID systemId, UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.exchangeId = :exchange_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.exchangeId = :exchange_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setParameter("exchange_id", exchangeId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setParameter("exchange_id", exchangeId.toString());
 
-        List<RdbmsExchangeTransformAudit> ret = query.getResultList();
-        entityManager.close();
-        return ret
-                .stream()
-                .map(T -> new ExchangeTransformAudit(T))
-                .collect(Collectors.toList());
+            List<RdbmsExchangeTransformAudit> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeTransformAudit(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<Exchange> getExchangesByService(UUID serviceId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchange c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId >= :date_from"
-                + " and c.exchangeId <= :date_to";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchange c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.timestamp >= :date_from"
+                    + " and c.timestamp <= :date_to";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("date_from", dateFrom)
-                .setParameter("date_to", dateTo)
-                .setMaxResults(maxRows);
+            Query query = entityManager.createQuery(sql, RdbmsExchange.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("date_from", dateFrom)
+                    .setParameter("date_to", dateTo)
+                    .setMaxResults(maxRows);
 
-        List<RdbmsExchange> results = query.getResultList();
-        entityManager.close();
+            List<RdbmsExchange> results = query.getResultList();
 
-        List<Exchange> ret = new ArrayList<>();
-        for (RdbmsExchange result: results) {
-            ret.add(new Exchange(result));
+            List<Exchange> ret = new ArrayList<>();
+            for (RdbmsExchange result : results) {
+                ret.add(new Exchange(result));
+            }
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-        return ret;
     }
 
     public List<Exchange> getExchangesByService(UUID serviceId, int maxRows) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchange c"
-                + " where c.serviceId = :service_id"
-                + " order by c.timestamp desc";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchange c"
+                    + " where c.serviceId = :service_id"
+                    + " order by c.timestamp desc";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setMaxResults(maxRows);
+            Query query = entityManager.createQuery(sql, RdbmsExchange.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setMaxResults(maxRows);
 
-        List<RdbmsExchange> results = query.getResultList();
-        entityManager.close();
+            List<RdbmsExchange> results = query.getResultList();
 
-        List<Exchange> ret = new ArrayList<>();
-        for (RdbmsExchange result: results) {
-            ret.add(new Exchange(result));
+            List<Exchange> ret = new ArrayList<>();
+            for (RdbmsExchange result : results) {
+                ret.add(new Exchange(result));
+            }
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-        return ret;
     }
 
     public List<ExchangeEvent> getExchangeEvents(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeEvent c"
-                + " where c.exchangeId = :exchange_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeEvent c"
+                    + " where c.exchangeId = :exchange_id"
+                    + " order by c.timestamp ASC";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("exchange_id", exchangeId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsExchangeEvent.class)
+                    .setParameter("exchange_id", exchangeId.toString());
 
-        List<RdbmsExchangeEvent> ret = query.getResultList();
-        entityManager.close();
-        return ret
-                .stream()
-                .map(T -> new ExchangeEvent(T))
-                .collect(Collectors.toList());
+            List<RdbmsExchangeEvent> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeEvent(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
-    /*public ExchangeTransformAudit getExchangeTransformAudit(UUID serviceId, UUID systemId, UUID exchangeId, Date timestamp) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " ExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.exchangeId = :exchange_id"
-                + " and c.timestamp = :timestamp";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setParameter("exchange_id", exchangeId.toString())
-                .setParameter("timestamp", timestamp)
-                .setMaxResults(1);
-
-        ExchangeTransformAudit ret = null;
-        try {
-            RdbmsExchangeTransformAudit result = (RdbmsExchangeTransformAudit)query.getSingleResult();
-            ret = new ExchangeTransformAudit(result);
-
-        } catch (NoResultException ex) {
-            //do nothing
-        }
-
-        entityManager.close();
-
-        return ret;
-    }*/
 
     public List<UUID> getExchangeIdsForService(UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        /*Query q=session.createQuery("select sum(salary) from Emp");
-        List<Integer> list=q.list();
-        System.out.println(list.get(0));*/
+        try {
+            String sql = "select c.id"
+                    + " from"
+                    + " RdbmsExchange c"
+                    + " where c.serviceId = :service_id"
+                    + " order by c.timestamp DESC";
 
-        String sql = "select c.exchangeId"
-                + " from"
-                + " RdbmsExchange c"
-                + " where c.serviceId = :service_id"
-                + " order by timestamp DESC";
+            Query query = entityManager.createQuery(sql)
+                    .setParameter("service_id", serviceId.toString());
 
-        Query query = entityManager.createQuery(sql)
-                .setParameter("service_id", serviceId.toString());
+            List<String> list = query.getResultList();
 
-        List<String> list = query.getResultList();
+            List<UUID> ret = new ArrayList<>();
+            for (String s : list) {
+                UUID uuid = UUID.fromString(s);
+                ret.add(uuid);
+            }
+            return ret;
 
-        List<UUID> ret = new ArrayList<>();
-        for (String s: list) {
-            UUID uuid = UUID.fromString(s);
-            ret.add(uuid);
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public ExchangeTransformAudit getExchangeTransformAudit(UUID serviceId, UUID systemId, UUID exchangeId, UUID id) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.exchangeId = :exchange_id"
-                + " and c.id = :id";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setParameter("exchange_id", exchangeId.toString())
-                .setParameter("id", id.toString())
-                .setMaxResults(1);
-
-        ExchangeTransformAudit ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.exchangeId = :exchange_id"
+                    + " and c.id = :id";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setParameter("id", id.toString())
+                    .setMaxResults(1);
+
             RdbmsExchangeTransformAudit result = (RdbmsExchangeTransformAudit)query.getSingleResult();
-            ret = new ExchangeTransformAudit(result);
+            return new ExchangeTransformAudit(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     @Override
     public List<ExchangeTransformAudit> getAllExchangeTransformAuditsForService(UUID serviceId, UUID systemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c.exchangeId, c.numberBatchesCreated"
-                + " from"
-                + " RdbmsExchangeTransformAudit c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " order by c.started desc";
+        try {
+            String sql = "select c.exchangeId, c.numberBatchesCreated"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " order by c.started desc";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString());
+            Query query = entityManager.createQuery(sql, Object[].class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString());
 
-        List<RdbmsExchangeTransformAudit> ret = query.getResultList();
-        entityManager.close();
-        return ret
-                .stream()
-                .map(T -> new ExchangeTransformAudit(T))
-                .collect(Collectors.toList());
+            List<Object[]> results = query.getResultList();
+
+            List<ExchangeTransformAudit> ret = new ArrayList<>();
+            for (Object[] result : results) {
+                String resultExchangeId = (String) result[0];
+                Integer resultNumberBatches = (Integer) result[1];
+
+                ExchangeTransformAudit audit = new ExchangeTransformAudit();
+                audit.setExchangeId(UUID.fromString(resultExchangeId));
+                audit.setNumberBatchesCreated(resultNumberBatches);
+                ret.add(audit);
+            }
+            return ret;
+
+        } finally {
+            entityManager.close();
+        }
     }
 
 }

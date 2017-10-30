@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "resource_current", schema = "public")
+@Table(name = "exchange_batch")
 public class RdbmsExchangeBatch implements Serializable {
 
     private String exchangeId = null;
@@ -24,7 +24,9 @@ public class RdbmsExchangeBatch implements Serializable {
         this.exchangeId = proxy.getExchangeId().toString();
         this.batchId = proxy.getBatchId().toString();
         this.insertedAt = proxy.getInsertedAt();
-        this.edsPatientId = proxy.getEdsPatientId().toString();
+        if (proxy.getEdsPatientId() != null) {
+            this.edsPatientId = proxy.getEdsPatientId().toString();
+        }
     }
 
     @Id

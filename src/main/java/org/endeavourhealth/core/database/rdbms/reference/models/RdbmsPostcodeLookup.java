@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "postcode_lookup", schema = "public")
+@Table(name = "postcode_lookup")
 public class RdbmsPostcodeLookup implements Serializable {
 
     private String postcodeNoSpace = null;

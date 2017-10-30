@@ -33,6 +33,21 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
         entityManager.close();
     }
 
+    @Override
+    public String findPseudoId(String patientId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        RdbmsPseudoIdMap result = findIdMap(patientId, entityManager);
+        entityManager.close();
+
+        if (result != null) {
+            return result.getPseudoId();
+        } else {
+            return null;
+        }
+    }
+
     private RdbmsPseudoIdMap findIdMap(String patientId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"

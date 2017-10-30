@@ -2,7 +2,6 @@ package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
 import org.endeavourhealth.core.database.dal.subscriberTransform.VitruCareTransformDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsVitruCarePatientIdMap;
 import org.joda.time.DateTime;
 
@@ -36,7 +35,9 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
         }
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        entityManager.getTransaction().begin();
         entityManager.persist(mapping);
+        entityManager.getTransaction().commit();
         entityManager.close();
     }
 
@@ -48,7 +49,7 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
                 + " RdbmsVitruCarePatientIdMap c"
                 + " where c.edsPatientId = :eds_patient_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsService.class)
+        Query query = entityManager.createQuery(sql, RdbmsVitruCarePatientIdMap.class)
                 .setParameter("eds_patient_id", edsPatientId.toString());
 
         String ret = null;

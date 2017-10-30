@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "audit", schema = "public")
+@Table(name = "audit")
 public class RdbmsAudit implements Serializable {
 
     private String id = null;

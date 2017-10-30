@@ -78,6 +78,10 @@ public class ConnectionManager {
             json = ConfigManager.getConfigurationAsJson(configName);
         }
 
+        if (json == null) {
+            throw new Exception("No config JSON for " + dbName + " and config " + configName);
+        }
+
         String url = json.get("url").asText();
         String user = json.get("username").asText();
         String pass = json.get("password").asText();
@@ -153,7 +157,7 @@ public class ConnectionManager {
         } else if (dbName == Db.Audit) {
             return "db_audit";
         } else if (dbName == Db.PublisherTransform) {
-            return "db_transform";
+            return "db_publisher_transform";
         } else if (dbName == Db.SubscriberTransform) {
             return explicitConfigName;
         } else if (dbName == Db.Ehr) {

@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "emis_csv_code_map", schema = "public")
+@Table(name = "emis_csv_code_map")
 public class RdbmsEmisCsvCodeMap implements Serializable {
 
     private String dataSharingAgreementGuid = null;
@@ -76,7 +76,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.codeId = codeId;
     }
 
-    @Column(name = "code_type", nullable = false)
+    @Column(name = "code_type", nullable = true)
     public String getCodeType() {
         return codeType;
     }
@@ -94,7 +94,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.codeableConcept = codeableConcept;
     }
 
-    @Column(name = "read_term", nullable = false)
+    @Column(name = "read_term", nullable = true)
     public String getReadTerm() {
         return readTerm;
     }
@@ -103,7 +103,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.readTerm = readTerm;
     }
 
-    @Column(name = "read_code", nullable = false)
+    @Column(name = "read_code", nullable = true)
     public String getReadCode() {
         return readCode;
     }
@@ -112,7 +112,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.readCode = readCode;
     }
 
-    @Column(name = "snomed_concept_id", nullable = false)
+    @Column(name = "snomed_concept_id", nullable = true)
     public Long getSnomedConceptId() {
         return snomedConceptId;
     }
@@ -121,7 +121,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.snomedConceptId = snomedConceptId;
     }
 
-    @Column(name = "snomed_description_id", nullable = false)
+    @Column(name = "snomed_description_id", nullable = true)
     public Long getSnomedDescriptionId() {
         return snomedDescriptionId;
     }
@@ -130,7 +130,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.snomedDescriptionId = snomedDescriptionId;
     }
 
-    @Column(name = "snomed_term", nullable = false)
+    @Column(name = "snomed_term", nullable = true)
     public String getSnomedTerm() {
         return snomedTerm;
     }
@@ -139,7 +139,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.snomedTerm = snomedTerm;
     }
 
-    @Column(name = "national_code", nullable = false)
+    @Column(name = "national_code", nullable = true)
     public String getNationalCode() {
         return nationalCode;
     }
@@ -148,7 +148,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.nationalCode = nationalCode;
     }
 
-    @Column(name = "national_code_category", nullable = false)
+    @Column(name = "national_code_category", nullable = true)
     public String getNationalCodeCategory() {
         return nationalCodeCategory;
     }
@@ -157,7 +157,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.nationalCodeCategory = nationalCodeCategory;
     }
 
-    @Column(name = "national_code_description", nullable = false)
+    @Column(name = "national_code_description", nullable = true)
     public String getNationalCodeDescription() {
         return nationalCodeDescription;
     }
@@ -166,7 +166,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.nationalCodeDescription = nationalCodeDescription;
     }
 
-    @Column(name = "parent_code_id", nullable = false)
+    @Column(name = "parent_code_id", nullable = true)
     public Long getParentCodeId() {
         return parentCodeId;
     }

@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "patient_link_person", schema = "public")
+@Table(name = "patient_link_person")
 public class RdbmsPatientLinkPerson implements Serializable {
 
     private String personId = null;

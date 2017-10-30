@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@Table(name = "service", schema = "public")
+@Table(name = "service")
 public class RdbmsService implements Serializable {
 
     private String id = null;
@@ -52,7 +52,7 @@ public class RdbmsService implements Serializable {
         this.name = name;
     }
 
-    @Column(name = "local_id", nullable = false)
+    @Column(name = "local_id", nullable = true)
     public String getLocalId() {
         return localId;
     }

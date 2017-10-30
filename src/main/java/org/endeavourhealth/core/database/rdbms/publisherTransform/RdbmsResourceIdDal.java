@@ -21,39 +21,43 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         RdbmsResourceIdMap dbObj = new RdbmsResourceIdMap(resourceIdMap);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
-        entityManager.persist(dbObj);
-        entityManager.close();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(dbObj);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public ResourceIdMap getResourceIdMap(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsResourceIdMap c"
-                + " where c.serviceId = :service_id"
-                + " and c.systemId = :system_id"
-                + " and c.resourceType = :resource_type"
-                + " and c.sourceId = :source_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsResourceIdMap.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("system_id", systemId.toString())
-                .setParameter("resource_type", resourceType.toString())
-                .setParameter("source_id", sourceId.toString());
-
-        ResourceIdMap ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsResourceIdMap c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.resourceType = :resource_type"
+                    + " and c.sourceId = :source_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsResourceIdMap.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setParameter("resource_type", resourceType.toString())
+                    .setParameter("source_id", sourceId.toString());
+
             RdbmsResourceIdMap result = (RdbmsResourceIdMap)query.getSingleResult();
-            ret = new ResourceIdMap(result);
+            return new ResourceIdMap(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public ResourceIdMap getResourceIdMapByEdsId(String resourceType, String edsId) throws Exception {
@@ -61,30 +65,28 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     public ResourceIdMap getResourceIdMapByEdsId(String resourceType, UUID edsId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsResourceIdMap c"
-                + " where c.resourceType = :resource_type"
-                + " and c.edsId = :eds_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsResourceIdMap.class)
-                .setParameter("resource_type", resourceType.toString())
-                .setParameter("eds_id", edsId.toString());
-
-        ResourceIdMap ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsResourceIdMap c"
+                    + " where c.resourceType = :resource_type"
+                    + " and c.edsId = :eds_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsResourceIdMap.class)
+                    .setParameter("resource_type", resourceType.toString())
+                    .setParameter("eds_id", edsId.toString());
+
             RdbmsResourceIdMap result = (RdbmsResourceIdMap)query.getSingleResult();
-            ret = new ResourceIdMap(result);
+            return new ResourceIdMap(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
 }

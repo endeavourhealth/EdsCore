@@ -94,17 +94,17 @@ public class FhirStorageService {
         //call out to our patient search and person matching services
         if (resource instanceof Patient) {
 
-            LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
+            //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
 
             patientLinkDal.updatePersonId((Patient)resource);
 
-            LOG.info("Updating PATIENT_SEARCH with PATIENT resource " + resource.getId());
+            //LOG.info("Updating PATIENT_SEARCH with PATIENT resource " + resource.getId());
 
             patientSearchDal.update(serviceId, systemId, (Patient)resource);
 
         } else if (resource instanceof EpisodeOfCare) {
 
-            LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
+            //LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
 
             patientSearchDal.update(serviceId, systemId, (EpisodeOfCare)resource);
         }

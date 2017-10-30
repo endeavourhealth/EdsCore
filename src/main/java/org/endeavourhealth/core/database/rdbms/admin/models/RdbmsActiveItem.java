@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "active_item", schema = "public")
+@Table(name = "active_item")
 public class RdbmsActiveItem implements Serializable {
 
     private String itemId = null;
@@ -57,11 +57,11 @@ public class RdbmsActiveItem implements Serializable {
     }
 
     @Column(name = "is_deleted", nullable = true)
-    public boolean isDeleted() {
+    public boolean getIsDeleted() {
         return isDeleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public void setIsDeleted(boolean deleted) {
         isDeleted = deleted;
     }
 

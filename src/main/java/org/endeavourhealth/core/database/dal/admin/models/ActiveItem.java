@@ -30,7 +30,7 @@ public class ActiveItem {
         this.itemId = UUID.fromString(proxy.getItemId());
         this.auditId = UUID.fromString(proxy.getAuditId());
         this.itemTypeId = proxy.getItemTypeId();
-        this.isDeleted = proxy.isDeleted();
+        this.isDeleted = proxy.getIsDeleted();
         this.organisationId = UUID.fromString(proxy.getOrganisationId());
     }
 

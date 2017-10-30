@@ -10,9 +10,10 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "exchange_event", schema = "public")
+@Table(name = "exchange_event")
 public class RdbmsExchangeEvent implements Serializable {
 
+    private String id = null;
     private String exchangeId = null;
     private Date timestamp = null;
     private String eventDesc = null;
@@ -20,9 +21,20 @@ public class RdbmsExchangeEvent implements Serializable {
     public RdbmsExchangeEvent() {}
 
     public RdbmsExchangeEvent(ExchangeEvent proxy) {
+        //this.id = //id not present in proxy
         this.exchangeId = proxy.getExchangeId().toString();
         this.timestamp = proxy.getTimestamp();
         this.eventDesc = proxy.getEventDesc();
+    }
+
+    @Id
+    @Column(name = "id", nullable = false)
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     @Id

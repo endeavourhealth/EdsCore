@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "encounter_code", schema = "public")
+@Table(name = "encounter_code")
 public class RdbmsEncounterCode implements Serializable {
 
     private long code;

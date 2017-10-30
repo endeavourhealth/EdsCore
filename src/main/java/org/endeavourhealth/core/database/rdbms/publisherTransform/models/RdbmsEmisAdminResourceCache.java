@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "emis_admin_resource_cache", schema = "public")
+@Table(name = "emis_admin_resource_cache")
 public class RdbmsEmisAdminResourceCache implements Serializable {
 
     private String dataSharingAgreementGuid = null;

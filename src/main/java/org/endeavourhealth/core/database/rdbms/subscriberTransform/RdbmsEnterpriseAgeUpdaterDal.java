@@ -4,12 +4,15 @@ import org.endeavourhealth.core.database.dal.subscriberTransform.EnterpriseAgeUp
 import org.endeavourhealth.core.database.dal.subscriberTransform.models.EnterpriseAge;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseAge;
+import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.*;
 import java.util.Date;
 import java.util.List;
@@ -27,24 +30,28 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
 
     public List<EnterpriseAge> findAgesToUpdate() throws Exception {
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsEnterpriseAge c"
-                + " where c.dateNextChange <= :dateNextChange";
-
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        Query query = entityManager.createQuery(sql, RdbmsEnterpriseAge.class)
-                .setParameter("dateNextChange", new Date());
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEnterpriseAge c"
+                    + " where c.dateNextChange <= :dateNextChange";
 
-        List<RdbmsEnterpriseAge> ret = query.getResultList();
 
-        entityManager.close();
+            Query query = entityManager.createQuery(sql, RdbmsEnterpriseAge.class)
+                    .setParameter("dateNextChange", new Date());
 
-        return ret
-                .stream()
-                .map(T -> new EnterpriseAge(T))
-                .collect(Collectors.toList());
+            List<RdbmsEnterpriseAge> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new EnterpriseAge(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public Integer[] calculateAgeValues(long patientId, Date dateOfBirth) throws Exception {
@@ -108,8 +115,39 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         RdbmsEnterpriseAge dbObj = new RdbmsEnterpriseAge(obj);
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-        entityManager.persist(dbObj);
-        entityManager.close();
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO enterprise_age"
+                    + " (enterprise_patient_id, date_of_birth, date_next_change)"
+                    + " VALUES (?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " date_of_birth = VALUES(date_of_birth),"
+                    + " date_next_change = VALUES(date_next_change);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setLong(1, new Long(dbObj.getEnterprisePatientId()));
+            ps.setDate(2, new java.sql.Date(dbObj.getDateOfBirth().getTime()));
+            ps.setDate(3, new java.sql.Date(dbObj.getDateNextChange().getTime()));
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 
 
@@ -227,16 +265,15 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsEnterpriseAge c"
-                + " where c.enterprisePatientId = :enterprisePatientId";
-
-
-        Query query = entityManager.createQuery(sql, RdbmsEnterpriseAge.class)
-                .setParameter("enterprisePatientId", enterprisePatientId);
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEnterpriseAge c"
+                    + " where c.enterprisePatientId = :enterprisePatientId";
+
+            Query query = entityManager.createQuery(sql, RdbmsEnterpriseAge.class)
+                    .setParameter("enterprisePatientId", enterprisePatientId);
+
             return (RdbmsEnterpriseAge)query.getSingleResult();
 
         } catch (NoResultException ex) {

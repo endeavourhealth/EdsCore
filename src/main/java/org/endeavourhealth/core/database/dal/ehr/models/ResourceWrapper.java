@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.ehr.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByExchangeBatch;
 import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByPatient;
 import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByService;
@@ -22,7 +23,7 @@ public class ResourceWrapper {
     //private String schemaVersion;
     private String resourceMetadata;
     private String resourceData;
-    private long resourceChecksum;
+    private Long resourceChecksum;
     private UUID exchangeBatchId;
     private UUID exchangeId;
     private boolean isDeleted;
@@ -100,7 +101,9 @@ public class ResourceWrapper {
         this.resourceType = proxy.getResourceType();
         //this.version = proxy.getVersion(); //not present in proxy
         this.createdAt = proxy.getUpdatedAt();
-        this.patientId = UUID.fromString(proxy.getPatientId());
+        if (!Strings.isNullOrEmpty(proxy.getPatientId())) {
+            this.patientId = UUID.fromString(proxy.getPatientId());
+        }
         this.resourceMetadata = proxy.getResourceMetadata();
         this.resourceData = proxy.getResourceData();
         this.resourceChecksum = proxy.getResourceChecksum();
@@ -116,7 +119,9 @@ public class ResourceWrapper {
         this.resourceType = proxy.getResourceType();
         //this.version = proxy.getVersion(); //not present in proxy
         this.createdAt = proxy.getCreatedAt();
-        this.patientId = UUID.fromString(proxy.getPatientId());
+        if (!Strings.isNullOrEmpty(proxy.getPatientId())) {
+            this.patientId = UUID.fromString(proxy.getPatientId());
+        }
         //this.resourceMetadata = proxy.getResourceMetadata(); //this proxy doesn't have this field
         this.resourceData = proxy.getResourceData();
         this.resourceChecksum = proxy.getResourceChecksum();
@@ -197,11 +202,11 @@ public class ResourceWrapper {
         this.resourceData = resourceData;
     }
 
-    public long getResourceChecksum() {
+    public Long getResourceChecksum() {
         return resourceChecksum;
     }
 
-    public void setResourceChecksum(long resourceChecksum) {
+    public void setResourceChecksum(Long resourceChecksum) {
         this.resourceChecksum = resourceChecksum;
     }
 

@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "resource_id_map", schema = "public")
+@Table(name = "resource_id_map")
 public class RdbmsResourceIdMap implements Serializable {
 
     private String serviceId = null;

@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "enterprise_id_map", schema = "public")
+@Table(name = "enterprise_id_map")
 public class RdbmsEnterpriseIdMap implements Serializable {
 
     //private String enterpriseTableName = null;

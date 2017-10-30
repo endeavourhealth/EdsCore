@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Map;
 
 @Entity
-@Table(name = "exchange", schema = "public")
+@Table(name = "exchange")
 public class RdbmsExchange implements Serializable {
 
     private String id = null;
@@ -30,7 +30,10 @@ public class RdbmsExchange implements Serializable {
         Map<String, String> headersMap = proxy.getHeaders();
         this.headers = ObjectMapperPool.getInstance().writeValueAsString(headersMap);
 
-        this.serviceId = proxy.getServiceId().toString();
+        if (proxy.getServiceId() != null) {
+            this.serviceId = proxy.getServiceId().toString();
+        }
+
         this.body = proxy.getBody();
     }
 
@@ -53,7 +56,7 @@ public class RdbmsExchange implements Serializable {
         this.timestamp = timestamp;
     }
 
-    @Column(name = "headers", nullable = false)
+    @Column(name = "headers", nullable = true)
     public String getHeaders() {
         return headers;
     }
@@ -62,7 +65,7 @@ public class RdbmsExchange implements Serializable {
         this.headers = headers;
     }
 
-    @Column(name = "service_id", nullable = false)
+    @Column(name = "service_id", nullable = true)
     public String getServiceId() {
         return serviceId;
     }
@@ -71,7 +74,7 @@ public class RdbmsExchange implements Serializable {
         this.serviceId = serviceId;
     }
 
-    @Column(name = "body", nullable = false)
+    @Column(name = "body", nullable = true)
     public String getBody() {
         return body;
     }

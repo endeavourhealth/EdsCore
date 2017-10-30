@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "enterprise_age", schema = "public")
+@Table(name = "enterprise_age")
 public class RdbmsEnterpriseAge implements Serializable {
 
     private long enterprisePatientId;

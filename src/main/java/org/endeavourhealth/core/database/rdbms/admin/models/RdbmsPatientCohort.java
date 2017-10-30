@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "patient_cohort", schema = "public")
+@Table(name = "patient_cohort")
 public class RdbmsPatientCohort implements Serializable {
 
     private String protocolId = null;

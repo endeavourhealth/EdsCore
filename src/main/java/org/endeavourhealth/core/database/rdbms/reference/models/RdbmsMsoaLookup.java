@@ -7,7 +7,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "msoa_lookup", schema = "public")
+@Table(name = "msoa_lookup")
 public class RdbmsMsoaLookup implements Serializable {
 
     private String msoaCode = null;

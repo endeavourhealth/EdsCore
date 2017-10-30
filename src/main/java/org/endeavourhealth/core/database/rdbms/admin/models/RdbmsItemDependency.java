@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "item_dependency", schema = "public")
+@Table(name = "item_dependency")
 public class RdbmsItemDependency implements Serializable {
 
     private String itemId = null;

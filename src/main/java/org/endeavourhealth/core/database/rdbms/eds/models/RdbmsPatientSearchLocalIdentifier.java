@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "patient_search_local_identifier", schema = "public")
+@Table(name = "patient_search_local_identifier")
 public class RdbmsPatientSearchLocalIdentifier implements Serializable {
 
     private String serviceId = null;

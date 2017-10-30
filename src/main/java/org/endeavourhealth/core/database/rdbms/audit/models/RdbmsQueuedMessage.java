@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "queued_message", schema = "public")
+@Table(name = "queued_message")
 public class RdbmsQueuedMessage implements Serializable {
 
     private String id = null;

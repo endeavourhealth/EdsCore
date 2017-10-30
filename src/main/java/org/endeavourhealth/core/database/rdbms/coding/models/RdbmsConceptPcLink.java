@@ -4,7 +4,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "trm_concept_pc_link", schema = "public")
+@Table(name = "trm_concept_pc_link")
 public class RdbmsConceptPcLink implements Serializable {
 
     private long pid;

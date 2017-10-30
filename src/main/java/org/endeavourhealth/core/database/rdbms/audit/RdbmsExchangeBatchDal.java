@@ -23,81 +23,89 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         RdbmsExchangeBatch dbObj = new RdbmsExchangeBatch(exchangeBatch);
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        entityManager.persist(dbObj);
-        entityManager.close();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(dbObj);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<ExchangeBatch> retrieveForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeBatch c"
-                + " where c.exchangeId = :exchange_id";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeBatch c"
+                    + " where c.exchangeId = :exchange_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                .setParameter("exchange_id", exchangeId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
+                    .setParameter("exchange_id", exchangeId.toString());
 
-        List<RdbmsExchangeBatch> ret = query.getResultList();
-        entityManager.close();
+            List<RdbmsExchangeBatch> ret = query.getResultList();
 
-        return ret
-                .stream()
-                .map(T -> new ExchangeBatch(T))
-                .collect(Collectors.toList());
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeBatch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public ExchangeBatch retrieveFirstForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeBatch c"
-                + " where c.exchangeId = :exchange_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                .setParameter("exchange_id", exchangeId.toString())
-                .setMaxResults(1);
-
-        ExchangeBatch ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeBatch c"
+                    + " where c.exchangeId = :exchange_id"
+                    + " order by c.insertedAt ASC";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setMaxResults(1);
+
             RdbmsExchangeBatch result = (RdbmsExchangeBatch)query.getSingleResult();
-            ret = new ExchangeBatch(result);
+            return new ExchangeBatch(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public ExchangeBatch getForExchangeAndBatchId(UUID exchangeId, UUID batchId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsExchangeBatch c"
-                + " where c.exchangeId = :exchange_id"
-                + " and c.batchId = :batch_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                .setParameter("exchange_id", exchangeId.toString())
-                .setParameter("batch_id", batchId.toString())
-                .setMaxResults(1);
-
-        ExchangeBatch ret = null;
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeBatch c"
+                    + " where c.exchangeId = :exchange_id"
+                    + " and c.batchId = :batch_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setParameter("batch_id", batchId.toString())
+                    .setMaxResults(1);
+
+
             RdbmsExchangeBatch result = (RdbmsExchangeBatch)query.getSingleResult();
-            ret = new ExchangeBatch(result);
+            return new ExchangeBatch(result);
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 }

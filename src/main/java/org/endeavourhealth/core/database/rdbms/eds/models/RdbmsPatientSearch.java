@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "patient_search", schema = "public")
+@Table(name = "patient_search")
 public class RdbmsPatientSearch implements Serializable {
 
     private String serviceId = null;

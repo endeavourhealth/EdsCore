@@ -4,5 +4,6 @@ import java.util.UUID;
 
 public interface PatientCohortDalI {
 
-    public boolean isInCohort(UUID protocolId, UUID serviceId, String nhsNumber) throws Exception;
+    void saveInCohort(UUID protocolId, UUID serviceId, String nhsNumber, boolean inCohort) throws Exception;
+    boolean isInCohort(UUID protocolId, UUID serviceId, String nhsNumber) throws Exception;
 }
