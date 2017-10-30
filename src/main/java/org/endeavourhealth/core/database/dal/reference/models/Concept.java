@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.dal.coding.models;
+package org.endeavourhealth.core.database.dal.reference.models;
 
-import org.endeavourhealth.core.database.rdbms.coding.models.RdbmsConcept;
+import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConcept;
 
 public class Concept {
 

@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.dal.coding;
+package org.endeavourhealth.core.database.dal.reference;
 
-import org.endeavourhealth.core.database.dal.coding.models.Concept;
+import org.endeavourhealth.core.database.dal.reference.models.Concept;
 
 import java.util.List;
 

@@ -30,14 +30,13 @@ public class RdbmsEncounterCodeDal implements EncounterCodeDalI {
 
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
-        RdbmsEncounterCode ret = null;
         try {
-            ret = findOrCreateCode(term, entityManager, NUMBER_ATTEMPTS);
+            RdbmsEncounterCode result = findOrCreateCode(term, entityManager, NUMBER_ATTEMPTS);
+            return new EncounterCode(result);
+
         } finally {
             entityManager.close();
         }
-
-        return new EncounterCode(ret);
     }
 
     private static RdbmsEncounterCode findOrCreateCode(String term, EntityManager entityManager, int attemptsRamaining) throws Exception {

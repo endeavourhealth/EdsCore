@@ -33,6 +33,11 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     }
 
     private void update(UUID serviceId, UUID systemId, Patient fhirPatient, EpisodeOfCare fhirEpisode) throws Exception {
+        if (fhirPatient != null) {
+            LOG.info("Updating patient search for patient " + fhirPatient.getId());
+        } else if (fhirEpisode != null) {
+            LOG.info("Updating patient search for episode " + fhirEpisode.getId() + " and patient " + fhirEpisode.getPatient().getReference());
+        }
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
@@ -55,6 +60,12 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         } finally {
             entityManager.close();
+        }
+
+        if (fhirPatient != null) {
+            LOG.info("Done     patient search for patient " + fhirPatient.getId());
+        } else if (fhirEpisode != null) {
+            LOG.info("Done     patient search for episode " + fhirEpisode.getId() + " and patient " + fhirEpisode.getPatient().getReference());
         }
     }
 
@@ -433,191 +444,230 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     public void deleteForService(UUID serviceId, UUID systemId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
-        entityManager.getTransaction().begin();
+        try {
+            entityManager.getTransaction().begin();
 
-        String sql = "delete"
-                + " from"
-                + " RdbmsPatientSearchLocalIdentifier c"
-                + " where c.serviceId = :serviceId"
-                + " and c.systemId = :systemId";
+            String sql = "delete"
+                    + " from"
+                    + " RdbmsPatientSearchLocalIdentifier c"
+                    + " where c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId";
 
-        Query query = entityManager.createQuery(sql)
-                .setParameter("serviceId", serviceId.toString())
-                .setParameter("systemId", systemId.toString());
-        query.executeUpdate();
+            Query query = entityManager.createQuery(sql)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString());
+            query.executeUpdate();
 
-        sql = "delete"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where c.serviceId = :serviceId"
-                + " and c.systemId = :systemId";
+            sql = "delete"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId";
 
-        query = entityManager.createQuery(sql)
-                .setParameter("serviceId", serviceId.toString())
-                .setParameter("systemId", systemId.toString());
-        query.executeUpdate();
+            query = entityManager.createQuery(sql)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString());
+            query.executeUpdate();
 
-        entityManager.getTransaction().commit();
-        entityManager.close();
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByNhsNumber(String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where c.nhsNumber = :nhs_number";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.nhsNumber = :nhs_number";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("nhs_number", nhsNumber);
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("nhs_number", nhsNumber);
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByLocalId(UUID serviceId, UUID systemId, String localId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-            + " from"
-            + " RdbmsPatientSearch c"
-            + " inner join RdbmsPatientSearchLocalIdentifier l"
-            + " on c.serviceId = l.serviceId"
-            + " and c.systemId = l.systemId"
-            + " and c.patientId = l.patientId"
-            + " where l.localId = :localId"
-            + " and l.serviceId = :serviceId"
-            + " and l.systemId = :systemId";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " inner join RdbmsPatientSearchLocalIdentifier l"
+                    + " on c.serviceId = l.serviceId"
+                    + " and c.systemId = l.systemId"
+                    + " and c.patientId = l.patientId"
+                    + " where l.localId = :localId"
+                    + " and l.serviceId = :serviceId"
+                    + " and l.systemId = :systemId";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-            .setParameter("localId", localId)
-            .setParameter("serviceId", serviceId.toString())
-            .setParameter("systemId", systemId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("localId", localId)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString());
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByLocalId(Set<String> serviceIds, String localId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-            + " from"
-            + " RdbmsPatientSearch c"
-            + " inner join RdbmsPatientSearchLocalIdentifier l"
-            + " on c.serviceId = l.serviceId"
-            + " and c.systemId = l.systemId"
-            + " and c.patientId = l.patientId"
-            + " where l.localId = :localId"
-            + " and l.serviceId IN :serviceIds";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " inner join RdbmsPatientSearchLocalIdentifier l"
+                    + " on c.serviceId = l.serviceId"
+                    + " and c.systemId = l.systemId"
+                    + " and c.patientId = l.patientId"
+                    + " where l.localId = :localId"
+                    + " and l.serviceId IN :serviceIds";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-            .setParameter("localId", localId)
-            .setParameter("serviceIds", serviceIds);
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("localId", localId)
+                    .setParameter("serviceIds", serviceIds);
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByDateOfBirth(UUID serviceId, UUID systemId, Date dateOfBirth) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where c.dateOfBirth = :dateOfBirth"
-                + " and c.serviceId = :serviceId"
-                + " and c.systemId = :systemId";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.dateOfBirth = :dateOfBirth"
+                    + " and c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
-                .setParameter("serviceId", serviceId.toString())
-                .setParameter("systemId", systemId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString());
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-            + " from"
-            + " RdbmsPatientSearch c"
-            + " where c.dateOfBirth = :dateOfBirth"
-            + " and c.serviceId IN :serviceIds";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.dateOfBirth = :dateOfBirth"
+                    + " and c.serviceId IN :serviceIds";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-            .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
-            .setParameter("serviceIds", serviceIds);
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("dateOfBirth", dateOfBirth, TemporalType.DATE)
+                    .setParameter("serviceIds", serviceIds);
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByNhsNumber(UUID serviceId, UUID systemId, String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where c.nhsNumber = :nhs_number"
-                + " and c.serviceId = :serviceId"
-                + " and c.systemId = :systemId";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.nhsNumber = :nhs_number"
+                    + " and c.serviceId = :serviceId"
+                    + " and c.systemId = :systemId";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("nhs_number", nhsNumber)
-                .setParameter("serviceId", serviceId.toString())
-                .setParameter("systemId", systemId.toString());
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("nhs_number", nhsNumber)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("systemId", systemId.toString());
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-            + " from"
-            + " RdbmsPatientSearch c"
-            + " where c.nhsNumber = :nhs_number"
-            + " and c.serviceId in :serviceIds";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.nhsNumber = :nhs_number"
+                    + " and c.serviceId in :serviceIds";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-            .setParameter("nhs_number", nhsNumber)
-            .setParameter("serviceIds", serviceIds);
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("nhs_number", nhsNumber)
+                    .setParameter("serviceIds", serviceIds);
 
-        List<RdbmsPatientSearch> results = query.getResultList();
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
+            List<RdbmsPatientSearch> results = query.getResultList();
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public List<PatientSearch> searchByNames(UUID serviceId, UUID systemId, List<String> names) throws Exception {
@@ -628,56 +678,60 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        List<RdbmsPatientSearch> results = null;
+        try {
+            List<RdbmsPatientSearch> results = null;
 
-        //if just one name, then treat as a surname
-        if (names.size() == 1) {
+            //if just one name, then treat as a surname
+            if (names.size() == 1) {
 
-            String surname = names.get(0) + "%";
+                String surname = names.get(0) + "%";
 
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsPatientSearch c"
-                    + " where lower(c.surname) LIKE lower(:surname)"
-                    + " and c.serviceId = :serviceId"
-                    + " and c.systemId = :systemId";
+                String sql = "select c"
+                        + " from"
+                        + " RdbmsPatientSearch c"
+                        + " where lower(c.surname) LIKE lower(:surname)"
+                        + " and c.serviceId = :serviceId"
+                        + " and c.systemId = :systemId";
 
-            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                    .setParameter("surname", surname)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("systemId", systemId.toString());
+                Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                        .setParameter("surname", surname)
+                        .setParameter("serviceId", serviceId.toString())
+                        .setParameter("systemId", systemId.toString());
 
-            results = query.getResultList();
+                results = query.getResultList();
 
-        } else {
+            } else {
 
-            //if multiple tokens, then treat all but the last as forenames
-            names = new ArrayList(names);
-            String surname = names.remove(names.size()-1) + "%";
-            String forenames = String.join("% ", names) + "%";
+                //if multiple tokens, then treat all but the last as forenames
+                names = new ArrayList(names);
+                String surname = names.remove(names.size() - 1) + "%";
+                String forenames = String.join("% ", names) + "%";
 
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsPatientSearch c"
-                    + " where lower(c.surname) LIKE lower(:surname)"
-                    + " and lower(c.forenames) LIKE lower(:forenames)"
-                    + " and c.serviceId = :serviceId"
-                    + " and c.systemId = :systemId";
+                String sql = "select c"
+                        + " from"
+                        + " RdbmsPatientSearch c"
+                        + " where lower(c.surname) LIKE lower(:surname)"
+                        + " and lower(c.forenames) LIKE lower(:forenames)"
+                        + " and c.serviceId = :serviceId"
+                        + " and c.systemId = :systemId";
 
-            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                    .setParameter("surname", surname)
-                    .setParameter("forenames", forenames)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("systemId", systemId.toString());
+                Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                        .setParameter("surname", surname)
+                        .setParameter("forenames", forenames)
+                        .setParameter("serviceId", serviceId.toString())
+                        .setParameter("systemId", systemId.toString());
 
-            results = query.getResultList();
+                results = query.getResultList();
+            }
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
     }
 
 
@@ -689,72 +743,76 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        List<RdbmsPatientSearch> results = null;
-        String name1;
-        String name2;
-        String sql;
+        try {
+            List<RdbmsPatientSearch> results = null;
+            String name1;
+            String name2;
+            String sql;
 
-        //if just one name, then treat as a surname
-        if (names.size() == 1) {
+            //if just one name, then treat as a surname
+            if (names.size() == 1) {
 
-					name1 = names.get(0).replace(",","") + "%";
+                name1 = names.get(0).replace(",", "") + "%";
 
-            sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where (lower(c.surname) LIKE lower(:name1) or lower(c.forenames) LIKE lower(:name1))"
-                + " and c.serviceId IN :serviceIds";
+                sql = "select c"
+                        + " from"
+                        + " RdbmsPatientSearch c"
+                        + " where (lower(c.surname) LIKE lower(:name1) or lower(c.forenames) LIKE lower(:name1))"
+                        + " and c.serviceId IN :serviceIds";
 
-            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("name1", name1)
-                .setParameter("serviceIds", serviceIds);
+                Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                        .setParameter("name1", name1)
+                        .setParameter("serviceIds", serviceIds);
 
-            results = query.getResultList();
+                results = query.getResultList();
 
-        } else {
+            } else {
 
-            //if multiple tokens, then treat all but the last as forenames
-            names = new ArrayList(names);
-					name1 = names.remove(names.size()-1).replace(",","") + "%";
-					name2 = String.join("% ", names).replace(",","") + "%";
+                //if multiple tokens, then treat all but the last as forenames
+                names = new ArrayList(names);
+                name1 = names.remove(names.size() - 1).replace(",", "") + "%";
+                name2 = String.join("% ", names).replace(",", "") + "%";
 
-            sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where ("
-									+ "(lower(c.surname) LIKE lower(:name2) and lower(c.forenames) LIKE lower(:name1))"
-									+ " or "
-									+ "(lower(c.surname) LIKE lower(:name1) and lower(c.forenames) LIKE lower(:name2))"
-								+ ")"
-                + " and c.serviceId IN :serviceIds";
+                sql = "select c"
+                        + " from"
+                        + " RdbmsPatientSearch c"
+                        + " where ("
+                        + "(lower(c.surname) LIKE lower(:name2) and lower(c.forenames) LIKE lower(:name1))"
+                        + " or "
+                        + "(lower(c.surname) LIKE lower(:name1) and lower(c.forenames) LIKE lower(:name2))"
+                        + ")"
+                        + " and c.serviceId IN :serviceIds";
 
-            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("name1", name1)
-                .setParameter("name2", name2)
-                .setParameter("serviceIds", serviceIds);
+                Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                        .setParameter("name1", name1)
+                        .setParameter("name2", name2)
+                        .setParameter("serviceIds", serviceIds);
 
-            results = query.getResultList();
+                results = query.getResultList();
+            }
+
+            return results
+                    .stream()
+                    .map(T -> new PatientSearch(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-        return results
-                .stream()
-                .map(T -> new PatientSearch(T))
-                .collect(Collectors.toList());
     }
 
     public PatientSearch searchByPatientId(UUID patientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientSearch c"
-                + " where c.patientId = :patientId";
-
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                .setParameter("patientId", patientId.toString());
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientSearch c"
+                    + " where c.patientId = :patientId";
+
+            Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
+                    .setParameter("patientId", patientId.toString());
+
             RdbmsPatientSearch result = (RdbmsPatientSearch)query.getSingleResult();
             return new PatientSearch(result);
 

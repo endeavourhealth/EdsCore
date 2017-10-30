@@ -25,74 +25,79 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
         String previousPersonId = null;
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+        try {
 
-        //get the current person ID for the patient
-        RdbmsPatientLink patientLink = getPatientLink(patientId, entityManager);
-        if (patientLink != null) {
-            previousPersonId = patientLink.getPersonId();
-        }
+            //get the current person ID for the patient
+            RdbmsPatientLink patientLink = getPatientLink(patientId, entityManager);
+            if (patientLink != null) {
+                previousPersonId = patientLink.getPersonId();
+            }
 
-        //work out what the person ID should be
-        String nhsNumber = IdentifierHelper.findNhsNumberTrueNhsNumber(fhirPatient);
-        if (!Strings.isNullOrEmpty(nhsNumber)) {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsPatientLinkPerson c"
-                    + " where c.nhsNumber = :nhsNumber";
+            //work out what the person ID should be
+            String nhsNumber = IdentifierHelper.findNhsNumberTrueNhsNumber(fhirPatient);
+            if (!Strings.isNullOrEmpty(nhsNumber)) {
+                String sql = "select c"
+                        + " from"
+                        + " RdbmsPatientLinkPerson c"
+                        + " where c.nhsNumber = :nhsNumber";
 
-            Query query = entityManager.createQuery(sql, RdbmsPatientLinkPerson.class)
-                    .setParameter("nhsNumber", nhsNumber);
+                Query query = entityManager.createQuery(sql, RdbmsPatientLinkPerson.class)
+                        .setParameter("nhsNumber", nhsNumber);
 
-            RdbmsPatientLinkPerson person = null;
-            try {
-                person = (RdbmsPatientLinkPerson)query.getSingleResult();
+                RdbmsPatientLinkPerson person = null;
+                try {
+                    person = (RdbmsPatientLinkPerson) query.getSingleResult();
 
-            } catch (NoResultException ex) {
-                //if we haven't got a person ID for this NHS number, then generate one now
-                person = new RdbmsPatientLinkPerson();
-                person.setNhsNumber(nhsNumber);
-                person.setPersonId(UUID.randomUUID().toString());
+                } catch (NoResultException ex) {
+                    //if we haven't got a person ID for this NHS number, then generate one now
+                    person = new RdbmsPatientLinkPerson();
+                    person.setNhsNumber(nhsNumber);
+                    person.setPersonId(UUID.randomUUID().toString());
+
+                    entityManager.getTransaction().begin();
+                    entityManager.persist(person);
+                    entityManager.getTransaction().commit();
+                }
+
+                String matchingPersonId = person.getPersonId();
+                if (previousPersonId == null
+                        || !previousPersonId.equals(matchingPersonId)) {
+                    newPersonId = matchingPersonId;
+                }
+
+            } else {
+                //if we don't have an NHS number, then just assign a new random person ID
+                if (previousPersonId == null) {
+                    newPersonId = UUID.randomUUID().toString();
+                }
+            }
+
+            //if we've assigned a new person ID, then record this in the history table and update the main table
+            if (!Strings.isNullOrEmpty(newPersonId)) {
+
+                RdbmsPatientLinkHistory history = new RdbmsPatientLinkHistory();
+                history.setPatientId(patientId);
+                history.setNewPersonId(newPersonId);
+                history.setPreviousPersonId(previousPersonId);
+                history.setUpdated(new Date());
+
+                if (patientLink == null) {
+                    patientLink = new RdbmsPatientLink();
+                    patientLink.setPatientId(patientId);
+                }
+                patientLink.setPersonId(newPersonId);
 
                 entityManager.getTransaction().begin();
-                entityManager.persist(person);
+                entityManager.persist(history);
+                entityManager.persist(patientLink);
                 entityManager.getTransaction().commit();
             }
 
-            String matchingPersonId = person.getPersonId();
-            if (previousPersonId == null
-                    || !previousPersonId.equals(matchingPersonId)) {
-                newPersonId = matchingPersonId;
-            }
+            return new PatientLinkPair(patientId, newPersonId, previousPersonId);
 
-        } else {
-            //if we don't have an NHS number, then just assign a new random person ID
-            if (previousPersonId == null) {
-                newPersonId = UUID.randomUUID().toString();
-            }
+        } finally {
+            entityManager.close();
         }
-
-        //if we've assigned a new person ID, then record this in the history table and update the main table
-        if (!Strings.isNullOrEmpty(newPersonId)) {
-
-            RdbmsPatientLinkHistory history = new RdbmsPatientLinkHistory();
-            history.setPatientId(patientId);
-            history.setNewPersonId(newPersonId);
-            history.setPreviousPersonId(previousPersonId);
-            history.setUpdated(new Date());
-
-            if (patientLink == null) {
-                patientLink = new RdbmsPatientLink();
-                patientLink.setPatientId(patientId);
-            }
-            patientLink.setPersonId(newPersonId);
-
-            entityManager.getTransaction().begin();
-            entityManager.persist(history);
-            entityManager.persist(patientLink);
-            entityManager.getTransaction().commit();
-        }
-
-        return new PatientLinkPair(patientId, newPersonId, previousPersonId);
     }
 
     private static RdbmsPatientLink getPatientLink(String patientId, EntityManager entityManager) {
@@ -117,102 +122,109 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        RdbmsPatientLink patientLink = getPatientLink(patientId, entityManager);
-        entityManager.close();
+        try {
+            RdbmsPatientLink patientLink = getPatientLink(patientId, entityManager);
 
-        if (patientLink != null) {
-            return patientLink.getPersonId();
-        } else {
-            return null;
+            if (patientLink != null) {
+                return patientLink.getPersonId();
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
         }
     }
 
     public List<String> getPatientIds(String personId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientLink c"
-                + " where c.personId = :personId";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientLink c"
+                    + " where c.personId = :personId";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientLink.class)
-                .setParameter("personId", personId);
+            Query query = entityManager.createQuery(sql, RdbmsPatientLink.class)
+                    .setParameter("personId", personId);
 
-        List<String> ret = new ArrayList<>();
+            List<String> ret = new ArrayList<>();
 
-        List<RdbmsPatientLink> links = query.getResultList();
-        for (RdbmsPatientLink link: links) {
-            ret.add(link.getPatientId());
+            List<RdbmsPatientLink> links = query.getResultList();
+            for (RdbmsPatientLink link : links) {
+                ret.add(link.getPatientId());
+            }
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 
     public List<PatientLinkPair> getChangesSince(Date timestamp) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsPatientLinkHistory c"
-                + " where c.updated >= :timestamp";
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsPatientLinkHistory c"
+                    + " where c.updated >= :timestamp";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientLinkHistory.class)
-                .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
+            Query query = entityManager.createQuery(sql, RdbmsPatientLinkHistory.class)
+                    .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
 
-        List<RdbmsPatientLinkHistory> links = query.getResultList();
+            List<RdbmsPatientLinkHistory> links = query.getResultList();
 
-        entityManager.close();
+            //sort the links by date, since we need them for the filtering
+            links.sort((a, b) -> a.getUpdated().compareTo(b.getUpdated()));
+            //TODO - ensure this sorting is correct
 
-        //sort the links by date, since we need them for the filtering
-        links.sort((a, b) -> a.getUpdated().compareTo(b.getUpdated()));
-        //TODO - ensure this sorting is correct
+            Map<String, List<RdbmsPatientLinkHistory>> updatesByPatient = new HashMap<>();
 
-        Map<String, List<RdbmsPatientLinkHistory>> updatesByPatient = new HashMap<>();
-
-        for (RdbmsPatientLinkHistory link: links) {
-            String patientId = link.getPatientId();
-            List<RdbmsPatientLinkHistory> list = updatesByPatient.get(patientId);
-            if (list == null) {
-                list = new ArrayList<>();
-                updatesByPatient.put(patientId, list);
+            for (RdbmsPatientLinkHistory link : links) {
+                String patientId = link.getPatientId();
+                List<RdbmsPatientLinkHistory> list = updatesByPatient.get(patientId);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    updatesByPatient.put(patientId, list);
+                }
+                list.add(link);
             }
-            list.add(link);
-        }
 
-        List<PatientLinkPair> ret = new ArrayList<>();
+            List<PatientLinkPair> ret = new ArrayList<>();
 
-        //if a patient was matched to different persons MULTIPLE times since the timestamp, our
-        //results will have two records, for the patient A->B and B->C. To make it easier for consumers,
-        //so they don't have to follow that chain, we sanitise the results, so it shows A->C and B->C
-        for (String patientId: updatesByPatient.keySet()) {
+            //if a patient was matched to different persons MULTIPLE times since the timestamp, our
+            //results will have two records, for the patient A->B and B->C. To make it easier for consumers,
+            //so they don't have to follow that chain, we sanitise the results, so it shows A->C and B->C
+            for (String patientId : updatesByPatient.keySet()) {
 
-            List<RdbmsPatientLinkHistory> updates = updatesByPatient.get(patientId);
+                List<RdbmsPatientLinkHistory> updates = updatesByPatient.get(patientId);
 
-            RdbmsPatientLinkHistory last = updates.get(updates.size()-1);
-            String latestPersonId = last.getNewPersonId();
+                RdbmsPatientLinkHistory last = updates.get(updates.size() - 1);
+                String latestPersonId = last.getNewPersonId();
 
-            HashSet<String> oldPersonIds = new HashSet<>();
-            for (RdbmsPatientLinkHistory update: updates) {
-                String oldPersonId = update.getPreviousPersonId(); //note: this may be null
+                HashSet<String> oldPersonIds = new HashSet<>();
+                for (RdbmsPatientLinkHistory update : updates) {
+                    String oldPersonId = update.getPreviousPersonId(); //note: this may be null
 
-                //sometimes the person ID changes back and forth, so if the old person ID is the same as the latest person ID, then skip it
-                if (oldPersonId != null && oldPersonId.equals(latestPersonId)) {
-                    continue;
+                    //sometimes the person ID changes back and forth, so if the old person ID is the same as the latest person ID, then skip it
+                    if (oldPersonId != null && oldPersonId.equals(latestPersonId)) {
+                        continue;
+                    }
+
+                    oldPersonIds.add(oldPersonId);
                 }
 
-                oldPersonIds.add(oldPersonId);
+                for (String oldPersonId : oldPersonIds) {
+                    ret.add(new PatientLinkPair(patientId, latestPersonId, oldPersonId));
+                }
             }
 
-            for (String oldPersonId: oldPersonIds) {
-                ret.add(new PatientLinkPair(patientId, latestPersonId, oldPersonId));
-            }
+            return ret;
+
+        } finally {
+            entityManager.close();
         }
-
-        return ret;
     }
-
-
 
 }

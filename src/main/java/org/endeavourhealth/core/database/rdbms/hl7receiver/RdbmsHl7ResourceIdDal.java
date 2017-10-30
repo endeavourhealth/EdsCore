@@ -18,37 +18,42 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
     public ResourceId getResourceId(String scope, String resource, String uniqueId) throws Exception {
         EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
 
-        if (!entityManager.isOpen())
-            throw new IllegalStateException("No connection to HL7 DB");
+        try {
+            if (!entityManager.isOpen())
+                throw new IllegalStateException("No connection to HL7 DB");
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsResourceId c"
-                + " where c.scopeId = :scopeId"
-                + " and c.resourceType = :resourceType"
-                + " and c.uniqueId = :uniqueId";
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsResourceId c"
+                    + " where c.scopeId = :scopeId"
+                    + " and c.resourceType = :resourceType"
+                    + " and c.uniqueId = :uniqueId";
 
-        Query query = entityManager.createQuery(sql, RdbmsResourceId.class)
-                .setParameter("scopeId", scope).setParameter("resourceType", resource).setParameter("uniqueId", uniqueId);
+            Query query = entityManager.createQuery(sql, RdbmsResourceId.class)
+                    .setParameter("scopeId", scope).setParameter("resourceType", resource).setParameter("uniqueId", uniqueId);
 
-        if (query == null) {
-            LOG.trace("Failed to create query");
-            LOG.trace("scopeId [" + scope +"]");
-            LOG.trace("resourceType [" + resource+"]");
-            LOG.trace("uniqueId [" + uniqueId+"]");
-            throw new IllegalStateException("Failed to create query");
-        }
+            if (query == null) {
+                LOG.trace("Failed to create query");
+                LOG.trace("scopeId [" + scope + "]");
+                LOG.trace("resourceType [" + resource + "]");
+                LOG.trace("uniqueId [" + uniqueId + "]");
+                throw new IllegalStateException("Failed to create query");
+            }
 
-        List results = query.getResultList();
-        if (results.isEmpty())
-            return null;
+            List results = query.getResultList();
+            if (results.isEmpty())
+                return null;
 
-        RdbmsResourceId result = (RdbmsResourceId)results.get(0);
-        if (result != null) {
-            LOG.trace("Read recourceId:" + result.getUniqueId() + "==>" + result.getResourceId());
-            return new ResourceId(result);
-        } else {
-            return null;
+            RdbmsResourceId result = (RdbmsResourceId) results.get(0);
+            if (result != null) {
+                LOG.trace("Read recourceId:" + result.getUniqueId() + "==>" + result.getResourceId());
+                return new ResourceId(result);
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
         }
     }
 
@@ -63,9 +68,13 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             entityManager.persist(dbObj);
             entityManager.getTransaction().commit();
             LOG.trace("Saved recourceId:" + resourceId.getUniqueId() + "==>" + resourceId.getResourceId());
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;
+
+        } finally {
+            entityManager.close();
         }
     }
 

@@ -1,4 +1,4 @@
-package org.endeavourhealth.core.database.rdbms.coding.models;
+package org.endeavourhealth.core.database.rdbms.reference.models;
 
 import javax.persistence.*;
 import java.io.Serializable;

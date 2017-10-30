@@ -47,8 +47,8 @@
 
     <persistence-unit name="CodingDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.database.rdbms.coding.models.RdbmsConcept</class>
-        <class>org.endeavourhealth.core.database.rdbms.coding.models.RdbmsConceptPcLink</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConcept</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConceptPcLink</class>
         <exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>

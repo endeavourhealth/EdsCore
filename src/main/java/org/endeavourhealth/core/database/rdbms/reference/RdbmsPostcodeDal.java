@@ -20,6 +20,7 @@ public class RdbmsPostcodeDal implements PostcodeDalI {
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
         try {
             return getPostcodeReference(postcode, entityManager);
+
         } finally {
             entityManager.close();
         }

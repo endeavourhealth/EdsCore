@@ -31,18 +31,17 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        Long ret = findEnterpriseId(resourceType, resourceId, entityManager);
-        if (ret != null) {
-            entityManager.close();
-            return ret;
-        }
-
         try {
+            Long ret = findEnterpriseId(resourceType, resourceId, entityManager);
+            if (ret != null) {
+                return ret;
+            }
+
             return createEnterpriseId(resourceType, resourceId, entityManager);
 
         } catch (Exception ex) {
             //if another thread has beat us to it, we'll get an exception, so try the find again
-            ret = findEnterpriseId(resourceType, resourceId, entityManager);
+            Long ret = findEnterpriseId(resourceType, resourceId, entityManager);
             if (ret != null) {
                 return ret;
             }
@@ -80,6 +79,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         try {
             return findEnterpriseId(resourceType, resourceId, entityManager);
+
         } finally {
             entityManager.close();
         }
@@ -156,12 +156,17 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
     public Long findEnterpriseOrganisationId(String serviceId, String systemId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-        RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, systemId, entityManager);
-        entityManager.close();
-        if (mapping != null) {
-            return mapping.getEnterpriseId();
-        } else {
-            return null;
+
+        try {
+            RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, systemId, entityManager);
+            if (mapping != null) {
+                return mapping.getEnterpriseId();
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
         }
     }
 
@@ -218,18 +223,17 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        Long ret = findEnterprisePersonId(discoveryPersonId, entityManager);
-        if (ret != null) {
-            entityManager.close();
-            return ret;
-        }
-
         try {
+            Long ret = findEnterprisePersonId(discoveryPersonId, entityManager);
+            if (ret != null) {
+                return ret;
+            }
+
             return createEnterprisePersonId(discoveryPersonId, entityManager);
 
         } catch (Exception ex) {
             //if another thread has beat us to it, we'll get an exception, so try the find again
-            ret = findEnterprisePersonId(discoveryPersonId, entityManager);
+            Long ret = findEnterprisePersonId(discoveryPersonId, entityManager);
             if (ret != null) {
                 return ret;
             }
@@ -276,6 +280,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         try {
             return findEnterprisePersonId(discoveryPersonId, entityManager);
+
         } finally {
             entityManager.close();
         }
@@ -285,16 +290,15 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsEnterprisePersonIdMap c"
-                + " where c.personId = :personId";
-
-
-        Query query = entityManager.createQuery(sql, RdbmsEnterprisePersonIdMap.class)
-                .setParameter("personId", discoveryPersonId);
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEnterprisePersonIdMap c"
+                    + " where c.personId = :personId";
+
+            Query query = entityManager.createQuery(sql, RdbmsEnterprisePersonIdMap.class)
+                    .setParameter("personId", discoveryPersonId);
+
             List<RdbmsEnterprisePersonIdMap> ret = query.getResultList();
             return ret
                     .stream()
@@ -308,8 +312,10 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
     public void findEnterpriseIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
         try {
             findEnterpriseIds(resources, ids, entityManager);
+
         } finally {
             entityManager.close();
         }
@@ -358,19 +364,20 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
     public void findOrCreateEnterpriseIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        //check the DB for existing IDs
-        findEnterpriseIds(resources, ids, entityManager);
-
-        //find the resources that didn't have an ID
-        List<ResourceWrapper> resourcesToCreate = new ArrayList<>();
-        for (ResourceWrapper resource: resources) {
-            if (!ids.containsKey(resource)) {
-                resourcesToCreate.add(resource);
-            }
-        }
-
-        //for any resource without an ID, we want to create one
+        List<ResourceWrapper> resourcesToCreate = null;
         try {
+            //check the DB for existing IDs
+            findEnterpriseIds(resources, ids, entityManager);
+
+            //find the resources that didn't have an ID
+            resourcesToCreate = new ArrayList<>();
+            for (ResourceWrapper resource: resources) {
+                if (!ids.containsKey(resource)) {
+                    resourcesToCreate.add(resource);
+                }
+            }
+
+            //for any resource without an ID, we want to create one
             entityManager.getTransaction().begin();
 
             Map<ResourceWrapper, RdbmsEnterpriseIdMap> mappingMap = new HashMap<>();

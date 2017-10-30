@@ -62,23 +62,23 @@ public class RdbmsHouseholdIdDal implements HouseholdIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        Long ret = findHouseholdId(postcode, line1, line2, entityManager);
-        if (ret != null) {
-            entityManager.close();
-            return ret;
-        }
-
         try {
+            Long ret = findHouseholdId(postcode, line1, line2, entityManager);
+            if (ret != null) {
+                return ret;
+            }
+
             return createHouseholdId(postcode, line1, line2, entityManager);
 
         } catch (Exception ex) {
             //if another thread has beat us to it, we'll get an exception, so try the find again
-            ret = findHouseholdId(postcode, line1, line2, entityManager);
+            Long ret = findHouseholdId(postcode, line1, line2, entityManager);
             if (ret != null) {
                 return ret;
             }
 
             throw ex;
+
         } finally {
             entityManager.close();
         }

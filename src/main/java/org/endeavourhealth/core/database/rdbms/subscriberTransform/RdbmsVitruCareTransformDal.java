@@ -35,35 +35,36 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
         }
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-        entityManager.getTransaction().begin();
-        entityManager.persist(mapping);
-        entityManager.getTransaction().commit();
-        entityManager.close();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(mapping);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public String getVitruCareId(UUID edsPatientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsVitruCarePatientIdMap c"
-                + " where c.edsPatientId = :eds_patient_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsVitruCarePatientIdMap.class)
-                .setParameter("eds_patient_id", edsPatientId.toString());
-
-        String ret = null;
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsVitruCarePatientIdMap c"
+                    + " where c.edsPatientId = :eds_patient_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsVitruCarePatientIdMap.class)
+                    .setParameter("eds_patient_id", edsPatientId.toString());
+
             RdbmsVitruCarePatientIdMap o = (RdbmsVitruCarePatientIdMap)query.getSingleResult();
-            ret = o.getVitruCareId();
+            return o.getVitruCareId();
 
         } catch (NoResultException ex) {
-            //do nothing
+            return null;
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 }

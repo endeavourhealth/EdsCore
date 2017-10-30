@@ -14,25 +14,25 @@ public class RdbmsSnomedDal implements SnomedDalI {
     public SnomedLookup getSnomedLookup(String conceptId) throws Exception {
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsSnomedLookup c"
-                + " where c.conceptId = :concept_id";
-
-        Query query = entityManager.createQuery(sql, RdbmsSnomedLookup.class)
-                .setParameter("concept_id", conceptId);
-
-        SnomedLookup ret = null;
         try {
-            RdbmsSnomedLookup result = (RdbmsSnomedLookup)query.getSingleResult();
-            ret = new SnomedLookup(result);
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsSnomedLookup c"
+                    + " where c.conceptId = :concept_id";
 
-        } catch (NoResultException ex) {
-            //do nothing
+            Query query = entityManager.createQuery(sql, RdbmsSnomedLookup.class)
+                    .setParameter("concept_id", conceptId);
+
+            try {
+                RdbmsSnomedLookup result = (RdbmsSnomedLookup) query.getSingleResult();
+                return new SnomedLookup(result);
+
+            } catch (NoResultException ex) {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
         }
-
-        entityManager.close();
-
-        return ret;
     }
 }

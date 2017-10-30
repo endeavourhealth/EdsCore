@@ -25,7 +25,7 @@ import java.util.zip.Checksum;
 
 public class FhirStorageService {
     private static final Logger LOG = LoggerFactory.getLogger(FhirStorageService.class);
-    private static final String SCHEMA_VERSION = "0.1";
+    //private static final String SCHEMA_VERSION = "0.1";
 
     private static final ResourceDalI resourceRepository = DalProvider.factoryResourceDal();
     private static final PatientLinkDalI patientLinkDal = DalProvider.factoryPatientLinkDal();
@@ -40,51 +40,19 @@ public class FhirStorageService {
         this.systemId = systemId;
     }
 
-    public FhirResponse exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource, boolean isNewResource) throws Exception {
-        store(resource, exchangeId, batchId, isNewResource);
-        return new FhirResponse(resource);
+    public boolean exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
+        return exchangeBatchUpdate(exchangeId, batchId, resource, false);
     }
 
-    /*public FhirResponse versionSpecificUpdate(UUID versionkey, Resource resource) throws Exception {
-        Validate.resourceId(resource);
-        Validate.hasVersion(versionkey);
-
-        UUID resourceId = UUID.fromString(resource.getId());
-        String resourceType = resource.getResourceType().toString();
-
-        ResourceHistory current =  repository.getCurrentVersion(resourceType, resourceId);
-        if (current == null) {
-            throw new UnprocessableEntityException(String.format("Resource not found: ResourceType='%s', ResourceId='%s'", resourceType,resourceId.toString()));
-        }
-
-        Validate.isSameVersion(current.getVersion(), versionkey);
-
-        store(resource, null, null);
-
-        return new FhirResponse(resource);
-    }*/
-
-    public FhirResponse delete(Resource resource) throws Exception {
-        delete(resource, null, null);
-
-        return new FhirResponse(resource);
-    }
-
-    public FhirResponse exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
-        delete(resource, exchangeId, batchId);
-        return new FhirResponse(resource);
-    }
-
-
-    private void store(Resource resource, UUID exchangeId, UUID batchId, boolean isNewResource) throws Exception {
+    public boolean exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
         Validate.resourceId(resource);
 
         ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
 
         //if we're updating a resource but there's no change, don't commit the save
         //this is because Emis send us up to thousands of duplicated resources each day
-        if (!shouldSaveResource(entry, isNewResource)) {
-            return;
+        if (!shouldSaveResource(entry, isDefinitelyNewResource)) {
+            return false;
         }
 
         FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
@@ -93,31 +61,71 @@ public class FhirStorageService {
 
         //call out to our patient search and person matching services
         if (resource instanceof Patient) {
-
             //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
-
             patientLinkDal.updatePersonId((Patient)resource);
 
             //LOG.info("Updating PATIENT_SEARCH with PATIENT resource " + resource.getId());
-
             patientSearchDal.update(serviceId, systemId, (Patient)resource);
 
         } else if (resource instanceof EpisodeOfCare) {
-
             //LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
-
             patientSearchDal.update(serviceId, systemId, (EpisodeOfCare)resource);
         }
 
-        /*if (resource instanceof Patient) {
-            identifierRepository.savePatientIdentity((Patient)resource, serviceId, systemId);
-        }*/
+        return true;
     }
 
-    private boolean shouldSaveResource(ResourceWrapper entry, boolean isNewResource) throws Exception {
+
+    public boolean exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
+        return exchangeBatchDelete(exchangeId, batchId, resource, false);
+    }
+
+    public boolean exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
+        Validate.resourceId(resource);
+
+        ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+
+        //if we're updating a resource but there's no change, don't commit the save
+        //this is because Emis send us up to thousands of duplicated resources each day
+        if (!shouldDeleteResource(entry, isDefinitelyNewResource)) {
+            return false;
+        }
+
+        resourceRepository.delete(entry);
+
+        //if we're deleting the patient, then delete the row from the patient_search table
+        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
+        if (resource instanceof Patient) {
+            patientSearchDal.deletePatient(serviceId, systemId, (Patient)resource);
+        }
+
+        return true;
+    }
+
+
+    private boolean shouldDeleteResource(ResourceWrapper entry, boolean isDefinitelyNewResource) throws Exception {
+
+        //if this is the first time we've heard of this resource, then
+        //there's no point running a delete for it
+        if (isDefinitelyNewResource) {
+            return false;
+        }
+
+        //check the checksum first, so we only do a very small read from the DB
+        Long previousChecksum = resourceRepository.getResourceChecksum(entry.getResourceType(), entry.getResourceId());
+        if (previousChecksum == null) {
+            //if the previous checksum is null then we've already deleted it, so we don't need to delete again
+            return false;
+        }
+
+        return true;
+    }
+
+
+    private boolean shouldSaveResource(ResourceWrapper entry, boolean isDefinitelyNewResource) throws Exception {
 
         //if it's a brand new resource, we always want to save it
-        if (isNewResource) {
+        if (isDefinitelyNewResource) {
             return true;
         }
 
@@ -152,18 +160,6 @@ public class FhirStorageService {
         return false;
     }
 
-    private void delete(Resource resource, UUID exchangeId, UUID batchId) throws Exception {
-        Validate.resourceId(resource);
-
-        ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
-        resourceRepository.delete(entry);
-
-        //if we're deleting the patient, then delete the row from the patient_search table
-        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
-        if (resource instanceof Patient) {
-            patientSearchDal.deletePatient(serviceId, systemId, (Patient)resource);
-        }
-    }
 
     private ResourceWrapper createResourceEntry(Resource resource, UUID exchangeId, UUID batchId) throws UnprocessableEntityException, SerializationException {
         ResourceMetadata metadata = MetadataFactory.createMetadata(resource);
@@ -172,7 +168,7 @@ public class FhirStorageService {
         ResourceWrapper entry = new ResourceWrapper();
         entry.setResourceId(FhirResourceHelper.getResourceId(resource));
         entry.setResourceType(FhirResourceHelper.getResourceType(resource));
-        entry.setVersion(createTimeBasedVersion());
+        entry.setVersion(UUIDs.timeBased());
         entry.setCreatedAt(new Date());
         entry.setServiceId(serviceId);
         entry.setSystemId(systemId);
@@ -188,10 +184,6 @@ public class FhirStorageService {
         }
 
         return entry;
-    }
-
-    private UUID createTimeBasedVersion() {
-        return UUIDs.timeBased();
     }
 
     public static long generateChecksum(String data) {

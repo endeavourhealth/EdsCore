@@ -21,15 +21,15 @@ public class RdbmsEnterprisePersonUpdaterHistoryDal implements EnterprisePersonU
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        String sql = "select c"
-                + " from"
-                + " RdbmsEnterprisePersonUpdateHistory c"
-                + " order by dateRun desc";
-
-        Query query = entityManager.createQuery(sql, RdbmsEnterprisePersonUpdateHistory.class);
-        query.setMaxResults(1);
-
         try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEnterprisePersonUpdateHistory c"
+                    + " order by dateRun desc";
+
+            Query query = entityManager.createQuery(sql, RdbmsEnterprisePersonUpdateHistory.class);
+            query.setMaxResults(1);
+
             RdbmsEnterprisePersonUpdateHistory result = (RdbmsEnterprisePersonUpdateHistory)query.getSingleResult();
             return result.getDateRun();
 

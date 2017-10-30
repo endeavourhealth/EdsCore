@@ -23,7 +23,7 @@ public class ConnectionManager {
         SubscriberTransform, //note that there are multiple subscriber transform DBs (one for each subscriber)
         Ehr,
         Logback,
-        Coding;
+        Coding; //once fully moved to MySQL, this can go as it will be the same as Reference
     }
 
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
@@ -165,7 +165,7 @@ public class ConnectionManager {
         } else if (dbName == Db.Logback) {
             return "logbackDb";
         } else if (dbName == Db.Coding) {
-            return "db_coding";
+            return "coding";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }

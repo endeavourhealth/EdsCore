@@ -1,9 +1,9 @@
-package org.endeavourhealth.core.database.rdbms.coding;
+package org.endeavourhealth.core.database.rdbms.reference;
 
-import org.endeavourhealth.core.database.dal.coding.CodingDalI;
-import org.endeavourhealth.core.database.dal.coding.models.Concept;
+import org.endeavourhealth.core.database.dal.reference.CodingDalI;
+import org.endeavourhealth.core.database.dal.reference.models.Concept;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.coding.models.RdbmsConcept;
+import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConcept;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;

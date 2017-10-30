@@ -20,17 +20,21 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        RdbmsPseudoIdMap map = findIdMap(patientId, entityManager);
-        if (map == null) {
-            map = new RdbmsPseudoIdMap();
-            map.setPatientId(patientId);
-        }
-        map.setPseudoId(pseudoId);
+        try {
+            RdbmsPseudoIdMap map = findIdMap(patientId, entityManager);
+            if (map == null) {
+                map = new RdbmsPseudoIdMap();
+                map.setPatientId(patientId);
+            }
+            map.setPseudoId(pseudoId);
 
-        entityManager.getTransaction().begin();
-        entityManager.persist(map);
-        entityManager.getTransaction().commit();
-        entityManager.close();
+            entityManager.getTransaction().begin();
+            entityManager.persist(map);
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
@@ -38,13 +42,17 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
-        RdbmsPseudoIdMap result = findIdMap(patientId, entityManager);
-        entityManager.close();
+        try {
+            RdbmsPseudoIdMap result = findIdMap(patientId, entityManager);
 
-        if (result != null) {
-            return result.getPseudoId();
-        } else {
-            return null;
+            if (result != null) {
+                return result.getPseudoId();
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
         }
     }
 
