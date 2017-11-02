@@ -4,7 +4,7 @@
 
     <groupId>org.endeavourhealth.common</groupId>
     <artifactId>core</artifactId>
-    <version>1.36-SNAPSHOT</version>
+    <version>1.37-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -23,6 +23,7 @@
         <hibernate.version>5.2.10.Final</hibernate.version>
         <keycloak.version>2.0.0.Final</keycloak.version>
         <mysql.version>6.0.5</mysql.version>
+        <postgresql.version>9.4.1212.jre7</postgresql.version>
         <swagger.version>1.5.10</swagger.version>
     </properties>
 
@@ -101,6 +102,12 @@
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
         </dependency>
 
         <!-- Apache CSV library -->

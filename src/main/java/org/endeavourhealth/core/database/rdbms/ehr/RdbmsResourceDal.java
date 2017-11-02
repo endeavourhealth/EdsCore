@@ -233,9 +233,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         ps.setString(1, resourceHistory.getResourceId());
         ps.setString(2, resourceHistory.getResourceType());
-        //have to use the timestamp function otherwise it treats as a date only
-        //ps.setDate(3, new java.sql.Date(resourceHistory.getCreatedAt().getTime()));
-        ps.setTimestamp(3, new java.sql.Timestamp(resourceHistory.getCreatedAt().getTime()));
+        ps.setTimestamp(3, new java.sql.Timestamp(resourceHistory.getCreatedAt().getTime())); //have to use a timestamp otherwise it treats as a date only
+        ps.setString(4, resourceHistory.getVersion());
 
         return ps;
     }
@@ -247,7 +246,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         String sql = "DELETE FROM resource_history"
                 + " WHERE resource_id = ?"
                 + " AND resource_type = ?"
-                + " AND created_at = ?";
+                + " AND created_at = ?"
+                + " AND version = ?";
 
         return connection.prepareStatement(sql);
     }
@@ -257,34 +257,8 @@ public class RdbmsResourceDal implements ResourceDalI {
      */
     public void hardDelete(ResourceWrapper keys) throws Exception {
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory();
-        resourceHistory.setServiceId(keys.getServiceId().toString());
-        resourceHistory.setSystemId(keys.getSystemId().toString());
-        resourceHistory.setResourceType(keys.getResourceType());
-        resourceHistory.setResourceId(keys.getResourceId().toString());
-        resourceHistory.setCreatedAt(keys.getCreatedAt());
-        resourceHistory.setDeleted(true);
-        resourceHistory.setResourceData(null);
-        resourceHistory.setResourceChecksum(null);
-        resourceHistory.setExchangeBatchId(keys.getExchangeBatchId().toString());
-        resourceHistory.setVersion(keys.getVersion().toString());
-
-        //we're going to DELETE from the resource_current table, so really only need
-        //to populate the primary key columns, but I'm doing all of them for consistency with the above method
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent();
-        resourceCurrent.setServiceId(keys.getServiceId().toString());
-        resourceCurrent.setSystemId(keys.getSystemId().toString());
-        resourceCurrent.setResourceType(keys.getResourceType());
-        resourceCurrent.setResourceId(keys.getResourceId().toString());
-        resourceCurrent.setUpdatedAt(keys.getCreatedAt());
-        resourceCurrent.setResourceData(null);
-        resourceCurrent.setResourceChecksum(keys.getResourceChecksum());
-        resourceCurrent.setResourceMetadata(keys.getResourceMetadata());
-
-        if (keys.getPatientId() != null) {
-            resourceHistory.setPatientId(keys.getPatientId().toString());
-            resourceCurrent.setPatientId(keys.getPatientId().toString());
-        }
+        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(keys);
+        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(keys);
 
         EntityManager entityManager = ConnectionManager.getEhrEntityManager();
         PreparedStatement psCurrent = null;

@@ -125,9 +125,10 @@ public class ResourceWrapper {
         //this.resourceMetadata = proxy.getResourceMetadata(); //this proxy doesn't have this field
         this.resourceData = proxy.getResourceData();
         this.resourceChecksum = proxy.getResourceChecksum();
+        this.isDeleted = proxy.isDeleted();
         this.exchangeBatchId = UUID.fromString(proxy.getExchangeBatchId());
         //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
-        this.isDeleted = proxy.isDeleted();
+        this.version = UUID.fromString(proxy.getVersion());
     }
 
     public UUID getServiceId() {

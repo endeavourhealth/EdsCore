@@ -7,6 +7,8 @@ import org.endeavourhealth.common.config.ConfigManager;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -209,5 +211,23 @@ public class ConnectionManager {
 
     public static EntityManager getCodingEntityManager() throws Exception {
         return getEntityManager(Db.Coding);
+    }
+
+    /**
+     * there's a couple of places where we need to know if connection is to postgreSQL rather than MySQL
+     */
+    public static boolean isPostgreSQL(Connection connection) {
+
+        if (connection instanceof org.postgresql.jdbc.PgConnection) {
+            return true;
+
+        } else {
+            try {
+                connection.unwrap(org.postgresql.jdbc.PgConnection.class);
+                return true;
+            } catch (SQLException ex) {
+                return false;
+            }
+        }
     }
 }

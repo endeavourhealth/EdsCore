@@ -125,12 +125,24 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO enterprise_age"
-                    + " (enterprise_patient_id, date_of_birth, date_next_change)"
-                    + " VALUES (?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " date_of_birth = VALUES(date_of_birth),"
-                    + " date_next_change = VALUES(date_next_change);";
+            //syntax for postreSQL is slightly different
+            String sql = null;
+            if (ConnectionManager.isPostgreSQL(connection)) {
+                sql = "INSERT INTO enterprise_age"
+                        + " (enterprise_patient_id, date_of_birth, date_next_change)"
+                        + " VALUES (?, ?, ?)"
+                        + " ON CONFLICT (enterprise_patient_id) DO UPDATE SET"
+                        + " date_of_birth = EXCLUDED.date_of_birth,"
+                        + " date_next_change = EXCLUDED.date_next_change;";
+
+            } else {
+                sql = "INSERT INTO enterprise_age"
+                        + " (enterprise_patient_id, date_of_birth, date_next_change)"
+                        + " VALUES (?, ?, ?)"
+                        + " ON DUPLICATE KEY UPDATE"
+                        + " date_of_birth = VALUES(date_of_birth),"
+                        + " date_next_change = VALUES(date_next_change);";
+            }
 
             ps = connection.prepareStatement(sql);
 

@@ -191,17 +191,8 @@ public class FhirDeletionService {
 
             for (ResourceWrapper resource : resourceByExchangeBatchList) {
 
-                //populate the resource entry util class with the keys we'll need to delete the resource
-                ResourceWrapper resourceEntry = new ResourceWrapper();
-                resourceEntry.setServiceId(service.getId());
-                resourceEntry.setSystemId(systemId);
-                resourceEntry.setResourceType(resource.getResourceType());
-                resourceEntry.setResourceId(resource.getResourceId());
-                resourceEntry.setVersion(resource.getVersion());
-                resourceEntry.setExchangeBatchId(batchId);
-
                 //bump the actual delete from the DB into the threadpool
-                DeleteResourceTask callable = new DeleteResourceTask(resourceEntry);
+                DeleteResourceTask callable = new DeleteResourceTask(resource);
                 List<ThreadPoolError> errors = threadPool.submit(callable);
                 handleErrors(errors);
             }

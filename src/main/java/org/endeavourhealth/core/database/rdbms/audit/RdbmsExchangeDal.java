@@ -438,7 +438,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " RdbmsExchange c"
                     + " where c.serviceId = :service_id"
                     + " and c.timestamp >= :date_from"
-                    + " and c.timestamp <= :date_to";
+                    + " and c.timestamp <= :date_to"
+                    + " order by c.timestamp desc";
 
             Query query = entityManager.createQuery(sql, RdbmsExchange.class)
                     .setParameter("service_id", serviceId.toString())
