@@ -240,7 +240,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-            entityManager.close();
 
         } finally {
             entityManager.close();
