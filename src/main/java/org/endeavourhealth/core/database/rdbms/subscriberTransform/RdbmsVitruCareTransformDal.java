@@ -3,11 +3,11 @@ package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 import org.endeavourhealth.core.database.dal.subscriberTransform.VitruCareTransformDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsVitruCarePatientIdMap;
-import org.joda.time.DateTime;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.util.Date;
 import java.util.UUID;
 
 public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
@@ -24,7 +24,7 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
         o.setServiceId(serviceId.toString());
         o.setSystemId(systemId.toString());
         o.setVitruCareId(virtruCareId);
-        o.setCreatedAt(new DateTime());
+        o.setCreatedAt(new Date());
 
         saveVitruCareIdMapping(o);
     }

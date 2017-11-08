@@ -1,12 +1,11 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform.models;
 
-import org.joda.time.DateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "vitru_care_patient_id_map")
@@ -15,7 +14,7 @@ public class RdbmsVitruCarePatientIdMap implements Serializable {
     private String edsPatientId = null;
     private String serviceId = null;
     private String systemId = null;
-    private DateTime createdAt = null;
+    private Date createdAt = null;
     private String vitruCareId = null;
 
     @Id
@@ -47,11 +46,11 @@ public class RdbmsVitruCarePatientIdMap implements Serializable {
     }
 
     @Column(name = "created_at", nullable = false)
-    public DateTime getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(DateTime createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
