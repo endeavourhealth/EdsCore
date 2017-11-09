@@ -160,6 +160,10 @@ public class DalProvider {
         }
     }
 
+    public static Read2ToSnomedMapDalI factoryRead2ToSnomedMapDal() {
+            return new RdbmsRead2ToSnomedMapDal();
+    }
+
     public static PatientCohortDalI factoryPatientCohortDal() {
         if (useCassandra()) {
             return new CassandraPatientCohortRepository();
