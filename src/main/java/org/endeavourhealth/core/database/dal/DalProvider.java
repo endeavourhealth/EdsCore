@@ -229,6 +229,10 @@ public class DalProvider {
         return new RdbmsEnterpriseInstanceMapDal(subscriberConfigName);
     }
 
+    public static ExchangeBatchExtraResourceDalI factoryExchangeBatchExtraResourceDal(String subscriberConfigName) {
+        return new RdbmsExchangeBatchExtraResourcesDal(subscriberConfigName);
+    }
+
     private static boolean useCassandra() {
 
         if (cachedUseCassandra == null) {

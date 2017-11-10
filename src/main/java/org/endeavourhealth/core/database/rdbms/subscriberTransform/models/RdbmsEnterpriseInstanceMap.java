@@ -4,10 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "enterprise_instance_map")
-public class RdbmsEnterpriseInstanceMap {
+public class RdbmsEnterpriseInstanceMap implements Serializable {
 
     private String resourceType = null;
     private String resourceIdFrom = null;
