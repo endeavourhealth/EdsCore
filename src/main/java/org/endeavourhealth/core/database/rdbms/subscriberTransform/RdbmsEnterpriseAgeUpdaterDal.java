@@ -56,6 +56,11 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
 
     public Integer[] calculateAgeValues(long patientId, Date dateOfBirth) throws Exception {
 
+        //if the date of birth is null, we can't calculate anything and shouldn't save anything
+        if (dateOfBirth == null) {
+            return new Integer[3];
+        }
+
         RdbmsEnterpriseAge map = findAgeObject(patientId);
         if (map == null) {
             map = new RdbmsEnterpriseAge();
@@ -111,6 +116,11 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
     }
 
     public void save(EnterpriseAge obj) throws Exception {
+
+        //just adding to make this clearer if it happens again
+        if (obj.getDateOfBirth() == null) {
+            throw new IllegalArgumentException("DateOfBirth cannot be null");
+        }
 
         RdbmsEnterpriseAge dbObj = new RdbmsEnterpriseAge(obj);
 
