@@ -110,6 +110,7 @@ public class ResourceWrapper {
         //this.exchangeBatchId = proxy. //this proxy object doesn't have this field
         //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
         //this.isDeleted = proxy //this proxy object doesn't have this field
+        //this.version = UUID.fromString(proxy.getVersion()); //not present in proxy
     }
 
     public ResourceWrapper(RdbmsResourceHistory proxy) {

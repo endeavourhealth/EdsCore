@@ -225,10 +225,6 @@ public class DalProvider {
         return new RdbmsCodingDal();
     }
 
-    public static EnterpriseInstanceMapDalI factoryEnterpriseInstanceDal(String subscriberConfigName) {
-        return new RdbmsEnterpriseInstanceMapDal(subscriberConfigName);
-    }
-
     public static ExchangeBatchExtraResourceDalI factoryExchangeBatchExtraResourceDal(String subscriberConfigName) {
         return new RdbmsExchangeBatchExtraResourcesDal(subscriberConfigName);
     }
