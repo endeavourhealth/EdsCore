@@ -11,6 +11,7 @@ import java.util.List;
 public final class JsonClient {
     private String uuid = null;
     private String name = null;
+    private String clientId = null;
     private String description = null;
     private List<JsonEndUserRole> clientRoles = null;
 
@@ -20,6 +21,7 @@ public final class JsonClient {
     public JsonClient(ClientRepresentation keycloakClientRepresentation, List<RoleRepresentation> keycloakClientRoles) {
         this.uuid = keycloakClientRepresentation.getId();  //maybe be non UUID, i.e. eds-ui
         this.name = keycloakClientRepresentation.getName() == null ? keycloakClientRepresentation.getClientId() : keycloakClientRepresentation.getName();
+        this.clientId = keycloakClientRepresentation.getClientId();
 
         this.description = keycloakClientRepresentation.getDescription();
 
@@ -48,6 +50,14 @@ public final class JsonClient {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public String getDescription() {
