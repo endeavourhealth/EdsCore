@@ -23,7 +23,7 @@ public class EmisCsvCodeMap {
     public EmisCsvCodeMap() {}
 
     public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) {
-        this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid();
+        //this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid(); //not present in the proxy
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
         this.codeType = proxy.getCodeType();

@@ -161,7 +161,7 @@ public class DalProvider {
     }
 
     public static Read2ToSnomedMapDalI factoryRead2ToSnomedMapDal() {
-            return new RdbmsRead2ToSnomedMapDal();
+        return new RdbmsRead2ToSnomedMapDal();
     }
 
     public static PatientCohortDalI factoryPatientCohortDal() {
@@ -223,6 +223,10 @@ public class DalProvider {
 
     public static CodingDalI factoryCodingDal() {
         return new RdbmsCodingDal();
+    }
+
+    public static ExchangeBatchExtraResourceDalI factoryExchangeBatchExtraResourceDal(String subscriberConfigName) {
+        return new RdbmsExchangeBatchExtraResourcesDal(subscriberConfigName);
     }
 
     private static boolean useCassandra() {

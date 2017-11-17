@@ -4,10 +4,14 @@ import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
 import org.endeavourhealth.core.database.dal.audit.models.ExchangeBatch;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeBatch;
+import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -23,13 +27,42 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         RdbmsExchangeBatch dbObj = new RdbmsExchangeBatch(exchangeBatch);
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
         try {
             entityManager.getTransaction().begin();
-            entityManager.persist(dbObj);
+
+            //persist only works for initial inserts not updates, so changing to use upsert
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange_batch"
+                    + " (exchange_id, batch_id, inserted_at, eds_patient_id)"
+                    + " VALUES (?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " eds_patient_id = VALUES(eds_patient_id);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, dbObj.getExchangeId());
+            ps.setString(2, dbObj.getBatchId());
+            ps.setTimestamp(3, new java.sql.Timestamp(dbObj.getInsertedAt().getTime()));
+            if (dbObj.getEdsPatientId() == null) {
+                ps.setNull(4, Types.VARCHAR);
+            } else {
+                ps.setString(4, dbObj.getEdsPatientId());
+            }
+
+            ps.executeUpdate();
+
             entityManager.getTransaction().commit();
 
         } finally {
             entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
         }
     }
 
@@ -40,7 +73,8 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsExchangeBatch c"
-                    + " where c.exchangeId = :exchange_id";
+                    + " where c.exchangeId = :exchange_id"
+                    + " order by inserted_at;";
 
             Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
                     .setParameter("exchange_id", exchangeId.toString());
