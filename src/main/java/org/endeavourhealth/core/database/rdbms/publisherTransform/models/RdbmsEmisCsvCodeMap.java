@@ -12,7 +12,6 @@ import java.io.Serializable;
 @Table(name = "emis_csv_code_map")
 public class RdbmsEmisCsvCodeMap implements Serializable {
 
-    private String dataSharingAgreementGuid = null;
     private boolean medication = false;
     private long codeId = -1;
     private String codeType = null;
@@ -30,7 +29,6 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
     public RdbmsEmisCsvCodeMap() { }
 
     public RdbmsEmisCsvCodeMap(EmisCsvCodeMap proxy) {
-        this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid();
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
         this.codeType = proxy.getCodeType();
@@ -44,16 +42,6 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.nationalCodeCategory = proxy.getNationalCodeCategory();
         this.nationalCodeDescription = proxy.getNationalCodeDescription();
         this.parentCodeId = proxy.getParentCodeId();
-    }
-
-    @Id
-    @Column(name = "data_sharing_agreement_guid", nullable = false)
-    public String getDataSharingAgreementGuid() {
-        return dataSharingAgreementGuid;
-    }
-
-    public void setDataSharingAgreementGuid(String dataSharingAgreementGuid) {
-        this.dataSharingAgreementGuid = dataSharingAgreementGuid;
     }
 
     @Id

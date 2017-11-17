@@ -43,8 +43,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO emis_csv_code_map"
-                    + " (data_sharing_agreement_guid, medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " code_type = VALUES(code_type),"
                     + " codeable_concept = VALUES(codeable_concept),"
@@ -60,63 +60,62 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, emisMapping.getDataSharingAgreementGuid());
-            ps.setBoolean(2, emisMapping.isMedication());
-            ps.setLong(3, emisMapping.getCodeId());
+            ps.setBoolean(1, emisMapping.isMedication());
+            ps.setLong(2, emisMapping.getCodeId());
             if (Strings.isNullOrEmpty(emisMapping.getCodeType())) {
-                ps.setNull(4, Types.VARCHAR);
+                ps.setNull(3, Types.VARCHAR);
             } else {
-                ps.setString(4, emisMapping.getCodeType());
+                ps.setString(3, emisMapping.getCodeType());
             }
             if (Strings.isNullOrEmpty(emisMapping.getCodeableConcept())) {
-                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(4, Types.VARCHAR);
             } else {
-                ps.setString(5, emisMapping.getCodeableConcept());
+                ps.setString(4, emisMapping.getCodeableConcept());
             }
             if (Strings.isNullOrEmpty(emisMapping.getReadTerm())) {
-                ps.setNull(6, Types.VARCHAR);
+                ps.setNull(5, Types.VARCHAR);
             } else {
-                ps.setString(6, emisMapping.getReadTerm());
+                ps.setString(5, emisMapping.getReadTerm());
             }
             if (Strings.isNullOrEmpty(emisMapping.getReadCode())) {
-                ps.setNull(7, Types.VARCHAR);
+                ps.setNull(6, Types.VARCHAR);
             } else {
-                ps.setString(7, emisMapping.getReadCode());
+                ps.setString(6, emisMapping.getReadCode());
             }
             if (emisMapping.getSnomedConceptId() == null) {
-                ps.setNull(8, Types.BIGINT);
+                ps.setNull(7, Types.BIGINT);
             } else {
-                ps.setLong(8, emisMapping.getSnomedConceptId());
+                ps.setLong(7, emisMapping.getSnomedConceptId());
             }
             if (emisMapping.getSnomedDescriptionId() == null) {
-                ps.setNull(9, Types.BIGINT);
+                ps.setNull(8, Types.BIGINT);
             } else {
-                ps.setLong(9, emisMapping.getSnomedDescriptionId());
+                ps.setLong(8, emisMapping.getSnomedDescriptionId());
             }
             if (Strings.isNullOrEmpty(emisMapping.getSnomedTerm())) {
-                ps.setNull(10, Types.VARCHAR);
+                ps.setNull(9, Types.VARCHAR);
             } else {
-                ps.setString(10, emisMapping.getSnomedTerm());
+                ps.setString(9, emisMapping.getSnomedTerm());
             }
             if (Strings.isNullOrEmpty(emisMapping.getNationalCode())) {
-                ps.setNull(11, Types.VARCHAR);
+                ps.setNull(10, Types.VARCHAR);
             } else {
-                ps.setString(11, emisMapping.getNationalCode());
+                ps.setString(10, emisMapping.getNationalCode());
             }
             if (Strings.isNullOrEmpty(emisMapping.getNationalCodeCategory())) {
-                ps.setNull(12, Types.VARCHAR);
+                ps.setNull(11, Types.VARCHAR);
             } else {
-                ps.setString(12, emisMapping.getNationalCodeCategory());
+                ps.setString(11, emisMapping.getNationalCodeCategory());
             }
             if (Strings.isNullOrEmpty(emisMapping.getNationalCodeDescription())) {
-                ps.setNull(13, Types.VARCHAR);
+                ps.setNull(12, Types.VARCHAR);
             } else {
-                ps.setString(13, emisMapping.getNationalCodeDescription());
+                ps.setString(12, emisMapping.getNationalCodeDescription());
             }
             if (emisMapping.getParentCodeId() == null) {
-                ps.setNull(14, Types.BIGINT);
+                ps.setNull(13, Types.BIGINT);
             } else {
-                ps.setLong(14, emisMapping.getParentCodeId());
+                ps.setLong(13, emisMapping.getParentCodeId());
             }
 
             ps.executeUpdate();
@@ -140,12 +139,10 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsEmisCsvCodeMap c"
-                    + " where c.dataSharingAgreementGuid = :data_sharing_agreement_guid"
-                    + " and c.medication = :medication"
+                    + " where c.medication = :medication"
                     + " and c.codeId = :code_id";
 
             Query query = entityManager.createQuery(sql, RdbmsEmisCsvCodeMap.class)
-                    .setParameter("data_sharing_agreement_guid", dataSharingAgreementGuid)
                     .setParameter("medication", new Boolean(medication))
                     .setParameter("code_id", codeId);
 

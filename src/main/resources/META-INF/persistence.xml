@@ -161,7 +161,7 @@
             <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
-            <property name="hibernate.hikari.maximumPoolSize" value="16" />
+            <property name="hibernate.hikari.maximumPoolSize" value="20" />
             <property name="hibernate.hikari.minimumIdle" value="3" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
