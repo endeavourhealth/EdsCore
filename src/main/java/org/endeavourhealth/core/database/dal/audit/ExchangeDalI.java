@@ -1,9 +1,6 @@
 package org.endeavourhealth.core.database.dal.audit;
 
-import org.endeavourhealth.core.database.dal.audit.models.Exchange;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeEvent;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformAudit;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformErrorState;
+import org.endeavourhealth.core.database.dal.audit.models.*;
 
 import java.util.Date;
 import java.util.List;
@@ -33,4 +30,8 @@ public interface ExchangeDalI {
     List<ExchangeTransformErrorState> getAllErrorStates() throws Exception;
 
     boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception;
+
+    void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception;
+    List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception;
+    List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) throws Exception;
 }

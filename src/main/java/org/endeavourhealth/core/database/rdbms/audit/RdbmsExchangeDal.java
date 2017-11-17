@@ -3,15 +3,9 @@ package org.endeavourhealth.core.database.rdbms.audit;
 import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
-import org.endeavourhealth.core.database.dal.audit.models.Exchange;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeEvent;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformAudit;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformErrorState;
+import org.endeavourhealth.core.database.dal.audit.models.*;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchange;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeEvent;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformAudit;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformErrorState;
+import org.endeavourhealth.core.database.rdbms.audit.models.*;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -601,6 +595,125 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                 ret.add(audit);
             }
             return ret;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception {
+
+        RdbmsExchangeSubscriberTransformAudit dbObj = new RdbmsExchangeSubscriberTransformAudit(subscriberTransformAudit);
+
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange_subscriber_transform_audit"
+                    + " (exchange_id, exchange_batch_id, subscriber_config_name, started, ended, error_xml, number_resources_transformed, queued_message_id)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " ended = VALUES(ended),"
+                    + " error_xml = VALUES(error_xml),"
+                    + " number_resources_transformed = VALUES(number_resources_transformed),"
+                    + " queued_message_id = VALUES(queued_message_id);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, dbObj.getExchangeId());
+            ps.setString(2, dbObj.getExchangeBatchId());
+            ps.setString(3, dbObj.getSubscriberConfigName());
+            ps.setTimestamp(4, new java.sql.Timestamp(dbObj.getStarted().getTime()));
+            if (dbObj.getEnded() != null) {
+                ps.setTimestamp(5, new java.sql.Timestamp(dbObj.getEnded().getTime()));
+            } else {
+                ps.setNull(5, Types.TIMESTAMP);
+            }
+            if (!Strings.isNullOrEmpty(dbObj.getErrorXml())) {
+                ps.setString(6, dbObj.getErrorXml());
+            } else {
+                ps.setNull(6, Types.VARCHAR);
+            }
+            if (dbObj.getNumberResourcesTransformed() != null) {
+                ps.setInt(7, dbObj.getNumberResourcesTransformed());
+            } else {
+                ps.setNull(7, Types.INTEGER);
+            }
+            if (!Strings.isNullOrEmpty(dbObj.getQueuedMessageId())) {
+                ps.setString(8, dbObj.getQueuedMessageId());
+            } else {
+                ps.setNull(8, Types.VARCHAR);
+            }
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    @Override
+    public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeSubscriberTransformAudit c"
+                    + " where c.exchangeId = :exchange_id"
+                    + " order by c.started";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeSubscriberTransformAudit.class)
+                    .setParameter("exchange_id", exchangeId.toString());
+
+            List<RdbmsExchangeSubscriberTransformAudit> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeSubscriberTransformAudit(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeSubscriberTransformAudit c"
+                    + " where c.exchangeId = :exchange_id"
+                    + " and c.exchangeBatchId = :exchange_batch_id"
+                    + " order by c.started";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeSubscriberTransformAudit.class)
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setParameter("exchange_batch_id", exchangeBatchId.toString());
+
+            List<RdbmsExchangeSubscriberTransformAudit> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new ExchangeSubscriberTransformAudit(T))
+                    .collect(Collectors.toList());
 
         } finally {
             entityManager.close();

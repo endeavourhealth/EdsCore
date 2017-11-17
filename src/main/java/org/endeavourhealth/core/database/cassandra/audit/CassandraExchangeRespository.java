@@ -8,10 +8,7 @@ import org.endeavourhealth.common.cassandra.Repository;
 import org.endeavourhealth.core.database.cassandra.audit.accessors.AuditAccessor;
 import org.endeavourhealth.core.database.cassandra.audit.models.*;
 import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
-import org.endeavourhealth.core.database.dal.audit.models.Exchange;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeEvent;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformAudit;
-import org.endeavourhealth.core.database.dal.audit.models.ExchangeTransformErrorState;
+import org.endeavourhealth.core.database.dal.audit.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,6 +175,23 @@ public class CassandraExchangeRespository extends Repository implements Exchange
 
         //if the first exchange for our service/system was never processed OK, we've not properly started receiving for this service
         return false;
+    }
+
+    @Override
+    public void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception {
+        //this audit was added after the MySQL changever had started, so not implementing in Cassandra
+    }
+
+    @Override
+    public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) {
+        //this audit table doesn't exist in Cassandra, so return an empty list
+        return new ArrayList<>();
+    }
+
+    @Override
+    public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) {
+        //this audit table doesn't exist in Cassandra, so return an empty list
+        return new ArrayList<>();
     }
 
     public List<ExchangeTransformAudit> getAllExchangeTransformAudits(UUID serviceId, UUID systemId) {
