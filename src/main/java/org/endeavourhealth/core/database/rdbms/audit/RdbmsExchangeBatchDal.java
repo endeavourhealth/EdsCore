@@ -74,7 +74,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
                     + " from"
                     + " RdbmsExchangeBatch c"
                     + " where c.exchangeId = :exchange_id"
-                    + " order by inserted_at;";
+                    + " order by c.inserted_at ASC";
 
             Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
                     .setParameter("exchange_id", exchangeId.toString());

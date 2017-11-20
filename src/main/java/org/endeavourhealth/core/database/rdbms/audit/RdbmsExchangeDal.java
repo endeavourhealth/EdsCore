@@ -517,7 +517,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " from"
                     + " RdbmsExchange c"
                     + " where c.serviceId = :service_id"
-                    + " order by c.timestamp DESC";
+                    + " order by c.timestamp ASC";
 
             Query query = entityManager.createQuery(sql)
                     .setParameter("service_id", serviceId.toString());
