@@ -45,6 +45,11 @@ public class CassandraLibraryRepository extends Repository implements LibraryDal
 
             } else if (entity instanceof ActiveItem) {
                 CassandraActiveItem dbObj = new CassandraActiveItem((ActiveItem)entity);
+                //active_item doesn't have an "id" column in the MySQL tables, so new ones will have a null id because
+                //it's not generated in the EDS-UI endpoint. So check for this and assign if needed
+                if (dbObj.getId() == null) {
+                    dbObj.setId(UUID.randomUUID());
+                }
                 batch.add(mapperActiveItem.saveQuery(dbObj));
 
             } else if (entity instanceof ItemDependency) {
