@@ -33,6 +33,7 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(emisObj);
+            LOG.debug("Save sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId);
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
@@ -49,13 +50,15 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
             Iterator<Enumerations.ResourceType> it = resourceIds.keySet().iterator();
             while (it.hasNext()) {
                 Enumerations.ResourceType type = it.next();
-                LOG.trace("saveSusResourceMappings-Key:" + type.toCode());
+                LOG.debug("Save sus_resource_map entries(type):" + type.toCode());
                 ps.setString(3, type.toCode());
 
                 List<UUID> uuidList = resourceIds.get(type);
                 Iterator resourceUUIDList = uuidList.iterator();
                 while (resourceUUIDList.hasNext()) {
-                    ps.setString(4, ((UUID) resourceUUIDList.next()).toString());
+                    UUID uuid = (UUID) resourceUUIDList.next();
+                    LOG.debug("Save sus_resource_map entries+:" + type.toCode() + "/" + uuid.toString());
+                    ps.setString(4, uuid.toString());
                     ps.executeUpdate();
                 }
             }
@@ -74,6 +77,9 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public void saveSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType, List<UUID> resourceIds) throws Exception {
+        LOG.debug("Save sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId + "/" + resourceType.toCode());
+        resourceIds.forEach((u) -> {LOG.debug("Save sus_resource_map entries(uuid):" + u.toString());});
+
         HashMap<Enumerations.ResourceType, List<UUID>> hm = new HashMap<Enumerations.ResourceType, List<UUID>>();
         hm.put(resourceType, resourceIds);
         saveSusResourceMappings(serviceId, sourceRowId, hm);
@@ -88,6 +94,8 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
             entityManager.getTransaction().begin();
 
+            LOG.debug("Delete sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId);
+
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(emisObj);
 
@@ -95,7 +103,7 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
             Connection connection = session.connection();
 
             String sql = "DELETE FROM sus_resource_map"
-                    + " WHERE service_id=?, source_row_id=?, destination_resource_type=?, destination_resource_id=?";
+                    + " WHERE service_id=? and source_row_id=? and destination_resource_type=? and destination_resource_id=?";
 
             ps = connection.prepareStatement(sql);
 
@@ -105,12 +113,15 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
             Iterator<Enumerations.ResourceType> it = resourceIds.keySet().iterator();
             while (it.hasNext()) {
                 Enumerations.ResourceType type = it.next();
+                LOG.debug("Delete sus_resource_map entries(type):" + type.toCode());
                 ps.setString(3, type.toCode());
 
-                List<UUID> uuidList = resourceIds.get(type.toCode());
+                List<UUID> uuidList = resourceIds.get(type);
                 Iterator resourceUUIDList = uuidList.iterator();
                 while (resourceUUIDList.hasNext()) {
-                    ps.setString(4, ((UUID) resourceUUIDList.next()).toString());
+                    UUID uuid = (UUID) resourceUUIDList.next();
+                    LOG.debug("Delete sus_resource_map entries+:" + type.toCode() + "/" + uuid.toString());
+                    ps.setString(4, uuid.toString());
                     ps.executeUpdate();
                 }
             }
@@ -129,6 +140,9 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public void deleteSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType, List<UUID> resourceIds) throws Exception {
+        LOG.debug("Delete sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId + "/" + resourceType.toCode());
+        resourceIds.forEach((u) -> {LOG.debug("Delete sus_resource_map entries(uuid):" + u.toString());});
+
         HashMap hm = new HashMap();
         hm.put(resourceType, resourceIds);
         deleteSusResourceMappings(serviceId, sourceRowId, hm);
@@ -136,12 +150,14 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public Map<Enumerations.ResourceType, List<UUID>> getSusResourceMappings(UUID serviceId, String sourceRowId) throws Exception {
+        int i = 1 / 0;
         return null;
     }
 
     @Override
     public List<UUID> getSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        LOG.debug("Looking for sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId + "/" + resourceType.toCode());
 
         try {
             String sql = "select c"
@@ -160,6 +176,8 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
                     .stream()
                     .map(T -> UUID.fromString(T.getDestinationResourceId()))
                     .collect(Collectors.toList());
+
+            ret.forEach((u) -> {LOG.debug("Found sus_resource_map entries:" + u.toString());});
 
             return ret;
 
