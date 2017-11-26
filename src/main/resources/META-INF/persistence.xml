@@ -131,7 +131,7 @@
         <class>org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
-            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
@@ -158,7 +158,7 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsBartsSusResourceMap</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.show_sql" value="false" />
             <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
