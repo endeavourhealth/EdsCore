@@ -122,6 +122,7 @@
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
+            <!--<property name="hibernate.hikari.maxLifetime" value="600000" />--> <!--default is 1800000 = 30 mins-->
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
         </properties>
     </persistence-unit>

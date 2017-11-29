@@ -144,7 +144,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         //and does updates and selects in a single statement
         String tmpTable = "`resource_lookup_tmp_" + UUID.randomUUID().toString() + "`";
 
-        String sqlCreate = "CREATE TABLE " + tmpTable + " ("
+        String sqlCreate = "CREATE TEMPORARY TABLE " + tmpTable + " ("
                 + "service_id char(36), "
                 + "system_id char(36), "
                 + "resource_type varchar(50), "
@@ -245,7 +245,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         //and does updates and selects in a single statement
         String tmpTable = "`resource_lookup_tmp_" + UUID.randomUUID().toString() + "`";
 
-        String sqlCreate = "CREATE TABLE " + tmpTable + " ("
+        String sqlCreate = "CREATE TEMPORARY TABLE " + tmpTable + " ("
                 + "resource_type varchar(50), "
                 + "eds_id char(36), "
                 + "ordinal int"
