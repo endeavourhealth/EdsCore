@@ -21,6 +21,7 @@ public class PatientSearch {
     private UUID patientId = null;
     private Date lastUpdated = null;
     private String organisationTypeCode = null;
+    private String registrationTypeCode = null;
     
     public PatientSearch() {}
     
@@ -39,6 +40,7 @@ public class PatientSearch {
         this.patientId = UUID.fromString(proxy.getPatientId());
         this.lastUpdated = proxy.getLastUpdated();
         this.organisationTypeCode = proxy.getOrganisationTypeCode();
+        this.registrationTypeCode = proxy.getRegistrationTypeCode();
     }
 
     public UUID getServiceId() {
@@ -151,5 +153,13 @@ public class PatientSearch {
 
     public void setOrganisationTypeCode(String organisationTypeCode) {
         this.organisationTypeCode = organisationTypeCode;
+    }
+
+    public String getRegistrationTypeCode() {
+        return registrationTypeCode;
+    }
+
+    public void setRegistrationTypeCode(String registrationTypeCode) {
+        this.registrationTypeCode = registrationTypeCode;
     }
 }

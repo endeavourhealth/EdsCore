@@ -38,13 +38,14 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String gender = findGender(fhirPatient);
         Date dob = fhirPatient.getBirthDate();
         Date dod = findDateOfDeath(fhirPatient);
+        String registrationType = findRegistrationType(fhirPatient);
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;
 
         try {
             entityManager.getTransaction().begin();
-            ps = createPatientOfCarePreparedStatement(entityManager);
+            ps = createPatientPreparedStatement(entityManager);
 
             ps.setString(1, serviceId.toString());
             ps.setString(2, systemId.toString());
@@ -85,6 +86,11 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 ps.setNull(10, Types.VARCHAR);
             }
             ps.setDate(11, new java.sql.Date(new Date().getTime()));
+            if (!Strings.isNullOrEmpty(registrationType)) {
+                ps.setString(12, registrationType);
+            } else {
+                ps.setNull(12, Types.VARCHAR);
+            }
 
             ps.executeUpdate();
 
@@ -131,6 +137,17 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 ps.close();
             }
         }
+    }
+
+    private String findRegistrationType(Patient fhirPatient) {
+
+        Extension extension = ExtensionConverter.findExtension(fhirPatient, FhirExtensionUri.PATIENT_REGISTRATION_TYPE);
+        if (extension != null) {
+            Coding coding = (Coding)extension.getValue();
+            return coding.getCode();
+        }
+
+        return null;
     }
 
     public void update(UUID serviceId, UUID systemId, EpisodeOfCare fhirEpisode) throws Exception {
@@ -237,7 +254,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         return connection.prepareStatement(sql);
     }
 
-    private static PreparedStatement createPatientOfCarePreparedStatement(EntityManager entityManager) throws Exception {
+    private static PreparedStatement createPatientPreparedStatement(EntityManager entityManager) throws Exception {
 
         SessionImpl session = (SessionImpl)entityManager.getDelegate();
         Connection connection = session.connection();
@@ -246,8 +263,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String sql = null;
         if (ConnectionManager.isPostgreSQL(connection)) {
             sql = "INSERT INTO patient_search"
-                    + " (service_id, system_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, postcode, gender, last_updated)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (service_id, system_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, postcode, gender, last_updated, registration_type_code)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON CONFLICT (service_id, system_id, patient_id) DO UPDATE SET"
                     + " nhs_number = EXCLUDED.nhs_number,"
                     + " forenames = EXCLUDED.forenames,"
@@ -256,12 +273,13 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                     + " date_of_death = EXCLUDED.date_of_death,"
                     + " postcode = EXCLUDED.postcode,"
                     + " gender = EXCLUDED.gender,"
-                    + " last_updated = EXCLUDED.last_updated;";            
+                    + " last_updated = EXCLUDED.last_updated,"
+                    + " registration_type_code = EXCLUDED.registration_type_code;";
 
         } else {
             sql = "INSERT INTO patient_search"
-                    + " (service_id, system_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, postcode, gender, last_updated)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (service_id, system_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, postcode, gender, last_updated, registration_type_code)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " nhs_number = VALUES(nhs_number),"
                     + " forenames = VALUES(forenames),"
@@ -270,7 +288,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                     + " date_of_death = VALUES(date_of_death),"
                     + " postcode = VALUES(postcode),"
                     + " gender = VALUES(gender),"
-                    + " last_updated = VALUES(last_updated);";
+                    + " last_updated = VALUES(last_updated),"
+                    + " registration_type_code = VALUES(registration_type_code);";
         }
 
         return connection.prepareStatement(sql);
