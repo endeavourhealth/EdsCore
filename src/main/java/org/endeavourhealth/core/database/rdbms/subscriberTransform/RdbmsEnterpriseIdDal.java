@@ -506,7 +506,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
                     + " where c.resourceType = :resourceType"
                     + " and c.resourceIdTo = :old_resource_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsEnterpriseInstanceMap.class)
+            Query query = entityManager.createQuery(sql)
                     .setParameter("resourceType", resourceType.toString())
                     .setParameter("old_resource_id", oldMappedResourceId.toString())
                     .setParameter("new_resource_id", newMappedResourceId.toString());
@@ -517,7 +517,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
                     + " where c.resourceType = :resourceType"
                     + " and c.resourceId = :old_resource_id";
 
-            query = entityManager.createQuery(sql, RdbmsEnterpriseIdMap.class)
+            query = entityManager.createQuery(sql)
                     .setParameter("resourceType", resourceType.toString())
                     .setParameter("old_resource_id", oldMappedResourceId.toString())
                     .setParameter("new_resource_id", newMappedResourceId.toString());
