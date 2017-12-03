@@ -556,6 +556,12 @@ public class RdbmsResourceDal implements ResourceDalI {
             Long ret = null;
 
             List<Long> list = query.getResultList();
+
+            //a resource should only exist in the table once, so if there are multiple, then something is wrong
+            if (list.size() > 1) {
+                throw new Exception("Found " + list.size() + " checksums for " + resourceType + " " + resourceId);
+            }
+
             for (Long s : list) {
                 ret = s;
             }
