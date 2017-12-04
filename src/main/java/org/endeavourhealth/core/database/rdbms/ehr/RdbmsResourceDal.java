@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
+import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -323,6 +324,11 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } catch (NoResultException ex) {
             return null;
+
+        } catch (NonUniqueResultException nu) {
+            //seen this exception a couple of times in AWS which should not happen, so adding additional logging
+            LOG.error("More than one result found for resource_current with resource_type " + resourceType + " and resource_id = " + resourceId);
+            throw nu;
 
         } finally {
             entityManager.close();
