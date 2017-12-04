@@ -20,6 +20,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
         </properties>
     </persistence-unit>
 
@@ -42,6 +43,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
         </properties>
     </persistence-unit>
 
