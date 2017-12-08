@@ -25,6 +25,7 @@ public class ConnectionManager {
         SubscriberTransform, //note that there are multiple subscriber transform DBs (one for each subscriber)
         Ehr,
         Logback,
+        JdbcReader,
         Coding; //once fully moved to MySQL, this can go as it will be the same as Reference
     }
 
@@ -130,6 +131,8 @@ public class ConnectionManager {
             return "LogbackDb";
         } else if (dbName == Db.Coding) {
             return "CodingDb";
+        } else if (dbName == Db.JdbcReader) {
+            return "JDBCReaderDb";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }
@@ -168,6 +171,8 @@ public class ConnectionManager {
             return "logbackDb";
         } else if (dbName == Db.Coding) {
             return "coding";
+        } else if (dbName == Db.JdbcReader) {
+            return "jdbcreader";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }
@@ -211,6 +216,10 @@ public class ConnectionManager {
 
     public static EntityManager getCodingEntityManager() throws Exception {
         return getEntityManager(Db.Coding);
+    }
+
+    public static EntityManager getJDBCReaderEntityManager() throws Exception {
+        return getEntityManager(Db.JdbcReader);
     }
 
     /**
