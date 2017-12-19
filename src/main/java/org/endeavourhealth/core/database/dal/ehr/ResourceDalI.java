@@ -23,7 +23,7 @@ public interface ResourceDalI {
     List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType, List<UUID> resourceIds) throws Exception;
     List<ResourceWrapper> getResourcesByServiceAllSystems(UUID serviceId, String resourceType, List<UUID> resourceIds) throws Exception;
     List<ResourceWrapper> getResourcesForBatch(UUID batchId) throws Exception;
-    Long getResourceChecksum(String resourceType, UUID resourceId) throws Exception;
+    Long getResourceChecksum(String resourceType, UUID resourceId, UUID patientId) throws Exception;
     boolean dataExists(UUID serviceId, UUID systemId) throws Exception;
     ResourceWrapper getFirstResourceByService(UUID serviceId, UUID systemId, ResourceType resourceType) throws Exception;
     List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType) throws Exception;

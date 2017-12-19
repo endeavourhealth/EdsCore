@@ -545,7 +545,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
 
-    public Long getResourceChecksum(String resourceType, UUID resourceId) throws Exception {
+    public Long getResourceChecksum(String resourceType, UUID resourceId, UUID patientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager();
 
         try {
@@ -553,11 +553,19 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.resourceType = :resource_type"
-                    + " and c.resourceId = :resource_id";
+                    + " and c.resourceId = :resource_id"
+                    + " and c.patientId = :patient_id";
+
 
             Query query = entityManager.createQuery(sql)
                     .setParameter("resource_type", resourceType)
                     .setParameter("resource_id", resourceId.toString());
+
+            if (patientId != null) {
+                query.setParameter("patient_id", patientId.toString());
+            } else {
+                query.setParameter("patient_id", ""); //we store an empty string on the column, not null
+            }
 
             Long ret = null;
 

@@ -321,7 +321,8 @@ public class CassandraResourceRepository extends Repository implements ResourceD
         return new ResourceMetadataIterator<>(metadata.iterator(), classOfT);
     }
 
-    public Long getResourceChecksum(String resourceType, UUID resourceId) {
+    public Long getResourceChecksum(String resourceType, UUID resourceId, UUID patientId) {
+        //note patientID isn't used in Cassandra - this parameter is only used in the MySQL implementation
         ResourceHistoryAccessor accessor = getMappingManager().createAccessor(ResourceHistoryAccessor.class);
         ResultSet resultSet = accessor.getCurrentChecksum(resourceType, resourceId);
         Row row = resultSet.one();
