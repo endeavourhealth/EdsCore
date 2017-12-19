@@ -16,7 +16,10 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
@@ -46,7 +49,8 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
                     .setParameter("service_id", serviceId.toString())
                     .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType)
-                    .setParameter("source_id", sourceId);
+                    .setParameter("source_id", sourceId)
+                    .setMaxResults(1);
 
             RdbmsResourceIdMap result = (RdbmsResourceIdMap)query.getSingleResult();
             return result;
@@ -116,6 +120,145 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     @Override
+    public Map<Reference, Reference> findEdsReferencesFromSourceReferences(UUID serviceId, UUID systemId, List<Reference> sourceReferences) throws Exception {
+
+        Map<Reference, Reference> ret = new HashMap<>();
+
+        if (sourceReferences.isEmpty()) {
+            return ret;
+        }
+
+        //changing to use a dynamic IN query, as temporary tables are too slow in MySQL, table variables don't exist,
+        //and this is the only other way I can find to do this lookup in a single transaction
+
+        String sql = "SELECT resource_type, source_id, eds_id"
+                + " FROM resource_id_map"
+                + " WHERE service_id = '" + serviceId + "'"
+                + " AND system_id = '" + systemId + "'"
+                + " AND (";
+
+        Map<String, Reference> hmTmp = new HashMap<>();
+
+        for (int i=0; i<sourceReferences.size(); i++) {
+            Reference sourceReference = sourceReferences.get(i);
+            ReferenceComponents comps = ReferenceHelper.getReferenceComponents(sourceReference);
+            ResourceType resourceType = comps.getResourceType();
+            String sourceId = comps.getId();
+
+            if (i>0) {
+                sql += " OR ";
+            }
+            sql += "(resource_type = '" + resourceType + "' AND source_id = '" + sourceId + "')";
+
+            //hash the references by their reference value so we can look them up quickly later
+            hmTmp.put(sourceReference.getReference(), sourceReference);
+        }
+
+        sql += ");";
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        Statement statement = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            statement = connection.createStatement();
+
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                String resourceType = resultSet.getString(1);
+                String sourceId = resultSet.getString(2);
+                String edsId = resultSet.getString(3);
+
+                String sourceReferenceValue = ReferenceHelper.createResourceReference(resourceType, sourceId);
+                Reference sourceReference = hmTmp.get(sourceReferenceValue);
+
+                Reference edsReference = ReferenceHelper.createReference(resourceType, edsId);
+
+                ret.put(sourceReference, edsReference);
+            }
+
+            return ret;
+
+        } finally {
+            entityManager.close();
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
+    @Override
+    public Map<Reference, Reference> findSourceReferencesFromEdsReferences(List<Reference> edsReferences) throws Exception {
+
+        Map<Reference, Reference> ret = new HashMap<>();
+
+        //shouldn't be necessary, but can't hurt to avoid going to the DB if we don't need to
+        if (edsReferences.isEmpty()) {
+            return ret;
+        }
+
+        //changing to use a dynamic IN query, as temporary tables are too slow in MySQL, table variables don't exist,
+        //and this is the only other way I can find to do this lookup in a single transaction
+
+        String sql = "SELECT resource_type, source_id, eds_id"
+                + " FROM resource_id_map"
+                + " WHERE (";
+
+        Map<String, Reference> hmTmp = new HashMap<>();
+
+        for (int i=0; i<edsReferences.size(); i++) {
+            Reference sourceReference = edsReferences.get(i);
+            ReferenceComponents comps = ReferenceHelper.getReferenceComponents(sourceReference);
+            ResourceType resourceType = comps.getResourceType();
+            String edsId = comps.getId();
+
+            if (i>0) {
+                sql += " OR ";
+            }
+            sql += "(resource_type = '" + resourceType + "' AND eds_id = '" + edsId + "')";
+
+            //hash the references by their reference value so we can look them up quickly later
+            hmTmp.put(sourceReference.getReference(), sourceReference);
+        }
+
+        sql += ");";
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        Statement statement = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            statement = connection.createStatement();
+
+            ResultSet resultSet = statement.executeQuery(sql);
+
+            while (resultSet.next()) {
+                String resourceType = resultSet.getString(1);
+                String sourceId = resultSet.getString(2);
+                String edsId = resultSet.getString(3);
+
+                String edsReferenceValue = ReferenceHelper.createResourceReference(resourceType, edsId);
+                Reference edsReference = hmTmp.get(edsReferenceValue);
+
+                Reference sourceReference = ReferenceHelper.createReference(resourceType, sourceId);
+
+                ret.put(edsReference, sourceReference);
+            }
+
+            return ret;
+
+        } finally {
+            entityManager.close();
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
+    /*@Override
     public Map<Reference, Reference> findEdsReferencesFromSourceReferences(UUID serviceId, UUID systemId, List<Reference> sourceReferences) throws Exception {
 
         Map<Reference, Reference> ret = new HashMap<>();
@@ -310,7 +453,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
                 statement.close();
             }
         }
-    }
+    }*/
 
 
 }
