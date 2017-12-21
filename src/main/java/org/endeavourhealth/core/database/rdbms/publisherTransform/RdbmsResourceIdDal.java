@@ -182,10 +182,10 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             return ret;
 
         } finally {
-            entityManager.close();
             if (statement != null) {
                 statement.close();
             }
+            entityManager.close();
         }
     }
 
@@ -251,10 +251,10 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             return ret;
 
         } finally {
-            entityManager.close();
             if (statement != null) {
                 statement.close();
             }
+            entityManager.close();
         }
     }
 
