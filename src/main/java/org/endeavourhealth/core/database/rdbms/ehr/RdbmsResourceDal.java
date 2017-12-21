@@ -46,13 +46,13 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         try {
             entityManager.getTransaction().begin();
-            
+
             //we want to do an INSERT ... ON DUPLICATE KEY UPDATE, which isn't possible through JPA, so
             //I'm just dropping to using a prepared statement to save it, which means we don't need to perform
             //a read before each write as it's all handled in MySQL
             //entityManager.persist(resourceCurrent);
             //entityManager.persist(resourceHistory);
-            
+
             psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
             psResourceHistory.executeUpdate();
 
@@ -60,6 +60,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             psResourceCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -119,7 +123,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 + " (service_id, system_id, resource_type, resource_id, created_at, patient_id, resource_data, resource_checksum, is_deleted, exchange_batch_id, version)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
-       
+
         return connection.prepareStatement(sql);
     }
     
@@ -189,6 +193,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             psResourceCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -279,6 +287,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             psHistory.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

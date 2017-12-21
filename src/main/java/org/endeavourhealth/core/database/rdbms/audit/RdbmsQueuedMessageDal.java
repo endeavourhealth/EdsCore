@@ -55,6 +55,10 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {

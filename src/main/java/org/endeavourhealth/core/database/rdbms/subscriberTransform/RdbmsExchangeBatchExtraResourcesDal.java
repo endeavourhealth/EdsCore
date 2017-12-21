@@ -58,6 +58,10 @@ public class RdbmsExchangeBatchExtraResourcesDal implements ExchangeBatchExtraRe
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {

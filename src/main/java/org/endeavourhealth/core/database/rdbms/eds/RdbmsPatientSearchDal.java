@@ -126,6 +126,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {
@@ -214,6 +218,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -655,6 +663,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }
@@ -1044,6 +1056,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             query.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

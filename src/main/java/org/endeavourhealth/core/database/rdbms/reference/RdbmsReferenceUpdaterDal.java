@@ -41,6 +41,10 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             entityManager.persist(lookup);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }
@@ -73,6 +77,10 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(lookup);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -118,6 +126,10 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(postcodeReference);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -166,6 +178,10 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(lookup);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

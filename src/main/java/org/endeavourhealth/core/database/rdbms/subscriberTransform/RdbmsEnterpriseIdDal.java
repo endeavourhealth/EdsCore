@@ -67,6 +67,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(mapping);
             entityManager.getTransaction().commit();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;
@@ -126,6 +127,10 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(mapping);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -269,11 +274,17 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         RdbmsEnterprisePersonIdMap mapping = new RdbmsEnterprisePersonIdMap();
         mapping.setPersonId(discoveryPersonId);
 
-        entityManager.getTransaction().begin();
-        entityManager.persist(mapping);
-        entityManager.getTransaction().commit();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(mapping);
+            entityManager.getTransaction().commit();
 
-        return mapping.getEnterprisePersonId();
+            return mapping.getEnterprisePersonId();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+        }
     }
 
     public Long findEnterprisePersonId(String discoveryPersonId) throws Exception {
@@ -487,6 +498,10 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
             return UUID.fromString(mapping.getResourceIdTo());
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }
@@ -524,6 +539,10 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
             query.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

@@ -85,6 +85,10 @@ public class RdbmsUserAuditDal implements UserAuditDalI {
             entityManager.persist(userEvent);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

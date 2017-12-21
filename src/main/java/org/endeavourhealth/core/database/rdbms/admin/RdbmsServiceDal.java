@@ -89,6 +89,10 @@ public class RdbmsServiceDal implements ServiceDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (psService != null) {
@@ -214,6 +218,10 @@ public class RdbmsServiceDal implements ServiceDalI {
             }
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

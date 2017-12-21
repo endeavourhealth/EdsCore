@@ -92,6 +92,10 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (psOrganisation != null) {
@@ -235,6 +239,11 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
             }
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (psOrganisation != null) {

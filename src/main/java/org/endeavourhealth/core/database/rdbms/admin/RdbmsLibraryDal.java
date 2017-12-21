@@ -83,6 +83,10 @@ public class RdbmsLibraryDal implements LibraryDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (psAudit != null) {

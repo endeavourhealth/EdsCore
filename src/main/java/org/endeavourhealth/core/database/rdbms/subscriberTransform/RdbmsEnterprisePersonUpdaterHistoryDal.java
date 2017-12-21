@@ -53,6 +53,10 @@ public class RdbmsEnterprisePersonUpdaterHistoryDal implements EnterprisePersonU
             entityManager.persist(history);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

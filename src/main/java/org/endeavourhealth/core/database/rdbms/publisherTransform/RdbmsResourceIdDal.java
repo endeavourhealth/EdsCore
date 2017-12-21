@@ -20,8 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
+
+    private static final Map<String, AtomicInteger> syncLocks = new HashMap<>();
 
     private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
@@ -90,6 +93,20 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     @Override
     public UUID findOrCreateThreadSafe(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
 
+        //we need to sync to prevent two threads generating an ID for the same source ID at the same time
+        //use an AtomicInt for each cache key as a synchronisation object and as a way to track
+        String cacheKey = resourceType + "\\" + sourceId;
+        AtomicInteger atomicInteger = null;
+        synchronized (syncLocks) {
+            atomicInteger = syncLocks.get(cacheKey);
+            if (atomicInteger == null) {
+                atomicInteger = new AtomicInteger(0);
+                syncLocks.put(cacheKey, atomicInteger);
+            }
+
+            atomicInteger.incrementAndGet();
+        }
+
         RdbmsResourceIdMap mapping = new RdbmsResourceIdMap();
         mapping.setServiceId(serviceId.toString());
         mapping.setSystemId(systemId.toString());
@@ -104,6 +121,8 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
             //if we get an exception raised, it's most likely because another thread has created
             //a mapping for the same source and resource type, so we should try and retrieve it
             mapping = getResourceIdMap(entityManager, serviceId, systemId, resourceType, sourceId);
@@ -114,6 +133,14 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
         } finally {
             entityManager.close();
+        }
+
+        //decrement our lock count and if zero remove from the map
+        synchronized (syncLocks) {
+            int val = atomicInteger.decrementAndGet();
+            if (val == 0) {
+                syncLocks.remove(cacheKey);
+            }
         }
 
         return UUID.fromString(mapping.getEdsId());

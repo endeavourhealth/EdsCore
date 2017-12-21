@@ -123,8 +123,11 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             //transaction.commit();
             entityManager.getTransaction().commit();
 
-        } finally {
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
+        } finally {
             entityManager.close();
             if (ps != null) {
                 ps.close();
@@ -195,6 +198,10 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {
@@ -237,6 +244,10 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

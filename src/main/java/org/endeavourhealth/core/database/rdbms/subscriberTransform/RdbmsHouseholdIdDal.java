@@ -93,11 +93,17 @@ public class RdbmsHouseholdIdDal implements HouseholdIdDalI {
         mapping.setLine1(line1);
         mapping.setLine2(line2);
 
-        entityManager.getTransaction().begin();
-        entityManager.persist(mapping);
-        entityManager.getTransaction().commit();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(mapping);
+            entityManager.getTransaction().commit();
 
-        return mapping.getHouseholdId();
+            return mapping.getHouseholdId();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+        }
     }
 
     private static Long findHouseholdId(String postcode, String line1, String line2, EntityManager entityManager) {

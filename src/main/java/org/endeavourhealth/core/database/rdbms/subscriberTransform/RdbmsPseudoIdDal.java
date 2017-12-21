@@ -32,6 +32,10 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
             entityManager.persist(map);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

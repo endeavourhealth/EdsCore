@@ -28,6 +28,10 @@ public class RdbmsPatientCohortDal implements PatientCohortDalI {
             entityManager.persist(obj);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

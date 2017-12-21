@@ -62,6 +62,10 @@ public class RdbmsExchangeDal implements ExchangeDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {
@@ -80,6 +84,10 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(dbObj);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -150,6 +158,11 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {
@@ -189,6 +202,10 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -249,6 +266,10 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -377,7 +398,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " from"
                     + " RdbmsExchangeTransformAudit c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id";
+                    + " and c.systemId = :system_id"
+                    + " order by c.started asc";
 
             Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
                     .setParameter("service_id", serviceId.toString())
@@ -404,7 +426,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " RdbmsExchangeTransformAudit c"
                     + " where c.serviceId = :service_id"
                     + " and c.systemId = :system_id"
-                    + " and c.exchangeId = :exchange_id";
+                    + " and c.exchangeId = :exchange_id"
+                    + " order by c.started asc";
 
             Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
                     .setParameter("service_id", serviceId.toString())
@@ -576,7 +599,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " RdbmsExchangeTransformAudit c"
                     + " where c.serviceId = :service_id"
                     + " and c.systemId = :system_id"
-                    + " order by c.started desc";
+                    + " order by c.started asc";
 
             Query query = entityManager.createQuery(sql, Object[].class)
                     .setParameter("service_id", serviceId.toString())
@@ -657,6 +680,10 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

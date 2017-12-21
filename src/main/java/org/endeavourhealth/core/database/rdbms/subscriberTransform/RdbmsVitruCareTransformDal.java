@@ -40,6 +40,10 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
             entityManager.persist(mapping);
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

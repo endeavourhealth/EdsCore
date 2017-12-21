@@ -12,11 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
@@ -64,6 +60,10 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
             }
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -127,6 +127,10 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
             }
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

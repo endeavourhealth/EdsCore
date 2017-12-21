@@ -58,6 +58,10 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {

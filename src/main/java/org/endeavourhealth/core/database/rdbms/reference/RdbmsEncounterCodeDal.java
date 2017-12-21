@@ -135,6 +135,7 @@ public class RdbmsEncounterCodeDal implements EncounterCodeDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(encounterCode);
             entityManager.getTransaction().commit();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

@@ -95,6 +95,10 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
             return new PatientLinkPair(patientId, newPersonId, previousPersonId);
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
         }

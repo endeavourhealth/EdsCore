@@ -1,17 +1,9 @@
 package org.endeavourhealth.core.database.rdbms.jdbcreader;
 
 import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
-import org.endeavourhealth.core.database.dal.jdbcreader.models.Batch;
-import org.endeavourhealth.core.database.dal.jdbcreader.models.BatchFile;
-import org.endeavourhealth.core.database.dal.jdbcreader.models.Instance;
-import org.endeavourhealth.core.database.dal.jdbcreader.models.KeyValuePair;
-import org.endeavourhealth.core.database.dal.jdbcreader.models.NotificationMessage;
+import org.endeavourhealth.core.database.dal.jdbcreader.models.*;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.jdbcreader.models.RdbmsBatch;
-import org.endeavourhealth.core.database.rdbms.jdbcreader.models.RdbmsBatchFile;
-import org.endeavourhealth.core.database.rdbms.jdbcreader.models.RdbmsInstance;
-import org.endeavourhealth.core.database.rdbms.jdbcreader.models.RdbmsKeyValuePair;
-import org.endeavourhealth.core.database.rdbms.jdbcreader.models.RdbmsNotificationMessage;
+import org.endeavourhealth.core.database.rdbms.jdbcreader.models.*;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +33,7 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
             entityManager.persist(save);
             entityManager.getTransaction().commit();
             batch.setBatchId(save.getBatchId());
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;
@@ -145,6 +138,11 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
             update.setDownloaded(batchFile.isDownloaded());
             update.setDownloadDate(batchFile.getDownloadDate());
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
@@ -273,6 +271,11 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
             update.setNotified(batch.isNotified());
             update.setNotificationDate(batch.getNotificationDate());
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
