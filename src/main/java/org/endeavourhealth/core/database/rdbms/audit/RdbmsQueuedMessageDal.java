@@ -94,12 +94,28 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
     public void delete(UUID id) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        RdbmsQueuedMessage dbObj = new RdbmsQueuedMessage();
-        dbObj.setId(id.toString());
+        /*RdbmsQueuedMessage dbObj = new RdbmsQueuedMessage();
+        dbObj.setId(id.toString());*/
 
+        PreparedStatement ps = null;
         try {
             entityManager.getTransaction().begin();
-            entityManager.remove(dbObj);
+
+            //have to use prepared statement as JPA doesn't support deletes without retrieving first
+            //entityManager.remove(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "DELETE FROM queued_message"
+                    + " WHERE id = ?;";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, id.toString());
+
+            ps.executeUpdate();
+
             entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
@@ -107,6 +123,9 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
             throw ex;
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
