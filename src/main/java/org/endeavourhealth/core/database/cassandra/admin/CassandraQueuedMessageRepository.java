@@ -29,5 +29,11 @@ public class CassandraQueuedMessageRepository extends Repository implements Queu
 			return null;
 		}
 	}
+
+	@Override
+	public void delete(UUID id) throws Exception {
+		Mapper<CassandraQueuedMessage> mapper = getMappingManager().mapper(CassandraQueuedMessage.class);
+		mapper.delete(id);
+	}
 }
 

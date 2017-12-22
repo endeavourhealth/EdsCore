@@ -51,8 +51,8 @@ public class RdbmsExchangeBatchExtraResourcesDal implements ExchangeBatchExtraRe
 
             ps.setString(1, dbObj.getExchangeId());
             ps.setString(2, dbObj.getBatchId());
-            ps.setString(3, dbObj.getResourceType());
-            ps.setString(4, dbObj.getResourceId());
+            ps.setString(3, dbObj.getResourceId());
+            ps.setString(4, dbObj.getResourceType());
 
             ps.executeUpdate();
 

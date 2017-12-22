@@ -89,4 +89,25 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
             entityManager.close();
         }
     }
+
+    @Override
+    public void delete(UUID id) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        RdbmsQueuedMessage dbObj = new RdbmsQueuedMessage();
+        dbObj.setId(id.toString());
+
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.remove(dbObj);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
 }
