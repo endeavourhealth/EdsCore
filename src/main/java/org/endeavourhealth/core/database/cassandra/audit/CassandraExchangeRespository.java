@@ -122,6 +122,14 @@ public class CassandraExchangeRespository extends Repository implements Exchange
         }
     }
 
+    @Override
+    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception {
+        //this function was added to make things easier in AWS, and can't be implemented for Cassandra
+        //without altering the table structure, so just return an empty list for now as this is just
+        //used for display purposes in EDS UI
+        return new ArrayList<>();
+    }
+
     public List<ExchangeTransformErrorState> getAllErrorStates() {
 
         AuditAccessor accessor = getMappingManager().createAccessor(AuditAccessor.class);

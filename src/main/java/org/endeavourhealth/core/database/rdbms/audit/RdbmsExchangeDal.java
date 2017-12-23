@@ -334,6 +334,33 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
+    @Override
+    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformErrorState c"
+                    + " where c.serviceId = :service_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformErrorState.class)
+                    .setParameter("service_id", serviceId.toString());
+
+            List<RdbmsExchangeTransformErrorState> results = query.getResultList();
+
+            //can't use stream() here as the constructor can throw an exception
+            List<ExchangeTransformErrorState> ret = new ArrayList<>();
+            for (RdbmsExchangeTransformErrorState result: results) {
+                ret.add(new ExchangeTransformErrorState(result));
+            }
+            return ret;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
     public List<ExchangeTransformErrorState> getAllErrorStates() throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 

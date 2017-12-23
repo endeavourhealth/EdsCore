@@ -27,6 +27,7 @@ public interface ExchangeDalI {
     void save(ExchangeTransformErrorState errorState) throws Exception;
     void delete(ExchangeTransformErrorState errorState) throws Exception;
     ExchangeTransformErrorState getErrorState(UUID serviceId, UUID systemId) throws Exception;
+    List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception;
     List<ExchangeTransformErrorState> getAllErrorStates() throws Exception;
 
     boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception;
