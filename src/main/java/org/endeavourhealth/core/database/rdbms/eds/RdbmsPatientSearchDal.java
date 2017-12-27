@@ -176,7 +176,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             String id = comps.getId();
 
             ResourceDalI resourceDalI = DalProvider.factoryResourceDal();
-            Organization org = (Organization)resourceDalI.getCurrentVersionAsResource(type, id);
+            Organization org = (Organization)resourceDalI.getCurrentVersionAsResource(serviceId, type, id);
             if (org != null) {
                 CodeableConcept concept = org.getType();
                 orgTypeCode = CodeableConceptHelper.findCodingCode(concept, FhirValueSetUri.VALUE_SET_ORGANISATION_TYPE);

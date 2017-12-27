@@ -20,7 +20,7 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public void saveSusResourceMappings(UUID serviceId, String sourceRowId, Map<Enumerations.ResourceType, List<UUID>> resourceIds) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -87,7 +87,7 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public void deleteSusResourceMappings(UUID serviceId, String sourceRowId, Map<Enumerations.ResourceType, List<UUID>> resourceIds) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -160,7 +160,7 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
 
     @Override
     public List<UUID> getSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         LOG.debug("Looking for sus_resource_map entries:" + serviceId.toString() + "/" + sourceRowId + "/" + resourceType.toCode());
 
         try {

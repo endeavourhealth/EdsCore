@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
+package org.endeavourhealth.core.database.rdbms.publisherCommon.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

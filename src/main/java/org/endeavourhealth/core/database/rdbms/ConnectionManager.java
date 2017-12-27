@@ -3,6 +3,9 @@ package org.endeavourhealth.core.database.rdbms;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.config.ConfigManager;
+import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
+import org.endeavourhealth.core.database.dal.admin.models.Service;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -11,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
@@ -26,10 +30,12 @@ public class ConnectionManager {
         Ehr,
         Logback,
         JdbcReader,
-        Coding; //once fully moved to MySQL, this can go as it will be the same as Reference
+        Coding, //once fully moved to MySQL, this can go as it will be the same as Reference
+        PublisherCommon;
     }
 
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
+    private static Map<UUID, String> publisherServiceToConfigMap = new ConcurrentHashMap<>();
 
     public static EntityManager getEntityManager(Db dbName) throws Exception {
         return getEntityManager(dbName, null);
@@ -37,14 +43,23 @@ public class ConnectionManager {
 
     public static EntityManager getEntityManager(Db dbName, String explicitConfigName) throws Exception {
 
-        String configNameToUse = getConfigNameForDb(dbName, explicitConfigName);
-
-        EntityManagerFactory factory = entityManagerFactoryMap.get(configNameToUse);
+        String cacheKey = "" + dbName + "/" + explicitConfigName;
+        EntityManagerFactory factory = entityManagerFactoryMap.get(cacheKey);
 
         if (factory == null
                 || !factory.isOpen()) {
-            String hibernatePersistenceUnit = getPersistenceUnitName(dbName);
-            factory = createEntityManager(dbName, configNameToUse, hibernatePersistenceUnit);
+
+            synchronized (entityManagerFactoryMap) {
+
+                //once in the sync block, repeat the check
+                factory = entityManagerFactoryMap.get(cacheKey);
+                if (factory == null
+                        || !factory.isOpen()) {
+
+                    factory = createEntityManager(dbName, explicitConfigName);
+                    entityManagerFactoryMap.put(cacheKey, factory);
+                }
+            }
         }
 
         return factory.createEntityManager();
@@ -60,30 +75,14 @@ public class ConnectionManager {
         }
     }*/
 
-    private static synchronized EntityManagerFactory createEntityManager(Db dbName, String configName, String hibernatePersistenceUnit) throws Exception {
-
-        EntityManagerFactory factory = entityManagerFactoryMap.get(configName);
-
-        if (factory != null
-                && factory.isOpen()) {
-            return factory;
-        }
+    private static synchronized EntityManagerFactory createEntityManager(Db dbName, String explicitConfigName) throws Exception {
 
         //adding this line to force compile-time checking for this class. Spent far too long investigating
         //why this wasn't being found when it turned out to be that it had been removed from POM.xml,
         //so adding this to ensure it's picked up during compile-time rather than run-time
         org.hibernate.hikaricp.internal.HikariCPConnectionProvider p = null;
 
-        JsonNode json = null;
-        if (dbName == Db.SubscriberTransform) {
-            json = ConfigManager.getConfigurationAsJson(configName, "subscriber");
-        } else {
-            json = ConfigManager.getConfigurationAsJson(configName);
-        }
-
-        if (json == null) {
-            throw new Exception("No config JSON for " + dbName + " and config " + configName);
-        }
+        JsonNode json = findDatabaseConfigJson(dbName, explicitConfigName);
 
         String url = json.get("url").asText();
         String user = json.get("username").asText();
@@ -103,11 +102,65 @@ public class ConnectionManager {
             properties.put("hibernate.dialect", json.get("dialect").asText());
         }
 
-        factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
-
-        entityManagerFactoryMap.put(configName, factory);
+        String hibernatePersistenceUnit = getPersistenceUnitName(dbName);
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
 
         return factory;
+    }
+
+    private static JsonNode findDatabaseConfigJson(Db dbName, String configName) throws Exception {
+
+        JsonNode json = null;
+        if (dbName == Db.SubscriberTransform) {
+            json = ConfigManager.getConfigurationAsJson(configName, "db_subscriber");
+            /*if (json != null) {
+                json = json.get("transform");
+            }*/
+
+        } else if (dbName == Db.PublisherTransform) {
+            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
+            if (json != null) {
+                json = json.get("transform");
+            }
+
+        } else if (dbName == Db.Ehr) {
+            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
+            if (json != null) {
+                json = json.get("core");
+            }
+
+        } else {
+
+            if (dbName == Db.Eds) {
+                configName = "eds";
+            } else if (dbName == Db.Reference) {
+                configName = "reference";
+            } else if (dbName == Db.Hl7Receiver) {
+                configName = "hl7_receiver_db";
+            } else if (dbName == Db.Admin) {
+                configName = "admin";
+            } else if (dbName == Db.Audit) {
+                configName = "audit";
+            } else if (dbName == Db.Logback) {
+                configName = "logback";
+            } else if (dbName == Db.Coding) {
+                configName = "coding";
+            } else if (dbName == Db.JdbcReader) {
+                configName = "jdbcreader";
+            } else if (dbName == Db.PublisherCommon) {
+                configName = "publisher_common";
+            } else {
+                throw new RuntimeException("Unknown database " + dbName);
+            }
+
+            json = ConfigManager.getConfigurationAsJson(configName, "db_common");
+        }
+
+        if (json == null) {
+            throw new Exception("No config JSON for " + dbName + " and config " + configName);
+        }
+
+        return json;
     }
 
     private static String getPersistenceUnitName(Db dbName) {
@@ -133,50 +186,13 @@ public class ConnectionManager {
             return "CodingDb";
         } else if (dbName == Db.JdbcReader) {
             return "JDBCReaderDb";
+        } else if (dbName == Db.PublisherCommon) {
+            return "PublisherCommonDb";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }
     }
 
-
-    private static String getConfigNameForDb(Db dbName, String explicitConfigName) {
-
-        //the subuscriber transform DB always must have the config name supplied too
-        if (dbName == Db.SubscriberTransform
-                && Strings.isNullOrEmpty(explicitConfigName)) {
-            throw new IllegalArgumentException("Config name should be supplied for connections to subscriber transform DBs");
-
-        } else if (dbName != Db.SubscriberTransform
-                && !Strings.isNullOrEmpty(explicitConfigName)) {
-            throw new IllegalArgumentException("Config name should not be supplied for connections to the " + dbName + " DB");
-        }
-
-        if (dbName == Db.Eds) {
-            return "eds_db";
-        } else if (dbName == Db.Reference) {
-            return "reference_db";
-        } else if (dbName == Db.Hl7Receiver) {
-            return "hl7_receiver_db";
-        } else if (dbName == Db.Admin) {
-            return "db_admin";
-        } else if (dbName == Db.Audit) {
-            return "db_audit";
-        } else if (dbName == Db.PublisherTransform) {
-            return "db_publisher_transform";
-        } else if (dbName == Db.SubscriberTransform) {
-            return explicitConfigName;
-        } else if (dbName == Db.Ehr) {
-            return "db_ehr";
-        } else if (dbName == Db.Logback) {
-            return "logbackDb";
-        } else if (dbName == Db.Coding) {
-            return "coding";
-        } else if (dbName == Db.JdbcReader) {
-            return "jdbcreader";
-        } else {
-            throw new RuntimeException("Unknown database " + dbName);
-        }
-    }
 
     public static EntityManager getEdsEntityManager() throws Exception {
         return getEntityManager(Db.Eds);
@@ -198,16 +214,18 @@ public class ConnectionManager {
         return getEntityManager(Db.Audit);
     }
 
-    public static EntityManager getPublisherTransformEntityManager() throws Exception {
-        return getEntityManager(Db.PublisherTransform);
+    public static EntityManager getPublisherTransformEntityManager(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getEntityManager(Db.PublisherTransform, configName);
     }
 
     public static EntityManager getSubscriberTransformEntityManager(String configName) throws Exception {
         return getEntityManager(Db.SubscriberTransform, configName);
     }
 
-    public static EntityManager getEhrEntityManager() throws Exception {
-        return getEntityManager(Db.Ehr);
+    public static EntityManager getEhrEntityManager(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getEntityManager(Db.Ehr, configName);
     }
 
     public static EntityManager getLogbackEntityManager() throws Exception {
@@ -220,6 +238,10 @@ public class ConnectionManager {
 
     public static EntityManager getJDBCReaderEntityManager() throws Exception {
         return getEntityManager(Db.JdbcReader);
+    }
+
+    public static EntityManager getPublisherCommonEntityManager() throws Exception {
+        return getEntityManager(Db.PublisherCommon);
     }
 
     /**
@@ -238,5 +260,25 @@ public class ConnectionManager {
                 return false;
             }
         }
+    }
+
+    private static String findConfigNameForPublisherService(UUID serviceId) throws Exception {
+
+        String ret = publisherServiceToConfigMap.get(serviceId);
+        if (ret == null) {
+            ServiceDalI serviceDalI = DalProvider.factoryServiceDal();
+            Service service = serviceDalI.getById(serviceId);
+            UUID id = service.getId();
+            String configName = service.getPublisherConfigName();
+
+            if (Strings.isNullOrEmpty(configName)) {
+                throw new Exception("Unknown publisher config name for service " + serviceId + " - " + service.getName());
+            }
+
+            publisherServiceToConfigMap.put(id, configName);
+            ret = configName;
+        }
+
+        return ret;
     }
 }

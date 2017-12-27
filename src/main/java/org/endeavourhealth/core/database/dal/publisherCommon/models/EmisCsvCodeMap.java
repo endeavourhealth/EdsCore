@@ -1,7 +1,7 @@
-package org.endeavourhealth.core.database.dal.publisherTransform.models;
+package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraEmisCsvCodeMap;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsEmisCsvCodeMap;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 
 public class EmisCsvCodeMap {
 

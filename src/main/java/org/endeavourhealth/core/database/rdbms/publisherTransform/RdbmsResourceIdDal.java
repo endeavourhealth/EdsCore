@@ -27,7 +27,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     private static final Map<String, AtomicInteger> syncLocks = new HashMap<>();
 
     private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
         try {
             return getResourceIdMap(entityManager, serviceId, systemId, resourceType, sourceId);
@@ -64,7 +64,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         }
     }
 
-    private RdbmsResourceIdMap getResourceIdMapByEdsId(String resourceType, String edsId) throws Exception {
+    /*private RdbmsResourceIdMap getResourceIdMapByEdsId(String resourceType, String edsId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
 
         try {
@@ -87,7 +87,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
     @Override
@@ -114,7 +114,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         mapping.setSourceId(sourceId);
         mapping.setEdsId(UUID.randomUUID().toString());
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             entityManager.getTransaction().begin();
             entityManager.persist(mapping);
@@ -183,7 +183,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
         sql += ");";
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         Statement statement = null;
         try {
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
@@ -217,7 +217,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     @Override
-    public Map<Reference, Reference> findSourceReferencesFromEdsReferences(List<Reference> edsReferences) throws Exception {
+    public Map<Reference, Reference> findSourceReferencesFromEdsReferences(UUID serviceId, List<Reference> edsReferences) throws Exception {
 
         Map<Reference, Reference> ret = new HashMap<>();
 
@@ -252,7 +252,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
         sql += ");";
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         Statement statement = null;
         try {
             SessionImpl session = (SessionImpl)entityManager.getDelegate();

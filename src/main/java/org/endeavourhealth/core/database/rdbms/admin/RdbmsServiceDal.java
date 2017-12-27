@@ -112,12 +112,13 @@ public class RdbmsServiceDal implements ServiceDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO service"
-                + " (id, name, local_id, endpoints, organisations)"
-                + " VALUES (?, ?, ?, ?, ?)"
+                + " (id, name, local_id, endpoints, organisations, publisher_config_name)"
+                + " VALUES (?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " name = VALUES(name),"
                 + " local_id = VALUES(local_id),"
                 + " endpoints = VALUES(endpoints),"
+                + " publisher_config_name = VALUES(publisher_config_name),"
                 + " organisations = VALUES(organisations);";
 
         return connection.prepareStatement(sql);
@@ -141,6 +142,11 @@ public class RdbmsServiceDal implements ServiceDalI {
             ps.setString(5, service.getOrganisations());
         } else {
             ps.setNull(5, Types.VARCHAR);
+        }
+        if (!Strings.isNullOrEmpty(service.getPublisherConfigName())) {
+            ps.setString(6, service.getPublisherConfigName());
+        } else {
+            ps.setNull(6, Types.VARCHAR);
         }
 
         ps.executeUpdate();

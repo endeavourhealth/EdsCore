@@ -98,7 +98,7 @@ public class CassandraResourceIdMapRepository extends Repository implements Reso
     }
 
     @Override
-    public Map<Reference, Reference> findSourceReferencesFromEdsReferences(List<Reference> edsReferences) throws Exception {
+    public Map<Reference, Reference> findSourceReferencesFromEdsReferences(UUID serviceId, List<Reference> edsReferences) throws Exception {
         //note this is really inefficient, hitting the DB for each entry, but it's a quick implementation
         //to support this new interface function. It's properly implemented in the MySQL class, doing all in one DB call
         Map<Reference, Reference> ret = new HashMap<>();

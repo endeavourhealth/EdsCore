@@ -186,7 +186,8 @@ public class FhirDeletionService {
             countBatchesDeleted ++;
             progress = new DecimalFormat("###.##").format(((double)countBatchesDeleted / (double)countBatchesToDelete) * 100d) + "%";
 
-            List<ResourceWrapper> resourceByExchangeBatchList = resourceRepository.getResourcesForBatch(batchId);
+            UUID serviceId = service.getId();
+            List<ResourceWrapper> resourceByExchangeBatchList = resourceRepository.getResourcesForBatch(serviceId, batchId);
             //LOG.trace("Deleting cassandra for BatchId " + batchId + " " + progress + " (" + resourceByExchangeBatchList.size() + " resources)");
 
             for (ResourceWrapper resource : resourceByExchangeBatchList) {

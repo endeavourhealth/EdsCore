@@ -207,8 +207,8 @@ public class CassandraResourceRepository extends Repository implements ResourceD
     /**
      * convenience fn to save repetitive code
      */
-    public Resource getCurrentVersionAsResource(ResourceType resourceType, String resourceIdStr) throws Exception {
-        ResourceWrapper resourceHistory = getCurrentVersion(resourceType.toString(), UUID.fromString(resourceIdStr));
+    public Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception {
+        ResourceWrapper resourceHistory = getCurrentVersion(serviceId, resourceType.toString(), UUID.fromString(resourceIdStr));
 
         if (resourceHistory == null
             || resourceHistory.isDeleted()) {
@@ -218,7 +218,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
         }
     }
 
-    public ResourceWrapper getCurrentVersion(String resourceType, UUID resourceId) {
+    public ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) {
         ResourceHistoryAccessor accessor = getMappingManager().createAccessor(ResourceHistoryAccessor.class);
         CassandraResourceHistory result = accessor.getCurrentVersion(resourceType, resourceId);
         if (result != null) {
@@ -228,7 +228,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
         }
     }
 
-    public List<ResourceWrapper> getResourceHistory(String resourceType, UUID resourceId) {
+    public List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) {
         ResourceHistoryAccessor accessor = getMappingManager().createAccessor(ResourceHistoryAccessor.class);
         return Lists.newArrayList(accessor.getResourceHistory(resourceType, resourceId))
                 .stream()
@@ -276,7 +276,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
                 .collect(Collectors.toList());
     }
 
-    public List<ResourceWrapper> getResourcesForBatch(UUID batchId) {
+    public List<ResourceWrapper> getResourcesForBatch(UUID serviceId, UUID batchId) {
         ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
         return Lists.newArrayList(accessor.getResourcesForBatch(batchId))
                 .stream()
@@ -284,7 +284,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
                 .collect(Collectors.toList());
     }
 
-    public List<ResourceWrapper> getResourcesForBatch(UUID batchId, String resourceType) {
+    /*public List<ResourceWrapper> getResourcesForBatch(UUID batchId, String resourceType) {
         ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
         return Lists.newArrayList(accessor.getResourcesForBatch(batchId, resourceType))
                 .stream()
@@ -298,7 +298,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
                 .stream()
                 .map(T -> new ResourceWrapper(T))
                 .collect(Collectors.toList());
-    }
+    }*/
 
     public long getResourceCountByService(UUID serviceId, UUID systemId, String resourceType) {
         ResourceAccessor accessor = getMappingManager().createAccessor(ResourceAccessor.class);
@@ -321,7 +321,7 @@ public class CassandraResourceRepository extends Repository implements ResourceD
         return new ResourceMetadataIterator<>(metadata.iterator(), classOfT);
     }
 
-    public Long getResourceChecksum(String resourceType, UUID resourceId, UUID patientId) {
+    public Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId, UUID patientId) {
         //note patientID isn't used in Cassandra - this parameter is only used in the MySQL implementation
         ResourceHistoryAccessor accessor = getMappingManager().createAccessor(ResourceHistoryAccessor.class);
         ResultSet resultSet = accessor.getCurrentChecksum(resourceType, resourceId);

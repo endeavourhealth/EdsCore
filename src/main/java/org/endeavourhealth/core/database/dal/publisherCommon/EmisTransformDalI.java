@@ -1,7 +1,7 @@
-package org.endeavourhealth.core.database.dal.publisherTransform;
+package org.endeavourhealth.core.database.dal.publisherCommon;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisAdminResourceCache;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 
 import java.util.List;
 

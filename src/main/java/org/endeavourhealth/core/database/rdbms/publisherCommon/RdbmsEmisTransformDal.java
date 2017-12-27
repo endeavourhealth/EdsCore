@@ -1,12 +1,12 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform;
+package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.dal.publisherTransform.EmisTransformDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisAdminResourceCache;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsEmisAdminResourceCache;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsEmisCsvCodeMap;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
@@ -28,7 +28,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
         RdbmsEmisCsvCodeMap emisMapping = new RdbmsEmisCsvCodeMap(mapping);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
@@ -136,7 +136,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     public EmisCsvCodeMap getMostRecentCode(String dataSharingAgreementGuid, boolean medication, Long codeId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {
             String sql = "select c"
@@ -167,7 +167,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
         RdbmsEmisAdminResourceCache emisObj = new RdbmsEmisAdminResourceCache(resourceCache);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
@@ -218,7 +218,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
         RdbmsEmisAdminResourceCache emisObj = new RdbmsEmisAdminResourceCache(resourceCache);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
@@ -258,7 +258,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     public List<EmisAdminResourceCache> getCachedResources(String dataSharingAgreementGuid) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {
             String sql = "select c"

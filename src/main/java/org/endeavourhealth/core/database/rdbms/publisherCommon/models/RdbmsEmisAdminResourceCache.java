@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
+package org.endeavourhealth.core.database.rdbms.publisherCommon.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.EmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

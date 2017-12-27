@@ -112,7 +112,7 @@ public class FhirStorageService {
         }
 
         //check the checksum first, so we only do a very small read from the DB
-        Long previousChecksum = resourceRepository.getResourceChecksum(entry.getResourceType(), entry.getResourceId(), entry.getPatientId());
+        Long previousChecksum = resourceRepository.getResourceChecksum(serviceId, entry.getResourceType(), entry.getResourceId(), entry.getPatientId());
         if (previousChecksum == null) {
             //if the previous checksum is null then we've already deleted it, so we don't need to delete again
             return false;
@@ -130,7 +130,7 @@ public class FhirStorageService {
         }
 
         //check the checksum first, so we only do a very small read from the DB
-        Long previousChecksum = resourceRepository.getResourceChecksum(entry.getResourceType(), entry.getResourceId(), entry.getPatientId());
+        Long previousChecksum = resourceRepository.getResourceChecksum(serviceId, entry.getResourceType(), entry.getResourceId(), entry.getPatientId());
         if (previousChecksum == null
                 || previousChecksum.longValue() != entry.getResourceChecksum()) {
             //if we don't have a previous checksum (which can happen if we keep re-running transforms
@@ -140,7 +140,7 @@ public class FhirStorageService {
         }
 
         //if the checksum is the same, we need to do a full compare
-        ResourceWrapper previousVersion = resourceRepository.getCurrentVersion(entry.getResourceType(), entry.getResourceId());
+        ResourceWrapper previousVersion = resourceRepository.getCurrentVersion(serviceId, entry.getResourceType(), entry.getResourceId());
 
         //if it was previously deleted, or for some reason we didn't
         if (previousVersion == null

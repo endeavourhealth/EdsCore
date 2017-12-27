@@ -40,7 +40,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
         RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
 
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        UUID serviceId = resourceEntry.getServiceId();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
         PreparedStatement psResourceCurrent = null;
         PreparedStatement psResourceHistory = null;
 
@@ -174,7 +175,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         resourceHistory.setResourceData(null);
         resourceHistory.setResourceChecksum(null);
 
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        UUID serviceId = resourceEntry.getServiceId();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
         PreparedStatement psResourceCurrent = null;
         PreparedStatement psResourceHistory = null;
 
@@ -264,12 +266,13 @@ public class RdbmsResourceDal implements ResourceDalI {
     /**
      * physical delete, when we want to remove all trace of cassandra from Discovery
      */
-    public void hardDelete(ResourceWrapper keys) throws Exception {
+    public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(keys);
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(keys);
+        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
+        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
 
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        UUID serviceId = resourceEntry.getServiceId();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
         PreparedStatement psCurrent = null;
         PreparedStatement psHistory = null;
 
@@ -307,8 +310,8 @@ public class RdbmsResourceDal implements ResourceDalI {
     /**
      * convenience fn to save repetitive code
      */
-    public Resource getCurrentVersionAsResource(ResourceType resourceType, String resourceIdStr) throws Exception {
-        ResourceWrapper resourceHistory = getCurrentVersion(resourceType.toString(), UUID.fromString(resourceIdStr));
+    public Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception {
+        ResourceWrapper resourceHistory = getCurrentVersion(serviceId, resourceType.toString(), UUID.fromString(resourceIdStr));
 
         if (resourceHistory == null) {
             return null;
@@ -317,8 +320,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public ResourceWrapper getCurrentVersion(String resourceType, UUID resourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+    public ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -347,8 +350,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourceHistory(String resourceType, UUID resourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+    public List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -375,7 +378,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -403,7 +406,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId, String resourceType) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -433,7 +436,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public List<ResourceWrapper> getResourcesByPatientAllSystems(UUID serviceId, UUID patientId, String resourceType) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -468,7 +471,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 .map(T -> T.toString())
                 .collect(Collectors.toList());
 
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -505,7 +508,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 .map(T -> T.toString())
                 .collect(Collectors.toList());
 
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -532,8 +535,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourcesForBatch(UUID batchId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+    public List<ResourceWrapper> getResourcesForBatch(UUID serviceId, UUID batchId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -557,8 +560,8 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
 
-    public Long getResourceChecksum(String resourceType, UUID resourceId, UUID patientId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+    public Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId, UUID patientId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c.resourceChecksum"
@@ -602,7 +605,7 @@ public class RdbmsResourceDal implements ResourceDalI {
      * tests if we have any patient cassandra stored for the given service and system
      */
     public boolean dataExists(UUID serviceId, UUID systemId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -628,7 +631,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public ResourceWrapper getFirstResourceByService(UUID serviceId, UUID systemId, ResourceType resourceType) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -657,8 +660,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType) throws Exception {
-
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "select c"
@@ -686,7 +688,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public <T extends ResourceMetadata> ResourceMetadataIterator<T> getMetadataByService(UUID serviceId, UUID systemId, String resourceType, Class<T> classOfT) throws Exception {
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "SELECT c.resourceMetadata"
@@ -710,8 +712,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public long getResourceCountByService(UUID serviceId, UUID systemId, String resourceType) throws Exception {
-
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
             String sql = "SELECT COUNT(c)"

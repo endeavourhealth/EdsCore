@@ -16,6 +16,7 @@ public class Service {
     private String localId = null;
     private String endpoints = null; //json containing a map of linked endpoints
     private Map<UUID, String> organisations = null;
+    private String publisherConfigName = null; //config name pointing to DB storing this services published data
 
     public Service() {}
 
@@ -43,6 +44,8 @@ public class Service {
                 this.organisations.put(uuid, name);
             }
         }
+
+        this.publisherConfigName = proxy.getPublisherConfigName();
     }
 
     public UUID getId() {
@@ -83,5 +86,13 @@ public class Service {
 
     public void setOrganisations(Map<UUID, String> organisations) {
         this.organisations = organisations;
+    }
+
+    public String getPublisherConfigName() {
+        return publisherConfigName;
+    }
+
+    public void setPublisherConfigName(String publisherConfigName) {
+        this.publisherConfigName = publisherConfigName;
     }
 }
