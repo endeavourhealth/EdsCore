@@ -126,6 +126,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <!--<property name="hibernate.hikari.maxLifetime" value="600000" />--> <!--default is 1800000 = 30 mins-->
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -168,6 +169,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -186,6 +188,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
