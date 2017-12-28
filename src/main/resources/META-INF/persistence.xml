@@ -21,6 +21,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -44,6 +45,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -66,30 +68,10 @@
             <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/coding"/>
             <property name="hibernate.hikari.dataSource.user" value="postgres"/>
             <property name="hibernate.hikari.dataSource.password" value=""/>
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
-
-    <!--copied from file with the same name in COMMON repo-->
-    <!--<persistence-unit name="ConfigurationDb">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.common.config.ConfigEntity</class>
-        <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
-            <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
-            <property name="hibernate.auth" value="Container" />
-            <property name="hibernate.hikari.connectionTimeout" value="300000" />
-            <property name="hibernate.hikari.maximumPoolSize" value="5" />
-            <property name="hibernate.hikari.minimumIdle" value="1" />
-            <property name="hibernate.hikari.idleTimeout" value="60000" />
-            <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
-
-            <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/config"/>
-            <property name="hibernate.hikari.dataSource.user" value="postgres"/>
-            <property name="hibernate.hikari.dataSource.password" value=""/>
-        </properties>
-    </persistence-unit>-->
 
     <persistence-unit name="EdsDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
@@ -108,6 +90,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -143,6 +126,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -210,6 +194,7 @@
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
 
         </properties>
     </persistence-unit>
@@ -233,6 +218,7 @@
             <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/logback"/>
             <property name="hibernate.hikari.dataSource.user" value="postgres"/>
             <property name="hibernate.hikari.dataSource.password" value=""/>
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -254,6 +240,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
@@ -279,6 +266,7 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+            <property name="hibernate.connection.autocommit" value="false" />
         </properties>
     </persistence-unit>
 
