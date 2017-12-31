@@ -1,15 +1,14 @@
 package org.endeavourhealth.core.database.rdbms.ehr;
 
-import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ParserPool;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
+import org.endeavourhealth.core.database.rdbms.CallableStatementCache;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
-import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
@@ -19,10 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.CallableStatement;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,18 +28,21 @@ public class RdbmsResourceDal implements ResourceDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsResourceDal.class);
     private static final ParserPool PARSER_POOL = new ParserPool();
 
+    private static CallableStatementCache saveResourceStatementCache = new CallableStatementCache("{call save_resource(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+    private static CallableStatementCache deleteResourceStatementCache = new CallableStatementCache("{call delete_resource(?, ?, ?, ?, ?, ?, ?, ?)}");
+    private static CallableStatementCache physicalDeleteResourceStatementCache = new CallableStatementCache("{call physical_delete_resource(?, ?, ?, ?, ?, ?, ?)}");
+
     public void save(ResourceWrapper resourceEntry) throws Exception {
         if (resourceEntry == null) {
             throw new IllegalArgumentException("resourceEntry is null");
         }
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
+        /*RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
+        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);*/
 
         UUID serviceId = resourceEntry.getServiceId();
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
-        PreparedStatement psResourceCurrent = null;
-        PreparedStatement psResourceHistory = null;
+        CallableStatement storedProcedure = null;
 
         try {
             entityManager.getTransaction().begin();
@@ -54,11 +53,14 @@ public class RdbmsResourceDal implements ResourceDalI {
             //entityManager.persist(resourceCurrent);
             //entityManager.persist(resourceHistory);
 
-            psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            storedProcedure = createAndPopulateSaveResourceCallableStatement(entityManager, resourceEntry);
+            storedProcedure.execute();
+
+            /*PreparedStatement psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
             psResourceHistory.executeUpdate();
 
-            psResourceCurrent = createAndPopulateInsertResourceCurrentPreparedStatement(entityManager, resourceCurrent);
-            psResourceCurrent.executeUpdate();
+            PreparedStatement psResourceCurrent = createAndPopulateInsertResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+            psResourceCurrent.executeUpdate();*/
 
             entityManager.getTransaction().commit();
 
@@ -67,17 +69,38 @@ public class RdbmsResourceDal implements ResourceDalI {
             throw ex;
 
         } finally {
+            saveResourceStatementCache.returnCallableStatement(entityManager, storedProcedure);
             entityManager.close();
-            if (psResourceCurrent != null) {
-                psResourceCurrent.close();
-            }
-            if (psResourceHistory != null) {
-                psResourceHistory.close();
-            }
         }
     }
 
-    private static PreparedStatement createInsertResourceCurrentPreparedStatement(EntityManager entityManager) throws Exception {
+    private CallableStatement createAndPopulateSaveResourceCallableStatement(EntityManager entityManager, ResourceWrapper resourceEntry) throws Exception {
+
+        CallableStatement cs = saveResourceStatementCache.getCallableStatement(entityManager);
+
+        cs.setString(1, resourceEntry.getServiceId().toString());
+        cs.setString(2, resourceEntry.getSystemId().toString());
+        cs.setString(3, resourceEntry.getResourceType());
+        cs.setString(4, resourceEntry.getResourceId().toString());
+        cs.setTimestamp(5, new java.sql.Timestamp(resourceEntry.getCreatedAt().getTime()));
+        if (resourceEntry.getPatientId() != null) {
+            cs.setString(6, resourceEntry.getPatientId().toString());
+        } else {
+            //patient ID is used in one of the indexes so can't be null
+            cs.setString(6, "");
+        }
+        cs.setString(7, resourceEntry.getResourceData());
+        cs.setLong(8, resourceEntry.getResourceChecksum());
+        cs.setString(9, resourceEntry.getExchangeBatchId().toString());
+        cs.setString(10, resourceEntry.getVersion().toString());
+        cs.setString(11, resourceEntry.getResourceMetadata());
+
+        return cs;
+    }
+
+
+
+    /*private static PreparedStatement createInsertResourceCurrentPreparedStatement(EntityManager entityManager) throws Exception {
 
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
@@ -129,7 +152,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
     
     private static PreparedStatement createAndPopulateInsertResourceHistoryPreparedStatement(EntityManager entityManager, RdbmsResourceHistory resourceHistory) throws Exception {
-        
+
         PreparedStatement ps = createInsertResourceHistoryPreparedStatement(entityManager);
 
         ps.setString(1, resourceHistory.getServiceId());
@@ -157,58 +180,6 @@ public class RdbmsResourceDal implements ResourceDalI {
         ps.setString(11, resourceHistory.getVersion());
 
         return ps;
-    }
-
-    /**
-     * logical delete, when we want to delete a resource but maintain our audits
-     */
-    public void delete(ResourceWrapper resourceEntry) throws Exception {
-        if (resourceEntry == null) {
-            throw new IllegalArgumentException("resourceEntry is null");
-        }
-
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
-
-        //we want to insert a "deleted" row into the resource history, so need to clear some fields
-        resourceHistory.setDeleted(true);
-        resourceHistory.setResourceData(null);
-        resourceHistory.setResourceChecksum(null);
-
-        UUID serviceId = resourceEntry.getServiceId();
-        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
-        PreparedStatement psResourceCurrent = null;
-        PreparedStatement psResourceHistory = null;
-
-        try {
-            entityManager.getTransaction().begin();
-
-            //can't use JPA to delete without first doing a retrieve (I think), so am going to use
-            //just a normal prepared statement to delete the data
-            //entityManager.remove(resourceCurrent);
-            //entityManager.persist(resourceHistory);
-
-            psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
-            psResourceHistory.executeUpdate();
-
-            psResourceCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
-            psResourceCurrent.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            entityManager.close();
-            if (psResourceCurrent != null) {
-                psResourceCurrent.close();
-            }
-            if (psResourceHistory != null) {
-                psResourceHistory.close();
-            }
-        }
     }
 
     private static PreparedStatement createAndPopulateDeleteResourceCurrentPreparedStatement(EntityManager entityManager, RdbmsResourceCurrent resourceCurrent) throws SQLException {
@@ -262,32 +233,46 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         return connection.prepareStatement(sql);
     }
+    */
 
     /**
-     * physical delete, when we want to remove all trace of cassandra from Discovery
+     * logical delete, when we want to delete a resource but maintain our audits
      */
-    public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
+    public void delete(ResourceWrapper resourceEntry) throws Exception {
+        if (resourceEntry == null) {
+            throw new IllegalArgumentException("resourceEntry is null");
+        }
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
+        /*RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
         RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
+
+        //we want to insert a "deleted" row into the resource history, so need to clear some fields
+        resourceHistory.setDeleted(true);
+        resourceHistory.setResourceData(null);
+        resourceHistory.setResourceChecksum(null);*/
 
         UUID serviceId = resourceEntry.getServiceId();
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
-        PreparedStatement psCurrent = null;
-        PreparedStatement psHistory = null;
+        /*PreparedStatement psResourceCurrent = null;
+        PreparedStatement psResourceHistory = null;*/
+        CallableStatement callableStatement = null;
 
         try {
             entityManager.getTransaction().begin();
 
-            //JPA remove doesn't seem to work without retrieving first, so I'm just using a prepared statement
-            //entityManager.remove(resourceHistory);
+            //can't use JPA to delete without first doing a retrieve (I think), so am going to use
+            //just a normal prepared statement to delete the data
             //entityManager.remove(resourceCurrent);
+            //entityManager.persist(resourceHistory);
 
-            psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
-            psCurrent.executeUpdate();
+            callableStatement = createAndPopulateDeleteResourceCallableStatement(entityManager, resourceEntry);
+            callableStatement.execute();
 
-            psHistory = createAndPopulateDeleteResourceHistoryPreparedStatement(entityManager, resourceHistory);
-            psHistory.executeUpdate();
+            /*psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            psResourceHistory.executeUpdate();
+
+            psResourceCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+            psResourceCurrent.executeUpdate();*/
 
             entityManager.getTransaction().commit();
 
@@ -296,15 +281,105 @@ public class RdbmsResourceDal implements ResourceDalI {
             throw ex;
 
         } finally {
+            deleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
             entityManager.close();
 
-            if (psCurrent != null) {
+            /*if (psResourceCurrent != null) {
+                psResourceCurrent.close();
+            }
+            if (psResourceHistory != null) {
+                psResourceHistory.close();
+            }*/
+        }
+    }
+
+    private CallableStatement createAndPopulateDeleteResourceCallableStatement(EntityManager entityManager, ResourceWrapper resourceEntry) throws Exception {
+        CallableStatement cs = deleteResourceStatementCache.getCallableStatement(entityManager);
+
+        cs.setString(1, resourceEntry.getServiceId().toString());
+        cs.setString(2, resourceEntry.getSystemId().toString());
+        cs.setString(3, resourceEntry.getResourceType());
+        cs.setString(4, resourceEntry.getResourceId().toString());
+        cs.setTimestamp(5, new java.sql.Timestamp(resourceEntry.getCreatedAt().getTime()));
+        if (resourceEntry.getPatientId() != null) {
+            cs.setString(6, resourceEntry.getPatientId().toString());
+        } else {
+            //patient ID is used in one of the indexes so can't be null
+            cs.setString(6, "");
+        }
+        cs.setString(7, resourceEntry.getExchangeBatchId().toString());
+        cs.setString(8, resourceEntry.getVersion().toString());
+
+        return cs;
+    }
+
+
+    /**
+     * physical delete, when we want to remove all trace of cassandra from Discovery
+     */
+    public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
+
+        /*RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
+        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);*/
+
+        UUID serviceId = resourceEntry.getServiceId();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+        /*PreparedStatement psCurrent = null;
+        PreparedStatement psHistory = null;*/
+        CallableStatement callableStatement = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //JPA remove doesn't seem to work without retrieving first, so I'm just using a prepared statement
+            //entityManager.remove(resourceHistory);
+            //entityManager.remove(resourceCurrent);
+
+            callableStatement = createAndPopulatePhysicalDeleteCallableStatement(entityManager, resourceEntry);
+            callableStatement.execute();
+
+            /*psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+            psCurrent.executeUpdate();
+
+            psHistory = createAndPopulateDeleteResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            psHistory.executeUpdate();*/
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            physicalDeleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
+            entityManager.close();
+
+            /*if (psCurrent != null) {
                 psCurrent.close();
             }
             if (psHistory != null) {
                 psHistory.close();
-            }
+            }*/
         }
+    }
+
+    private CallableStatement createAndPopulatePhysicalDeleteCallableStatement(EntityManager entityManager, ResourceWrapper resourceEntry) throws Exception {
+        CallableStatement cs = physicalDeleteResourceStatementCache.getCallableStatement(entityManager);
+
+        cs.setString(1, resourceEntry.getServiceId().toString());
+        cs.setString(2, resourceEntry.getSystemId().toString());
+        cs.setString(3, resourceEntry.getResourceType());
+        cs.setString(4, resourceEntry.getResourceId().toString());
+        cs.setTimestamp(5, new java.sql.Timestamp(resourceEntry.getCreatedAt().getTime()));
+        if (resourceEntry.getPatientId() != null) {
+            cs.setString(6, resourceEntry.getPatientId().toString());
+        } else {
+            //patient ID is used in one of the indexes so can't be null
+            cs.setString(6, "");
+        }
+        cs.setString(7, resourceEntry.getVersion().toString());
+
+        return cs;
     }
 
     /**
