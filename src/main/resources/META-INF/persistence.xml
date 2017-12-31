@@ -108,8 +108,22 @@
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
             <!--<property name="hibernate.hikari.maxLifetime" value="600000" />--> <!--default is 1800000 = 30 mins-->
-            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.connection.autocommit" value="false" />
+
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <!--<property name="hibernate.hikari.dataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" />
+            <property name="hibernate.hikari.dataSource.cachePrepStmts" value="true" />
+            <property name="hibernate.hikari.dataSource.prepStmtCacheSize" value="250" />
+            <property name="hibernate.hikari.dataSource.prepStmtCacheSqlLimit" value="2048" />
+            <property name="hibernate.hikari.dataSource.useServerPrepStmts" value="true" />
+            <property name="hibernate.hikari.dataSource.useLocalSessionState" value="true" />
+            <property name="hibernate.hikari.dataSource.useLocalTransactionState" value="true" />
+            <property name="hibernate.hikari.dataSource.rewriteBatchedStatements" value="true" />
+            <property name="hibernate.hikari.dataSource.cacheResultSetMetadata" value="true" />
+            <property name="hibernate.hikari.dataSource.cacheServerConfiguration" value="true" />
+            <property name="hibernate.hikari.dataSource.elideSetAutoCommits" value="true" />
+            <property name="hibernate.hikari.dataSource.maintainTimeStats" value="false" />-->
+
         </properties>
     </persistence-unit>
 
@@ -151,9 +165,23 @@
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
-            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
             <property name="hibernate.connection.autocommit" value="false" />
+
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <!--<property name="hibernate.hikari.dataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" />
+            <property name="hibernate.hikari.dataSource.cachePrepStmts" value="true" />
+            <property name="hibernate.hikari.dataSource.prepStmtCacheSize" value="250" />
+            <property name="hibernate.hikari.dataSource.prepStmtCacheSqlLimit" value="2048" />
+            <property name="hibernate.hikari.dataSource.useServerPrepStmts" value="true" />
+            <property name="hibernate.hikari.dataSource.useLocalSessionState" value="true" />
+            <property name="hibernate.hikari.dataSource.useLocalTransactionState" value="true" />
+            <property name="hibernate.hikari.dataSource.rewriteBatchedStatements" value="true" />
+            <property name="hibernate.hikari.dataSource.cacheResultSetMetadata" value="true" />
+            <property name="hibernate.hikari.dataSource.cacheServerConfiguration" value="true" />
+            <property name="hibernate.hikari.dataSource.elideSetAutoCommits" value="true" />
+            <property name="hibernate.hikari.dataSource.maintainTimeStats" value="false" />-->
+
         </properties>
     </persistence-unit>
 
