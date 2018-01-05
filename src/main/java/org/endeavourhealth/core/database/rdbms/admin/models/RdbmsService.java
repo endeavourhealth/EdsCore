@@ -21,6 +21,7 @@ public class RdbmsService implements Serializable {
     private String endpoints = null; //json containing a map of linked endpoints
     private String organisations = null; //json containing a map of linked organisations UUIDs and names
     private String publisherConfigName = null; //config name that will tell us where published data is
+    private String notes = null;
 
     public RdbmsService() {}
 
@@ -34,6 +35,7 @@ public class RdbmsService implements Serializable {
         this.organisations = ObjectMapperPool.getInstance().writeValueAsString(map);
 
         this.publisherConfigName = proxy.getPublisherConfigName();
+        this.notes = proxy.getNotes();
     }
 
     @Id
@@ -89,5 +91,14 @@ public class RdbmsService implements Serializable {
 
     public void setPublisherConfigName(String publisherConfigName) {
         this.publisherConfigName = publisherConfigName;
+    }
+
+    @Column(name = "notes", nullable = true)
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

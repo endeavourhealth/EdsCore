@@ -4,17 +4,17 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 import org.endeavourhealth.common.fhir.ReferenceComponents;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
-import org.endeavourhealth.core.database.rdbms.CallableStatementCache;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceIdMap;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.Reference;
 import org.hl7.fhir.instance.model.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -23,8 +23,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsResourceIdDal.class);
 
-    private static final int MAX_RECENT_IDS_TO_CACHE = 1000;
+    private static final int MAX_RECENT_IDS_TO_CACHE = 10000;
 
     private static final Map<String, AtomicInteger> syncLocks = new HashMap<>();
 
@@ -32,7 +33,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     private static final List<String> recentIdsGenerated = new ArrayList<>();
     private static final Map<String, UUID> recentIdsGeneratedMap = new HashMap<>();
 
-    private static CallableStatementCache saveMappingStatementCache = new CallableStatementCache("{call save_resource_id_map(?, ?, ?, ?, ?)}");
+    //private static CallableStatementCache saveMappingStatementCache = new CallableStatementCache("{call save_resource_id_map(?, ?, ?, ?, ?)}");
 
     private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -72,48 +73,11 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
         }
     }
 
-    /*private RdbmsResourceIdMap getResourceIdMapByEdsId(String resourceType, String edsId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager();
-
-        try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsResourceIdMap c"
-                    + " where c.resourceType = :resource_type"
-                    + " and c.edsId = :eds_id";
-
-            Query query = entityManager.createQuery(sql, RdbmsResourceIdMap.class)
-                    .setParameter("resource_type", resourceType)
-                    .setParameter("eds_id", edsId);
-
-            RdbmsResourceIdMap result = (RdbmsResourceIdMap)query.getSingleResult();
-            return result;
-
-        } catch (NoResultException ex) {
-            return null;
-
-        } finally {
-            entityManager.close();
-        }
-    }*/
-
-
     @Override
     public UUID findOrCreateThreadSafe(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
 
-        String cacheKey = resourceType + "\\" + sourceId;
-
-        //see if we've JUST generated an ID for this source ID
-        try {
-            recentIdLock.lock();
-
-            UUID edsId = recentIdsGeneratedMap.get(cacheKey);
-            if (edsId != null) {
-                return edsId;
-            }
-        } finally {
-            recentIdLock.unlock();
-        }
+        String cacheKey = serviceId.toString() + "\\" + systemId.toString() + "\\" + resourceType + "\\" + sourceId;
+        //LOG.trace("<<<<Looking for " + cacheKey);
 
         //we need to sync to prevent two threads generating an ID for the same source ID at the same time
         //use an AtomicInt for each cache key as a synchronisation object and as a way to track
@@ -128,48 +92,91 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             atomicInteger.incrementAndGet();
         }
 
-        UUID edsId = UUID.randomUUID();
+        UUID edsId = null;
 
-        /*RdbmsResourceIdMap mapping = new RdbmsResourceIdMap();
-        mapping.setServiceId(serviceId.toString());
-        mapping.setSystemId(systemId.toString());
-        mapping.setResourceType(resourceType);
-        mapping.setSourceId(sourceId);
-        mapping.setEdsId(UUID.randomUUID().toString());*/
+        synchronized (atomicInteger) {
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        CallableStatement callableStatement = null;
+            //see if we've JUST generated an ID for this source ID
+            try {
+                recentIdLock.lock();
 
-        try {
-            entityManager.getTransaction().begin();
-
-            callableStatement = saveMappingStatementCache.getCallableStatement(entityManager);
-            callableStatement.setString(1, serviceId.toString());
-            callableStatement.setString(2, systemId.toString());
-            callableStatement.setString(3, resourceType);
-            callableStatement.setString(4, sourceId);
-            callableStatement.setString(5, edsId.toString());
-            callableStatement.execute();
-
-            //entityManager.persist(mapping);
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-
-            //if we get an exception raised, it's most likely because another thread has created
-            //a mapping for the same source and resource type, so we should try and retrieve it
-            RdbmsResourceIdMap mapping = getResourceIdMap(entityManager, serviceId, systemId, resourceType, sourceId);
-            if (mapping == null) {
-                //if the mapping is still null, then something else went wrong, so throw the exception up
-                throw ex;
-            } else {
-                edsId = UUID.fromString(mapping.getEdsId());
+                edsId = recentIdsGeneratedMap.get(cacheKey);
+                if (edsId != null) {
+                    //LOG.trace("    " + cacheKey + " found in recentIdsGeneratedMap map = " + edsId + " sz " + recentIdsGeneratedMap.size());
+                    return edsId;
+                }
+            } finally {
+                recentIdLock.unlock();
             }
 
-        } finally {
-            saveMappingStatementCache.returnCallableStatement(entityManager, callableStatement);
-            entityManager.close();
+            edsId = UUID.randomUUID();
+
+            RdbmsResourceIdMap mapping = new RdbmsResourceIdMap();
+            mapping.setServiceId(serviceId.toString());
+            mapping.setSystemId(systemId.toString());
+            mapping.setResourceType(resourceType);
+            mapping.setSourceId(sourceId);
+            mapping.setEdsId(edsId.toString());
+
+            EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+            //CallableStatement callableStatement = null;
+
+            try {
+                entityManager.getTransaction().begin();
+
+                /*callableStatement = saveMappingStatementCache.getCallableStatement(entityManager);
+                callableStatement.setString(1, serviceId.toString());
+                callableStatement.setString(2, systemId.toString());
+                callableStatement.setString(3, resourceType);
+                callableStatement.setString(4, sourceId);
+                callableStatement.setString(5, edsId.toString());
+                callableStatement.execute();*/
+
+                entityManager.persist(mapping);
+
+                entityManager.getTransaction().commit();
+
+                /*if (resourceType.equals("Organization")) {
+                    LOG.trace("Created org map for " + sourceId + " -> " + edsId);
+                }*/
+                //LOG.trace("    " + cacheKey + " successfully created ID " + edsId);
+
+            } catch (Exception ex) {
+                entityManager.getTransaction().rollback();
+
+                //if we get an exception raised, it's most likely because another thread has created
+                //a mapping for the same source and resource type, so we should try and retrieve it
+                mapping = getResourceIdMap(entityManager, serviceId, systemId, resourceType, sourceId);
+                if (mapping == null) {
+                    //if the mapping is still null, then something else went wrong, so throw the exception up
+                    throw ex;
+                } else {
+                    edsId = UUID.fromString(mapping.getEdsId());
+                    //LOG.trace("    " + cacheKey + " failed and re-retreived ID " + edsId);
+                }
+
+            } finally {
+                //saveMappingStatementCache.returnCallableStatement(entityManager, callableStatement);
+                entityManager.close();
+            }
+
+            //add to our recent ID cache
+            try {
+                recentIdLock.lock();
+
+                //add the new ID to the cache
+                recentIdsGenerated.add(cacheKey);
+                recentIdsGeneratedMap.put(cacheKey, edsId);
+                //LOG.trace("    " + cacheKey + " added to cache " + edsId);
+
+                //apply the size limit
+                while (recentIdsGenerated.size() > MAX_RECENT_IDS_TO_CACHE) {
+                    String key = recentIdsGenerated.remove(0);
+                    recentIdsGeneratedMap.remove(key);
+                }
+            } finally {
+                recentIdLock.unlock();
+            }
         }
 
         //decrement our lock count and if zero remove from the map
@@ -180,23 +187,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             }
         }
 
-        //add to our recent ID cache
-        try {
-            recentIdLock.lock();
-
-            //add the new ID to the cache
-            recentIdsGenerated.add(cacheKey);
-            recentIdsGeneratedMap.put(cacheKey, edsId);
-
-            //apply the size limit
-            while (recentIdsGenerated.size() > MAX_RECENT_IDS_TO_CACHE) {
-                String key = recentIdsGenerated.remove(0);
-                recentIdsGeneratedMap.remove(key);
-            }
-        } finally {
-            recentIdLock.unlock();
-        }
-
+        //LOG.trace(">>>>Looking for " + cacheKey + " -> " + edsId);
         return edsId;
     }
 

@@ -35,6 +35,11 @@ public class FhirStorageService {
     private final UUID serviceId;
     private final UUID systemId;
 
+    //just for getting some metrics out
+    /*private ReentrantLock countLock = new ReentrantLock();
+    private long millisCutoff = -1;
+    private long count = 0;*/
+
     public FhirStorageService(UUID serviceId, UUID systemId) {
         this.serviceId = serviceId;
         this.systemId = systemId;
@@ -58,6 +63,23 @@ public class FhirStorageService {
         FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
 
         resourceRepository.save(entry);
+
+        //count per minute
+        /*try {
+            countLock.lock();
+            long now = System.currentTimeMillis();
+            if (millisCutoff == -1
+                    || now > millisCutoff) {
+                if (millisCutoff != -1) {
+                    LOG.trace("Done " + count + " in " + (now - millisCutoff) + "ms");
+                }
+                count = 0;
+                millisCutoff = now + (1000L * 30L);
+            }
+            count++;
+        } finally {
+            countLock.unlock();
+        }*/
 
         //call out to our patient search and person matching services
         if (resource instanceof Patient) {

@@ -13,6 +13,7 @@ import javax.persistence.Persistence;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,6 +85,75 @@ public class ConnectionManager {
 
         JsonNode json = findDatabaseConfigJson(dbName, explicitConfigName);
 
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.temp.use_jdbc_metadata_defaults", "false"); //always turn this off (https://stackoverflow.com/questions/10075081/hibernate-slow-to-acquire-postgres-connection)
+
+        Iterator<String> fieldNames = json.fieldNames();
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            JsonNode child = json.get(fieldName);
+
+            if (fieldName.equals("url")) {
+                String url = child.asText();
+                properties.put("hibernate.hikari.dataSource.url", url);
+
+            } else if (fieldName.equals("username")) {
+                String user = child.asText();
+                properties.put("hibernate.hikari.dataSource.user", user);
+
+            } else if (fieldName.equals("password")) {
+                String pass = child.asText();
+                properties.put("hibernate.hikari.dataSource.password", pass);
+
+            } else if (fieldName.equals("class")) {
+                String cls = child.asText();
+                properties.put("hibernate.hikari.dataSourceClassName", cls);
+
+            } else if (fieldName.equals("dialect")) {
+                String dialect = child.asText();
+                properties.put("hibernate.dialect", dialect);
+
+            } else {
+
+                //if not one of the generally-used fields above, then just interpret as a
+                //properly named property, and just set in according to its type
+                if (child.isTextual()) {
+                    String value = child.asText();
+                    properties.put(fieldName, value);
+
+                } else if (child.isInt()) {
+                    int value = child.asInt();
+                    properties.put(fieldName, new Integer(value));
+
+                } else if (child.isBigInteger()) {
+                    long value = child.asLong();
+                    properties.put(fieldName, new Long(value));
+
+                } else if (child.isBoolean()) {
+                    boolean value = child.asBoolean();
+                    properties.put(fieldName, new Boolean(value));
+
+                } else {
+                    throw new IllegalArgumentException("Unsupported JSON element type for database " + dbName + " " + explicitConfigName + ": " + json.getNodeType());
+                }
+            }
+        }
+
+        String hibernatePersistenceUnit = getPersistenceUnitName(dbName);
+        EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
+
+        return factory;
+    }
+
+    /*private static synchronized EntityManagerFactory createEntityManager(Db dbName, String explicitConfigName) throws Exception {
+
+        //adding this line to force compile-time checking for this class. Spent far too long investigating
+        //why this wasn't being found when it turned out to be that it had been removed from POM.xml,
+        //so adding this to ensure it's picked up during compile-time rather than run-time
+        org.hibernate.hikaricp.internal.HikariCPConnectionProvider p = null;
+
+        JsonNode json = findDatabaseConfigJson(dbName, explicitConfigName);
+
         String url = json.get("url").asText();
         String user = json.get("username").asText();
         String pass = json.get("password").asText();
@@ -106,7 +176,7 @@ public class ConnectionManager {
         EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
 
         return factory;
-    }
+    }*/
 
     private static JsonNode findDatabaseConfigJson(Db dbName, String configName) throws Exception {
 
