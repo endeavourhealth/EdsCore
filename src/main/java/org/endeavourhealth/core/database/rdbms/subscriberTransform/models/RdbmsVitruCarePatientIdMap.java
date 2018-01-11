@@ -13,7 +13,6 @@ public class RdbmsVitruCarePatientIdMap implements Serializable {
 
     private String edsPatientId = null;
     private String serviceId = null;
-    private String systemId = null;
     private Date createdAt = null;
     private String vitruCareId = null;
 
@@ -34,15 +33,6 @@ public class RdbmsVitruCarePatientIdMap implements Serializable {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
-    }
-
-    @Column(name = "system_id", nullable = false)
-    public String getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
     }
 
     @Column(name = "created_at", nullable = false)

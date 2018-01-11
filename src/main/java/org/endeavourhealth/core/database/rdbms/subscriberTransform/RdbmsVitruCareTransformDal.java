@@ -22,7 +22,6 @@ public class RdbmsVitruCareTransformDal implements VitruCareTransformDalI {
         RdbmsVitruCarePatientIdMap o = new RdbmsVitruCarePatientIdMap();
         o.setEdsPatientId(edsPatientId.toString());
         o.setServiceId(serviceId.toString());
-        o.setSystemId(systemId.toString());
         o.setVitruCareId(virtruCareId);
         o.setCreatedAt(new Date());
 

@@ -27,7 +27,6 @@ public class PatientSearch {
     
     public PatientSearch(RdbmsPatientSearch proxy) {
         this.serviceId = UUID.fromString(proxy.getServiceId());
-        this.systemId = UUID.fromString(proxy.getSystemId());
         this.nhsNumber = proxy.getNhsNumber();
         this.forenames = proxy.getForenames();
         this.surname = proxy.getSurname();

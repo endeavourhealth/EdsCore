@@ -4,7 +4,6 @@ import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceIdMap;
 
 import java.util.UUID;
 
@@ -27,15 +26,6 @@ public class CassandraResourceIdMap {
     private UUID edsId = null;
 
     public CassandraResourceIdMap() {}
-
-
-    public CassandraResourceIdMap(ResourceIdMap proxy) {
-        this.serviceId = proxy.getServiceId();
-        this.systemId = proxy.getSystemId();
-        this.resourceType = proxy.getResourceType();
-        this.sourceId = proxy.getSourceId();
-        this.edsId = proxy.getEdsId();
-    }
 
     public UUID getServiceId() {
         return serviceId;

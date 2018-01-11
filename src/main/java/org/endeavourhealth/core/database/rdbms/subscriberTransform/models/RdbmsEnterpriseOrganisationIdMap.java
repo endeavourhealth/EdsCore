@@ -11,9 +11,6 @@ import java.io.Serializable;
 public class RdbmsEnterpriseOrganisationIdMap implements Serializable {
 
     private String serviceId = null;
-    private String systemId = null;
-    //private String enterpriseConfigName = null;
-    //private String odsCode = null;
     private Long enterpriseId = null;
 
     public RdbmsEnterpriseOrganisationIdMap() {}
@@ -27,36 +24,6 @@ public class RdbmsEnterpriseOrganisationIdMap implements Serializable {
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }
-
-    @Id
-    @Column(name = "system_id", nullable = false)
-    public String getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
-    }
-
-    /*@Id
-    @Column(name = "enterprise_config_name", nullable = false)
-    public String getEnterpriseConfigName() {
-        return enterpriseConfigName;
-    }
-
-    public void setEnterpriseConfigName(String enterpriseConfigName) {
-        this.enterpriseConfigName = enterpriseConfigName;
-    }*/
-
-    /*@Id
-    @Column(name = "ods_code", nullable = false)
-    public String getOdsCode() {
-        return odsCode;
-    }
-
-    public void setOdsCode(String odsCode) {
-        this.odsCode = odsCode;
-    }*/
 
     @Column(name = "enterprise_id", nullable = false)
     public Long getEnterpriseId() {

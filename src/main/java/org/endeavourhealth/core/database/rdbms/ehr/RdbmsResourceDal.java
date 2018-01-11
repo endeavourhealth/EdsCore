@@ -175,6 +175,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 + " (service_id, system_id, resource_type, resource_id, updated_at, patient_id, resource_data, resource_checksum, resource_metadata)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
+                + " system_id = VALUES(system_id),"
                 + " updated_at = VALUES(updated_at),"
                 + " resource_data = VALUES(resource_data),"
                 + " resource_checksum = VALUES(resource_checksum),"
@@ -253,10 +254,9 @@ public class RdbmsResourceDal implements ResourceDalI {
         PreparedStatement ps = createDeleteResourceCurrentPreparedStatement(entityManager);
 
         ps.setString(1, resourceCurrent.getServiceId());
-        ps.setString(2, resourceCurrent.getSystemId());
-        ps.setString(3, resourceCurrent.getPatientId());
-        ps.setString(4, resourceCurrent.getResourceType());
-        ps.setString(5, resourceCurrent.getResourceId());
+        ps.setString(2, resourceCurrent.getPatientId());
+        ps.setString(3, resourceCurrent.getResourceType());
+        ps.setString(4, resourceCurrent.getResourceId());
 
         return ps;
     }
@@ -267,7 +267,6 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         String sql = "DELETE FROM resource_current"
                 + " WHERE service_id = ?"
-                + " AND system_id = ?"
                 + " AND patient_id = ?"
                 + " AND resource_type = ?"
                 + " AND resource_id = ?";
@@ -491,12 +490,10 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
                     + " and c.patientId = :patient_id";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("patient_id", patientId.toString());
 
             List<RdbmsResourceCurrent> ret = query.getResultList();
@@ -519,13 +516,11 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
                     + " and c.patientId = :patient_id"
                     + " and c.resourceType = :resource_type";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("patient_id", patientId.toString())
                     .setParameter("resource_type", resourceType);
 
@@ -584,13 +579,11 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
                     + " and c.resourceType = :resource_type"
                     + " and c.resourceId IN :resource_ids";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType)
                     .setParameter("resource_ids", resourceIdStrs);
 
@@ -717,12 +710,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsResourceCurrent c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id";
+                    + " where c.serviceId = :service_id";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setMaxResults(1);
 
             RdbmsResourceCurrent r = (RdbmsResourceCurrent)query.getSingleResult();
@@ -744,13 +735,11 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
                     + " and c.resourceType = :resource_type"
                     + " ORDER BY c.updatedAt ASC";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType.toString())
                     .setMaxResults(1);
 
@@ -773,12 +762,10 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
                     + " and c.resourceType = :resource_type";
 
             Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType.toString());
 
             List<RdbmsResourceCurrent> ret = query.getResultList();
@@ -800,12 +787,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             String sql = "SELECT c.resourceMetadata"
                     + " FROM RdbmsResourceCurrent c"
                     + " WHERE c.serviceId = :service_id"
-                    + " AND c.systemId = :system_id"
                     + " AND c.resourceType = :resource_type";
 
             Query q = entityManager.createQuery(sql)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType);
 
             List<String> results = q.getResultList();
@@ -824,12 +809,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             String sql = "SELECT COUNT(c)"
                     + " FROM RdbmsResourceCurrent c"
                     + " WHERE c.serviceId = :service_id"
-                    + " AND c.systemId = :system_id"
                     + " AND c.resourceType = :resource_type";
 
             Query q = entityManager.createQuery(sql)
                     .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString())
                     .setParameter("resource_type", resourceType);
 
             return (long)q.getSingleResult();

@@ -14,7 +14,6 @@ import java.util.Date;
 public class RdbmsPatientSearch implements Serializable {
 
     private String serviceId = null;
-    private String systemId = null;
     private String nhsNumber = null;
     private String forenames = null;
     private String surname = null;
@@ -33,7 +32,6 @@ public class RdbmsPatientSearch implements Serializable {
 
     public RdbmsPatientSearch(PatientSearch proxy) {
         this.serviceId = proxy.getServiceId().toString();
-        this.systemId = proxy.getSystemId().toString();
         this.nhsNumber = proxy.getNhsNumber();
         this.forenames = proxy.getForenames();
         this.surname = proxy.getSurname();
@@ -59,17 +57,6 @@ public class RdbmsPatientSearch implements Serializable {
         this.serviceId = serviceId;
     }
 
-    @Id
-    @Column(name = "system_id", nullable = false)
-    public String getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
-    }
-
-   // @Basic
     @Column(name = "nhs_number")
     public String getNhsNumber() {
         return nhsNumber;
@@ -79,7 +66,6 @@ public class RdbmsPatientSearch implements Serializable {
         this.nhsNumber = nhsNumber;
     }
 
-  //  @Basic
     @Column(name = "forenames")
     public String getForenames() {
         return forenames;

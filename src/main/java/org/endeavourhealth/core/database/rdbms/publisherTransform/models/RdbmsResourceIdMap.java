@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceIdMap;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -13,20 +11,11 @@ import java.io.Serializable;
 public class RdbmsResourceIdMap implements Serializable {
 
     private String serviceId = null;
-    private String systemId = null;
     private String resourceType = null;
     private String sourceId = null;
     private String edsId = null;
 
     public RdbmsResourceIdMap() {}
-
-    public RdbmsResourceIdMap(ResourceIdMap proxy) {
-        this.serviceId = proxy.getServiceId().toString();
-        this.systemId = proxy.getSystemId().toString();
-        this.resourceType = proxy.getResourceType();
-        this.sourceId = proxy.getSourceId();
-        this.edsId = proxy.getEdsId().toString();
-    }
 
     @Id
     @Column(name = "service_id", nullable = false)
@@ -36,16 +25,6 @@ public class RdbmsResourceIdMap implements Serializable {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
-    }
-
-    @Id
-    @Column(name = "system_id", nullable = false)
-    public String getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
     }
 
     @Id

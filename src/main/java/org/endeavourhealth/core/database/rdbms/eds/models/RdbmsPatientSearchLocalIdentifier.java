@@ -12,7 +12,6 @@ import java.util.Date;
 public class RdbmsPatientSearchLocalIdentifier implements Serializable {
 
     private String serviceId = null;
-    private String systemId = null;
     private String localId = null;
     private String localIdSystem = null;
     private String patientId = null;
@@ -26,16 +25,6 @@ public class RdbmsPatientSearchLocalIdentifier implements Serializable {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
-    }
-
-    @Id
-    @Column(name = "system_id")
-    public String getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(String systemId) {
-        this.systemId = systemId;
     }
 
     @Id

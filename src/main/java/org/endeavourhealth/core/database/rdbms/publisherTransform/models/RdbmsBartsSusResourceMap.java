@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceIdMap;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;

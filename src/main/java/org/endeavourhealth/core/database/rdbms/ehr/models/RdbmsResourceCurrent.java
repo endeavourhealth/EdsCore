@@ -52,7 +52,6 @@ public class RdbmsResourceCurrent implements Serializable {
         this.serviceId = serviceId;
     }
 
-    @Id
     @Column(name = "system_id", nullable = false)
     public String getSystemId() {
         return systemId;
@@ -127,46 +126,5 @@ public class RdbmsResourceCurrent implements Serializable {
     public void setResourceMetadata(String resourceMetadata) {
         this.resourceMetadata = resourceMetadata;
     }
-/*
-    @Override
-    public boolean equals(Object other) {
-        if (this == other) {
-            return true;
-        }
-        if (!(other instanceof RdbmsResourceCurrent)) {
-            return false;
-        }
 
-        RdbmsResourceCurrent otherObj = (RdbmsResourceCurrent)other;
-
-        if (!getServiceId().equals(otherObj.getSystemId())) {
-            return false;
-        }
-        if (!getSystemId().equals(otherObj.getSystemId())) {
-            return false;
-        }
-        if (!getResourceType().equals(otherObj.getResourceType())) {
-            return false;
-        }
-        if (!getResourceId().equals(otherObj.getResourceId())) {
-            return false;
-        }
-        if ((getPatientId() == null) != (otherObj.getPatientId() == null)
-
-        //..service, system, type, id, patient
-
-
-        if ( !cat.getLitterId().equals( getLitterId() ) ) return false;
-        if ( !cat.getMother().equals( getMother() ) ) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result;
-        result = getMother().hashCode();
-        result = 29 * result + getLitterId();
-        return result;
-    }*/
 }

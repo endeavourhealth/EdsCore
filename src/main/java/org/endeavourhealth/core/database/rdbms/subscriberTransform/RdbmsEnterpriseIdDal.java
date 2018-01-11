@@ -120,8 +120,6 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
 
             mapping = new RdbmsEnterpriseOrganisationIdMap();
             mapping.setServiceId(serviceId);
-            mapping.setSystemId(systemId);
-            //mapping.setsubscriberConfigName(configName);
             mapping.setEnterpriseId(enterpriseId);
 
             entityManager.getTransaction().begin();
@@ -142,12 +140,10 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         String sql = "select c"
                 + " from"
                 + " RdbmsEnterpriseOrganisationIdMap c"
-                + " where c.serviceId = :serviceId"
-                + " and c.systemId = :systemId";
+                + " where c.serviceId = :serviceId";
 
         Query query = entityManager.createQuery(sql, RdbmsEnterpriseOrganisationIdMap.class)
-                .setParameter("serviceId", serviceId)
-                .setParameter("systemId", systemId);
+                .setParameter("serviceId", serviceId);
 
         try {
             RdbmsEnterpriseOrganisationIdMap result = (RdbmsEnterpriseOrganisationIdMap)query.getSingleResult();
@@ -175,54 +171,6 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         }
     }
 
-    /*public void saveEnterpriseOrganisationId(String odsCode, Long enterpriseId) throws Exception {
-
-        EntityManager entityManager = TransformConnection.getEntityManager();
-
-        try {
-            EnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(odsCode, entityManager);
-            if (mapping != null) {
-                mapping.setEnterpriseId(enterpriseId);
-
-                entityManager.getTransaction().begin();
-                entityManager.persist(mapping);
-                entityManager.getTransaction().commit();
-            }
-        } finally {
-            entityManager.close();
-        }
-    }
-
-    private static EnterpriseOrganisationIdMap findEnterpriseOrganisationMapping(String odsCode,  EntityManager entityManager) throws Exception {
-
-        String sql = "select c"
-                + " from"
-                + " EnterpriseOrganisationIdMap c"
-                + " where c.odsCode = :odsCode";
-
-        Query query = entityManager.createQuery(sql, EnterpriseOrganisationIdMap.class)
-                .setParameter("odsCode", odsCode);
-
-        try {
-            EnterpriseOrganisationIdMap result = (EnterpriseOrganisationIdMap)query.getSingleResult();
-            return result;
-
-        } catch (NoResultException ex) {
-            return null;
-        }
-    }
-
-    public Long findEnterpriseOrganisationId(String odsCode) throws Exception {
-
-        EntityManager entityManager = TransformConnection.getEntityManager();
-        EnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(odsCode, entityManager);
-        entityManager.close();
-        if (mapping != null) {
-            return mapping.getEnterpriseId();
-        } else {
-            return null;
-        }
-    }*/
 
     public Long findOrCreateEnterprisePersonId(String discoveryPersonId) throws Exception {
 
