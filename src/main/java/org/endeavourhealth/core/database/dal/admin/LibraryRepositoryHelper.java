@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.admin;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.common.utility.XmlSerializer;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.admin.models.ActiveItem;
@@ -26,7 +27,7 @@ public class LibraryRepositoryHelper {
 	private static final Map<String, ExpiringCache<TechnicalInterface>> technicalInterfaceCache = new ConcurrentHashMap<>();
 	private static final Map<String, ExpiringCache<LibraryItem>> libraryItemCache = new ConcurrentHashMap<>();
 
-	public static List<LibraryItem> getProtocolsByServiceId(String serviceId) throws Exception {
+	public static List<LibraryItem> getProtocolsByServiceId(String serviceId, String systemId) throws Exception {
 		DefinitionItemType itemType = DefinitionItemType.Protocol;
 
 		Iterable<ActiveItem> activeItems = null;
@@ -51,10 +52,15 @@ public class LibraryRepositoryHelper {
 			Protocol protocol = libraryItem.getProtocol();
 			List<ServiceContract> serviceContracts = protocol.getServiceContract();
 			for (int s = 0; s < serviceContracts.size(); s++) {
-				ServiceContract service = serviceContracts.get(s);
-				if (service.getService().getUuid().equals(serviceId)) {
+				ServiceContract serviceContract = serviceContracts.get(s);
+				String serviceContractServiceId = serviceContract.getService().getUuid();
+				String serviceContractSystemId = serviceContract.getSystem().getUuid();
+
+				if (serviceContractServiceId.equals(serviceId)
+						&& (Strings.isNullOrEmpty(systemId) || serviceContractSystemId.equals(systemId))) {
+
 					// Load full system details
-					String systemUuid = service.getSystem().getUuid();
+					String systemUuid = serviceContract.getSystem().getUuid();
 					ActiveItem activeSystemItem = repository.getActiveItemByItemId(UUID.fromString(systemUuid));
 					Item systemItem = repository.getItemByKey(activeSystemItem.getItemId(), activeSystemItem.getAuditId());
 					String systemLibraryItemXml = systemItem.getXmlContent();
@@ -62,14 +68,14 @@ public class LibraryRepositoryHelper {
 					LibraryItem systemLibraryItem = XmlSerializer.deserializeFromString(LibraryItem.class, systemLibraryItemXml, null);
 					//LibraryItem systemLibraryItem = XmlSerializer.deserializeFromString(LibraryItem.class, systemLibraryItemXml, XSD);
 					System system = systemLibraryItem.getSystem();
-					service.setSystem(system);
+					serviceContract.setSystem(system);
 
 					TechnicalInterface technicalInterface = system.getTechnicalInterface().stream()
-							.filter(ti -> ti.getUuid().equals(service.getTechnicalInterface().getUuid()))
+							.filter(ti -> ti.getUuid().equals(serviceContract.getTechnicalInterface().getUuid()))
 							.findFirst()
 							.get();
 
-					service.setTechnicalInterface(technicalInterface);
+					serviceContract.setTechnicalInterface(technicalInterface);
 
 					ret.add(libraryItem);
 				}
