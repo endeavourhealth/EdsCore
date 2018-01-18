@@ -24,7 +24,7 @@ import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.PatientMergeDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
@@ -43,7 +43,7 @@ import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.RdbmsEmisTransformDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsBartsSusResourceMapDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsPatientMergeDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceMergeDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
@@ -253,8 +253,8 @@ public class DalProvider {
         return new RdbmsExchangeBatchExtraResourcesDal(subscriberConfigName);
     }
 
-    public static PatientMergeDalI factoryPatientMergeDal() {
-        return new RdbmsPatientMergeDal();
+    public static ResourceMergeDalI factoryPatientMergeDal() {
+        return new RdbmsResourceMergeDal();
     }
 
     private static boolean useCassandra() {
