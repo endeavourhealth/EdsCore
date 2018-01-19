@@ -8,21 +8,32 @@ public class CsvHelper {
 
     public static void validateCsvHeaders(CSVParser parser, String filePath, String[] expectedHeaders) throws IllegalArgumentException {
 
-        Map<String, Integer> headerMap = parser.getHeaderMap();
+        String[] headers = getHeaderMapAsArray(parser);
 
-        if (headerMap.size() != expectedHeaders.length) {
-            throw new IllegalArgumentException("Mismatch in number of CSV columns in " + filePath + " expected " + expectedHeaders.length + " but found " + headerMap.size());
+        if (headers.length != expectedHeaders.length) {
+            throw new IllegalArgumentException("Mismatch in number of CSV columns in " + filePath + " expected " + expectedHeaders.length + " but found " + headers.length);
         }
 
         for (int i = 0; i < expectedHeaders.length; i++) {
             String expectedHeader = expectedHeaders[i];
-            Integer mapIndex = headerMap.get(expectedHeader);
+            String actualHeader = headers[i];
 
-            if (mapIndex == null) {
-                throw new IllegalArgumentException("Missing column " + expectedHeader + " in " + filePath);
-            } else if (mapIndex.intValue() != i) {
-                throw new IllegalArgumentException("Out of order column " + expectedHeader + " in " + filePath + " expected at " + i + " but found at " + mapIndex);
+            if (!expectedHeader.equals(actualHeader)) {
+                throw new IllegalArgumentException("Column mismatch at column " + i + ": expected [" + expectedHeader + "] but found [" + actualHeader + "]");
             }
         }
+    }
+
+    public static String[] getHeaderMapAsArray(CSVParser parser) {
+        Map<String, Integer> headerMap = parser.getHeaderMap();
+
+        String[] ret = new String[headerMap.size()];
+
+        for (String col: headerMap.keySet()) {
+            Integer colIndex = headerMap.get(col);
+            ret[colIndex.intValue()] = col;
+        }
+
+        return ret;
     }
 }
