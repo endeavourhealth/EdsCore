@@ -12,6 +12,7 @@ import java.util.Date;
 public class RdbmsResourceMergeMap implements Serializable {
 
     private String serviceId = null;
+    private String resourceType = null;
     private String sourceResourceId = null;
     private String destinationResourceId = null;
     private Date updatedAt = null;
@@ -26,6 +27,16 @@ public class RdbmsResourceMergeMap implements Serializable {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    @Id
+    @Column(name = "resource_type", nullable = false)
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
     }
 
     @Id
