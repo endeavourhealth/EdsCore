@@ -2,14 +2,19 @@ package org.endeavourhealth.core.database.rdbms;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.pool.HikariPool;
+import com.zaxxer.hikari.pool.HikariProxyConnection;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
+import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -37,6 +42,7 @@ public class ConnectionManager {
 
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
     private static Map<UUID, String> publisherServiceToConfigMap = new ConcurrentHashMap<>();
+    private static Map<String, Integer> connectionMaxPoolSize = new ConcurrentHashMap<>();
 
     public static EntityManager getEntityManager(Db dbName) throws Exception {
         return getEntityManager(dbName, null);
@@ -350,5 +356,68 @@ public class ConnectionManager {
         }
 
         return ret;
+    }
+
+    public static int getEhrConnectionPoolMaxSize(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getConnectionPoolMaxSize(Db.Ehr, configName);
+    }
+
+    public static int getPublisherCommonConnectionPoolMaxSize() throws Exception {
+        return getConnectionPoolMaxSize(Db.PublisherCommon, null);
+    }
+
+    public static int getPublisherTransformConnectionPoolMaxSize(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getConnectionPoolMaxSize(Db.PublisherTransform, configName);
+    }
+
+    private static int getConnectionPoolMaxSize(Db dbName, String explicitConfigName) throws Exception {
+        String cacheKey = "" + dbName + "/" + explicitConfigName;
+        Integer maxPoolSize = connectionMaxPoolSize.get(cacheKey);
+
+        if (maxPoolSize == null) {
+
+            synchronized (connectionMaxPoolSize) {
+
+                EntityManager entityManager = getEntityManager(dbName, explicitConfigName);
+                try {
+                    maxPoolSize = getConnectionPoolMaxSize(entityManager);
+                } finally {
+                    entityManager.close();
+                }
+
+                connectionMaxPoolSize.put(cacheKey, maxPoolSize);
+            }
+        }
+
+        return maxPoolSize.intValue();
+    }
+
+    /**
+     * returns the HikariCP max pool size for an EntityManager. Note this function uses
+     * reflection to access private variables, so it potentially ask risk of breaking
+     * if HikariCP changes, but allows us to base things such as thread pool size on
+     * DB connection pool sizes, reducing the amount of config needed
+     */
+    private static Integer getConnectionPoolMaxSize(EntityManager entityManager) throws Exception {
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        HikariProxyConnection hikariProxyConnection = (HikariProxyConnection)connection;
+
+        Field field = hikariProxyConnection.getClass().getSuperclass().getDeclaredField("poolEntry");
+        field.setAccessible(true);
+        Object poolEntry = field.get(hikariProxyConnection);
+
+        field = poolEntry.getClass().getDeclaredField("hikariPool");
+        field.setAccessible(true);
+        HikariPool hikariPool = (HikariPool)field.get(poolEntry);
+
+        field = hikariPool.getClass().getSuperclass().getDeclaredField("config");
+        field.setAccessible(true);
+        HikariConfig hikariConfig = (HikariConfig)field.get(hikariPool);
+
+        return new Integer(hikariConfig.getMaximumPoolSize());
     }
 }
