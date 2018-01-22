@@ -253,7 +253,7 @@ public class DalProvider {
         return new RdbmsExchangeBatchExtraResourcesDal(subscriberConfigName);
     }
 
-    public static ResourceMergeDalI factoryPatientMergeDal() {
+    public static ResourceMergeDalI factoryResourceMergeDal() {
         return new RdbmsResourceMergeDal();
     }
 
