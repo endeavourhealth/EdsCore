@@ -19,6 +19,7 @@ public class RdbmsExchange implements Serializable {
     private Date timestamp = null;
     private String headers = null; //JSON structure of the header map
     private String serviceId = null;
+    private String systemId = null;
     private String body = null;
 
     public RdbmsExchange() {}
@@ -32,6 +33,10 @@ public class RdbmsExchange implements Serializable {
 
         if (proxy.getServiceId() != null) {
             this.serviceId = proxy.getServiceId().toString();
+        }
+
+        if (proxy.getSystemId() != null) {
+            this.systemId = proxy.getSystemId().toString();
         }
 
         this.body = proxy.getBody();
@@ -72,6 +77,15 @@ public class RdbmsExchange implements Serializable {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    @Column(name = "system_id", nullable = true)
+    public String getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(String systemId) {
+        this.systemId = systemId;
     }
 
     @Column(name = "body", nullable = true)

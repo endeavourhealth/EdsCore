@@ -362,7 +362,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
 
     /**
-     * physical delete, when we want to remove all trace of cassandra from Discovery
+     * physical delete, when we want to remove all trace of data from Discovery
      */
     public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
 
@@ -385,11 +385,43 @@ public class RdbmsResourceDal implements ResourceDalI {
             /*callableStatement = createAndPopulatePhysicalDeleteCallableStatement(entityManager, resourceEntry);
             callableStatement.execute();*/
 
-            psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
-            psCurrent.executeUpdate();
-
+            //delete the entry from resource_history
             psHistory = createAndPopulateDeleteResourceHistoryPreparedStatement(entityManager, resourceHistory);
             psHistory.executeUpdate();
+
+            //and either update or delete from resource_current, depending on what's now the most recent entry in resource_history
+            String sql = "select c"
+                    + " from RdbmsResourceHistory c"
+                    + " where c.resourceType = :resource_type"
+                    + " and c.resourceId = :resource_id"
+                    + " ORDER BY c.createdAt DESC"; //need to explicitly sort so ordered most recent first
+
+            Query query = entityManager.createQuery(sql, RdbmsResourceHistory.class)
+                    .setParameter("resource_type", resourceEntry.getResourceType())
+                    .setParameter("resource_id", resourceEntry.getResourceId().toString())
+                    .setMaxResults(1);
+
+            List<RdbmsResourceHistory> ret = query.getResultList();
+            if (ret.size() == 0) {
+                //if there's no remaining resource history, delete from resource_current
+                psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+
+            } else {
+                RdbmsResourceHistory latestHistory = (RdbmsResourceHistory)ret.get(0);
+                ResourceWrapper wrapper = new ResourceWrapper(latestHistory);
+
+                if (wrapper.isDeleted()) {
+                    //if there is history, but the most recent one is deleted, then delete from resource_current
+                    psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+
+                } else {
+                    //if there is history and it's non-deleted, update resource_current to match
+                    RdbmsResourceCurrent newCurrent = new RdbmsResourceCurrent(wrapper);
+                    psCurrent = createAndPopulateInsertResourceCurrentPreparedStatement(entityManager, newCurrent);
+                }
+            }
+
+            psCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
 

@@ -17,6 +17,7 @@ public class Exchange {
     private Date timestamp = null;
     private Map<String, String> headers = null;
     private UUID serviceId = null;
+    private UUID systemId = null;
     private String body = null;
     private Exception exception; //not persisted, but used as a holding variable for logback
 
@@ -49,6 +50,7 @@ public class Exchange {
         this.headers = ObjectMapperPool.getInstance().readValue(headersJson, HashMap.class);
 
         this.serviceId = UUID.fromString(proxy.getServiceId());
+        this.systemId = UUID.fromString(proxy.getSystemId());
         this.body = proxy.getBody();
     }
 
@@ -82,6 +84,14 @@ public class Exchange {
 
     public void setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public UUID getSystemId() {
+        return systemId;
+    }
+
+    public void setSystemId(UUID systemId) {
+        this.systemId = systemId;
     }
 
     public String getBody() {

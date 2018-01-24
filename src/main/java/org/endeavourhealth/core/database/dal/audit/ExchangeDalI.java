@@ -10,9 +10,9 @@ public interface ExchangeDalI {
 
     void save(Exchange exchange) throws Exception;
     Exchange getExchange(UUID exchangeId) throws Exception;
-    List<Exchange> getExchangesByService(UUID serviceId, int maxRows, Date dateFrom, Date dateTo) throws Exception;
-    List<Exchange> getExchangesByService(UUID serviceId, int maxRows) throws Exception;
-    List<UUID> getExchangeIdsForService(UUID serviceId) throws Exception;
+    List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows, Date dateFrom, Date dateTo) throws Exception;
+    List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows) throws Exception;
+    List<UUID> getExchangeIdsForService(UUID serviceId, UUID systemId) throws Exception;
 
     void save(ExchangeEvent event) throws Exception;
     List<ExchangeEvent> getExchangeEvents(UUID exchangeId) throws Exception;
@@ -27,7 +27,7 @@ public interface ExchangeDalI {
     void save(ExchangeTransformErrorState errorState) throws Exception;
     void delete(ExchangeTransformErrorState errorState) throws Exception;
     ExchangeTransformErrorState getErrorState(UUID serviceId, UUID systemId) throws Exception;
-    List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception;
+    List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId, UUID systemId) throws Exception;
     List<ExchangeTransformErrorState> getAllErrorStates() throws Exception;
 
     boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception;

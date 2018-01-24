@@ -42,12 +42,13 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO exchange"
-                    + " (id, timestamp, headers, service_id, body)"
-                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " (id, timestamp, headers, service_id, system_id, body)"
+                    + " VALUES (?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " timestamp = VALUES(timestamp),"
                     + " headers = VALUES(headers),"
                     + " service_id = VALUES(service_id),"
+                    + " system_id = VALUES(system_id),"
                     + " body = VALUES(body);";
 
             ps = connection.prepareStatement(sql);
@@ -56,7 +57,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             ps.setTimestamp(2, new java.sql.Timestamp(dbObj.getTimestamp().getTime()));
             ps.setString(3, dbObj.getHeaders());
             ps.setString(4, dbObj.getServiceId());
-            ps.setString(5, dbObj.getBody());
+            ps.setString(5, dbObj.getSystemId());
+            ps.setString(6, dbObj.getBody());
 
             ps.executeUpdate();
 
@@ -335,17 +337,19 @@ public class RdbmsExchangeDal implements ExchangeDalI {
     }
 
     @Override
-    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception {
+    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId, UUID systemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
         try {
             String sql = "select c"
                     + " from"
                     + " RdbmsExchangeTransformErrorState c"
-                    + " where c.serviceId = :service_id";
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id";
 
             Query query = entityManager.createQuery(sql, RdbmsExchangeTransformErrorState.class)
-                    .setParameter("service_id", serviceId.toString());
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString());
 
             List<RdbmsExchangeTransformErrorState> results = query.getResultList();
 
@@ -473,7 +477,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    public List<Exchange> getExchangesByService(UUID serviceId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
+    public List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
         try {
@@ -481,12 +485,14 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " from"
                     + " RdbmsExchange c"
                     + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
                     + " and c.timestamp >= :date_from"
                     + " and c.timestamp <= :date_to"
                     + " order by c.timestamp desc";
 
             Query query = entityManager.createQuery(sql, RdbmsExchange.class)
                     .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
                     .setParameter("date_from", dateFrom)
                     .setParameter("date_to", dateTo)
                     .setMaxResults(maxRows);
@@ -504,7 +510,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    public List<Exchange> getExchangesByService(UUID serviceId, int maxRows) throws Exception {
+    public List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
         try {
@@ -512,10 +518,12 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " from"
                     + " RdbmsExchange c"
                     + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
                     + " order by c.timestamp desc";
 
             Query query = entityManager.createQuery(sql, RdbmsExchange.class)
                     .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
                     .setMaxResults(maxRows);
 
             List<RdbmsExchange> results = query.getResultList();
@@ -558,7 +566,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
 
 
 
-    public List<UUID> getExchangeIdsForService(UUID serviceId) throws Exception {
+    public List<UUID> getExchangeIdsForService(UUID serviceId, UUID systemId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
@@ -567,10 +575,12 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " from"
                     + " RdbmsExchange c"
                     + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
                     + " order by c.timestamp ASC";
 
             Query query = entityManager.createQuery(sql)
-                    .setParameter("service_id", serviceId.toString());
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString());
 
             List<String> list = query.getResultList();
 

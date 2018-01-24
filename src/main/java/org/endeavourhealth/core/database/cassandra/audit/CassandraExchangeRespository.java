@@ -123,7 +123,7 @@ public class CassandraExchangeRespository extends Repository implements Exchange
     }
 
     @Override
-    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId) throws Exception {
+    public List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId, UUID systemId) throws Exception {
         //this function was added to make things easier in AWS, and can't be implemented for Cassandra
         //without altering the table structure, so just return an empty list for now as this is just
         //used for display purposes in EDS UI
@@ -223,7 +223,7 @@ public class CassandraExchangeRespository extends Repository implements Exchange
         return Lists.newArrayList(accessor.getAllExchanges());
     }*/
 
-    public List<Exchange> getExchangesByService(UUID serviceId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
+    public List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
         AuditAccessor accessor = getMappingManager().createAccessor(AuditAccessor.class);
         List<CassandraExchangeByService> results = Lists.newArrayList(accessor.getExchangesByService(serviceId, maxRows, dateFrom, dateTo));
 
@@ -235,7 +235,7 @@ public class CassandraExchangeRespository extends Repository implements Exchange
         return ret;
     }
 
-    public List<Exchange> getExchangesByService(UUID serviceId, int maxRows) throws Exception {
+    public List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows) throws Exception {
         AuditAccessor accessor = getMappingManager().createAccessor(AuditAccessor.class);
         List<CassandraExchangeByService> results = Lists.newArrayList(accessor.getExchangesByService(serviceId, maxRows));
 
@@ -291,7 +291,7 @@ public class CassandraExchangeRespository extends Repository implements Exchange
         return ret;
     }
 
-    public List<UUID> getExchangeIdsForService(UUID serviceId) {
+    public List<UUID> getExchangeIdsForService(UUID serviceId, UUID systemId) {
         AuditAccessor accessor = getMappingManager().createAccessor(AuditAccessor.class);
         ResultSet resultSet = accessor.getExchangeIdsForService(serviceId);
 
