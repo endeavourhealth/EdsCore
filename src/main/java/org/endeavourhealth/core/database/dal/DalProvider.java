@@ -22,6 +22,7 @@ import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
+import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
@@ -39,6 +40,7 @@ import org.endeavourhealth.core.database.rdbms.audit.RdbmsUserAuditDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
+import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.RdbmsEmisTransformDal;
@@ -255,6 +257,10 @@ public class DalProvider {
 
     public static ResourceMergeDalI factoryResourceMergeDal() {
         return new RdbmsResourceMergeDal();
+    }
+
+    public static Hl7ResourceIdDalI factoryHL7ResourceDal() {
+        return new RdbmsHl7ResourceIdDal();
     }
 
     private static boolean useCassandra() {

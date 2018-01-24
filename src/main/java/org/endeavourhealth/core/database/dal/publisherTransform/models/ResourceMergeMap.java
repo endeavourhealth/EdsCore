@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
+package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceMergeMap;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceMergeMap;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,9 +9,7 @@ import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
-@Entity
-@Table(name = "resource_merge_map")
-public class RdbmsResourceMergeMap implements Serializable {
+public class ResourceMergeMap {
 
     private String serviceId = null;
     private String resourceType = null;
@@ -19,17 +17,13 @@ public class RdbmsResourceMergeMap implements Serializable {
     private String destinationResourceId = null;
     private Date updatedAt = null;
 
-    public RdbmsResourceMergeMap() {}
-
-    public RdbmsResourceMergeMap(ResourceMergeMap r) {
+    public ResourceMergeMap(RdbmsResourceMergeMap r) {
         this.serviceId = r.getServiceId();
         this.resourceType = r.getResourceType();
         this.sourceResourceId = r.getSourceResourceId();
         this.destinationResourceId = r.getDestinationResourceId();
     }
 
-    @Id
-    @Column(name = "service_id", nullable = false)
     public String getServiceId() {
         return serviceId;
     }
@@ -38,8 +32,6 @@ public class RdbmsResourceMergeMap implements Serializable {
         this.serviceId = serviceId;
     }
 
-    @Id
-    @Column(name = "resource_type", nullable = false)
     public String getResourceType() {
         return resourceType;
     }
@@ -48,8 +40,6 @@ public class RdbmsResourceMergeMap implements Serializable {
         this.resourceType = resourceType;
     }
 
-    @Id
-    @Column(name = "source_resource_id", nullable = false)
     public String getSourceResourceId() {
         return sourceResourceId;
     }
@@ -58,7 +48,6 @@ public class RdbmsResourceMergeMap implements Serializable {
         this.sourceResourceId = sourceResourceId;
     }
 
-    @Column(name = "destination_resource_id", nullable = false)
     public String getDestinationResourceId() {
         return destinationResourceId;
     }
@@ -67,7 +56,6 @@ public class RdbmsResourceMergeMap implements Serializable {
         this.destinationResourceId = destinationResourceId;
     }
 
-    @Column(name = "updated_at", nullable = false)
     public Date getUpdatedAt() {
         return updatedAt;
     }
