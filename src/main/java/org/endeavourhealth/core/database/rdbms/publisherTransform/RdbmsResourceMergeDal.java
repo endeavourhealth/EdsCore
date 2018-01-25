@@ -177,9 +177,9 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
                     ret = UUID.fromString(mergeRecord.getDestinationResourceId());
 
                     query = entityManager.createQuery(sql, RdbmsResourceMergeMap.class)
-                            .setParameter("service_id", serviceId)
+                            .setParameter("service_id", serviceId.toString())
                             .setParameter("resource_type", resourceType)
-                            .setParameter("resource_id", ret)
+                            .setParameter("resource_id", ret.toString())
                             .setMaxResults(1);
 
                     mergeRecord = (RdbmsResourceMergeMap) query.getSingleResult();
