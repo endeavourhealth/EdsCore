@@ -9,6 +9,7 @@ import org.endeavourhealth.core.database.dal.reference.SnomedDalI;
 import org.endeavourhealth.core.database.dal.reference.models.CTV3ToSnomedMap;
 import org.endeavourhealth.core.database.dal.reference.models.Read2ToSnomedMap;
 import org.endeavourhealth.core.database.dal.reference.models.SnomedLookup;
+import org.endeavourhealth.core.exceptions.TransformException;
 import org.hl7.fhir.instance.model.CodeableConcept;
 import org.hl7.fhir.instance.model.Coding;
 
@@ -58,19 +59,20 @@ public abstract class TerminologyService {
      * checks the first Coding element in the CodeableConcept and adds a second Coding if it
      * needs to be mapped to SNOMED CT
      */
-    public static void translateToSnomed(CodeableConcept codeableConcept) throws Exception {
+    public static void translateToSnomed(CodeableConcept codeableConcept) throws TransformException {
         List<Coding> codingList = codeableConcept.getCoding();
         if (codingList.isEmpty()) {
             return;
         }
 
+        Coding coding = codingList.get(0);
+        String system = coding.getSystem();
         try {
-            Coding coding = codingList.get(0);
-            String system = coding.getSystem();
             if (system.equals(FhirUri.CODE_SYSTEM_SNOMED_CT)) {
-                //no mapping required unless no display term present
+                //mapping required if no display term present, i.e. use Snomed translator to get us the mapped term
                 if (Strings.isNullOrEmpty(coding.getDisplay())) {
                     SnomedCode mapping = TerminologyService.lookupSnomedFromConceptId(coding.getCode());
+                    codingList.remove(0);  //remove placeholder as we only need the translated code here
                     codeableConcept.addCoding(mapping.toCoding());
                 }
             } else if (system.equals(FhirUri.CODE_SYSTEM_CTV3)) {
@@ -86,11 +88,11 @@ public abstract class TerminologyService {
                 SnomedCode mapping = TerminologyService.translateEmisSnomedToSnomed(coding.getCode());
                 codeableConcept.addCoding(mapping.toCoding());
             } else {
-                throw new Exception("Unexpected coding system [" + system + "]");
+                throw new TransformException("Unexpected coding system [" + system + "]");
             }
         }
         catch (Exception e) {
-            throw new Exception("Code Translation Exception", e);
+            throw new TransformException("Code Translation Exception for code [" + coding.getCode() +"]" , e);
         }
     }
 }
