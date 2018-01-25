@@ -16,4 +16,6 @@ public interface ResourceMergeDalI {
     ResourceMergeMap readMergeRecord(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
 
     UUID resolveMergeUUID(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
+
+    String resolveMergeUUID(String serviceId, String resourceType, String resourceId) throws Exception;
 }
