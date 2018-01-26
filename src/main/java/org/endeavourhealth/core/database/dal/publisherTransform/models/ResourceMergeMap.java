@@ -2,11 +2,6 @@ package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceMergeMap;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-import java.io.Serializable;
 import java.util.Date;
 
 public class ResourceMergeMap {
@@ -22,6 +17,7 @@ public class ResourceMergeMap {
         this.resourceType = r.getResourceType();
         this.sourceResourceId = r.getSourceResourceId();
         this.destinationResourceId = r.getDestinationResourceId();
+        this.updatedAt = r.getUpdatedAt();
     }
 
     public String getServiceId() {
