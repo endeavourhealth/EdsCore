@@ -197,7 +197,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
     }
 
     @Override
-    public String resolveMergeUUID(String serviceId, String resourceType, String resourceId) throws Exception {
+    public String resolveMerge(String serviceId, String resourceType, String resourceId) throws Exception {
         return resolveMergeUUID(UUID.fromString(serviceId), resourceType, UUID.fromString(resourceId)).toString();
     }
 }

@@ -17,5 +17,5 @@ public interface ResourceMergeDalI {
 
     UUID resolveMergeUUID(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
 
-    String resolveMergeUUID(String serviceId, String resourceType, String resourceId) throws Exception;
+    String resolveMerge(String serviceId, String resourceType, String resourceId) throws Exception;
 }
