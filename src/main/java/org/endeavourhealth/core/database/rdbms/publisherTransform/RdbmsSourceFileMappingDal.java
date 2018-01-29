@@ -212,7 +212,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                 String type = resultSet.getString("resource_type");
                 Date created = resultSet.getDate("created_at");
                 String version = resultSet.getString("version");
-                String resourceField = resultSet.getString("resource_field_id");
+                String resourceField = resultSet.getString("resource_field");
                 String filename = resultSet.getString("file_path");
                 Integer row = resultSet.getInt("row_index");
                 Integer column = resultSet.getInt("column_index");
