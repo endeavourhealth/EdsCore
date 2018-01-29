@@ -19,7 +19,10 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="constant" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;choice>
+ *           &lt;element name="constant" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *           &lt;element name="parameter" type="{}parameterType"/>
+ *         &lt;/choice>
  *         &lt;choice>
  *           &lt;element name="absoluteUnit" type="{}valueAbsoluteUnit"/>
  *           &lt;element name="relativeUnit" type="{}valueRelativeUnit"/>
@@ -36,6 +39,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "value", propOrder = {
     "constant",
+    "parameter",
     "absoluteUnit",
     "relativeUnit",
     "testField"
@@ -46,8 +50,8 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Value {
 
-    @XmlElement(required = true)
     protected String constant;
+    protected ParameterType parameter;
     @XmlSchemaType(name = "string")
     protected ValueAbsoluteUnit absoluteUnit;
     @XmlSchemaType(name = "string")
@@ -77,6 +81,30 @@ public class Value {
      */
     public void setConstant(String value) {
         this.constant = value;
+    }
+
+    /**
+     * Gets the value of the parameter property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ParameterType }
+     *     
+     */
+    public ParameterType getParameter() {
+        return parameter;
+    }
+
+    /**
+     * Sets the value of the parameter property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ParameterType }
+     *     
+     */
+    public void setParameter(ParameterType value) {
+        this.parameter = value;
     }
 
     /**

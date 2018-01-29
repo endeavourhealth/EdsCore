@@ -106,7 +106,10 @@
 	</xs:complexType>
 	<xs:complexType name="value">
 		<xs:sequence>
-			<xs:element name="constant" type="xs:string"/>
+			<xs:choice>
+				<xs:element name="constant" type="xs:string"/>
+				<xs:element name="parameter" type="parameterType"/>
+			</xs:choice>
 			<xs:choice>
 				<xs:element name="absoluteUnit" type="valueAbsoluteUnit"/>
 				<xs:element name="relativeUnit" type="valueRelativeUnit"/>
@@ -200,6 +203,7 @@
 			<xs:element name="count" type="xs:int"/>
 			<xs:element name="prefix" type="xs:string"/>
 			<xs:element name="field" type="xs:string" maxOccurs="unbounded"/>
+			<xs:element name="orderDirection" type="orderDirection"/>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:simpleType name="orderDirection">
@@ -218,8 +222,16 @@
 	</xs:complexType>
 	<xs:complexType name="test">
 		<xs:sequence>
-			<xs:element name="filter" type="filter" minOccurs="0" maxOccurs="unbounded"/>
-			<xs:element name="restriction" type="restriction" minOccurs="0"/>
+			<xs:choice>
+				<xs:element name="resource" type="resource"/>
+				<xs:element name="resourceUuid" type="xs:string"/>
+			</xs:choice>
+			<xs:choice>
+				<xs:element name="isAny">
+					<xs:complexType/>
+				</xs:element>
+				<xs:element name="fieldTest" type="fieldTest" maxOccurs="unbounded"/>
+			</xs:choice>
 		</xs:sequence>
 	</xs:complexType>
 	<xs:complexType name="resource">

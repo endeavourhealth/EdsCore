@@ -6,6 +6,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlType;
 
 
@@ -23,6 +24,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="count" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;element name="prefix" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="field" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded"/>
+ *         &lt;element name="orderDirection" type="{}orderDirection"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -36,7 +38,8 @@ import javax.xml.bind.annotation.XmlType;
     "restriction",
     "count",
     "prefix",
-    "field"
+    "field",
+    "orderDirection"
 })
 public class Restriction {
 
@@ -47,6 +50,9 @@ public class Restriction {
     protected String prefix;
     @XmlElement(required = true)
     protected List<String> field;
+    @XmlElement(required = true)
+    @XmlSchemaType(name = "string")
+    protected OrderDirection orderDirection;
 
     /**
      * Gets the value of the restriction property.
@@ -139,6 +145,30 @@ public class Restriction {
             field = new ArrayList<String>();
         }
         return this.field;
+    }
+
+    /**
+     * Gets the value of the orderDirection property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link OrderDirection }
+     *     
+     */
+    public OrderDirection getOrderDirection() {
+        return orderDirection;
+    }
+
+    /**
+     * Sets the value of the orderDirection property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link OrderDirection }
+     *     
+     */
+    public void setOrderDirection(OrderDirection value) {
+        this.orderDirection = value;
     }
 
 }

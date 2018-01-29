@@ -43,6 +43,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Test }
+     * 
+     */
+    public Test createTest() {
+        return new Test();
+    }
+
+    /**
      * Create an instance of {@link QueryDocument }
      * 
      */
@@ -211,14 +219,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Test }
-     * 
-     */
-    public Test createTest() {
-        return new Test();
-    }
-
-    /**
      * Create an instance of {@link Resource }
      * 
      */
@@ -328,6 +328,14 @@ public class ObjectFactory {
      */
     public Query.StartingRules createQueryStartingRules() {
         return new Query.StartingRules();
+    }
+
+    /**
+     * Create an instance of {@link Test.IsAny }
+     * 
+     */
+    public Test.IsAny createTestIsAny() {
+        return new Test.IsAny();
     }
 
     /**
