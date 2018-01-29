@@ -26,6 +26,7 @@ public class RdbmsResourceMergeMap implements Serializable {
         this.resourceType = r.getResourceType();
         this.sourceResourceId = r.getSourceResourceId();
         this.destinationResourceId = r.getDestinationResourceId();
+        this.updatedAt = r.getUpdatedAt();
     }
 
     @Id

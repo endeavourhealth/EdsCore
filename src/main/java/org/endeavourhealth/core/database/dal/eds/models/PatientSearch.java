@@ -8,7 +8,6 @@ import java.util.UUID;
 public class PatientSearch {
 
     private UUID serviceId = null;
-    private UUID systemId = null;
     private String nhsNumber = null;
     private String forenames = null;
     private String surname = null;
@@ -48,14 +47,6 @@ public class PatientSearch {
 
     public void setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
-    }
-
-    public UUID getSystemId() {
-        return systemId;
-    }
-
-    public void setSystemId(UUID systemId) {
-        this.systemId = systemId;
     }
 
     public String getNhsNumber() {
