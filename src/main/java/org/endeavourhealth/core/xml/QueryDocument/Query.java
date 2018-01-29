@@ -50,7 +50,7 @@ public class Query {
 
     protected String parentQueryUuid;
     @XmlElement(required = true)
-    protected StartingRules startingRules;
+    protected Query.StartingRules startingRules;
     @XmlElement(required = true)
     protected List<Rule> rule;
 
@@ -83,10 +83,10 @@ public class Query {
      * 
      * @return
      *     possible object is
-     *     {@link StartingRules }
+     *     {@link Query.StartingRules }
      *     
      */
-    public StartingRules getStartingRules() {
+    public Query.StartingRules getStartingRules() {
         return startingRules;
     }
 
@@ -95,10 +95,10 @@ public class Query {
      * 
      * @param value
      *     allowed object is
-     *     {@link StartingRules }
+     *     {@link Query.StartingRules }
      *     
      */
-    public void setStartingRules(StartingRules value) {
+    public void setStartingRules(Query.StartingRules value) {
         this.startingRules = value;
     }
 

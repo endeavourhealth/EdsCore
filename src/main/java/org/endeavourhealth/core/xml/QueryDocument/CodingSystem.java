@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="DMD"/>
  *     &lt;enumeration value="SnomedCt"/>
  *     &lt;enumeration value="CTV3"/>
+ *     &lt;enumeration value="Endeavour"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -33,7 +34,9 @@ public enum CodingSystem {
     @XmlEnumValue("SnomedCt")
     SNOMED_CT("SnomedCt"),
     @XmlEnumValue("CTV3")
-    CTV_3("CTV3");
+    CTV_3("CTV3"),
+    @XmlEnumValue("Endeavour")
+    ENDEAVOUR("Endeavour");
     private final String value;
 
     CodingSystem(String v) {

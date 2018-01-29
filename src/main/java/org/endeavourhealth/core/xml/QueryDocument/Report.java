@@ -9,17 +9,17 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for test complex type.
+ * <p>Java class for report complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="test">
+ * &lt;complexType name="report">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="filter" type="{}filter" maxOccurs="unbounded" minOccurs="0"/>
- *         &lt;element name="restriction" type="{}restriction" minOccurs="0"/>
+ *         &lt;element name="cohortFeature" type="{}reportCohortFeature" maxOccurs="unbounded" minOccurs="0"/>
+ *         &lt;element name="lastRunDate" type="{http://www.w3.org/2001/XMLSchema}long" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -29,66 +29,66 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "test", propOrder = {
-    "filter",
-    "restriction"
+@XmlType(name = "report", propOrder = {
+    "cohortFeature",
+    "lastRunDate"
 })
-public class Test {
+public class Report {
 
-    protected List<Filter> filter;
-    protected Restriction restriction;
+    protected List<ReportCohortFeature> cohortFeature;
+    protected Long lastRunDate;
 
     /**
-     * Gets the value of the filter property.
+     * Gets the value of the cohortFeature property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the filter property.
+     * This is why there is not a <CODE>set</CODE> method for the cohortFeature property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getFilter().add(newItem);
+     *    getCohortFeature().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link Filter }
+     * {@link ReportCohortFeature }
      * 
      * 
      */
-    public List<Filter> getFilter() {
-        if (filter == null) {
-            filter = new ArrayList<Filter>();
+    public List<ReportCohortFeature> getCohortFeature() {
+        if (cohortFeature == null) {
+            cohortFeature = new ArrayList<ReportCohortFeature>();
         }
-        return this.filter;
+        return this.cohortFeature;
     }
 
     /**
-     * Gets the value of the restriction property.
+     * Gets the value of the lastRunDate property.
      * 
      * @return
      *     possible object is
-     *     {@link Restriction }
+     *     {@link Long }
      *     
      */
-    public Restriction getRestriction() {
-        return restriction;
+    public Long getLastRunDate() {
+        return lastRunDate;
     }
 
     /**
-     * Sets the value of the restriction property.
+     * Sets the value of the lastRunDate property.
      * 
      * @param value
      *     allowed object is
-     *     {@link Restriction }
+     *     {@link Long }
      *     
      */
-    public void setRestriction(Restriction value) {
-        this.restriction = value;
+    public void setLastRunDate(Long value) {
+        this.lastRunDate = value;
     }
 
 }

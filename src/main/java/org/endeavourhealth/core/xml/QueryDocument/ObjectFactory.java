@@ -43,14 +43,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link Test }
-     * 
-     */
-    public Test createTest() {
-        return new Test();
-    }
-
-    /**
      * Create an instance of {@link QueryDocument }
      * 
      */
@@ -128,6 +120,14 @@ public class ObjectFactory {
      */
     public Section createSection() {
         return new Section();
+    }
+
+    /**
+     * Create an instance of {@link ReportCohortFeature }
+     * 
+     */
+    public ReportCohortFeature createReportCohortFeature() {
+        return new ReportCohortFeature();
     }
 
     /**
@@ -211,6 +211,14 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Test }
+     * 
+     */
+    public Test createTest() {
+        return new Test();
+    }
+
+    /**
      * Create an instance of {@link Resource }
      * 
      */
@@ -248,6 +256,14 @@ public class ObjectFactory {
      */
     public TechnicalInterface createTechnicalInterface() {
         return new TechnicalInterface();
+    }
+
+    /**
+     * Create an instance of {@link Filter }
+     * 
+     */
+    public Filter createFilter() {
+        return new Filter();
     }
 
     /**
@@ -299,19 +315,19 @@ public class ObjectFactory {
     }
 
     /**
+     * Create an instance of {@link Report }
+     * 
+     */
+    public Report createReport() {
+        return new Report();
+    }
+
+    /**
      * Create an instance of {@link Query.StartingRules }
      * 
      */
     public Query.StartingRules createQueryStartingRules() {
         return new Query.StartingRules();
-    }
-
-    /**
-     * Create an instance of {@link Test.IsAny }
-     * 
-     */
-    public Test.IsAny createTestIsAny() {
-        return new Test.IsAny();
     }
 
     /**

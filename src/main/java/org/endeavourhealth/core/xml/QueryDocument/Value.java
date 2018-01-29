@@ -3,6 +3,7 @@ package org.endeavourhealth.core.xml.QueryDocument;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
@@ -18,14 +19,12 @@ import javax.xml.bind.annotation.XmlType;
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;choice>
- *           &lt;element name="constant" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *           &lt;element name="parameter" type="{}parameterType"/>
- *         &lt;/choice>
+ *         &lt;element name="constant" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;choice>
  *           &lt;element name="absoluteUnit" type="{}valueAbsoluteUnit"/>
  *           &lt;element name="relativeUnit" type="{}valueRelativeUnit"/>
  *         &lt;/choice>
+ *         &lt;element name="testField" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -37,9 +36,9 @@ import javax.xml.bind.annotation.XmlType;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "value", propOrder = {
     "constant",
-    "parameter",
     "absoluteUnit",
-    "relativeUnit"
+    "relativeUnit",
+    "testField"
 })
 @XmlSeeAlso({
     ValueTo.class,
@@ -47,12 +46,14 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class Value {
 
+    @XmlElement(required = true)
     protected String constant;
-    protected ParameterType parameter;
     @XmlSchemaType(name = "string")
     protected ValueAbsoluteUnit absoluteUnit;
     @XmlSchemaType(name = "string")
     protected ValueRelativeUnit relativeUnit;
+    @XmlElement(required = true)
+    protected String testField;
 
     /**
      * Gets the value of the constant property.
@@ -76,30 +77,6 @@ public class Value {
      */
     public void setConstant(String value) {
         this.constant = value;
-    }
-
-    /**
-     * Gets the value of the parameter property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link ParameterType }
-     *     
-     */
-    public ParameterType getParameter() {
-        return parameter;
-    }
-
-    /**
-     * Sets the value of the parameter property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link ParameterType }
-     *     
-     */
-    public void setParameter(ParameterType value) {
-        this.parameter = value;
     }
 
     /**
@@ -148,6 +125,30 @@ public class Value {
      */
     public void setRelativeUnit(ValueRelativeUnit value) {
         this.relativeUnit = value;
+    }
+
+    /**
+     * Gets the value of the testField property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link String }
+     *     
+     */
+    public String getTestField() {
+        return testField;
+    }
+
+    /**
+     * Sets the value of the testField property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *     
+     */
+    public void setTestField(String value) {
+        this.testField = value;
     }
 
 }
