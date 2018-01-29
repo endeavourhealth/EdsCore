@@ -25,8 +25,9 @@ import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.SourceFileMappingDalI;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
@@ -45,8 +46,9 @@ import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.RdbmsEmisTransformDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsBartsSusResourceMapDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceMergeDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceIdDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceMergeDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsSourceFileMappingDal;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
 import org.slf4j.Logger;
@@ -261,6 +263,10 @@ public class DalProvider {
 
     public static Hl7ResourceIdDalI factoryHL7ResourceDal() {
         return new RdbmsHl7ResourceIdDal();
+    }
+
+    public static SourceFileMappingDalI factorySourceFileMappingDal() {
+        return new RdbmsSourceFileMappingDal();
     }
 
     private static boolean useCassandra() {
