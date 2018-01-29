@@ -9,21 +9,15 @@ public class ResourceFieldMapping {
     private Date createdAt;
     private UUID version;
     private String resourceField;
-    private long sourceFileFieldId;
+    private String sourceFileName;
+    private Integer sourceFileRow;
+    private Integer sourceFileColumn;
+    private String sourceLocation;
     private String value;
 
     public ResourceFieldMapping() {
 
     }
-
-    /*public ResourceFieldMapping(RdbmsResourceFieldMapping proxy) {
-        this.resourceId = UUID.fromString(proxy.getResourceId());
-        this.resourceType = proxy.getResourceType();
-        this.createdAt = proxy.getCreatedAt();
-        this.version = UUID.fromString(proxy.getVersion());
-        this.resourceField = proxy.getResourceField();
-        this.sourceFileFieldId = proxy.getSourceFileFieldId();
-    }*/
 
     public UUID getResourceId() {
         return resourceId;
@@ -65,12 +59,40 @@ public class ResourceFieldMapping {
         this.resourceField = resourceField;
     }
 
-    public long getSourceFileFieldId() {
-        return sourceFileFieldId;
+    public String getSourceFileName() {
+        return sourceFileName;
     }
 
-    public void setSourceFileFieldId(long sourceFileFieldId) {
-        this.sourceFileFieldId = sourceFileFieldId;
+    public ResourceFieldMapping setSourceFileName(String sourceFileName) {
+        this.sourceFileName = sourceFileName;
+        return this;
+    }
+
+    public Integer getSourceFileRow() {
+        return sourceFileRow;
+    }
+
+    public ResourceFieldMapping setSourceFileRow(Integer sourceFileRow) {
+        this.sourceFileRow = sourceFileRow;
+        return this;
+    }
+
+    public Integer getSourceFileColumn() {
+        return sourceFileColumn;
+    }
+
+    public ResourceFieldMapping setSourceFileColumn(Integer sourceFileColumn) {
+        this.sourceFileColumn = sourceFileColumn;
+        return this;
+    }
+
+    public String getSourceLocation() {
+        return sourceLocation;
+    }
+
+    public ResourceFieldMapping setSourceLocation(String sourceLocation) {
+        this.sourceLocation = sourceLocation;
+        return this;
     }
 
     public String getValue() {

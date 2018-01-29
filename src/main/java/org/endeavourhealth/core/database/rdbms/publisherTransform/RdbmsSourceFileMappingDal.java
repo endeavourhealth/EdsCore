@@ -186,10 +186,12 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
         List<ResourceFieldMapping> ret = new ArrayList<>();
 
-        String sql = "SELECT m.resource_id, m.resource_type, m.created_at, m.version, m.resource_field, m.source_file_field_id, f.value"
+        String sql = "SELECT m.resource_id, m.resource_type, m.created_at, m.version, m.resource_field, s.file_path, f.row_index, f.column_index, f.source_location, f.value"
                 + " FROM resource_field_mapping m"
                 + " INNER JOIN source_file_field f"
                 + " ON m.source_file_field_id = f.id"
+                + " INNER JOIN source_file s"
+                + " ON s.id = f.source_file_id"
                 + " WHERE m.resource_id = ?"
                 + " AND m.resource_type = ?";
 
@@ -206,13 +208,16 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
             ResultSet resultSet = ps.executeQuery();
             while (resultSet.next()) {
-                String id = resultSet.getString(1);
-                String type = resultSet.getString(2);
-                Date created = resultSet.getDate(3);
-                String version = resultSet.getString(4);
-                String resourceField = resultSet.getString(5);
-                long fieldId = resultSet.getLong(6);
-                String value = resultSet.getString(7);
+                String id = resultSet.getString("resource_id");
+                String type = resultSet.getString("resource_type");
+                Date created = resultSet.getDate("created_at");
+                String version = resultSet.getString("version");
+                String resourceField = resultSet.getString("resource_field_id");
+                String filename = resultSet.getString("file_path");
+                Integer row = resultSet.getInt("row_index");
+                Integer column = resultSet.getInt("column_index");
+                String location = resultSet.getString("source_location");
+                String value = resultSet.getString("value");
 
                 ResourceFieldMapping mapping = new ResourceFieldMapping();
                 mapping.setResourceId(UUID.fromString(id));
@@ -220,7 +225,10 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                 mapping.setCreatedAt(created);
                 mapping.setVersion(UUID.fromString(version));
                 mapping.setResourceField(resourceField);
-                mapping.setSourceFileFieldId(fieldId);
+                mapping.setSourceFileName(filename);
+                mapping.setSourceFileRow(row);
+                mapping.setSourceFileColumn(column);
+                mapping.setSourceLocation(location);
                 mapping.setValue(value);
 
                 ret.add(mapping);
