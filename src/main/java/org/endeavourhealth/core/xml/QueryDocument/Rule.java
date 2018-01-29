@@ -19,6 +19,7 @@ import javax.xml.bind.annotation.XmlType;
  *       &lt;sequence>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="id" type="{http://www.w3.org/2001/XMLSchema}int"/>
+ *         &lt;element name="type" type="{http://www.w3.org/2001/XMLSchema}int"/>
  *         &lt;choice>
  *           &lt;element name="test" type="{}test"/>
  *           &lt;element name="testLibraryItemUUID" type="{http://www.w3.org/2001/XMLSchema}string"/>
@@ -40,6 +41,7 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "rule", propOrder = {
     "description",
     "id",
+    "type",
     "test",
     "testLibraryItemUUID",
     "queryLibraryItemUUID",
@@ -53,6 +55,7 @@ public class Rule {
     @XmlElement(required = true)
     protected String description;
     protected int id;
+    protected int type;
     protected Test test;
     protected String testLibraryItemUUID;
     protected String queryLibraryItemUUID;
@@ -102,6 +105,22 @@ public class Rule {
      */
     public void setId(int value) {
         this.id = value;
+    }
+
+    /**
+     * Gets the value of the type property.
+     * 
+     */
+    public int getType() {
+        return type;
+    }
+
+    /**
+     * Sets the value of the type property.
+     * 
+     */
+    public void setType(int value) {
+        this.type = value;
     }
 
     /**

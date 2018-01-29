@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlType;
  *     &lt;enumeration value="month"/>
  *     &lt;enumeration value="year"/>
  *     &lt;enumeration value="week"/>
+ *     &lt;enumeration value="day"/>
  *   &lt;/restriction>
  * &lt;/simpleType>
  * </pre>
@@ -31,7 +32,9 @@ public enum ValueRelativeUnit {
     @XmlEnumValue("year")
     YEAR("year"),
     @XmlEnumValue("week")
-    WEEK("week");
+    WEEK("week"),
+    @XmlEnumValue("day")
+    DAY("day");
     private final String value;
 
     ValueRelativeUnit(String v) {

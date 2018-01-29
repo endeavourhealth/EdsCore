@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlType;
  *           &lt;element name="query" type="{}query"/>
  *           &lt;element name="resource" type="{}resource"/>
  *           &lt;element name="test" type="{}test"/>
+ *           &lt;element name="report" type="{}report"/>
  *           &lt;element name="codeSet" type="{}codeSet"/>
  *           &lt;element name="dataSet" type="{}dataSet"/>
  *           &lt;element name="protocol" type="{}protocol"/>
@@ -48,6 +49,7 @@ import javax.xml.bind.annotation.XmlType;
     "query",
     "resource",
     "test",
+    "report",
     "codeSet",
     "dataSet",
     "protocol",
@@ -66,6 +68,7 @@ public class LibraryItem {
     protected Query query;
     protected Resource resource;
     protected Test test;
+    protected Report report;
     protected CodeSet codeSet;
     protected DataSet dataSet;
     protected Protocol protocol;
@@ -238,6 +241,30 @@ public class LibraryItem {
      */
     public void setTest(Test value) {
         this.test = value;
+    }
+
+    /**
+     * Gets the value of the report property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Report }
+     *     
+     */
+    public Report getReport() {
+        return report;
+    }
+
+    /**
+     * Sets the value of the report property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Report }
+     *     
+     */
+    public void setReport(Report value) {
+        this.report = value;
     }
 
     /**
