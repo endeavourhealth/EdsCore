@@ -269,6 +269,14 @@ public class DalProvider {
         return new RdbmsSourceFileMappingDal();
     }
 
+    public static Opcs4DalI factoryOpcs4Dal() {
+        return new RdbmsOpcs4Dal();
+    }
+
+    public static Icd10DalI factoryIcd10Dal() {
+        return new RdbmsIcd10Dal();
+    }
+
     private static boolean useCassandra() {
 
         if (cachedUseCassandra == null) {

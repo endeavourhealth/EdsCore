@@ -3,9 +3,7 @@ package org.endeavourhealth.core.terminology;
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.FhirUri;
 import org.endeavourhealth.core.database.dal.DalProvider;
-import org.endeavourhealth.core.database.dal.reference.CTV3ToSnomedMapDalI;
-import org.endeavourhealth.core.database.dal.reference.Read2ToSnomedMapDalI;
-import org.endeavourhealth.core.database.dal.reference.SnomedDalI;
+import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.reference.models.CTV3ToSnomedMap;
 import org.endeavourhealth.core.database.dal.reference.models.Read2ToSnomedMap;
 import org.endeavourhealth.core.database.dal.reference.models.SnomedLookup;
@@ -20,6 +18,8 @@ public abstract class TerminologyService {
     private static SnomedDalI snomedRepository = DalProvider.factorySnomedDal();
     private static Read2ToSnomedMapDalI read2ToSnomedRepository = DalProvider.factoryRead2ToSnomedMapDal();
     private static CTV3ToSnomedMapDalI ctv3ToSnomedRepository = DalProvider.factoryCTV3ToSnomedMapDal();
+    private static Opcs4DalI opcs4Repository = DalProvider.factoryOpcs4Dal();
+    private static Icd10DalI icd10Repository = DalProvider.factoryIcd10Dal();
 
     public static SnomedCode lookupSnomedFromConceptId(String conceptId) throws Exception {
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(conceptId);
@@ -94,6 +94,14 @@ public abstract class TerminologyService {
         catch (Exception e) {
             throw new TransformException("Code Translation Exception for code [" + coding.getCode() +"]" , e);
         }
+    }
+
+    public static String lookupOpcs4ProcedureName(String opcs4ProcedureCode) throws Exception {
+        return opcs4Repository.lookupCode(opcs4ProcedureCode);
+    }
+
+    public static String lookupIcd10CodeDescription(String icd10Code) throws Exception {
+        return icd10Repository.lookupCode(icd10Code);
     }
 }
 
