@@ -7,6 +7,13 @@ import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsP
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
@@ -55,6 +62,38 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
                 return null;
             }
 
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    public List<String> findPatientIdsFromPseudoIds(List<String> pseudoIds) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<RdbmsPseudoIdMap> cq = cb.createQuery(RdbmsPseudoIdMap.class);
+            Root<RdbmsPseudoIdMap> rootEntry = cq.from(RdbmsPseudoIdMap.class);
+
+            Predicate predicate = rootEntry.get("pseudoId").in(pseudoIds);
+            cq.where(predicate);
+
+            TypedQuery<RdbmsPseudoIdMap> query = entityManager.createQuery(cq);
+
+            entityManager.close();
+
+            try {
+                List<RdbmsPseudoIdMap> maps = query.getResultList();
+
+                List<String> patientIds = maps.stream()
+                                            .map(RdbmsPseudoIdMap::getPatientId)
+                                            .collect(Collectors.toList());
+                return patientIds;
+
+            } catch (NoResultException ex) {
+                return null;
+            }
         } finally {
             entityManager.close();
         }
