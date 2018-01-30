@@ -261,7 +261,7 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         } catch (DateTimeException ex) {
             //if we try to create a 29th Feb on a non-leap year, then we'll get this exception
             //so handle this and create as 1st March instead
-            if (day == 29
+            if (day >= 29
                     && month == Month.FEBRUARY.getValue()) {
                 return createSafeLocalDate(year, Month.MARCH.getValue(), 1);
 
