@@ -17,6 +17,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 
 public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
@@ -208,29 +209,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
             ResultSet resultSet = ps.executeQuery();
             while (resultSet.next()) {
-                String id = resultSet.getString("resource_id");
-                String type = resultSet.getString("resource_type");
-                Date created = resultSet.getDate("created_at");
-                String version = resultSet.getString("version");
-                String resourceField = resultSet.getString("resource_field");
-                String filename = resultSet.getString("file_path");
-                Integer row = resultSet.getInt("row_index");
-                Integer column = resultSet.getInt("column_index");
-                String location = resultSet.getString("source_location");
-                String value = resultSet.getString("value");
-
-                ResourceFieldMapping mapping = new ResourceFieldMapping();
-                mapping.setResourceId(UUID.fromString(id));
-                mapping.setResourceType(type);
-                mapping.setCreatedAt(created);
-                mapping.setVersion(UUID.fromString(version));
-                mapping.setResourceField(resourceField);
-                mapping.setSourceFileName(filename);
-                mapping.setSourceFileRow(row);
-                mapping.setSourceFileColumn(column);
-                mapping.setSourceLocation(location);
-                mapping.setValue(value);
-
+                ResourceFieldMapping mapping = getResourceFieldMapping(resultSet);
                 ret.add(mapping);
             }
 
@@ -244,5 +223,70 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         return ret;
     }
 
+    private ResourceFieldMapping getResourceFieldMapping(ResultSet resultSet) throws SQLException {
+        String id = resultSet.getString("resource_id");
+        String type = resultSet.getString("resource_type");
+        Date created = resultSet.getDate("created_at");
+        String version = resultSet.getString("version");
+        String resourceField = resultSet.getString("resource_field");
+        String filename = resultSet.getString("file_path");
+        Integer row = resultSet.getInt("row_index");
+        Integer column = resultSet.getInt("column_index");
+        String location = resultSet.getString("source_location");
+        String value = resultSet.getString("value");
 
+        ResourceFieldMapping mapping = new ResourceFieldMapping();
+        mapping.setResourceId(UUID.fromString(id));
+        mapping.setResourceType(type);
+        mapping.setCreatedAt(created);
+        mapping.setVersion(UUID.fromString(version));
+        mapping.setResourceField(resourceField);
+        mapping.setSourceFileName(filename);
+        mapping.setSourceFileRow(row);
+        mapping.setSourceFileColumn(column);
+        mapping.setSourceLocation(location);
+        mapping.setValue(value);
+        return mapping;
+    }
+
+    public ResourceFieldMapping findFieldMappingForField(UUID serviceId, ResourceType resourceType, UUID resourceId, String field) throws Exception {
+
+        ResourceFieldMapping ret = null;
+
+        String sql = "SELECT m.resource_id, m.resource_type, m.created_at, m.version, m.resource_field, s.file_path, f.row_index, f.column_index, f.source_location, f.value"
+            + " FROM resource_field_mapping m"
+            + " INNER JOIN source_file_field f"
+            + " ON m.source_file_field_id = f.id"
+            + " INNER JOIN source_file s"
+            + " ON s.id = f.source_file_id"
+            + " WHERE m.resource_id = ?"
+            + " AND m.resource_type = ?"
+            + " AND m.resource_field = ?";
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, resourceId.toString());
+            ps.setString(2, resourceType.toString());
+            ps.setString(3, field);
+
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next()) {
+                ret = getResourceFieldMapping(resultSet);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+
+        return ret;
+    }
 }

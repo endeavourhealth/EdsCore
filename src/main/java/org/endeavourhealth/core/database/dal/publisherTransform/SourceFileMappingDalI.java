@@ -14,5 +14,5 @@ public interface SourceFileMappingDalI {
     int auditFile(UUID serviceId, UUID systemId, UUID exchangeId, String filePath, String typeDescription, List<String> columns) throws Exception;
     Map<String, Long> auditCsvRecord(UUID serviceId, CSVParser parser, CSVRecord record, int sourceFileId) throws Exception;
     List<ResourceFieldMapping> findFieldMappings(UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception;
-
+    ResourceFieldMapping findFieldMappingForField(UUID serviceId, ResourceType resourceType, UUID resourceId, String field) throws Exception;
 }
