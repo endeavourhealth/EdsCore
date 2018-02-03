@@ -158,8 +158,14 @@ public class RdbmsLibraryDal implements LibraryDalI {
 
         String sql = "INSERT INTO item"
                 + " (id, audit_id, xml_content, title, description, is_deleted)"
-                + " VALUES (?, ?, ?, ?, ?, ?);";
-        //note there's no handler for errors due to duplicate keys, as item should NEVER be updated
+                + " VALUES (?, ?, ?, ?, ?, ?)"
+                + " ON DUPLICATE KEY UPDATE"
+                + " audit_id = VALUES(audit_id),"
+                + " xml_content = VALUES(xml_content),"
+                + " title = VALUES(title),"
+                + " description = VALUES(description),"
+                + " is_deleted = VALUES(is_deleted)";
+
 
         return connection.prepareStatement(sql);
     }
