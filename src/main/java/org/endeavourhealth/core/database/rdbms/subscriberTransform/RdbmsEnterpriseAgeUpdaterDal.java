@@ -169,10 +169,10 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 

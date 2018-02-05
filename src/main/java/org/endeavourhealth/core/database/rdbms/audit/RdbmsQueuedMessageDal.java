@@ -60,10 +60,10 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 

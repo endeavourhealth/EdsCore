@@ -97,13 +97,13 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (psOrganisation != null) {
                 psOrganisation.close();
             }
             if (psService != null) {
                 psService.close();
             }
+            entityManager.close();
         }
 
         return orgUuid;
@@ -245,13 +245,13 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (psOrganisation != null) {
                 psOrganisation.close();
             }
             if (psService != null) {
                 psService.close();
             }
+            entityManager.close();
         }
 
     }

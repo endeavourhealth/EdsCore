@@ -94,13 +94,13 @@ public class RdbmsServiceDal implements ServiceDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (psService != null) {
                 psService.close();
             }
             if (psOrganisation != null) {
                 psOrganisation.close();
             }
+            entityManager.close();
         }
 
         return serviceUuid;
@@ -236,15 +236,14 @@ public class RdbmsServiceDal implements ServiceDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (psService != null) {
                 psService.close();
             }
             if (psOrganisation != null) {
                 psOrganisation.close();
             }
+            entityManager.close();
         }
-
     }
 
     public List<Service> getAll() throws Exception {

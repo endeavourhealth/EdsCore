@@ -88,7 +88,6 @@ public class RdbmsLibraryDal implements LibraryDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (psAudit != null) {
                 psAudit.close();
             }
@@ -101,6 +100,7 @@ public class RdbmsLibraryDal implements LibraryDalI {
             if (psItemDependency != null) {
                 psItemDependency.close();
             }
+            entityManager.close();
         }
     }
 

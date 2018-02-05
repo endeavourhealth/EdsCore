@@ -9,7 +9,10 @@ import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
+import org.endeavourhealth.coreui.framework.StartupConfig;
 import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -39,10 +42,14 @@ public class ConnectionManager {
         Coding, //once fully moved to MySQL, this can go as it will be the same as Reference
         PublisherCommon;
     }
-
+    private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
     private static Map<UUID, String> publisherServiceToConfigMap = new ConcurrentHashMap<>();
     private static Map<String, Integer> connectionMaxPoolSize = new ConcurrentHashMap<>();
+
+    static {
+        StartupConfig.registerShutdownHook("CoreConnectionManager", new CoreConnectionManagerShutdownHook());
+    }
 
     public static EntityManager getEntityManager(Db dbName) throws Exception {
         return getEntityManager(dbName, null);
@@ -419,5 +426,15 @@ public class ConnectionManager {
         HikariConfig hikariConfig = (HikariConfig)field.get(hikariPool);
 
         return new Integer(hikariConfig.getMaximumPoolSize());
+    }
+
+    public static void shutdown() {
+        LOG.debug("Shutting down Core connection factories");
+        for(String factoryName : entityManagerFactoryMap.keySet()) {
+            LOG.debug("Closing " + factoryName);
+            EntityManagerFactory factory = entityManagerFactoryMap.get(factoryName);
+            factory.close();
+        }
+        LOG.debug("Core connection factory shutdown complete");
     }
 }

@@ -91,13 +91,13 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } finally {
             //saveResourceStatementCache.returnCallableStatement(entityManager, storedProcedure);
-            entityManager.close();
             if (psResourceCurrent != null) {
                 psResourceCurrent.close();
             }
             if (psResourceHistory != null) {
                 psResourceHistory.close();
             }
+            entityManager.close();
         }
     }
 
@@ -347,7 +347,6 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } finally {
             //deleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
-            entityManager.close();
 
             if (psResourceCurrent != null) {
                 psResourceCurrent.close();
@@ -355,6 +354,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             if (psResourceHistory != null) {
                 psResourceHistory.close();
             }
+            entityManager.close();
         }
     }
 
@@ -431,7 +431,6 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } finally {
             //physicalDeleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
-            entityManager.close();
 
             if (psCurrent != null) {
                 psCurrent.close();
@@ -439,6 +438,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             if (psHistory != null) {
                 psHistory.close();
             }
+            entityManager.close();
         }
     }
 

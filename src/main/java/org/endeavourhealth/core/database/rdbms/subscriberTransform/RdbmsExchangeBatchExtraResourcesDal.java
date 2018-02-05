@@ -63,10 +63,10 @@ public class RdbmsExchangeBatchExtraResourcesDal implements ExchangeBatchExtraRe
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 

@@ -129,10 +129,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 
@@ -221,10 +221,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 

@@ -63,10 +63,10 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
             if (ps != null) {
                 ps.close();
             }
+            entityManager.close();
         }
     }
 
