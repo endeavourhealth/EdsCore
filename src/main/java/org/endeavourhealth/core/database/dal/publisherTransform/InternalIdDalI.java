@@ -7,8 +7,6 @@ public interface InternalIdDalI {
 
     void upsertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception;
 
-    void insertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception;
-
     String getDestinationId(UUID serviceId, String idType, String sourceId) throws Exception;
 
 }

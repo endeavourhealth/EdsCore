@@ -56,7 +56,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
     }
 
     @Override
-    public void insertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
+    public void upsertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
         LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -100,48 +100,5 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
         }
     }
 
-
-    @Override
-    public void upsertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
-        LOG.trace("upsertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
-        UUID ret = null;
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsInternalIdMap c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.idType LIKE :id_type"
-                    + " and c.sourceId LIKE :source_id";
-
-            Query query = entityManager.createQuery(sql, RdbmsInternalIdMap.class)
-                    .setParameter("service_id", serviceId.toString())
-                    .setParameter("id_type", idType)
-                    .setParameter("source_id", sourceId)
-                    .setMaxResults(1);
-
-            try {
-                RdbmsInternalIdMap r = (RdbmsInternalIdMap) query.getSingleResult();
-                r.setDestinationId(destinationId);
-
-                entityManager.getTransaction().begin();
-                r.setUpdatedAt(new Date());
-                entityManager.refresh(r);
-                entityManager.getTransaction().commit();
-            }
-            catch (NoResultException e) {
-                entityManager.close();
-                insertRecord(serviceId, idType, sourceId, destinationId);
-            }
-            catch (Exception ex) {
-                entityManager.getTransaction().rollback();
-                throw ex;
-            }
-        } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
-            }
-        }
-    }
 
 }
