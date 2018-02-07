@@ -43,7 +43,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
                     .setMaxResults(1);
 
             try {
-                return ((RdbmsInternalIdMap) query.getSingleResult()).getDestinationResourceId();
+                return ((RdbmsInternalIdMap) query.getSingleResult()).getDestinationId();
             }
             catch (NoResultException e) {
                 return null;

@@ -15,8 +15,8 @@ public class InternalIdMap {
     public InternalIdMap(RdbmsInternalIdMap r) {
         this.serviceId = r.getServiceId();
         this.idType = r.getIdType();
-        this.sourceId = r.getSourceResourceId();
-        this.destinationId = r.getDestinationResourceId();
+        this.sourceId = r.getSourceId();
+        this.destinationId = r.getDestinationId();
         this.updatedAt = r.getUpdatedAt();
     }
 

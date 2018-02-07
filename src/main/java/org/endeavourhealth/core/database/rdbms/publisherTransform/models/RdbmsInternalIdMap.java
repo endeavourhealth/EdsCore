@@ -45,13 +45,13 @@ public class RdbmsInternalIdMap implements Serializable {
         return idType;
     }
 
-    public void setResourceType(String idType) {
+    public void setIdType(String idType) {
         this.idType = idType;
     }
 
     @Id
     @Column(name = "source_id", nullable = false)
-    public String getSourceResourceId() {
+    public String getSourceId() {
         return sourceId;
     }
 
@@ -60,7 +60,7 @@ public class RdbmsInternalIdMap implements Serializable {
     }
 
     @Column(name = "destination_id", nullable = false)
-    public String getDestinationResourceId() {
+    public String getDestinationId() {
         return destinationId;
     }
 
