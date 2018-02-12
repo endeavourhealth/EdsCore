@@ -46,11 +46,7 @@ import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.RdbmsEmisTransformDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsBartsSusResourceMapDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsInternalIdDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceIdDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsResourceMergeDal;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.RdbmsSourceFileMappingDal;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.*;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
 import org.slf4j.Logger;
@@ -139,6 +135,14 @@ public class DalProvider {
             return null;
         } else {
             return new RdbmsBartsSusResourceMapDal();
+        }
+    }
+
+    public static RdbmsCernerCodeValueRefDal factoryCernerCodeValueRefDal() {
+        if (useCassandra()) {
+            return null;
+        } else {
+            return new RdbmsCernerCodeValueRefDal();
         }
     }
 
