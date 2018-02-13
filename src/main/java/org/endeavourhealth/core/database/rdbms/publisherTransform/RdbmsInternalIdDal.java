@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 public class RdbmsInternalIdDal implements InternalIdDalI {
     public static final String IDTYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
+    public static final String IDTYPE_MILLENNIUM_PERS_ID_MRN = "MILLPERSIDtoMRN";
+    public static final String IDTYPE_ENCOUNTER_ID_VISIT_ID = "ENCOUNTERIDtoVISITID";
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsInternalIdDal.class);
 
     @Override
