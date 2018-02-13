@@ -21,12 +21,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class RdbmsInternalIdDal implements InternalIdDalI {
-
+    public static final String IDTYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsInternalIdDal.class);
 
     @Override
     public String getDestinationId(UUID serviceId, String idType, String sourceId) throws Exception {
-        LOG.trace("readMergeRecordDB:" + idType + " " + sourceId);
+        //LOG.trace("readMergeRecordDB:" + idType + " " + sourceId);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             String sql = "select c"
@@ -57,7 +57,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
     @Override
     public void upsertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
-        LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
+        //LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
@@ -100,5 +100,46 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
         }
     }
 
+    @Override
+    public void insertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
+        //LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO internal_id_map"
+                    + " (service_id, id_type, source_id, destination_id, updated_at)"
+                    + " VALUES (?, ?, ?, ?, ?);";
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, serviceId.toString());
+            ps.setString(2, idType);
+            ps.setString(3, sourceId);
+            ps.setString(4, destinationId);
+            ps.setTimestamp(5, new java.sql.Timestamp(new Date().getTime()));
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+            //LOG.trace("Saved mergeRecord for " + resourceType + " " + resourceFrom.toString() + "==>" + resourceTo.toString());
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
 
 }
