@@ -23,6 +23,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     public static final Long LANGUAGE = 36L;
     public static final Long RELIGION = 49L;
     public static final Long MARITAL_STATUS = 38L;
+    public static final Long NAME_USE = 213L;
 
 
     @Override
