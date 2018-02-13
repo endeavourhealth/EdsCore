@@ -13,8 +13,16 @@ import javax.persistence.Query;
 import java.util.UUID;
 
 public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
-
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsCernerCodeValueRefDal.class);
+
+    // Static values to hold the code set values
+    public static final Long LOCATION_NAME = 220L;
+    private static final Long NHS_NUMBER_STATUS = 29882L;
+    private static final Long GENDER = 57L;
+    private static final Long ETHNIC_GROUP = 27L;
+    private static final Long LANGUAGE = 36L;
+    private static final Long RELIGION = 49L;
+    private static final Long MARITAL_STATUS = 38L;
 
 
     @Override
