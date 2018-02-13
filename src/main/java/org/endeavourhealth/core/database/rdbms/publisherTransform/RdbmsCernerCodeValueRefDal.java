@@ -17,12 +17,12 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
     // Static values to hold the code set values
     public static final Long LOCATION_NAME = 220L;
-    private static final Long NHS_NUMBER_STATUS = 29882L;
-    private static final Long GENDER = 57L;
-    private static final Long ETHNIC_GROUP = 27L;
-    private static final Long LANGUAGE = 36L;
-    private static final Long RELIGION = 49L;
-    private static final Long MARITAL_STATUS = 38L;
+    public static final Long NHS_NUMBER_STATUS = 29882L;
+    public static final Long GENDER = 57L;
+    public static final Long ETHNIC_GROUP = 27L;
+    public static final Long LANGUAGE = 36L;
+    public static final Long RELIGION = 49L;
+    public static final Long MARITAL_STATUS = 38L;
 
 
     @Override
