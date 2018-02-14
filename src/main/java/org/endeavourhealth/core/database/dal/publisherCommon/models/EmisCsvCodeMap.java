@@ -1,9 +1,15 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
+import com.google.common.base.Strings;
+import org.endeavourhealth.common.cache.ParserPool;
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraEmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
+import org.hl7.fhir.instance.model.CodeableConcept;
 
 public class EmisCsvCodeMap {
+
+    private static final String CODEABLE_CONCEPT = "CodeableConcept";
 
     private String dataSharingAgreementGuid = null;
     private boolean medication = false;
@@ -19,10 +25,11 @@ public class EmisCsvCodeMap {
     private String nationalCodeCategory = null;
     private String nationalCodeDescription = null;
     private Long parentCodeId = null;
+    private ResourceFieldMappingAudit audit = null;
 
     public EmisCsvCodeMap() {}
 
-    public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) {
+    public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) throws Exception {
         //this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid(); //not present in the proxy
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
@@ -37,6 +44,9 @@ public class EmisCsvCodeMap {
         this.nationalCodeCategory = proxy.getNationalCodeCategory();
         this.nationalCodeDescription = proxy.getNationalCodeDescription();
         this.parentCodeId = proxy.getParentCodeId();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
     }
 
     public EmisCsvCodeMap(CassandraEmisCsvCodeMap proxy) {
@@ -54,6 +64,7 @@ public class EmisCsvCodeMap {
         this.nationalCodeCategory = proxy.getNationalCodeCategory();
         this.nationalCodeDescription = proxy.getNationalCodeDescription();
         this.parentCodeId = proxy.getParentCodeId();
+        //no audit JSON
     }
 
     public String getDataSharingAgreementGuid() {
@@ -166,5 +177,21 @@ public class EmisCsvCodeMap {
 
     public void setParentCodeId(Long parentCodeId) {
         this.parentCodeId = parentCodeId;
+    }
+
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
+    }
+
+    public CodeableConcept getCodeableConceptObject() throws Exception {
+        return (CodeableConcept)ParserPool.getInstance().parseType(this.codeableConcept, CODEABLE_CONCEPT);
+    }
+
+    public void setCodeableConceptObject(CodeableConcept codeableConcept) throws Exception {
+        this.codeableConcept = ParserPool.getInstance().composeString(codeableConcept, CODEABLE_CONCEPT);
     }
 }

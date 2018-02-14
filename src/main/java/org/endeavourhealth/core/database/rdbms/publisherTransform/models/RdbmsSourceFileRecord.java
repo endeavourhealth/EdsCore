@@ -1,30 +1,22 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 
 @Entity
-@Table(name = "source_file_field")
-public class RdbmsSourceFileField implements Serializable {
+@Table(name = "source_file_record")
+public class RdbmsSourceFileRecord implements Serializable {
 
     private Long id;
     private int sourceFileId;
-    private Integer rowIndex;
-    private Integer columnIndex;
     private String sourceLocation;
     private String value;
 
-    public RdbmsSourceFileField() {}
+    public RdbmsSourceFileRecord() {}
 
     @Id
-    @Generated(GenerationTime.INSERT)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, insertable = false)
     public Long getId() {
         return id;
     }
@@ -40,24 +32,6 @@ public class RdbmsSourceFileField implements Serializable {
 
     public void setSourceFileId(int sourceFileId) {
         this.sourceFileId = sourceFileId;
-    }
-
-    @Column(name = "row_index", nullable = true)
-    public Integer getRowIndex() {
-        return rowIndex;
-    }
-
-    public void setRowIndex(Integer rowIndex) {
-        this.rowIndex = rowIndex;
-    }
-
-    @Column(name = "column_index", nullable = true)
-    public Integer getColumnIndex() {
-        return columnIndex;
-    }
-
-    public void setColumnIndex(Integer columnIndex) {
-        this.columnIndex = columnIndex;
     }
 
     @Column(name = "source_location", nullable = true)

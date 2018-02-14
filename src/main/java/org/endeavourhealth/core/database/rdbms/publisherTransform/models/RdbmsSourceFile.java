@@ -1,12 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.hibernate.annotations.Generated;
-import org.hibernate.annotations.GenerationTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -25,8 +19,8 @@ public class RdbmsSourceFile implements Serializable {
     public RdbmsSourceFile() {}
 
     @Id
-    @Generated(GenerationTime.INSERT)
-    @Column(name = "id", nullable = false)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, insertable = false)
     public Integer getId() {
         return id;
     }

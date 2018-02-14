@@ -15,8 +15,8 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
@@ -43,8 +43,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO emis_csv_code_map"
-                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " code_type = VALUES(code_type),"
                     + " codeable_concept = VALUES(codeable_concept),"
@@ -56,7 +56,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " national_code = VALUES(national_code),"
                     + " national_code_category = VALUES(national_code_category),"
                     + " national_code_description = VALUES(national_code_description),"
-                    + " parent_code_id = VALUES(parent_code_id);";
+                    + " parent_code_id = VALUES(parent_code_id),"
+                    + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
 
@@ -116,6 +117,11 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 ps.setNull(13, Types.BIGINT);
             } else {
                 ps.setLong(13, emisMapping.getParentCodeId());
+            }
+            if (emisMapping.getAuditJson() == null) {
+                ps.setNull(14, Types.VARCHAR);
+            } else {
+                ps.setString(14, emisMapping.getAuditJson());
             }
 
             ps.executeUpdate();
@@ -181,10 +187,11 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO emis_admin_resource_cache"
-                    + " (data_sharing_agreement_guid, emis_guid, resource_type, resource_data)"
-                    + " VALUES (?, ?, ?, ?)"
+                    + " (data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " resource_data = VALUES(resource_data);";
+                    + " resource_data = VALUES(resource_data),"
+                    + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
 
@@ -192,6 +199,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             ps.setString(2, emisObj.getEmisGuid());
             ps.setString(3, emisObj.getResourceType());
             ps.setString(4, emisObj.getResourceData());
+            ps.setString(5, emisObj.getAuditJson());
             //entityManager.persist(emisObj);
 
             ps.executeUpdate();
@@ -270,10 +278,10 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             List<RdbmsEmisAdminResourceCache> results = query.getResultList();
 
-            List<EmisAdminResourceCache> ret = results
-                    .stream()
-                    .map(T -> new EmisAdminResourceCache(T))
-                    .collect(Collectors.toList());
+            List<EmisAdminResourceCache> ret = new ArrayList<>();
+            for (RdbmsEmisAdminResourceCache result: results) {
+                ret.add(new EmisAdminResourceCache(result));
+            }
 
             return ret;
 

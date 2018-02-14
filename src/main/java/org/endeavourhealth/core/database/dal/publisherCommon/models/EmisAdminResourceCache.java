@@ -1,6 +1,8 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.cassandra.transform.models.CassandraEmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 
 public class EmisAdminResourceCache {
@@ -9,14 +11,18 @@ public class EmisAdminResourceCache {
     private String emisGuid = null;
     private String resourceType = null;
     private String resourceData = null;
+    private ResourceFieldMappingAudit audit = null;
 
     public EmisAdminResourceCache() {}
 
-    public EmisAdminResourceCache(RdbmsEmisAdminResourceCache mySql) {
-        this.dataSharingAgreementGuid = mySql.getDataSharingAgreementGuid();
-        this.emisGuid = mySql.getEmisGuid();
-        this.resourceType = mySql.getResourceType();
-        this.resourceData = mySql.getResourceData();
+    public EmisAdminResourceCache(RdbmsEmisAdminResourceCache proxy) throws Exception {
+        this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid();
+        this.emisGuid = proxy.getEmisGuid();
+        this.resourceType = proxy.getResourceType();
+        this.resourceData = proxy.getResourceData();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
     }
 
     public EmisAdminResourceCache(CassandraEmisAdminResourceCache mySql) {
@@ -24,6 +30,7 @@ public class EmisAdminResourceCache {
         this.emisGuid = mySql.getEmisGuid();
         this.resourceType = mySql.getResourceType();
         this.resourceData = mySql.getResourceData();
+        //no audit JSON
     }
 
     public String getDataSharingAgreementGuid() {
@@ -56,5 +63,13 @@ public class EmisAdminResourceCache {
 
     public void setResourceData(String resourceData) {
         this.resourceData = resourceData;
+    }
+
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 }

@@ -45,11 +45,11 @@ public class FhirStorageService {
         this.systemId = systemId;
     }
 
-    public boolean exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
+    public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         return exchangeBatchUpdate(exchangeId, batchId, resource, false);
     }
 
-    public boolean exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
+    public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
         Validate.resourceId(resource);
 
         ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
@@ -57,7 +57,7 @@ public class FhirStorageService {
         //if we're updating a resource but there's no change, don't commit the save
         //this is because Emis send us up to thousands of duplicated resources each day
         if (!shouldSaveResource(entry, isDefinitelyNewResource)) {
-            return false;
+            return null;
         }
 
         FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
@@ -94,15 +94,15 @@ public class FhirStorageService {
             patientSearchDal.update(serviceId, systemId, (EpisodeOfCare)resource);
         }
 
-        return true;
+        return entry;
     }
 
 
-    public boolean exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
+    public ResourceWrapper exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         return exchangeBatchDelete(exchangeId, batchId, resource, false);
     }
 
-    public boolean exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
+    public ResourceWrapper exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource, boolean isDefinitelyNewResource) throws Exception {
         Validate.resourceId(resource);
 
         ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
@@ -110,7 +110,7 @@ public class FhirStorageService {
         //if we're updating a resource but there's no change, don't commit the save
         //this is because Emis send us up to thousands of duplicated resources each day
         if (!shouldDeleteResource(entry, isDefinitelyNewResource)) {
-            return false;
+            return null;
         }
 
         resourceRepository.delete(entry);
@@ -121,7 +121,7 @@ public class FhirStorageService {
             patientSearchDal.deletePatient(serviceId, systemId, (Patient)resource);
         }
 
-        return true;
+        return entry;
     }
 
 

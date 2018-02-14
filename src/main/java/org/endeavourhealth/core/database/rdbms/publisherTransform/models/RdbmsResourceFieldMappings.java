@@ -8,17 +8,16 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "resource_field_mapping")
-public class RdbmsResourceFieldMapping implements Serializable {
+@Table(name = "resource_field_mappings")
+public class RdbmsResourceFieldMappings implements Serializable {
 
     private String resourceId;
     private String resourceType;
     private Date createdAt;
     private String version;
-    private String resourceField;
-    private long sourceFileFieldId;
+    private String mappingsJson;
 
-    public RdbmsResourceFieldMapping() {
+    public RdbmsResourceFieldMappings() {
 
     }
 
@@ -71,22 +70,13 @@ public class RdbmsResourceFieldMapping implements Serializable {
         this.version = version;
     }
 
-    @Id
-    @Column(name = "resource_field", nullable = false)
-    public String getResourceField() {
-        return resourceField;
+    @Column(name = "mappings_json", nullable = false)
+    public String getMappingsJson() {
+        return mappingsJson;
     }
 
-    public void setResourceField(String resourceField) {
-        this.resourceField = resourceField;
+    public void setMappingsJson(String mappingsJson) {
+        this.mappingsJson = mappingsJson;
     }
 
-    @Column(name = "source_file_field_id", nullable = false)
-    public long getSourceFileFieldId() {
-        return sourceFileFieldId;
-    }
-
-    public void setSourceFileFieldId(long sourceFileFieldId) {
-        this.sourceFileFieldId = sourceFileFieldId;
-    }
 }

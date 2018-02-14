@@ -153,8 +153,8 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileType</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileTypeColumn</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFile</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileField</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMapping</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileRecord</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
 
         <properties>

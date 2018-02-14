@@ -25,10 +25,11 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
     private String nationalCodeCategory = null;
     private String nationalCodeDescription = null;
     private Long parentCodeId = null;
+    private String auditJson = null; //JSON giving the audit details of the resource, so they can be applied when saving to core DB
 
     public RdbmsEmisCsvCodeMap() { }
 
-    public RdbmsEmisCsvCodeMap(EmisCsvCodeMap proxy) {
+    public RdbmsEmisCsvCodeMap(EmisCsvCodeMap proxy) throws Exception {
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
         this.codeType = proxy.getCodeType();
@@ -42,6 +43,10 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.nationalCodeCategory = proxy.getNationalCodeCategory();
         this.nationalCodeDescription = proxy.getNationalCodeDescription();
         this.parentCodeId = proxy.getParentCodeId();
+
+        if (proxy.getAudit() != null) {
+            this.auditJson = proxy.getAudit().writeToJson();
+        }
     }
 
     @Id
@@ -161,5 +166,14 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
 
     public void setParentCodeId(Long parentCodeId) {
         this.parentCodeId = parentCodeId;
+    }
+
+    @Column(name = "audit_json", nullable = true)
+    public String getAuditJson() {
+        return auditJson;
+    }
+
+    public void setAuditJson(String auditJson) {
+        this.auditJson = auditJson;
     }
 }
