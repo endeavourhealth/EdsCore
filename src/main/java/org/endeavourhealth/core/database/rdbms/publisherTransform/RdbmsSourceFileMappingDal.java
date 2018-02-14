@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.dal.publisherTransform.SourceFileMappingDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMapping;
@@ -223,16 +221,8 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
     }
 
-    public long auditFileRow(UUID serviceId, CSVParser parser, CSVRecord record, int recordLineNumber, int sourceFileId) throws Exception {
+    public long auditFileRow(UUID serviceId, String[] values, int recordLineNumber, int sourceFileId) throws Exception {
 
-        Map<String, Integer> headers = parser.getHeaderMap();
-        String[] values = new String[headers.size()];
-
-        for (String header: headers.keySet()) {
-            Integer colIndex = headers.get(header);
-            String value = record.get(colIndex);
-            values[colIndex.intValue()] = value;
-        }
 
         String rowStr = String.join(CSV_DELIM, values);
 
