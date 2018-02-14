@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.InternalIdDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.InternalIdMap;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceMergeMap;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap;
@@ -35,8 +36,8 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
                     + " from"
                     + " RdbmsInternalIdMap c"
                     + " where c.serviceId = :service_id"
-                    + " and c.idType LIKE :id_type"
-                    + " and c.sourceId LIKE :source_id";
+                    + " and c.idType = :id_type"
+                    + " and c.sourceId = :source_id";
 
             Query query = entityManager.createQuery(sql, RdbmsInternalIdMap.class)
                     .setParameter("service_id", serviceId.toString())
@@ -50,6 +51,35 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
             catch (NoResultException e) {
                 return null;
             }
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
+
+    @Override
+    public List<InternalIdMap> getSourceId(UUID serviceId, String idType, String destinationId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsInternalIdMap c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.idType = :id_type"
+                    + " and c.destinationId = :destination_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsInternalIdMap.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("id_type", idType)
+                    .setParameter("destination_id", destinationId);
+
+            List<RdbmsInternalIdMap> results = query.getResultList();
+            return results
+                    .stream()
+                    .map(T -> new InternalIdMap((T)))
+                    .collect(Collectors.toList());
+
         } finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
