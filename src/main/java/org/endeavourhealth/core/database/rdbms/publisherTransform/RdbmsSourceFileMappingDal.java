@@ -316,49 +316,60 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             hmSourceFiles.put(sourceFile.getId(), sourceFile);
         }
 
-        Set<String> fieldsDoneSet = new HashSet<>();
+        Map<String, String> hmFieldVersions = new HashMap<>();
+        //Set<String> fieldsDoneSet = new HashSet<>();
 
         for (int i=resourceMappings.size()-1; i>=0; i--) {
             RdbmsResourceFieldMappings mapping = resourceMappings.get(i);
             String mappingJson = mapping.getMappingsJson();
             ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(mappingJson);
+            String resourceVersion = mapping.getVersion();
 
             for (Long key: audit.getAudits().keySet()) {
                 ResourceFieldMappingAudit.ResourceFieldMappingAuditRow row = audit.getAudits().get(key);
                 long auditRowId = row.getAuditId();
+
                 for (ResourceFieldMappingAudit.ResourceFieldMappingAuditCol col: row.getCols()) {
                     String field = col.getField();
                     int colIndex = col.getCol();
 
-                    if (!fieldsDoneSet.contains(field)
-                            && (specificField == null
-                            || specificField.equalsIgnoreCase(field))) {
-
-                        fieldsDoneSet.add(field);
-
-                        RdbmsSourceFileRecord fileRecord = hmFileRecords.get(new Long(auditRowId));
-                        RdbmsSourceFile sourceFile = hmSourceFiles.get(new Integer(fileRecord.getSourceFileId()));
-
-                        String[] valueElements = fileRecord.getValue().split("\\" + CSV_DELIM); //need to escape the delimiter so it's not a regex
-                        String value = valueElements[colIndex];
-
-                        ResourceFieldMapping obj = new ResourceFieldMapping();
-                        obj.setResourceId(UUID.fromString(mapping.getResourceId()));
-                        obj.setResourceType(mapping.getResourceType());
-                        obj.setCreatedAt(mapping.getCreatedAt());
-                        obj.setVersion(UUID.fromString(mapping.getVersion()));
-                        obj.setResourceField(field);
-                        obj.setSourceFileName(sourceFile.getFilePath());
-                        try {
-                            obj.setSourceFileRow(Integer.parseInt(fileRecord.getSourceLocation()));
-                        } catch (NumberFormatException nfe) {
-                            obj.setSourceLocation(fileRecord.getSourceLocation());
-                        }
-                        obj.setSourceFileColumn(new Integer(colIndex));
-                        obj.setValue(value);
-
-                        ret.add(obj);
+                    //if we're only interested in a specific field, then skip everything else
+                    if (specificField != null
+                            && !specificField.equalsIgnoreCase(field)) {
+                        continue;
                     }
+
+                    //if we've already found a mapping for this field, ensure that this mapping is for the same version, otherwise skip
+                    String version = hmFieldVersions.get(field);
+                    if (version != null
+                            && !version.equals(resourceVersion)) {
+                        continue;
+                    }
+
+                    hmFieldVersions.put(field, version);
+
+                    RdbmsSourceFileRecord fileRecord = hmFileRecords.get(new Long(auditRowId));
+                    RdbmsSourceFile sourceFile = hmSourceFiles.get(new Integer(fileRecord.getSourceFileId()));
+
+                    String[] valueElements = fileRecord.getValue().split("\\" + CSV_DELIM); //need to escape the delimiter so it's not a regex
+                    String value = valueElements[colIndex];
+
+                    ResourceFieldMapping obj = new ResourceFieldMapping();
+                    obj.setResourceId(UUID.fromString(mapping.getResourceId()));
+                    obj.setResourceType(mapping.getResourceType());
+                    obj.setCreatedAt(mapping.getCreatedAt());
+                    obj.setVersion(UUID.fromString(mapping.getVersion()));
+                    obj.setResourceField(field);
+                    obj.setSourceFileName(sourceFile.getFilePath());
+                    try {
+                        obj.setSourceFileRow(Integer.parseInt(fileRecord.getSourceLocation()));
+                    } catch (NumberFormatException nfe) {
+                        obj.setSourceLocation(fileRecord.getSourceLocation());
+                    }
+                    obj.setSourceFileColumn(new Integer(colIndex));
+                    obj.setValue(value);
+
+                    ret.add(obj);
                 }
             }
         }
