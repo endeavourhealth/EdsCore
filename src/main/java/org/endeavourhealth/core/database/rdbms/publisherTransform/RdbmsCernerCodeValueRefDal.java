@@ -31,6 +31,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     public static final Long RELATIONSHIP_TO_PATIENT = 40L;
     public static final Long PERSON_RELATIONSHIP_TYPE = 351L;
     public static final Long PHONE_TYPE = 43L;
+    public static final Long TREATMENT_FUNCTION = 34L;
 
 
     @Override
