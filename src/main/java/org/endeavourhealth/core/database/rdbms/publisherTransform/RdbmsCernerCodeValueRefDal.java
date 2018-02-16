@@ -33,6 +33,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     public static final Long PHONE_TYPE = 43L;
     public static final Long TREATMENT_FUNCTION = 34L;
     public static final Long ALIAS_TYPE = 4L;
+    public static final Long CLINICAL_CODE_TYPE = 72L;
 
 
     @Override
