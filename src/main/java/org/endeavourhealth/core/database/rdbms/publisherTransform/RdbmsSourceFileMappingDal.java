@@ -447,20 +447,32 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             String mappingJson = mapping.getMappingsJson();
             ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(mappingJson);
 
+            Set<String> fieldsDoneThisAudit = new HashSet<>();
+
             for (Long key: audit.getAudits().keySet()) {
                 ResourceFieldMappingAudit.ResourceFieldMappingAuditRow row = audit.getAudits().get(key);
                 long auditRowId = row.getAuditId();
                 for (ResourceFieldMappingAudit.ResourceFieldMappingAuditCol col: row.getCols()) {
                     String field = col.getField();
 
-                    if (!fieldsDoneSet.contains(field)
-                            && (specificField == null
-                            || field.equalsIgnoreCase(specificField))) {
-                        fieldsDoneSet.add(field);
-                        auditRowIds.add(auditRowId);
+                    //if only looking for a specific field, and we don't match, skip it
+                    if (specificField != null
+                            && !field.equalsIgnoreCase(specificField)) {
+                        continue;
                     }
+
+                    //if we've already handled this field on a previous audit, skip it
+                    if (fieldsDoneSet.contains(field)) {
+                        continue;
+                    }
+
+                    fieldsDoneThisAudit.add(field);
+                    auditRowIds.add(auditRowId);
                 }
             }
+
+            //append all the fields we just covered to the set so far
+            fieldsDoneSet.addAll(fieldsDoneThisAudit);
         }
 
         return new ArrayList<>(auditRowIds);
