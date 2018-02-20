@@ -1,10 +1,6 @@
 package org.endeavourhealth.core.database.dal.ehr.models;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByExchangeBatch;
-import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByPatient;
-import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceByService;
-import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraResourceHistory;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 
@@ -30,7 +26,7 @@ public class ResourceWrapper {
 
     public ResourceWrapper() {}
 
-    public ResourceWrapper(CassandraResourceByExchangeBatch proxy) {
+    /*public ResourceWrapper(CassandraResourceByExchangeBatch proxy) {
         //this.serviceId = proxy.getServiceId(); //not present in the proxy
         //this.systemId = proxy.getSystemId(); //not present in the proxy
         this.resourceId = proxy.getResourceId();
@@ -92,7 +88,7 @@ public class ResourceWrapper {
         //this.exchangeBatchId = proxy.  //not present in the proxy
         //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
         this.isDeleted = proxy.getIsDeleted();
-    }
+    }*/
 
     public ResourceWrapper(RdbmsResourceCurrent proxy) {
         this.serviceId = UUID.fromString(proxy.getServiceId());

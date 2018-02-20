@@ -2,7 +2,6 @@ package org.endeavourhealth.core.database.dal.admin.models;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
 
 import java.util.HashMap;
@@ -18,12 +17,12 @@ public class Organisation {
 
     public Organisation() {}
 
-    public Organisation(CassandraOrganisation proxy) {
+    /*public Organisation(CassandraOrganisation proxy) {
         this.id = proxy.getId();
         this.name = proxy.getName();
         this.nationalId = proxy.getNationalId();
         this.services = new HashMap<>(proxy.getServices());
-    }
+    }*/
 
     public Organisation(RdbmsOrganisation proxy) throws Exception {
         this.id = UUID.fromString(proxy.getId());

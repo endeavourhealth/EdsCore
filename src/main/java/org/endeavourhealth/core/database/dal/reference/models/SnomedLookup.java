@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.reference.models;
 
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraSnomedLookup;
 import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedLookup;
 
 public class SnomedLookup {
@@ -11,11 +10,11 @@ public class SnomedLookup {
 
     public SnomedLookup() {}
 
-    public SnomedLookup(CassandraSnomedLookup proxy) {
+    /*public SnomedLookup(CassandraSnomedLookup proxy) {
         this.conceptId = proxy.getConceptId();
         this.typeId = proxy.getTypeId();
         this.term = proxy.getTerm();
-    }
+    }*/
 
     public SnomedLookup(RdbmsSnomedLookup proxy) {
         this.conceptId = proxy.getConceptId();

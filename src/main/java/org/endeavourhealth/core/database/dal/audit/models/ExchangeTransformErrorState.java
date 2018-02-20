@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.dal.audit.models;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraExchangeTransformErrorState;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformErrorState;
 
 import java.util.ArrayList;
@@ -18,11 +17,11 @@ public class ExchangeTransformErrorState {
 
     public ExchangeTransformErrorState() {}
 
-    public ExchangeTransformErrorState(CassandraExchangeTransformErrorState proxy) {
+    /*public ExchangeTransformErrorState(CassandraExchangeTransformErrorState proxy) {
         this.serviceId = proxy.getServiceId();
         this.systemId = proxy.getSystemId();
         this.exchangeIdsInError = proxy.getExchangeIdsInError();
-    }
+    }*/
 
     public ExchangeTransformErrorState(RdbmsExchangeTransformErrorState proxy) throws Exception {
         this.serviceId = UUID.fromString(proxy.getServiceId());

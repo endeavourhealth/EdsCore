@@ -1,7 +1,6 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.cassandra.ehr.models.CassandraExchangeBatch;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeBatch;
 
 import java.util.Date;
@@ -16,12 +15,12 @@ public class ExchangeBatch {
 
     public ExchangeBatch() {}
 
-    public ExchangeBatch(CassandraExchangeBatch proxy) {
+    /*public ExchangeBatch(CassandraExchangeBatch proxy) {
         this.exchangeId = proxy.getExchangeId();
         this.batchId = proxy.getBatchId();
         this.insertedAt = proxy.getInsertedAt();
         this.edsPatientId = proxy.getEdsPatientId();
-    }
+    }*/
 
     public ExchangeBatch(RdbmsExchangeBatch proxy) {
         this.exchangeId = UUID.fromString(proxy.getExchangeId());

@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraItemDependency;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsItemDependency;
 
 import java.util.UUID;
@@ -14,12 +13,12 @@ public class ItemDependency {
 
     public ItemDependency() {}
 
-    public ItemDependency(CassandraItemDependency proxy) {
+    /*public ItemDependency(CassandraItemDependency proxy) {
         this.itemId = proxy.getItemId();
         this.auditId = proxy.getAuditId();
         this.dependentItemId = proxy.getDependentItemId();
         this.dependencyTypeId = proxy.getDependencyTypeId();
-    }
+    }*/
 
     public ItemDependency(RdbmsItemDependency proxy) {
         this.itemId = UUID.fromString(proxy.getItemId());

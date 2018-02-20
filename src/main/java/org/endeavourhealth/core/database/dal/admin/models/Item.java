@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraItem;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsItem;
 
 import java.util.UUID;
@@ -16,14 +15,14 @@ public class Item {
 
     public Item() {}
 
-    public Item(CassandraItem proxy) {
+    /*public Item(CassandraItem proxy) {
         this.id = proxy.getId();
         this.auditId = proxy.getAuditId();
         this.xmlContent = proxy.getXmlContent();
         this.title = proxy.getTitle();
         this.description = proxy.getDescription();
         this.isDeleted = proxy.getIsDeleted();
-    }
+    }*/
 
     public Item(RdbmsItem proxy) {
         this.id = UUID.fromString(proxy.getId());

@@ -1,7 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.cassandra.transform.models.CassandraEmisAdminResourceCache;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 
@@ -25,13 +24,13 @@ public class EmisAdminResourceCache {
         }
     }
 
-    public EmisAdminResourceCache(CassandraEmisAdminResourceCache mySql) {
+    /*public EmisAdminResourceCache(CassandraEmisAdminResourceCache mySql) {
         this.dataSharingAgreementGuid = mySql.getDataSharingAgreementGuid();
         this.emisGuid = mySql.getEmisGuid();
         this.resourceType = mySql.getResourceType();
         this.resourceData = mySql.getResourceData();
         //no audit JSON
-    }
+    }*/
 
     public String getDataSharingAgreementGuid() {
         return dataSharingAgreementGuid;

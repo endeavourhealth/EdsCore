@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraExchangeEvent;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeEvent;
 
 import java.util.Date;
@@ -14,11 +13,11 @@ public class ExchangeEvent {
 
     public ExchangeEvent() {}
 
-    public ExchangeEvent(CassandraExchangeEvent proxy) {
+    /*public ExchangeEvent(CassandraExchangeEvent proxy) {
         this.exchangeId = proxy.getExchangeId();
         this.timestamp = proxy.getTimestamp();
         this.eventDesc = proxy.getEventDesc();
-    }
+    }*/
 
     public ExchangeEvent(RdbmsExchangeEvent proxy) {
         this.exchangeId = UUID.fromString(proxy.getExchangeId());

@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraExchangeTransformAudit;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeTransformAudit;
 
 import java.util.Date;
@@ -21,7 +20,7 @@ public class ExchangeTransformAudit {
 
     public ExchangeTransformAudit() {}
 
-    public ExchangeTransformAudit(CassandraExchangeTransformAudit proxy) {
+    /*public ExchangeTransformAudit(CassandraExchangeTransformAudit proxy) {
         this.id = proxy.getVersion();
         this.serviceId = proxy.getServiceId();
         this.systemId = proxy.getSystemId();
@@ -33,7 +32,7 @@ public class ExchangeTransformAudit {
         this.deleted = proxy.getDeleted();
         this.numberBatchesCreated = proxy.getNumberBatchesCreated();
 
-    }
+    }*/
 
     public ExchangeTransformAudit(RdbmsExchangeTransformAudit proxy) {
         this.id = UUID.fromString(proxy.getId());

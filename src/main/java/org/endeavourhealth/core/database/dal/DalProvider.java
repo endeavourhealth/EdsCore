@@ -1,15 +1,5 @@
 package org.endeavourhealth.core.database.dal;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.endeavourhealth.common.config.ConfigManager;
-import org.endeavourhealth.core.database.cassandra.admin.*;
-import org.endeavourhealth.core.database.cassandra.audit.CassandraExchangeRespository;
-import org.endeavourhealth.core.database.cassandra.audit.CassandraUserAuditRepository;
-import org.endeavourhealth.core.database.cassandra.ehr.CassandraExchangeBatchRepository;
-import org.endeavourhealth.core.database.cassandra.ehr.CassandraResourceRepository;
-import org.endeavourhealth.core.database.cassandra.transform.CassandraEmisRepository;
-import org.endeavourhealth.core.database.cassandra.transform.CassandraResourceIdMapRepository;
-import org.endeavourhealth.core.database.cassandra.transform.CassandraVitruCareRepository;
 import org.endeavourhealth.core.database.dal.admin.LibraryDalI;
 import org.endeavourhealth.core.database.dal.admin.OrganisationDalI;
 import org.endeavourhealth.core.database.dal.admin.PatientCohortDalI;
@@ -55,10 +45,74 @@ import org.slf4j.LoggerFactory;
 public class DalProvider {
     private static final Logger LOG = LoggerFactory.getLogger(DalProvider.class);
 
-    private static Boolean cachedUseCassandra = null;
-    private static final Object sync = new Object();
+    /*private static Boolean cachedUseCassandra = null;
+    private static final Object sync = new Object();*/
 
     public static ResourceDalI factoryResourceDal() {
+        return new RdbmsResourceDal();
+    }
+
+    public static VitruCareTransformDalI factoryVitruCareTransformDal(String subscriberConfigName) {
+        return new RdbmsVitruCareTransformDal(subscriberConfigName);
+    }
+
+    public static EmisTransformDalI factoryEmisTransformDal() {
+        return new RdbmsEmisTransformDal();
+    }
+
+    public static ResourceIdTransformDalI factoryResourceIdTransformDal() {
+        return new RdbmsResourceIdDal();
+    }
+
+    public static QueuedMessageDalI factoryQueuedMessageDal() {
+        return new RdbmsQueuedMessageDal();
+    }
+
+    public static ExchangeBatchDalI factoryExchangeBatchDal() {
+        return new RdbmsExchangeBatchDal();
+    }
+
+    public static ExchangeDalI factoryExchangeDal() {
+        return new RdbmsExchangeDal();
+    }
+
+    public static UserAuditDalI factoryUserAuditDal(IAuditModule auditModule) {
+        return new RdbmsUserAuditDal(auditModule);
+    }
+
+    public static RdbmsBartsSusResourceMapDal factoryBartsSusResourceMapDal() {
+        return new RdbmsBartsSusResourceMapDal();
+    }
+
+    public static RdbmsCernerCodeValueRefDal factoryCernerCodeValueRefDal() {
+        return new RdbmsCernerCodeValueRefDal();
+    }
+
+    public static RdbmsJDBCReaderDal factoryJDBCReaderDal() {
+        return new RdbmsJDBCReaderDal();
+    }
+
+    public static ServiceDalI factoryServiceDal() {
+        return new RdbmsServiceDal();
+    }
+
+    public static OrganisationDalI factoryOrganisationDal() {
+        return new RdbmsOrganisationDal();
+    }
+
+    public static LibraryDalI factoryLibraryDal() {
+        return new RdbmsLibraryDal();
+    }
+
+    public static SnomedDalI factorySnomedDal() {
+        return new RdbmsSnomedDal();
+    }
+
+    public static PatientCohortDalI factoryPatientCohortDal() {
+        return new RdbmsPatientCohortDal();
+    }
+
+    /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {
             return new CassandraResourceRepository();
 
@@ -190,6 +244,18 @@ public class DalProvider {
         }
     }
 
+    public static PatientCohortDalI factoryPatientCohortDal() {
+        if (useCassandra()) {
+            return new CassandraPatientCohortRepository();
+
+        } else {
+            return new RdbmsPatientCohortDal();
+        }
+    }*/
+
+
+
+
     public static Read2ToSnomedMapDalI factoryRead2ToSnomedMapDal() {
         return new RdbmsRead2ToSnomedMapDal();
     }
@@ -198,14 +264,6 @@ public class DalProvider {
         return new RdmsCTV3ToSnomedMapDal();
     }
 
-    public static PatientCohortDalI factoryPatientCohortDal() {
-        if (useCassandra()) {
-            return new CassandraPatientCohortRepository();
-
-        } else {
-            return new RdbmsPatientCohortDal();
-        }
-    }
 
     public static PatientLinkDalI factoryPatientLinkDal() {
         return new RdbmsPatientLinkDal();
@@ -287,7 +345,7 @@ public class DalProvider {
         return new RdbmsIcd10Dal();
     }
 
-    private static boolean useCassandra() {
+    /*private static boolean useCassandra() {
 
         if (cachedUseCassandra == null) {
             synchronized (sync) {
@@ -306,5 +364,5 @@ public class DalProvider {
         }
 
         return cachedUseCassandra.booleanValue();
-    }
+    }*/
 }

@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraUserEvent;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsUserEvent;
 
 import java.util.Date;
@@ -18,7 +17,7 @@ public class UserEvent {
 
     public UserEvent() {}
 
-    public UserEvent(CassandraUserEvent proxy) {
+    /*public UserEvent(CassandraUserEvent proxy) {
         this.userId = proxy.getUserId();
         this.organisationId = proxy.getOrganisationId();
         this.module = proxy.getModule();
@@ -26,7 +25,7 @@ public class UserEvent {
         this.action = proxy.getAction();
         this.timestamp = proxy.getTimestamp();
         this.data = proxy.getData();
-    }
+    }*/
 
     public UserEvent(RdbmsUserEvent proxy) {
         this.userId = UUID.fromString(proxy.getUserId());

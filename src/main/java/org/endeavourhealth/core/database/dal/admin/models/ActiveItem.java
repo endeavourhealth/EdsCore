@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraActiveItem;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsActiveItem;
 
 import java.util.UUID;
@@ -16,14 +15,14 @@ public class ActiveItem {
 
     public ActiveItem() {}
 
-    public ActiveItem(CassandraActiveItem proxy) {
+    /*public ActiveItem(CassandraActiveItem proxy) {
         this.id = proxy.getId();
         this.itemId = proxy.getItemId();
         this.auditId = proxy.getAuditId();
         this.itemTypeId = proxy.getItemTypeId();
         this.isDeleted = proxy.getIsDeleted();
         this.organisationId = proxy.getOrganisationId();
-    }
+    }*/
 
     public ActiveItem(RdbmsActiveItem proxy) {
         //this.id = //not used in MySQL

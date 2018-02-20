@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
-import org.endeavourhealth.core.database.cassandra.admin.models.CassandraAudit;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsAudit;
 
 import java.util.Date;
@@ -15,12 +14,12 @@ public class Audit {
 
     public Audit() {}
 
-    public Audit(CassandraAudit proxy) {
+    /*public Audit(CassandraAudit proxy) {
         this.id = proxy.getId();
         this.organisationId = proxy.getOrganisationId();
         this.timestamp = proxy.getTimeStamp();
         this.endUserId = proxy.getEndUserId();
-    }
+    }*/
 
     public Audit(RdbmsAudit proxy) {
         this.id = UUID.fromString(proxy.getId());

@@ -2,8 +2,6 @@ package org.endeavourhealth.core.database.dal.audit.models;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraExchange;
-import org.endeavourhealth.core.database.cassandra.audit.models.CassandraExchangeByService;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchange;
 
 import java.util.Date;
@@ -23,7 +21,7 @@ public class Exchange {
 
     public Exchange() {}
 
-    public Exchange(CassandraExchange proxy) throws Exception {
+    /*public Exchange(CassandraExchange proxy) throws Exception {
         this.id = proxy.getExchangeId();
         this.timestamp = proxy.getTimestamp();
 
@@ -40,7 +38,7 @@ public class Exchange {
         //this.headers = ObjectMapperPool.getInstance().readValue(headersJson, HashMap.class);
         this.serviceId = proxy.getServiceId();
         //this.body = proxy.getBody(); //field not present in proxy
-    }
+    }*/
 
     public Exchange(RdbmsExchange proxy) throws Exception {
         this.id = UUID.fromString(proxy.getId());

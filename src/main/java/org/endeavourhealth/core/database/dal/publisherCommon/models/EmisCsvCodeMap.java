@@ -2,7 +2,6 @@ package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ParserPool;
-import org.endeavourhealth.core.database.cassandra.transform.models.CassandraEmisCsvCodeMap;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 import org.hl7.fhir.instance.model.CodeableConcept;
@@ -49,7 +48,7 @@ public class EmisCsvCodeMap {
         }
     }
 
-    public EmisCsvCodeMap(CassandraEmisCsvCodeMap proxy) {
+    /*public EmisCsvCodeMap(CassandraEmisCsvCodeMap proxy) {
         this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid();
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
@@ -65,7 +64,7 @@ public class EmisCsvCodeMap {
         this.nationalCodeDescription = proxy.getNationalCodeDescription();
         this.parentCodeId = proxy.getParentCodeId();
         //no audit JSON
-    }
+    }*/
 
     public String getDataSharingAgreementGuid() {
         return dataSharingAgreementGuid;
