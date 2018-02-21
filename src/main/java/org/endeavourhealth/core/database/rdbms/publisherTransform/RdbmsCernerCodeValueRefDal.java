@@ -56,7 +56,8 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     .setMaxResults(1);
 
             try {
-                return ((CernerCodeValueRef) query.getSingleResult());
+                RdbmsCernerCodeValueRef result = (RdbmsCernerCodeValueRef)query.getSingleResult();
+                return new CernerCodeValueRef(result);
             }
             catch (NoResultException e) {
                 return null;
