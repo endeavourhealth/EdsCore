@@ -1,5 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
+import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
@@ -19,6 +21,22 @@ public class RdbmsCernerCodeValueRef implements Serializable {
     private String aliasNhsCdAlias;
     private String serviceId;
     private String auditJson;
+
+    public RdbmsCernerCodeValueRef() {}
+
+    public RdbmsCernerCodeValueRef(CernerCodeValueRef r) {
+        this.codeValueCd = r.getCodeValueCd();
+        this.date = r.getDate();
+        this.activeInd = r.getActiveInd();
+        this.codeDescTxt = r.getCodeDescTxt();
+        this.codeDispTxt = r.getCodeDispTxt();
+        this.codeMeaningTxt = r.getCodeMeaningTxt();
+        this.codeSetNbr = r.getCodeSetNbr();
+        this.codeSetDescTxt = r.getCodeSetDescTxt();
+        this.aliasNhsCdAlias = r.getAliasNhsCdAlias();
+        this.serviceId = r.getServiceId();
+        this.auditJson = r.getAuditJson();
+    }
 
     @Id
     @Column(name = "code_value_cd")
