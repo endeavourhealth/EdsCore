@@ -38,7 +38,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
     @Override
     public CernerCodeValueRef getCodeFromCodeSet(Long codeSet, Long code, UUID serviceId) throws Exception {
-        LOG.trace("readMergeRecordDB:" + codeSet + " " + code);
+        //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             String sql = "select c"
