@@ -26,7 +26,7 @@ public class CernerCodeValueRef {
     public static final Long ALIAS_TYPE = 4L;
     public static final Long CLINICAL_CODE_TYPE = 72L;
     public static final Long CLINICAL_EVENT_NORMALCY = 52L;
-
+    public static final Long CLINICAL_EVENT_UNITS = 54L;
 
     private long codeValueCd;
     private Date date;
