@@ -15,27 +15,6 @@ import java.util.UUID;
 public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsCernerCodeValueRefDal.class);
 
-    // Static values to hold the code set values
-    public static final Long LOCATION_NAME = 220L;
-    public static final Long NHS_NUMBER_STATUS = 29882L;
-    public static final Long GENDER = 57L;
-    public static final Long ETHNIC_GROUP = 27L;
-    public static final Long LANGUAGE = 36L;
-    public static final Long RELIGION = 49L;
-    public static final Long MARITAL_STATUS = 38L;
-    public static final Long NAME_USE = 213L;
-    public static final Long PERSONNEL_POSITION = 88L;
-    public static final Long PERSONNEL_SPECIALITY = 3394L;
-    public static final Long DIAGNOSIS_TYPE = 17L;
-    public static final Long PROCEDURE_TYPE = 401L;
-    public static final Long RELATIONSHIP_TO_PATIENT = 40L;
-    public static final Long PERSON_RELATIONSHIP_TYPE = 351L;
-    public static final Long PHONE_TYPE = 43L;
-    public static final Long TREATMENT_FUNCTION = 34L;
-    public static final Long ALIAS_TYPE = 4L;
-    public static final Long CLINICAL_CODE_TYPE = 72L;
-
-
     @Override
     public CernerCodeValueRef getCodeFromCodeSet(Long codeSet, Long code, UUID serviceId) throws Exception {
         //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
