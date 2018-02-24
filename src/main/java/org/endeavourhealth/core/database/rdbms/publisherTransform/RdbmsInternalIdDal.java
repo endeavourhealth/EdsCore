@@ -1,12 +1,9 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.InternalIdDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.InternalIdMap;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceMergeMap;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceMergeMap;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +19,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class RdbmsInternalIdDal implements InternalIdDalI {
-    public static final String IDTYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
-    public static final String IDTYPE_MRN_MILLENNIUM_PERS_ID = "MRNtoMILLPERSID";
-    public static final String IDTYPE_ENCOUNTER_ID_VISIT_ID = "ENCOUNTERIDtoVISITID";
+
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsInternalIdDal.class);
 
     @Override

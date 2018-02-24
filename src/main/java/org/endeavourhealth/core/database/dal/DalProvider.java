@@ -13,12 +13,10 @@ import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
+import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.InternalIdDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.ResourceIdTransformDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.ResourceMergeDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.SourceFileMappingDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
@@ -80,15 +78,15 @@ public class DalProvider {
         return new RdbmsUserAuditDal(auditModule);
     }
 
-    public static RdbmsBartsSusResourceMapDal factoryBartsSusResourceMapDal() {
+    public static BartsSusResourceMapDalI factoryBartsSusResourceMapDal() {
         return new RdbmsBartsSusResourceMapDal();
     }
 
-    public static RdbmsCernerCodeValueRefDal factoryCernerCodeValueRefDal() {
+    public static CernerCodeValueRefDalI factoryCernerCodeValueRefDal() {
         return new RdbmsCernerCodeValueRefDal();
     }
 
-    public static RdbmsJDBCReaderDal factoryJDBCReaderDal() {
+    public static JDBCReaderDalI factoryJDBCReaderDal() {
         return new RdbmsJDBCReaderDal();
     }
 

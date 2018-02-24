@@ -6,6 +6,10 @@ import java.util.Date;
 
 public class InternalIdMap {
 
+    public static final String IDTYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
+    public static final String IDTYPE_MRN_MILLENNIUM_PERS_ID = "MRNtoMILLPERSID";
+    public static final String IDTYPE_ENCOUNTER_ID_VISIT_ID = "ENCOUNTERIDtoVISITID";
+
     private String serviceId = null;
     private String idType = null;
     private String sourceId = null;

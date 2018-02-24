@@ -40,6 +40,8 @@ public class CernerCodeValueRef {
     private String serviceId;
     private String auditJson;
 
+    public CernerCodeValueRef() {}
+
     public CernerCodeValueRef(RdbmsCernerCodeValueRef r) {
         this.codeValueCd = r.getCodeValueCd();
         this.date = r.getDate();
