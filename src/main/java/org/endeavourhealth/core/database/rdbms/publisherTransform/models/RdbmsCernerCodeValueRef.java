@@ -24,18 +24,20 @@ public class RdbmsCernerCodeValueRef implements Serializable {
 
     public RdbmsCernerCodeValueRef() {}
 
-    public RdbmsCernerCodeValueRef(CernerCodeValueRef r) {
-        this.codeValueCd = r.getCodeValueCd();
-        this.date = r.getDate();
-        this.activeInd = r.getActiveInd();
-        this.codeDescTxt = r.getCodeDescTxt();
-        this.codeDispTxt = r.getCodeDispTxt();
-        this.codeMeaningTxt = r.getCodeMeaningTxt();
-        this.codeSetNbr = r.getCodeSetNbr();
-        this.codeSetDescTxt = r.getCodeSetDescTxt();
-        this.aliasNhsCdAlias = r.getAliasNhsCdAlias();
-        this.serviceId = r.getServiceId();
-        this.auditJson = r.getAuditJson();
+    public RdbmsCernerCodeValueRef(CernerCodeValueRef proxy) throws Exception {
+        this.codeValueCd = proxy.getCodeValueCd();
+        this.date = proxy.getDate();
+        this.activeInd = proxy.getActiveInd();
+        this.codeDescTxt = proxy.getCodeDescTxt();
+        this.codeDispTxt = proxy.getCodeDispTxt();
+        this.codeMeaningTxt = proxy.getCodeMeaningTxt();
+        this.codeSetNbr = proxy.getCodeSetNbr();
+        this.codeSetDescTxt = proxy.getCodeSetDescTxt();
+        this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
+        this.serviceId = proxy.getServiceId();
+        if (proxy.getAudit() != null) {
+            this.auditJson = proxy.getAudit().writeToJson();
+        }
     }
 
     @Id
