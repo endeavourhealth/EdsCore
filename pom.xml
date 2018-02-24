@@ -4,7 +4,7 @@
 
     <groupId>org.endeavourhealth.common</groupId>
     <artifactId>core</artifactId>
-    <version>1.138-SNAPSHOT</version>
+    <version>1.139-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -14,7 +14,7 @@
         <maven-release-plugin.version>2.5.3</maven-release-plugin.version>
 
         <eds-cassandra.version>1.3-SNAPSHOT</eds-cassandra.version>
-        <eds-fhir.version>1.38-SNAPSHOT</eds-fhir.version>
+        <eds-fhir.version>1.39-SNAPSHOT</eds-fhir.version>
         <eds-security.version>1.7-SNAPSHOT</eds-security.version>
         <eds-utility.version>1.22-SNAPSHOT</eds-utility.version>
 
