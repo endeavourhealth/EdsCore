@@ -28,6 +28,7 @@ public class CernerCodeValueRef {
     public static final Long CLINICAL_CODE_TYPE = 72L;
     public static final Long CLINICAL_EVENT_NORMALCY = 52L;
     public static final Long CLINICAL_EVENT_UNITS = 54L;
+    public static final Long ENCOUNTER_TYPE = 71L;
 
     private long codeValueCd;
     private Date date;
