@@ -83,22 +83,7 @@ public class CernerCodeValueRef {
         this.audit = audit;
     }
 
-    public CernerCodeValueRef(RdbmsCernerCodeValueRef proxy) throws exception {
-        this.codeValueCd = proxy.getCodeValueCd();
-        this.date = proxy.getDate();
-        this.activeInd = proxy.getActiveInd();
-        this.codeDescTxt = proxy.getCodeDescTxt();
-        this.codeDispTxt = proxy.getCodeDispTxt();
-        this.codeMeaningTxt = proxy.getCodeMeaningTxt();
-        this.codeSetNbr = proxy.getCodeSetNbr();
-        this.codeSetDescTxt = proxy.getCodeSetDescTxt();
-        this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
-        this.serviceId = proxy.getServiceId();
-        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
-            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
-        }
 
-    }
 
     public long getCodeValueCd() {
         return codeValueCd;
@@ -180,11 +165,11 @@ public class CernerCodeValueRef {
         this.serviceId = serviceId;
     }
 
-    public String getAuditJson() {
-        return auditJson;
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
     }
 
-    public void setAuditJson(String auditJson) {
-        this.auditJson = auditJson;
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 }
