@@ -323,7 +323,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         if (fhirPatient.hasIdentifier()) {
             for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
 
-                if (!fhirIdentifier.getSystem().equalsIgnoreCase(FhirUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
+                if (!fhirIdentifier.getSystem().equalsIgnoreCase(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
                     String system = fhirIdentifier.getSystem();
                     String value = fhirIdentifier.getValue();
 
@@ -352,6 +352,20 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
                     //always update the timestamp, so we know it's up to date
                     localIdentifier.setLastUpdated(new Date());
+
+                    //we have some patients with multiple instances of the same Identifier, which causes Hibernate to
+                    //throw an error. So simply spot this and don't add to the list
+                    boolean alreadyAddedDuplicate = false;
+                    for (RdbmsPatientSearchLocalIdentifier identifierAlreadyToSave: identifiersToSave) {
+                        if (identifierAlreadyToSave.getLocalIdSystem().equalsIgnoreCase(system)
+                                && identifierAlreadyToSave.getLocalId().equalsIgnoreCase(value)) {
+                            alreadyAddedDuplicate = true;
+                            break;
+                        }
+                    }
+                    if (alreadyAddedDuplicate) {
+                        continue;
+                    }
 
                     //add to the list to be saved
                     identifiersToSave.add(localIdentifier);

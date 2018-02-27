@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.terminology;
 
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.FhirCodeUri;
 import org.hl7.fhir.instance.model.Coding;
 
 public class SnomedCode {
@@ -22,7 +22,7 @@ public class SnomedCode {
     }
 
     public String getSystem() {
-        return FhirUri.CODE_SYSTEM_SNOMED_CT;
+        return FhirCodeUri.CODE_SYSTEM_SNOMED_CT;
     }
 
     public Coding toCoding() {

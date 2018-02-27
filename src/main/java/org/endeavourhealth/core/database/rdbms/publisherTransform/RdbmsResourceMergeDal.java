@@ -33,7 +33,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
     }
 
     private RdbmsResourceMergeMap readMergeRecordDB(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
-        LOG.trace("readMergeRecordDB:" + resourceType + " " + resourceId);
+        //LOG.trace("readMergeRecordDB:" + resourceType + " " + resourceId);
         UUID ret = null;
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
@@ -65,7 +65,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
 
     @Override
     public void insertMergeRecord(UUID serviceId, String resourceType, UUID resourceFrom, UUID resourceTo) throws Exception {
-        LOG.trace("insertMergeRecord:" + resourceType + " " + resourceFrom);
+        //LOG.trace("insertMergeRecord:" + resourceType + " " + resourceFrom);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
@@ -137,7 +137,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
 
     @Override
     public void updateMergeRecord(RdbmsResourceMergeMap dbObj) throws Exception {
-        LOG.trace("updateMergeRecord");
+        //LOG.trace("updateMergeRecord");
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(UUID.fromString(dbObj.getServiceId()));
 
         try {
@@ -159,7 +159,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
 
     @Override
     public void upsertMergeRecord(UUID serviceId, String resourceType, UUID resourceFrom, UUID resourceTo) throws Exception {
-        LOG.trace("upsertMergeRecord:" + resourceType + " " + resourceFrom);
+        //LOG.trace("upsertMergeRecord:" + resourceType + " " + resourceFrom);
         UUID ret = null;
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
@@ -201,7 +201,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
 
     @Override
     public UUID resolveMergeUUID(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
-        LOG.trace("resolveMergeUUID:" + resourceType + " " + resourceId);
+        //LOG.trace("resolveMergeUUID:" + resourceType + " " + resourceId);
         UUID ret = resourceId;
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {

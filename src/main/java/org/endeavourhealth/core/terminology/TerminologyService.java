@@ -1,7 +1,7 @@
 package org.endeavourhealth.core.terminology;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.common.fhir.FhirUri;
+import org.endeavourhealth.common.fhir.FhirCodeUri;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.reference.models.CTV3ToSnomedMap;
@@ -68,23 +68,23 @@ public abstract class TerminologyService {
         Coding coding = codingList.get(0);
         String system = coding.getSystem();
         try {
-            if (system.equals(FhirUri.CODE_SYSTEM_SNOMED_CT)) {
+            if (system.equals(FhirCodeUri.CODE_SYSTEM_SNOMED_CT)) {
                 //mapping required if no display term present, i.e. use Snomed translator to get us the mapped term
                 if (Strings.isNullOrEmpty(coding.getDisplay())) {
                     SnomedCode mapping = TerminologyService.lookupSnomedFromConceptId(coding.getCode());
                     codingList.remove(0);  //remove placeholder as we only need the translated code here
                     codeableConcept.addCoding(mapping.toCoding());
                 }
-            } else if (system.equals(FhirUri.CODE_SYSTEM_CTV3)) {
+            } else if (system.equals(FhirCodeUri.CODE_SYSTEM_CTV3)) {
                 SnomedCode mapping = TerminologyService.translateCtv3ToSnomed(coding.getCode());
                 codeableConcept.addCoding(mapping.toCoding());
-            } else if (system.equals(FhirUri.CODE_SYSTEM_READ2)) {
+            } else if (system.equals(FhirCodeUri.CODE_SYSTEM_READ2)) {
                 SnomedCode mapping = TerminologyService.translateRead2ToSnomed(coding.getCode());
                 codeableConcept.addCoding(mapping.toCoding());
-            } else if (system.equals(FhirUri.CODE_SYSTEM_EMISPREPARATION)) {
+            } else if (system.equals(FhirCodeUri.CODE_SYSTEM_EMISPREPARATION)) {
                 SnomedCode mapping = TerminologyService.translateEmisPreparationToSnomed(coding.getCode());
                 codeableConcept.addCoding(mapping.toCoding());
-            } else if (system.equals(FhirUri.CODE_SYSTEM_EMISSNOMED)) {
+            } else if (system.equals(FhirCodeUri.CODE_SYSTEM_EMISSNOMED)) {
                 SnomedCode mapping = TerminologyService.translateEmisSnomedToSnomed(coding.getCode());
                 codeableConcept.addCoding(mapping.toCoding());
             } else {

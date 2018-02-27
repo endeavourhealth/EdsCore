@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
 
 import java.sql.Date;
@@ -26,8 +27,8 @@ public class CernerCodeValueRef {
     public static final Long ALIAS_TYPE = 4L;
     public static final Long CLINICAL_CODE_TYPE = 72L;
     public static final Long CLINICAL_EVENT_NORMALCY = 52L;
-    public  static final Long CLINICAL_EVENT_CODE_SET_UNIT_OF_MEASURE= 54L;
-
+    public static final Long CLINICAL_EVENT_UNITS = 54L;
+    public static final Long ENCOUNTER_TYPE = 71L;
 
     private long codeValueCd;
     private Date date;
@@ -39,8 +40,25 @@ public class CernerCodeValueRef {
     private String codeSetDescTxt;
     private String aliasNhsCdAlias;
     private String serviceId;
-    private String auditJson;
+    private ResourceFieldMappingAudit audit = null;
 
+    public CernerCodeValueRef() {}
+
+    public CernerCodeValueRef(RdbmsCernerCodeValueRef proxy) throws Exception {
+        this.codeValueCd = proxy.getCodeValueCd();
+        this.date = proxy.getDate();
+        this.activeInd = proxy.getActiveInd();
+        this.codeDescTxt = proxy.getCodeDescTxt();
+        this.codeDispTxt = proxy.getCodeDispTxt();
+        this.codeMeaningTxt = proxy.getCodeMeaningTxt();
+        this.codeSetNbr = proxy.getCodeSetNbr();
+        this.codeSetDescTxt = proxy.getCodeSetDescTxt();
+        this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
+        this.serviceId = proxy.getServiceId();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
+    }
     public CernerCodeValueRef(long codeValueCd,
                               Date date,
                               byte activeInd,
@@ -51,7 +69,7 @@ public class CernerCodeValueRef {
                               String codeSetDescTxt,
                               String aliasNhsCdAlias,
                               String serviceId,
-                              String auditJson) {
+                              ResourceFieldMappingAudit audit) {
         this.codeValueCd = codeValueCd;
         this.date = date;
         this.activeInd = activeInd;
@@ -62,21 +80,24 @@ public class CernerCodeValueRef {
         this.codeSetDescTxt = codeSetDescTxt;
         this.aliasNhsCdAlias = aliasNhsCdAlias;
         this.serviceId = serviceId;
-        this.auditJson = auditJson;
+        this.audit = audit;
     }
 
-    public CernerCodeValueRef(RdbmsCernerCodeValueRef r) {
-        this.codeValueCd = r.getCodeValueCd();
-        this.date = r.getDate();
-        this.activeInd = r.getActiveInd();
-        this.codeDescTxt = r.getCodeDescTxt();
-        this.codeDispTxt = r.getCodeDispTxt();
-        this.codeMeaningTxt = r.getCodeMeaningTxt();
-        this.codeSetNbr = r.getCodeSetNbr();
-        this.codeSetDescTxt = r.getCodeSetDescTxt();
-        this.aliasNhsCdAlias = r.getAliasNhsCdAlias();
-        this.serviceId = r.getServiceId();
-        this.auditJson = r.getAuditJson();
+    public CernerCodeValueRef(RdbmsCernerCodeValueRef proxy) throws exception {
+        this.codeValueCd = proxy.getCodeValueCd();
+        this.date = proxy.getDate();
+        this.activeInd = proxy.getActiveInd();
+        this.codeDescTxt = proxy.getCodeDescTxt();
+        this.codeDispTxt = proxy.getCodeDispTxt();
+        this.codeMeaningTxt = proxy.getCodeMeaningTxt();
+        this.codeSetNbr = proxy.getCodeSetNbr();
+        this.codeSetDescTxt = proxy.getCodeSetDescTxt();
+        this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
+        this.serviceId = proxy.getServiceId();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
+
     }
 
     public long getCodeValueCd() {
