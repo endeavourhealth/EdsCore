@@ -2,7 +2,10 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.sql.Date;
 import java.util.Objects;
@@ -39,7 +42,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
     }
 
     @Id
-    @Column(name = "code_value_cd")
+    @Column(name = "code_value_cd", nullable = false)
     public long getCodeValueCd() {
         return codeValueCd;
     }
@@ -48,8 +51,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeValueCd = codeValueCd;
     }
 
-    @Basic
-    @Column(name = "date")
+    @Column(name = "date", nullable = false)
     public Date getDate() {
         return date;
     }
@@ -58,8 +60,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.date = date;
     }
 
-    @Basic
-    @Column(name = "active_ind")
+    @Column(name = "active_ind", nullable = false)
     public byte getActiveInd() {
         return activeInd;
     }
@@ -68,8 +69,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.activeInd = activeInd;
     }
 
-    @Basic
-    @Column(name = "code_desc_txt")
+    @Column(name = "code_desc_txt", nullable = false)
     public String getCodeDescTxt() {
         return codeDescTxt;
     }
@@ -78,8 +78,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeDescTxt = codeDescTxt;
     }
 
-    @Basic
-    @Column(name = "code_disp_txt")
+    @Column(name = "code_disp_txt", nullable = false)
     public String getCodeDispTxt() {
         return codeDispTxt;
     }
@@ -88,8 +87,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeDispTxt = codeDispTxt;
     }
 
-    @Basic
-    @Column(name = "code_meaning_txt")
+    @Column(name = "code_meaning_txt", nullable = false)
     public String getCodeMeaningTxt() {
         return codeMeaningTxt;
     }
@@ -98,8 +96,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeMeaningTxt = codeMeaningTxt;
     }
 
-    @Basic
-    @Column(name = "code_set_nbr")
+    @Column(name = "code_set_nbr", nullable = false)
     public Long getCodeSetNbr() {
         return codeSetNbr;
     }
@@ -108,8 +105,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeSetNbr = codeSetNbr;
     }
 
-    @Basic
-    @Column(name = "code_set_desc_txt")
+    @Column(name = "code_set_desc_txt", nullable = false)
     public String getCodeSetDescTxt() {
         return codeSetDescTxt;
     }
@@ -118,8 +114,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeSetDescTxt = codeSetDescTxt;
     }
 
-    @Basic
-    @Column(name = "alias_nhs_cd_alias")
+    @Column(name = "alias_nhs_cd_alias", nullable = false)
     public String getAliasNhsCdAlias() {
         return aliasNhsCdAlias;
     }
@@ -128,8 +123,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.aliasNhsCdAlias = aliasNhsCdAlias;
     }
 
-    @Basic
-    @Column(name = "service_id")
+    @Column(name = "service_id", nullable = false)
     public String getServiceId() {
         return serviceId;
     }
@@ -138,8 +132,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.serviceId = serviceId;
     }
 
-    @Basic
-    @Column(name = "audit_json")
+    @Column(name = "audit_json", nullable = true)
     public String getAuditJson() {
         return auditJson;
     }

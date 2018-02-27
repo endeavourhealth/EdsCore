@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface CernerCodeValueRefDalI {
 
     CernerCodeValueRef getCodeFromCodeSet(Long codeSet, Long code, UUID serviceId) throws Exception;
+    void save(CernerCodeValueRef mapping) throws Exception;
+
 }

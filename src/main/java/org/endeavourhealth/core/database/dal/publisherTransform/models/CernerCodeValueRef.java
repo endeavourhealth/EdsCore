@@ -26,6 +26,7 @@ public class CernerCodeValueRef {
     public static final Long ALIAS_TYPE = 4L;
     public static final Long CLINICAL_CODE_TYPE = 72L;
     public static final Long CLINICAL_EVENT_NORMALCY = 52L;
+    public  static final Long CLINICAL_EVENT_CODE_SET_UNIT_OF_MEASURE= 54L;
 
 
     private long codeValueCd;
@@ -39,6 +40,30 @@ public class CernerCodeValueRef {
     private String aliasNhsCdAlias;
     private String serviceId;
     private String auditJson;
+
+    public CernerCodeValueRef(long codeValueCd,
+                              Date date,
+                              byte activeInd,
+                              String codeDescTxt,
+                              String codeDispTxt,
+                              String codeMeaningTxt,
+                              Long codeSetNbr,
+                              String codeSetDescTxt,
+                              String aliasNhsCdAlias,
+                              String serviceId,
+                              String auditJson) {
+        this.codeValueCd = codeValueCd;
+        this.date = date;
+        this.activeInd = activeInd;
+        this.codeDescTxt = codeDescTxt;
+        this.codeDispTxt = codeDispTxt;
+        this.codeMeaningTxt = codeMeaningTxt;
+        this.codeSetNbr = codeSetNbr;
+        this.codeSetDescTxt = codeSetDescTxt;
+        this.aliasNhsCdAlias = aliasNhsCdAlias;
+        this.serviceId = serviceId;
+        this.auditJson = auditJson;
+    }
 
     public CernerCodeValueRef(RdbmsCernerCodeValueRef r) {
         this.codeValueCd = r.getCodeValueCd();
