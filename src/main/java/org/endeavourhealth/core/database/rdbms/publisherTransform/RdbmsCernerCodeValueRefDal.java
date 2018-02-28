@@ -170,7 +170,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
             ps.setLong(1, cernerMapping.getCodeValueCd());
-            ps.setDate(2, cernerMapping.getDate());
+            ps.setDate(2, new java.sql.Date(cernerMapping.getDate().getTime()));
             ps.setByte(3, cernerMapping.getActiveInd());
             ps.setString(4,cernerMapping.getCodeDescTxt());
             ps.setString(5, cernerMapping.getCodeDispTxt());
