@@ -129,7 +129,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
         }
     }
 
-    public void save(CernerCodeValueRef mapping) throws Exception
+    public void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception
     {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
@@ -137,7 +137,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
         RdbmsCernerCodeValueRef cernerMapping = new RdbmsCernerCodeValueRef(mapping);
 
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {

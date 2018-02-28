@@ -156,6 +156,7 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileRecord</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>

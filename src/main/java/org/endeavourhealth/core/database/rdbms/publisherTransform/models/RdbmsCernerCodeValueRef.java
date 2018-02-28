@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "cerner_code_value_ref", schema = "publisher_transform")
+@Table(name = "cerner_code_value_ref")
 public class RdbmsCernerCodeValueRef implements Serializable {
     private long codeValueCd;
     private Date date;
