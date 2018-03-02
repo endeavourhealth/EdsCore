@@ -174,7 +174,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         String sql = "INSERT INTO resource_current"
                 + " (service_id, system_id, resource_type, resource_id, updated_at, patient_id, resource_data, resource_checksum, resource_metadata)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                + " ON DUPLICATE KEY UPDATE,"
+                + " ON DUPLICATE KEY UPDATE"
                 + " patient_id = VALUES(patient_id)," //although part of the primary key, the unique index on the table means we can update the patient_id on a resource with this
                 + " system_id = VALUES(system_id),"
                 + " updated_at = VALUES(updated_at),"
