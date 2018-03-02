@@ -174,7 +174,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         String sql = "INSERT INTO resource_current"
                 + " (service_id, system_id, resource_type, resource_id, updated_at, patient_id, resource_data, resource_checksum, resource_metadata)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                + " ON DUPLICATE KEY UPDATE"
+                + " ON DUPLICATE KEY UPDATE,"
+                + " patient_id = VALUES(patient_id)," //although part of the primary key, the unique index on the table means we can update the patient_id on a resource with this
                 + " system_id = VALUES(system_id),"
                 + " updated_at = VALUES(updated_at),"
                 + " resource_data = VALUES(resource_data),"
@@ -691,7 +692,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
 
-    public Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId, UUID patientId) throws Exception {
+    public Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -699,19 +700,11 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " from"
                     + " RdbmsResourceCurrent c"
                     + " where c.resourceType = :resource_type"
-                    + " and c.resourceId = :resource_id"
-                    + " and c.patientId = :patient_id";
-
+                    + " and c.resourceId = :resource_id";
 
             Query query = entityManager.createQuery(sql)
                     .setParameter("resource_type", resourceType)
                     .setParameter("resource_id", resourceId.toString());
-
-            if (patientId != null) {
-                query.setParameter("patient_id", patientId.toString());
-            } else {
-                query.setParameter("patient_id", ""); //we store an empty string on the column, not null
-            }
 
             Long ret = null;
 

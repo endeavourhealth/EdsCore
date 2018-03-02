@@ -26,69 +26,6 @@ public class ResourceWrapper {
 
     public ResourceWrapper() {}
 
-    /*public ResourceWrapper(CassandraResourceByExchangeBatch proxy) {
-        //this.serviceId = proxy.getServiceId(); //not present in the proxy
-        //this.systemId = proxy.getSystemId(); //not present in the proxy
-        this.resourceId = proxy.getResourceId();
-        this.resourceType = proxy.getResourceType();
-        this.version = proxy.getVersion();
-        //this.createdAt = proxy.getUpdatedAt(); //not present in the proxy
-        //this.patientId = proxy.getPatientId(); //not present in the proxy
-        //this.resourceMetadata = proxy.getResourceMetadata(); //not present in the proxy
-        this.resourceData = proxy.getResourceData();
-        //this.resourceChecksum = proxy.getResourceChecksum(); //not present in the proxy
-        this.exchangeBatchId = proxy.getBatchId();
-        this.exchangeId = proxy.getExchangeId();
-        this.isDeleted = proxy.getIsDeleted();
-    }
-
-    public ResourceWrapper(CassandraResourceByPatient proxy) {
-        this.serviceId = proxy.getServiceId();
-        this.systemId = proxy.getSystemId();
-        this.resourceId = proxy.getResourceId();
-        this.resourceType = proxy.getResourceType();
-        //this.version = proxy.getVersion(); //not present in proxy
-        //this.createdAt = proxy.getUpdatedAt(); //not present in the proxy
-        this.patientId = proxy.getPatientId();
-        this.resourceMetadata = proxy.getResourceMetadata();
-        this.resourceData = proxy.getResourceData();
-        // //not present in the proxythis.resourceChecksum = proxy.getResourceChecksum();
-        //this.exchangeBatchId = proxy  //not present in the proxy
-        //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
-        //this.isDeleted = proxy  //not present in the proxy
-    }
-
-    public ResourceWrapper(CassandraResourceByService proxy) {
-        this.serviceId = proxy.getServiceId();
-        this.systemId = proxy.getSystemId();
-        this.resourceId = proxy.getResourceId();
-        this.resourceType = proxy.getResourceType();
-        //this.version = proxy.getVersion(); //not present in proxy
-        this.createdAt = proxy.getUpdatedAt();
-        this.patientId = proxy.getPatientId();
-        this.resourceMetadata = proxy.getResourceMetadata();
-        this.resourceData = proxy.getResourceData();
-        //this.resourceChecksum = proxy.getResourceChecksum(); //not present in the proxy
-        //this.exchangeBatchId = proxy.  //not present in the proxy
-        //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
-        //this.isDeleted = proxy  //not present in the proxy
-    }
-
-    public ResourceWrapper(CassandraResourceHistory proxy) {
-        this.serviceId = proxy.getServiceId();
-        this.systemId = proxy.getSystemId();
-        this.resourceId = proxy.getResourceId();
-        this.resourceType = proxy.getResourceType();
-        this.version = proxy.getVersion();
-        this.createdAt = proxy.getCreatedAt();
-        //this.patientId = proxy.getPatientId(); //not present in the proxy
-        //this.resourceMetadata = proxy.getResourceMetadata(); //not present in the proxy
-        this.resourceData = proxy.getResourceData();
-        this.resourceChecksum = proxy.getResourceChecksum();
-        //this.exchangeBatchId = proxy.  //not present in the proxy
-        //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
-        this.isDeleted = proxy.getIsDeleted();
-    }*/
 
     public ResourceWrapper(RdbmsResourceCurrent proxy) {
         this.serviceId = UUID.fromString(proxy.getServiceId());
