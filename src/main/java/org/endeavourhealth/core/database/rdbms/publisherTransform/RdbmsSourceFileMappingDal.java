@@ -346,7 +346,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                         continue;
                     }
 
-                    hmFieldVersions.put(field, version);
+                    hmFieldVersions.put(field, resourceVersion);
 
                     RdbmsSourceFileRecord fileRecord = hmFileRecords.get(new Long(auditRowId));
                     RdbmsSourceFile sourceFile = hmSourceFiles.get(new Integer(fileRecord.getSourceFileId()));
