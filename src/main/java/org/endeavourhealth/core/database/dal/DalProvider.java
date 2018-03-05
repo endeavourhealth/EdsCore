@@ -4,10 +4,7 @@ import org.endeavourhealth.core.database.dal.admin.LibraryDalI;
 import org.endeavourhealth.core.database.dal.admin.OrganisationDalI;
 import org.endeavourhealth.core.database.dal.admin.PatientCohortDalI;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
-import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
-import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
-import org.endeavourhealth.core.database.dal.audit.QueuedMessageDalI;
-import org.endeavourhealth.core.database.dal.audit.UserAuditDalI;
+import org.endeavourhealth.core.database.dal.audit.*;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
@@ -23,10 +20,7 @@ import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsOrganisationDal;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsPatientCohortDal;
 import org.endeavourhealth.core.database.rdbms.admin.RdbmsServiceDal;
-import org.endeavourhealth.core.database.rdbms.audit.RdbmsExchangeBatchDal;
-import org.endeavourhealth.core.database.rdbms.audit.RdbmsExchangeDal;
-import org.endeavourhealth.core.database.rdbms.audit.RdbmsQueuedMessageDal;
-import org.endeavourhealth.core.database.rdbms.audit.RdbmsUserAuditDal;
+import org.endeavourhealth.core.database.rdbms.audit.*;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
@@ -108,6 +102,10 @@ public class DalProvider {
 
     public static PatientCohortDalI factoryPatientCohortDal() {
         return new RdbmsPatientCohortDal();
+    }
+
+    public static TransformWarningDalI factoryTransformWarningDal() {
+        return new RdbmsTransformWarningDal();
     }
 
     /*public static ResourceDalI factoryResourceDal() {
