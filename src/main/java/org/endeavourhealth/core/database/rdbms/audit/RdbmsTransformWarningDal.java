@@ -59,6 +59,10 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
             throw new IllegalArgumentException("Transform Warning table only supports up to four parameters (trying to save " + warningParams.length + ")");
         }
 
+        if (parameterCount < 1) {
+            throw new IllegalArgumentException("At least one parameter must be supplied Transform Warnings");
+        }
+
         //ensure that each parameter is referenced in the String (which also helps validate
         //that the warning String doesn't inadvertently contain parameters itself)
         int paramterReferences = 0;
