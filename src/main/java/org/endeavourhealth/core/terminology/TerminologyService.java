@@ -21,6 +21,15 @@ public abstract class TerminologyService {
     private static Opcs4DalI opcs4Repository = DalProvider.factoryOpcs4Dal();
     private static Icd10DalI icd10Repository = DalProvider.factoryIcd10Dal();
 
+    public static String lookupSnomedTerm(String conceptId) throws Exception {
+        SnomedCode snomedCode = lookupSnomedFromConceptId(conceptId);
+        if (snomedCode == null) {
+            return null;
+        } else {
+            return snomedCode.getTerm();
+        }
+    }
+
     public static SnomedCode lookupSnomedFromConceptId(String conceptId) throws Exception {
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(conceptId);
         if (snomedLookup == null) {
