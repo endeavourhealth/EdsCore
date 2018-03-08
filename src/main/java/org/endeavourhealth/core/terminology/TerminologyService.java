@@ -23,7 +23,9 @@ public abstract class TerminologyService {
 
     public static SnomedCode lookupSnomedFromConceptId(String conceptId) throws Exception {
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(conceptId);
-
+        if (snomedLookup == null) {
+            return null;
+        }
         return new SnomedCode(conceptId, snomedLookup.getTerm());
     }
 
