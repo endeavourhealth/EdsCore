@@ -318,63 +318,74 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 .setParameter("service_id", serviceId.toString())
                 .setParameter("patient_id", patientId);
 
-        List<RdbmsPatientSearchLocalIdentifier> list = query.getResultList();
+        List<RdbmsPatientSearchLocalIdentifier> existingIdentifiers = query.getResultList();
 
         if (fhirPatient.hasIdentifier()) {
             for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
 
-                if (!fhirIdentifier.getSystem().equalsIgnoreCase(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
-                    String system = fhirIdentifier.getSystem();
-                    String value = fhirIdentifier.getValue();
+                //NHS number is on the main patient_search table, so ignore any identifiers with that system here
+                if (fhirIdentifier.getSystem().equalsIgnoreCase(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
+                    continue;
+                }
 
-                    RdbmsPatientSearchLocalIdentifier localIdentifier = null;
-                    for (RdbmsPatientSearchLocalIdentifier r: list) {
-                        if (r.getLocalIdSystem().equals(system)
-                            && r.getLocalId().equals(value)) {
-
-                            localIdentifier = r;
-                            break;
-                        }
-                    }
-
-                    if (localIdentifier != null) {
-                        //if the record already exists, remove it from the list so we know not to delete it
-                        list.remove(localIdentifier);
-
-                    } else {
-                        //if there's no record for this local ID, create a new record
-                        localIdentifier = new RdbmsPatientSearchLocalIdentifier();
-                        localIdentifier.setServiceId(serviceId.toString());
-                        localIdentifier.setPatientId(patientId);
-                        localIdentifier.setLocalIdSystem(system);
-                        localIdentifier.setLocalId(value);
-                    }
-
-                    //always update the timestamp, so we know it's up to date
-                    localIdentifier.setLastUpdated(new Date());
-
-                    //we have some patients with multiple instances of the same Identifier, which causes Hibernate to
-                    //throw an error. So simply spot this and don't add to the list
-                    boolean alreadyAddedDuplicate = false;
-                    for (RdbmsPatientSearchLocalIdentifier identifierAlreadyToSave: identifiersToSave) {
-                        if (identifierAlreadyToSave.getLocalIdSystem().equalsIgnoreCase(system)
-                                && identifierAlreadyToSave.getLocalId().equalsIgnoreCase(value)) {
-                            alreadyAddedDuplicate = true;
-                            break;
-                        }
-                    }
-                    if (alreadyAddedDuplicate) {
+                //if the identifier has been ended, skip it, since we don't want it on our search table
+                if (fhirIdentifier.hasPeriod()) {
+                    Period period = fhirIdentifier.getPeriod();
+                    if (!PeriodHelper.isActive(period)) {
                         continue;
                     }
-
-                    //add to the list to be saved
-                    identifiersToSave.add(localIdentifier);
                 }
+
+                String system = fhirIdentifier.getSystem();
+                String value = fhirIdentifier.getValue();
+
+                RdbmsPatientSearchLocalIdentifier localIdentifier = null;
+                for (RdbmsPatientSearchLocalIdentifier r: existingIdentifiers) {
+                    if (r.getLocalIdSystem().equals(system)
+                        && r.getLocalId().equals(value)) {
+
+                        localIdentifier = r;
+                        break;
+                    }
+                }
+
+                if (localIdentifier != null) {
+                    //if the record already exists, remove it from the list so we know not to delete it
+                    existingIdentifiers.remove(localIdentifier);
+
+                } else {
+                    //if there's no record for this local ID, create a new record
+                    localIdentifier = new RdbmsPatientSearchLocalIdentifier();
+                    localIdentifier.setServiceId(serviceId.toString());
+                    localIdentifier.setPatientId(patientId);
+                    localIdentifier.setLocalIdSystem(system);
+                    localIdentifier.setLocalId(value);
+                }
+
+                //always update the timestamp, so we know it's up to date
+                localIdentifier.setLastUpdated(new Date());
+
+                //we have some patients with multiple instances of the same Identifier, which causes Hibernate to
+                //throw an error. So simply spot this and don't add to the list
+                boolean alreadyAddedDuplicate = false;
+                for (RdbmsPatientSearchLocalIdentifier identifierAlreadyToSave: identifiersToSave) {
+                    if (identifierAlreadyToSave.getLocalIdSystem().equalsIgnoreCase(system)
+                            && identifierAlreadyToSave.getLocalId().equalsIgnoreCase(value)) {
+                        alreadyAddedDuplicate = true;
+                        break;
+                    }
+                }
+                if (alreadyAddedDuplicate) {
+                    continue;
+                }
+
+                //add to the list to be saved
+                identifiersToSave.add(localIdentifier);
             }
         }
 
         //any identifiers still in the list should now be deleted, since they're no longer in the patient
-        for (RdbmsPatientSearchLocalIdentifier localIdentifier: list) {
+        for (RdbmsPatientSearchLocalIdentifier localIdentifier: existingIdentifiers) {
             identifiersToDelete.add(localIdentifier);
         }
 
