@@ -329,12 +329,13 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 }
 
                 //if the identifier has been ended, skip it, since we don't want it on our search table
-                if (fhirIdentifier.hasPeriod()) {
+                //no, this is a bad idea
+                /*if (fhirIdentifier.hasPeriod()) {
                     Period period = fhirIdentifier.getPeriod();
                     if (!PeriodHelper.isActive(period)) {
                         continue;
                     }
-                }
+                }*/
 
                 String system = fhirIdentifier.getSystem();
                 String value = fhirIdentifier.getValue();
