@@ -6,6 +6,7 @@ import java.util.Date;
 
 public class InternalIdMap {
 
+    public static final String KEY_SPLIT_CHAR = "|";
     public static final String TYPE_MRN_TO_MILLENNIUM_PERSON_ID = "MRNtoMILLPERSID";
     public static final String TYPE_MILLENNIUM_PERSON_ID_TO_MRN = "MILLPERSIDtoMRN";
     public static final String TYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
@@ -13,6 +14,7 @@ public class InternalIdMap {
     public static final String TYPE_VISIT_ID_TO_ENCOUNTER_ID = "VISITIDtoENCOUNTERID";
     public static final String TYPE_FIN_NO_TO_EPISODE_UUID = "FINNOtoEPISODEUUID";
     public static final String TYPE_ENCOUNTER_ID_TO_EPISODE_UUID = "ENCOUNTERIDtoEPISODEUUID";
+    public static final String TYPE_AE_ARRIVAL_DT_TM_TO_EPISODE_UUID = "AEARRIVALDTTMtoEPISODEUUID";
 
     private String serviceId = null;
     private String idType = null;
