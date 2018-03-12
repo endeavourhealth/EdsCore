@@ -11,6 +11,8 @@ public class InternalIdMap {
     public static final String TYPE_ALTKEY_LOCATION = "ALTKEY-LOCATION";
     public static final String TYPE_ENCOUNTER_ID_TO_VISIT_ID = "ENCOUNTERIDtoVISITID";
     public static final String TYPE_VISIT_ID_TO_ENCOUNTER_ID = "VISITIDtoENCOUNTERID";
+    public static final String TYPE_FIN_NO_TO_EPISODE_UUID = "FINNOtoEPISODEUUID";
+    public static final String TYPE_ENCOUNTER_ID_TO_EPISODE_UUID = "ENCOUNTERIDtoEPISODEUUID";
 
     private String serviceId = null;
     private String idType = null;
