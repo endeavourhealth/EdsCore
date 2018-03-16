@@ -181,7 +181,6 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
             //sort the links by date, since we need them for the filtering
             links.sort((a, b) -> a.getUpdated().compareTo(b.getUpdated()));
-            //TODO - ensure this sorting is correct
 
             Map<String, List<RdbmsPatientLinkHistory>> updatesByPatient = new HashMap<>();
 

@@ -3,10 +3,7 @@ package org.endeavourhealth.core.database.dal.publisherTransform.models;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResourceFieldMappingAudit {
 
@@ -56,6 +53,34 @@ public class ResourceFieldMappingAudit {
             audits.put(new Long(rowAuditId), audit);
         }
         audit.addColumnMapping(colIndex, jsonField);
+    }
+
+    /**
+     * sometimes a resource is part-built with data that is then removed before saving, so this method is used to
+     * undo the auditing of the now-removed data
+     */
+    public void removeAudit(String auditJsonPrefix) {
+
+        //use an iterator and while loop so we can remove as we go
+        Iterator<Long> it = audits.keySet().iterator();
+        while (it.hasNext()) {
+            Long rowAuditId = it.next();
+            ResourceFieldMappingAuditRow rowAudit = audits.get(rowAuditId);
+
+            List<ResourceFieldMappingAuditCol> colAudits = rowAudit.getCols();
+            for (int i=colAudits.size()-1; i>=0; i--) {
+                ResourceFieldMappingAuditCol colAudit = colAudits.get(i);
+                if (colAudit.getField().startsWith(auditJsonPrefix)) {
+                    colAudits.remove(i);
+                }
+            }
+
+            //if the row audit is now empty, remove it using the function on the iterator
+            //which is safe to use while iterating, unlike removing directly from the map
+            if (colAudits.isEmpty()) {
+                it.remove();
+            }
+        }
     }
 
     public class ResourceFieldMappingAuditRow {
