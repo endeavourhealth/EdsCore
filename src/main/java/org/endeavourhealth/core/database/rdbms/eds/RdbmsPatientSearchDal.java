@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class RdbmsPatientSearchDal implements PatientSearchDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearchDal.class);
 
-    public void update(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception {
+    public void update(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
         String nhsNumber = IdentifierHelper.findNhsNumberTrueNhsNumber(fhirPatient);
@@ -147,7 +147,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         return null;
     }
 
-    public void update(UUID serviceId, UUID systemId, EpisodeOfCare fhirEpisode) throws Exception {
+    public void update(UUID serviceId, EpisodeOfCare fhirEpisode) throws Exception {
 
         Reference reference = fhirEpisode.getPatient();
         String patientId = ReferenceHelper.getReferenceId(reference);
@@ -473,7 +473,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
 
 
-    public void deleteForService(UUID serviceId, UUID systemId) throws Exception {
+    public void deleteForService(UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         try {
@@ -508,7 +508,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public List<PatientSearch> searchByNhsNumber(String nhsNumber) throws Exception {
+    /*public List<PatientSearch> searchByNhsNumber(String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
@@ -530,9 +530,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
-    public List<PatientSearch> searchByLocalId(UUID serviceId, UUID systemId, String localId) throws Exception {
+    /*public List<PatientSearch> searchByLocalId(UUID serviceId, UUID systemId, String localId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
@@ -559,7 +559,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     public List<PatientSearch> searchByLocalId(Set<String> serviceIds, String localId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
@@ -590,7 +590,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public List<PatientSearch> searchByDateOfBirth(UUID serviceId, UUID systemId, Date dateOfBirth) throws Exception {
+    /*public List<PatientSearch> searchByDateOfBirth(UUID serviceId, UUID systemId, Date dateOfBirth) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
@@ -614,7 +614,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     public List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
@@ -642,7 +642,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public List<PatientSearch> searchByNhsNumber(UUID serviceId, UUID systemId, String nhsNumber) throws Exception {
+    /*public List<PatientSearch> searchByNhsNumber(UUID serviceId, UUID systemId, String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
@@ -666,7 +666,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     public List<PatientSearch> searchByNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
@@ -694,7 +694,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public List<PatientSearch> searchByNames(UUID serviceId, UUID systemId, List<String> names) throws Exception {
+    /*public List<PatientSearch> searchByNames(UUID serviceId, UUID systemId, List<String> names) throws Exception {
 
         if (names.isEmpty()) {
             throw new IllegalArgumentException("Names cannot be empty");
@@ -752,7 +752,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
     public List<PatientSearch> searchByNames(Set<String> serviceIds, List<String> names) throws Exception {
@@ -821,17 +821,19 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public PatientSearch searchByPatientId(UUID patientId) throws Exception {
+    public PatientSearch searchByPatientId(Set<String> serviceIds, UUID patientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
             String sql = "select c"
                     + " from"
                     + " RdbmsPatientSearch c"
-                    + " where c.patientId = :patientId";
+                    + " where c.patientId = :patientId"
+                    + " and c.serviceId in :serviceIds";
 
             Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                    .setParameter("patientId", patientId.toString());
+                    .setParameter("patientId", patientId.toString())
+                    .setParameter("serviceIds", serviceIds);
 
             RdbmsPatientSearch result = (RdbmsPatientSearch)query.getSingleResult();
             return new PatientSearch(result);
@@ -844,7 +846,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public void deletePatient(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception {
+    public void deletePatient(UUID serviceId, Patient fhirPatient) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 

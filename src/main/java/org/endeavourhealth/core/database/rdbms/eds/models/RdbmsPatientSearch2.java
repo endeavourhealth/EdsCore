@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.eds.models;
 
-import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -10,8 +8,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 @Entity
-@Table(name = "patient_search")
-public class RdbmsPatientSearch implements Serializable {
+@Table(name = "patient_search_2")
+public class RdbmsPatientSearch2 implements Serializable {
 
     private String serviceId = null;
     private String nhsNumber = null;
@@ -19,18 +17,20 @@ public class RdbmsPatientSearch implements Serializable {
     private String surname = null;
     private Date dateOfBirth = null;
     private Date dateOfDeath = null;
+    private String addressLine1 = null;
+    private String addressLine2 = null;
+    private String addressLine3 = null;
+    private String city = null;
+    private String district = null;
     private String postcode = null;
     private String gender = null;
-    private Date registrationStart = null;
-    private Date registrationEnd = null;
     private String patientId = null;
     private Date lastUpdated = null;
-    private String organisationTypeCode = null;
-    private String registrationTypeCode = null;
+    private String registeredPracticeOdsCode = null;
 
-    public RdbmsPatientSearch() {}
+    public RdbmsPatientSearch2() {}
 
-    public RdbmsPatientSearch(PatientSearch proxy) {
+    /*public RdbmsPatientSearch(PatientSearch proxy) {
         this.serviceId = proxy.getServiceId().toString();
         this.nhsNumber = proxy.getNhsNumber();
         this.forenames = proxy.getForenames();
@@ -42,9 +42,12 @@ public class RdbmsPatientSearch implements Serializable {
         this.registrationStart = proxy.getRegistrationStart();
         this.registrationEnd = proxy.getRegistrationEnd();
         this.patientId = proxy.getPatientId().toString();
+        this.lastUpdated = proxy.getLastUpdated();
         this.organisationTypeCode = proxy.getOrganisationTypeCode();
         this.registrationTypeCode = proxy.getRegistrationTypeCode();
-    }
+    }*/
+
+
 
     @Id
     @Column(name = "service_id", nullable = false)
@@ -101,6 +104,51 @@ public class RdbmsPatientSearch implements Serializable {
         this.dateOfDeath = dateOfDeath;
     }
 
+    @Column(name = "address_line_1")
+    public String getAddressLine1() {
+        return addressLine1;
+    }
+
+    public void setAddressLine1(String addressLine1) {
+        this.addressLine1 = addressLine1;
+    }
+
+    @Column(name = "address_line_2")
+    public String getAddressLine2() {
+        return addressLine2;
+    }
+
+    public void setAddressLine2(String addressLine2) {
+        this.addressLine2 = addressLine2;
+    }
+
+    @Column(name = "address_line_3")
+    public String getAddressLine3() {
+        return addressLine3;
+    }
+
+    public void setAddressLine3(String addressLine3) {
+        this.addressLine3 = addressLine3;
+    }
+
+    @Column(name = "city")
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    @Column(name = "district")
+    public String getDistrict() {
+        return district;
+    }
+
+    public void setDistrict(String district) {
+        this.district = district;
+    }
+
     @Column(name = "postcode")
     public String getPostcode() {
         return postcode;
@@ -117,24 +165,6 @@ public class RdbmsPatientSearch implements Serializable {
 
     public void setGender(String gender) {
         this.gender = gender;
-    }
-
-    @Column(name = "registration_start")
-    public Date getRegistrationStart() {
-        return registrationStart;
-    }
-
-    public void setRegistrationStart(Date registrationStart) {
-        this.registrationStart = registrationStart;
-    }
-
-    @Column(name = "registration_end")
-    public Date getRegistrationEnd() {
-        return registrationEnd;
-    }
-
-    public void setRegistrationEnd(Date registrationEnd) {
-        this.registrationEnd = registrationEnd;
     }
 
     @Id
@@ -156,21 +186,12 @@ public class RdbmsPatientSearch implements Serializable {
         this.lastUpdated = lastUpdated;
     }
 
-    @Column(name = "organisation_type_code", nullable = true)
-    public String getOrganisationTypeCode() {
-        return organisationTypeCode;
+    @Column(name = "registered_practice_ods_code", nullable = false)
+    public String getRegisteredPracticeOdsCode() {
+        return registeredPracticeOdsCode;
     }
 
-    public void setOrganisationTypeCode(String organisationTypeCode) {
-        this.organisationTypeCode = organisationTypeCode;
-    }
-
-    @Column(name = "registration_type_code", nullable = true)
-    public String getRegistrationTypeCode() {
-        return registrationTypeCode;
-    }
-
-    public void setRegistrationTypeCode(String registrationTypeCode) {
-        this.registrationTypeCode = registrationTypeCode;
+    public void setRegisteredPracticeOdsCode(String registeredPracticeOdsCode) {
+        this.registeredPracticeOdsCode = registeredPracticeOdsCode;
     }
 }

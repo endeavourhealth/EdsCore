@@ -31,6 +31,7 @@ public class FhirStorageService {
     private static final PatientLinkDalI patientLinkDal = DalProvider.factoryPatientLinkDal();
     //private final PatientIdentifierRepository identifierRepository;
     private static final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearchDal();
+    private static final PatientSearchDalI patientSearch2Dal = DalProvider.factoryPatientSearch2Dal();
 
     private final UUID serviceId;
     private final UUID systemId;
@@ -93,7 +94,14 @@ public class FhirStorageService {
 
             //LOG.info("Updating PATIENT_SEARCH with PATIENT resource " + resource.getId());
             try {
-                patientSearchDal.update(serviceId, systemId, (Patient)resource);
+                patientSearchDal.update(serviceId, (Patient)resource);
+            } catch (Throwable t) {
+                LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                throw t;
+            }
+
+            try {
+                patientSearch2Dal.update(serviceId, (Patient)resource);
             } catch (Throwable t) {
                 LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
                 throw t;
@@ -102,7 +110,14 @@ public class FhirStorageService {
         } else if (resource instanceof EpisodeOfCare) {
             //LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
             try {
-                patientSearchDal.update(serviceId, systemId, (EpisodeOfCare)resource);
+                patientSearchDal.update(serviceId, (EpisodeOfCare)resource);
+            } catch (Throwable t) {
+                LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                throw t;
+            }
+
+            try {
+                patientSearch2Dal.update(serviceId, (EpisodeOfCare)resource);
             } catch (Throwable t) {
                 LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
                 throw t;
@@ -133,7 +148,9 @@ public class FhirStorageService {
         //if we're deleting the patient, then delete the row from the patient_search table
         //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
         if (resource instanceof Patient) {
-            patientSearchDal.deletePatient(serviceId, systemId, (Patient)resource);
+            patientSearchDal.deletePatient(serviceId, (Patient)resource);
+
+            patientSearch2Dal.deletePatient(serviceId, (Patient)resource);
         }
 
         return entry;

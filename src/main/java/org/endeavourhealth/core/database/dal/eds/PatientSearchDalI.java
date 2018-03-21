@@ -11,19 +11,15 @@ import java.util.UUID;
 
 public interface PatientSearchDalI {
 
-    void update(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception;
-    void update(UUID serviceId, UUID systemId, EpisodeOfCare fhirEpisode) throws Exception;
-    void deleteForService(UUID serviceId, UUID systemId) throws Exception;
-    List<PatientSearch> searchByNhsNumber(String nhsNumber) throws Exception;
-    List<PatientSearch> searchByLocalId(UUID serviceId, UUID systemId, String localId) throws Exception;
+    void update(UUID serviceId, Patient fhirPatient) throws Exception;
+    void update(UUID serviceId, EpisodeOfCare fhirEpisode) throws Exception;
+    void deleteForService(UUID serviceId) throws Exception;
+    void deletePatient(UUID serviceId, Patient fhirPatient) throws Exception;
+
     List<PatientSearch> searchByLocalId(Set<String> serviceIds, String localId) throws Exception;
-    List<PatientSearch> searchByDateOfBirth(UUID serviceId, UUID systemId, Date dateOfBirth) throws Exception;
     List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception;
-    List<PatientSearch> searchByNhsNumber(UUID serviceId, UUID systemId, String nhsNumber) throws Exception;
     List<PatientSearch> searchByNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
-    List<PatientSearch> searchByNames(UUID serviceId, UUID systemId, List<String> names) throws Exception;
     List<PatientSearch> searchByNames(Set<String> serviceIds, List<String> names) throws Exception;
-    PatientSearch searchByPatientId(UUID patientId) throws Exception;
-    void deletePatient(UUID serviceId, UUID systemId, Patient fhirPatient) throws Exception;
+    PatientSearch searchByPatientId(Set<String> serviceIds, UUID patientId) throws Exception;
 
 }

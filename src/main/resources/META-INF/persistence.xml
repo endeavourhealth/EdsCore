@@ -84,6 +84,9 @@
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkPerson</class>
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch</class>
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch2</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchEpisode2</class>
+        <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier2</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
