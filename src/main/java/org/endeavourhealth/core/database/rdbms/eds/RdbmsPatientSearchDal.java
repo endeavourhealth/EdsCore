@@ -821,19 +821,17 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
-    public PatientSearch searchByPatientId(Set<String> serviceIds, UUID patientId) throws Exception {
+    public PatientSearch searchByPatientId(UUID patientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
             String sql = "select c"
                     + " from"
                     + " RdbmsPatientSearch c"
-                    + " where c.patientId = :patientId"
-                    + " and c.serviceId in :serviceIds";
+                    + " where c.patientId = :patientId";
 
             Query query = entityManager.createQuery(sql, RdbmsPatientSearch.class)
-                    .setParameter("patientId", patientId.toString())
-                    .setParameter("serviceIds", serviceIds);
+                    .setParameter("patientId", patientId.toString());
 
             RdbmsPatientSearch result = (RdbmsPatientSearch)query.getSingleResult();
             return new PatientSearch(result);

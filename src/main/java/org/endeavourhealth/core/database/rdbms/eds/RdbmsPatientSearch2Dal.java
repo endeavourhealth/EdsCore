@@ -757,8 +757,8 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
         return search(serviceIds, null, names, null, null, null);
     }
 
-    public PatientSearch searchByPatientId(Set<String> serviceIds, UUID patientId) throws Exception {
-        List<PatientSearch> list = search(serviceIds, null, null, null, null, patientId);
+    public PatientSearch searchByPatientId(UUID patientId) throws Exception {
+        List<PatientSearch> list = search(null, null, null, null, null, patientId);
         if (list.isEmpty()) {
             return null;
         } else {
@@ -781,7 +781,9 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
                     + " AND psi.service_id = ps.service_id";
         }
 
-        sql += " WHERE ps.service_id IN (?)";
+        if (serviceIds != null) {
+            sql += " WHERE ps.service_id IN (?)";
+        }
 
         if (!Strings.isNullOrEmpty(nhsNumber)) {
             sql += " AND ps.nhs_number = ?";
@@ -801,7 +803,8 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
             sql += " AND psi.local_id = ?";
 
         } else if (patientId != null) {
-            sql += " AND ps.patient_id = ?";
+            //nasty hack, but when searching by patient ID we don't add service IDs, so need to add the where clause here
+            sql += " WHERE ps.patient_id = ?";
 
         } else {
             throw new IllegalArgumentException("Insufficient parameters passed in to search function");

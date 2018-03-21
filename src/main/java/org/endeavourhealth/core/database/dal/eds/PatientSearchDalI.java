@@ -20,6 +20,6 @@ public interface PatientSearchDalI {
     List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception;
     List<PatientSearch> searchByNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
     List<PatientSearch> searchByNames(Set<String> serviceIds, List<String> names) throws Exception;
-    PatientSearch searchByPatientId(Set<String> serviceIds, UUID patientId) throws Exception;
+    PatientSearch searchByPatientId(UUID patientId) throws Exception;
 
 }
