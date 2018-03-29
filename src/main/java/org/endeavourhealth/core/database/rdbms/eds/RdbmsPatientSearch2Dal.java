@@ -16,9 +16,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.*;
-import java.util.Date;
 
 public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearchDal.class);
@@ -768,27 +770,29 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
 
     private List<PatientSearch> search(Set<String> serviceIds, String nhsNumber, List<String> names, Date dateOfBirth, String localId, UUID patientId) throws Exception {
 
-        String sql = "SELECT ps.service_id, ps.patient_id, ps.nhs_number, ps.forenames, ps.surname, ps.date_of_birth, ps.date_of_death, ps.address_line_1, ps.address_line_2, ps.address_line_3, ps.city, ps.district, ps.postcode, ps.gender, ps.registered_practice_ods_code"
+        String sql = "SELECT ps.service_id, ps.patient_id, ps.nhs_number, ps.forenames, ps.surname, ps.date_of_birth, ps.date_of_death, ps.address_line_1, ps.address_line_2, ps.address_line_3, ps.city, ps.district, ps.postcode, ps.gender, ps.registered_practice_ods_code, "
                 + " pse.episode_id, pse.registration_start, pse.registration_end, pse.care_mananger, pse.organisation_name, pse.organisation_type_code, pse.registration_type_code"
-                + " FROM patient_search ps"
-                + " INNER JOIN patient_search_episode pse"
+                + " FROM patient_search_2 ps"
+                + " INNER JOIN patient_search_episode_2 pse"
                 + " ON ps.patient_id = pse.patient_id"
                 + " AND ps.service_id = pse.service_id";
 
         if (!Strings.isNullOrEmpty(localId)) {
-            sql += " INNER JOIN patient_search_local_identifier psi"
+            sql += " INNER JOIN patient_search_local_identifier_2 psi"
                     + " ON psi.patient_id = ps.patient_id"
                     + " AND psi.service_id = ps.service_id";
         }
 
         if (serviceIds != null) {
-            sql += " WHERE ps.service_id IN (?)";
+            sql += " WHERE ps.service_id IN (";
+            sql += String.join(",", Collections.nCopies(serviceIds.size(), "?"));
+            sql += ")";
         }
 
         if (!Strings.isNullOrEmpty(nhsNumber)) {
             sql += " AND ps.nhs_number = ?";
 
-        } else if (!names.isEmpty()) {
+        } else if (names != null) {
             if (names.size() == 1) {
                 sql += " AND (ps.surname LIKE ? OR ps.forenames LIKE ?)";
             } else {
@@ -817,20 +821,25 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
             Connection connection = session.connection();
             ps = connection.prepareStatement(sql);
 
-            Array array = connection.createArrayOf("VARCHAR", serviceIds.toArray());
-            ps.setArray(1, array);
+            int index = 1;
+
+            if (serviceIds != null) {
+                for (String serviceId: serviceIds) {
+                    ps.setString(index++, serviceId);
+                }
+            }
 
             if (!Strings.isNullOrEmpty(nhsNumber)) {
-                ps.setString(2, nhsNumber);
+                ps.setString(index++, nhsNumber);
 
-            } else if (!names.isEmpty()) {
+            } else if (names != null) {
 
                 //if just one name, then treat as a surname
                 if (names.size() == 1) {
 
                     String searchToken = names.get(0).replace(",", "") + "%";
-                    ps.setString(2, searchToken);
-                    ps.setString(3, searchToken);
+                    ps.setString(index++, searchToken);
+                    ps.setString(index++, searchToken);
 
                 } else {
 
@@ -839,20 +848,20 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
                     String searchToken1 = names.remove(names.size() - 1).replace(",", "") + "%";
                     String searchToken2 = String.join("% ", names).replace(",", "") + "%";
 
-                    ps.setString(2, searchToken1);
-                    ps.setString(3, searchToken2);
-                    ps.setString(4, searchToken2);
-                    ps.setString(5, searchToken1);
+                    ps.setString(index++, searchToken1);
+                    ps.setString(index++, searchToken2);
+                    ps.setString(index++, searchToken2);
+                    ps.setString(index++, searchToken1);
                 }
 
             } else if (dateOfBirth != null) {
-                ps.setDate(1, new java.sql.Date(dateOfBirth.getTime()));
+                ps.setDate(index++, new java.sql.Date(dateOfBirth.getTime()));
 
             } else if (!Strings.isNullOrEmpty(localId)) {
-                ps.setString(1, localId);
+                ps.setString(index++, localId);
 
             } else if (patientId != null) {
-                ps.setString(1, patientId.toString());
+                ps.setString(index++, patientId.toString());
 
             } else {
                 throw new IllegalArgumentException("Insufficient parameters passed in to search function");
