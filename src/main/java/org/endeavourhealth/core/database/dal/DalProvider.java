@@ -81,6 +81,8 @@ public class DalProvider {
         return new RdbmsCernerCodeValueRefDal();
     }
 
+    public static TppMappingRefDalI factoryTppMappingRefDal() { return new RdbmsTppMappingRefDal();
+    }
     public static JDBCReaderDalI factoryJDBCReaderDal() {
         return new RdbmsJDBCReaderDal();
     }
