@@ -45,6 +45,9 @@ public abstract class TerminologyService {
 
         //get Snomed term from lookup table using conceptId
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(conceptId);
+        if (snomedLookup == null) {
+            return null;
+        }
         return new SnomedCode(conceptId, snomedLookup.getTerm());
     }
 
@@ -55,6 +58,9 @@ public abstract class TerminologyService {
 
         //get Snomed term from lookup table using conceptId
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(sctConceptId);
+        if (snomedLookup == null) {
+            return null;
+        }
         return new SnomedCode(sctConceptId, snomedLookup.getTerm());
     }
     public static SnomedCode translateEmisSnomedToSnomed(String code) {
