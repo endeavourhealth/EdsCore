@@ -1,11 +1,10 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.CernerCodeValueRefDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.TppMappingRefDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
+import org.endeavourhealth.core.database.dal.publisherTransform.TppConfigListOptionDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.TppConfigListOption;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -17,34 +16,30 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMappingRefDal.class);
+public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppConfigListOptionDal.class);
 
     @Override
-    public TppMappingRef getMappingFromRowId(Long rowId, UUID serviceId) throws Exception {
+    public TppConfigListOption getListOptionFromRowId(Long rowId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             String sql = "select c"
                     + " from "
-                    + " RdbmsTppMappingRef c"
+                    + " RdbmsTppConfigListOption c"
                     + " where c.serviceId = :service_id"
                     + " and c.rowId = :row_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsTppMappingRef.class)
+            Query query = entityManager.createQuery(sql, RdbmsTppConfigListOption.class)
                     .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setMaxResults(1);
 
             try {
-                RdbmsTppMappingRef result = (RdbmsTppMappingRef)query.getSingleResult();
-                return new TppMappingRef(result);
+                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption)query.getSingleResult();
+                return new TppConfigListOption(result);
             }
             catch (NoResultException e) {
                 LOG.error("No code found for rowId " + rowId + ", service " + serviceId);
@@ -58,29 +53,29 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
     }
 
     @Override
-    public TppMappingRef getMappingFromRowAndGroupId(Long rowId, Long groupId, UUID serviceId) throws Exception {
+    public TppConfigListOption getListOptionFromRowAndListId(Long rowId, Long configListId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             String sql = "select c"
                     + " from "
-                    + " RdbmsTppMappingRef c"
+                    + " RdbmsTppConfigListOption c"
                     + " where c.serviceId = :service_id"
-                    + " and c.groupId = :group_id"
+                    + " and c.configListId = :config_list_id"
                     + " and c.rowId = :row_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsTppMappingRef.class)
+            Query query = entityManager.createQuery(sql, RdbmsTppConfigListOption.class)
                     .setParameter("service_id", serviceId.toString())
+                    .setParameter("config_list_id", configListId)
                     .setParameter("row_id", rowId)
-                    .setParameter("group_id", groupId)
                     .setMaxResults(1);
 
             try {
-                RdbmsTppMappingRef result = (RdbmsTppMappingRef)query.getSingleResult();
-                return new TppMappingRef(result);
+                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption)query.getSingleResult();
+                return new TppConfigListOption(result);
             }
             catch (NoResultException e) {
-                LOG.error("No code found for rowId " + rowId + ", groupId " + groupId + ", service " + serviceId);
+                LOG.error("No code found for rowId " + rowId + ", configListId " + configListId + ", service " + serviceId);
                 return null;
             }
         } finally {
@@ -90,13 +85,13 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
         }
     }
 
-    public void save(TppMappingRef mapping, UUID serviceId) throws Exception
+    public void save(TppConfigListOption configListOption, UUID serviceId) throws Exception
     {
-        if (mapping == null) {
-            throw new IllegalArgumentException("mapping is null");
+        if (configListOption == null) {
+            throw new IllegalArgumentException("configListOption is null");
         }
 
-        RdbmsTppMappingRef tppMapping = new RdbmsTppMappingRef(mapping);
+        RdbmsTppConfigListOption tppConfigListOption = new RdbmsTppConfigListOption(configListOption);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
@@ -110,26 +105,26 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO tpp_mapping_ref "
-                    + " (row_id, group_id, mapped_term, service_id, audit_json)"
+            String sql = "INSERT INTO tpp_config_list_option "
+                    + " (row_id, config_list_id, list_option_name, service_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " row_id = VALUES(row_id), "
-                    + " group_id = VALUES(group_id),"
-                    + " mapped_term = VALUES(mapped_term),"
+                    + " config_list_id = VALUES(config_list_id),"
+                    + " list_option_name = VALUES(list_option_name),"
                     + " service_id = VALUES(service_id),"
                     + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
-            ps.setLong(1, tppMapping.getRowId());
-            ps.setLong(2, tppMapping.getGroupId());
-            ps.setString(3,tppMapping.getMappedTerm());
-            ps.setString(4,tppMapping.getServiceId());
-            if (tppMapping.getAuditJson() == null) {
+            ps.setLong(1, tppConfigListOption.getRowId());
+            ps.setLong(2, tppConfigListOption.getConfigListId());
+            ps.setString(3,tppConfigListOption.getListOptionName());
+            ps.setString(4,tppConfigListOption.getServiceId());
+            if (tppConfigListOption.getAuditJson() == null) {
                 ps.setNull(5, Types.VARCHAR);
             } else {
-                ps.setString(5, tppMapping.getAuditJson());
+                ps.setString(5, tppConfigListOption.getAuditJson());
             }
 
             ps.executeUpdate();
