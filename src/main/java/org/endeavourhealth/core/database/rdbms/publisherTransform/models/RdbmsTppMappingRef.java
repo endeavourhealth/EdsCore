@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
 
 import javax.persistence.Column;
@@ -8,7 +7,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Objects;
 
 @Entity
@@ -34,7 +32,9 @@ public class RdbmsTppMappingRef implements Serializable {
 
     @Id
     @Column(name = "row_id", nullable = false)
-    public long getRowId() { return rowId; }
+    public long getRowId() {
+        return rowId;
+    }
 
     public void setRowId(long rowId) {
         this.rowId = rowId;
@@ -45,7 +45,7 @@ public class RdbmsTppMappingRef implements Serializable {
         return groupId;
     }
 
-    public void setDate(long groupId) {
+    public void setGroupId(long groupId) {
         this.groupId = groupId;
     }
 

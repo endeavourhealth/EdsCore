@@ -153,7 +153,7 @@
     <persistence-unit name="PublisherTransformDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceIdMap</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsBartsSusResourceMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSusResourceMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceMergeMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileType</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileTypeColumn</class>
@@ -162,6 +162,8 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>

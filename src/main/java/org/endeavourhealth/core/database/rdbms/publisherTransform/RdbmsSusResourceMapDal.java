@@ -1,8 +1,8 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.BartsSusResourceMapDalI;
+import org.endeavourhealth.core.database.dal.publisherTransform.SusResourceMapDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsBartsSusResourceMap;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSusResourceMap;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.Enumerations;
 import org.slf4j.Logger;
@@ -15,8 +15,8 @@ import java.sql.PreparedStatement;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsBartsSusResourceMapDal.class);
+public class RdbmsSusResourceMapDal implements SusResourceMapDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsSusResourceMapDal.class);
 
     @Override
     public void saveSusResourceMappings(UUID serviceId, String sourceRowId, Map<Enumerations.ResourceType, List<UUID>> resourceIds) throws Exception {
@@ -167,12 +167,12 @@ public class RdbmsBartsSusResourceMapDal implements BartsSusResourceMapDalI {
                     + " RdbmsBartsSusResourceMap c"
                     + " where c.serviceId = :service_id and c.sourceRowId = :source_row_id and c.destinationResourceType = :destination_resource_type";
 
-            Query query = entityManager.createQuery(sql, RdbmsBartsSusResourceMap.class)
+            Query query = entityManager.createQuery(sql, RdbmsSusResourceMap.class)
                     .setParameter("service_id", serviceId.toString())
                     .setParameter("source_row_id", sourceRowId)
                     .setParameter("destination_resource_type", resourceType.toCode());
 
-            List<RdbmsBartsSusResourceMap> results = query.getResultList();
+            List<RdbmsSusResourceMap> results = query.getResultList();
 
             List<UUID> ret = results
                     .stream()

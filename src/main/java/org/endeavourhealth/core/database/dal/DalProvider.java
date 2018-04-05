@@ -72,8 +72,8 @@ public class DalProvider {
         return new RdbmsUserAuditDal(auditModule);
     }
 
-    public static BartsSusResourceMapDalI factoryBartsSusResourceMapDal() {
-        return new RdbmsBartsSusResourceMapDal();
+    public static SusResourceMapDalI factoryBartsSusResourceMapDal() {
+        return new RdbmsSusResourceMapDal();
     }
 
     public static CernerCodeValueRefDalI factoryCernerCodeValueRefDal() {

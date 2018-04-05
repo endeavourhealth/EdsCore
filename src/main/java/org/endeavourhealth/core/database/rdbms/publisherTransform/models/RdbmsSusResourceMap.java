@@ -8,14 +8,14 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "sus_resource_map")
-public class RdbmsBartsSusResourceMap implements Serializable {
+public class RdbmsSusResourceMap implements Serializable {
 
     private String serviceId = null;
     private String sourceRowId = null;
     private String destinationResourceType = null;
     private String destinationResourceId = null;
 
-    public RdbmsBartsSusResourceMap() {}
+    public RdbmsSusResourceMap() {}
 
     @Id
     @Column(name = "service_id", nullable = false)

@@ -484,7 +484,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         String sql = "select c"
                 + " from "
-                + " RdbmsPatientSearchLocalIdentifier2 c"
+                + " RdbmsPatientSearchLocalIdentifier c"
                 + " where c.serviceId = :service_id"
                 + " and c.patientId = :patient_id";
 
@@ -705,7 +705,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             String sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearchLocalIdentifier2 c"
+                    + " RdbmsPatientSearchLocalIdentifier c"
                     + " where c.serviceId = :serviceId";
 
             Query query = entityManager.createQuery(sql)
@@ -714,7 +714,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearchEpisode2 c"
+                    + " RdbmsPatientSearchEpisode c"
                     + " where c.serviceId = :serviceId";
 
             query = entityManager.createQuery(sql)
@@ -723,7 +723,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearch2 c"
+                    + " RdbmsPatientSearch c"
                     + " where c.serviceId = :serviceId";
 
             query = entityManager.createQuery(sql)
@@ -923,7 +923,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             String sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearchLocalIdentifier2 c"
+                    + " RdbmsPatientSearchLocalIdentifier c"
                     + " where c.serviceId = :serviceId"
                     + " and c.patientId = :patientId";
 
@@ -934,7 +934,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearchEpisode2 c"
+                    + " RdbmsPatientSearchEpisode c"
                     + " where c.serviceId = :serviceId"
                     + " and c.patientId = :patientId";
 
@@ -945,7 +945,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
             sql = "delete"
                     + " from"
-                    + " RdbmsPatientSearch2 c"
+                    + " RdbmsPatientSearch c"
                     + " where c.serviceId = :serviceId"
                     + " and c.patientId = :patientId";
 

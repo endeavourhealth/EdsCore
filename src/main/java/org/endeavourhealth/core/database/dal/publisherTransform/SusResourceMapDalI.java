@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public interface BartsSusResourceMapDalI {
+public interface SusResourceMapDalI {
     void saveSusResourceMappings(UUID serviceId, String sourceRowId, Map<Enumerations.ResourceType, List<UUID>> resourceIds) throws Exception;
     void saveSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType, List<UUID> resourceIds) throws Exception;
 
