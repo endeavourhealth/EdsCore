@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.eds.models;
 
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch;
 import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch2;
 import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchEpisode2;
 
@@ -36,21 +35,6 @@ public class PatientSearch {
 
     public PatientSearch() {}
 
-    public PatientSearch(RdbmsPatientSearch patientProxy) {
-        this.serviceId = UUID.fromString(patientProxy.getServiceId());
-        this.patientId = UUID.fromString(patientProxy.getPatientId());
-        this.nhsNumber = patientProxy.getNhsNumber();
-        this.forenames = patientProxy.getForenames();
-        this.surname = patientProxy.getSurname();
-        this.dateOfBirth = patientProxy.getDateOfBirth();
-        this.dateOfDeath = patientProxy.getDateOfDeath();
-        this.postcode = patientProxy.getPostcode();
-        this.gender = patientProxy.getGender();
-        this.registrationStart = patientProxy.getRegistrationStart();
-        this.registrationEnd = patientProxy.getRegistrationEnd();
-        this.organisationTypeCode = patientProxy.getOrganisationTypeCode();
-        this.registrationTypeCode = patientProxy.getRegistrationTypeCode();
-    }
 
 
     public PatientSearch(RdbmsPatientSearch2 patientProxy, RdbmsPatientSearchEpisode2 episodeProxy) {

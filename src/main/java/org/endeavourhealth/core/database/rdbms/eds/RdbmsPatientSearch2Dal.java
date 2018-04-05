@@ -23,7 +23,7 @@ import java.sql.Types;
 import java.util.*;
 
 public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearchDal.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearch2Dal.class);
 
     public void update(UUID serviceId, Patient fhirPatient) throws Exception {
 

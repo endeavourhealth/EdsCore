@@ -23,7 +23,6 @@ import org.endeavourhealth.core.database.rdbms.admin.RdbmsServiceDal;
 import org.endeavourhealth.core.database.rdbms.audit.*;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearch2Dal;
-import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
 import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
@@ -268,10 +267,6 @@ public class DalProvider {
 
     public static PatientLinkDalI factoryPatientLinkDal() {
         return new RdbmsPatientLinkDal();
-    }
-
-    public static PatientSearchDalI factoryPatientSearchDal() {
-        return new RdbmsPatientSearchDal();
     }
 
     public static PatientSearchDalI factoryPatientSearch2Dal() {
