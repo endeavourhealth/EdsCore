@@ -269,7 +269,7 @@ public class DalProvider {
         return new RdbmsPatientLinkDal();
     }
 
-    public static PatientSearchDalI factoryPatientSearch2Dal() {
+    public static PatientSearchDalI factoryPatientSearchDal() {
         return new RdbmsPatientSearchDal();
     }
 

@@ -29,7 +29,7 @@ public class FhirStorageService {
 
     private static final ResourceDalI resourceRepository = DalProvider.factoryResourceDal();
     private static final PatientLinkDalI patientLinkDal = DalProvider.factoryPatientLinkDal();
-    private static final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearch2Dal();
+    private static final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearchDal();
 
     private final UUID serviceId;
     private final UUID systemId;
