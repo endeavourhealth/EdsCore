@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "patient_search_local_identifier_2")
-public class RdbmsPatientSearchLocalIdentifier2 implements Serializable {
+public class RdbmsPatientSearchLocalIdentifier implements Serializable {
 
     private String serviceId = null;
     private String localId = null;

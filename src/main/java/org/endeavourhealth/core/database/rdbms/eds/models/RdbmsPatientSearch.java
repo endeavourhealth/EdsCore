@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "patient_search_2")
-public class RdbmsPatientSearch2 implements Serializable {
+public class RdbmsPatientSearch implements Serializable {
 
     private String serviceId = null;
     private String nhsNumber = null;
@@ -28,7 +28,7 @@ public class RdbmsPatientSearch2 implements Serializable {
     private Date lastUpdated = null;
     private String registeredPracticeOdsCode = null;
 
-    public RdbmsPatientSearch2() {}
+    public RdbmsPatientSearch() {}
 
     /*public RdbmsPatientSearch(PatientSearch proxy) {
         this.serviceId = proxy.getServiceId().toString();

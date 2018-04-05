@@ -1,7 +1,7 @@
 package org.endeavourhealth.core.database.dal.eds.models;
 
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch2;
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchEpisode2;
+import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch;
+import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchEpisode;
 
 import java.util.Date;
 import java.util.UUID;
@@ -37,7 +37,7 @@ public class PatientSearch {
 
 
 
-    public PatientSearch(RdbmsPatientSearch2 patientProxy, RdbmsPatientSearchEpisode2 episodeProxy) {
+    public PatientSearch(RdbmsPatientSearch patientProxy, RdbmsPatientSearchEpisode episodeProxy) {
         this.serviceId = UUID.fromString(patientProxy.getServiceId());
         this.patientId = UUID.fromString(patientProxy.getPatientId());
         this.nhsNumber = patientProxy.getNhsNumber();

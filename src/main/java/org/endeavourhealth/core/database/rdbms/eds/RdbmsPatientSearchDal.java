@@ -7,7 +7,7 @@ import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier2;
+import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier;
 import org.endeavourhealth.core.fhirStorage.metadata.ReferenceHelper;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.*;
@@ -22,8 +22,8 @@ import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.*;
 
-public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearch2Dal.class);
+public class RdbmsPatientSearchDal implements PatientSearchDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearchDal.class);
 
     public void update(UUID serviceId, Patient fhirPatient) throws Exception {
 
@@ -121,18 +121,18 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
 
             ps.executeUpdate();
 
-            List<RdbmsPatientSearchLocalIdentifier2> identifiersToSave = new ArrayList<>();
-            List<RdbmsPatientSearchLocalIdentifier2> identifiersToDelete = new ArrayList<>();
+            List<RdbmsPatientSearchLocalIdentifier> identifiersToSave = new ArrayList<>();
+            List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete = new ArrayList<>();
 
             createOrUpdateLocalIdentifiers(serviceId, fhirPatient, entityManager, identifiersToSave, identifiersToDelete);
 
             //do the deletes
-            for (RdbmsPatientSearchLocalIdentifier2 localIdentifier: identifiersToDelete) {
+            for (RdbmsPatientSearchLocalIdentifier localIdentifier: identifiersToDelete) {
                 entityManager.remove(localIdentifier);
             }
 
             //do the saves
-            for (RdbmsPatientSearchLocalIdentifier2 localIdentifier: identifiersToSave) {
+            for (RdbmsPatientSearchLocalIdentifier localIdentifier: identifiersToSave) {
 
                 //adding try/catch to investigate a problem that has happened once but can't be replicated
                 //entityManager.persist(localIdentifier);
@@ -432,7 +432,7 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
         SessionImpl session = (SessionImpl)entityManager.getDelegate();
         Connection connection = session.connection();
 
-        String sql = "INSERT INTO patient_search_episode_2"
+        String sql = "INSERT INTO patient_search_episode"
                 + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
@@ -453,7 +453,7 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
         SessionImpl session = (SessionImpl)entityManager.getDelegate();
         Connection connection = session.connection();
 
-        String sql = "INSERT INTO patient_search_2"
+        String sql = "INSERT INTO patient_search"
                 + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
@@ -477,8 +477,8 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
 
     private static void createOrUpdateLocalIdentifiers(UUID serviceId, Patient fhirPatient,
                                                        EntityManager entityManager,
-                                                       List<RdbmsPatientSearchLocalIdentifier2> identifiersToSave,
-                                                       List<RdbmsPatientSearchLocalIdentifier2> identifiersToDelete) {
+                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToSave,
+                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete) {
 
         String patientId = findPatientId(fhirPatient, null);
 
@@ -488,11 +488,11 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
                 + " where c.serviceId = :service_id"
                 + " and c.patientId = :patient_id";
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearchLocalIdentifier2.class)
+        Query query = entityManager.createQuery(sql, RdbmsPatientSearchLocalIdentifier.class)
                 .setParameter("service_id", serviceId.toString())
                 .setParameter("patient_id", patientId);
 
-        List<RdbmsPatientSearchLocalIdentifier2> existingIdentifiers = query.getResultList();
+        List<RdbmsPatientSearchLocalIdentifier> existingIdentifiers = query.getResultList();
 
         if (fhirPatient.hasIdentifier()) {
             for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
@@ -514,8 +514,8 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
                 String system = fhirIdentifier.getSystem();
                 String value = fhirIdentifier.getValue();
 
-                RdbmsPatientSearchLocalIdentifier2 localIdentifier = null;
-                for (RdbmsPatientSearchLocalIdentifier2 r: existingIdentifiers) {
+                RdbmsPatientSearchLocalIdentifier localIdentifier = null;
+                for (RdbmsPatientSearchLocalIdentifier r: existingIdentifiers) {
                     if (r.getLocalIdSystem().equals(system)
                             && r.getLocalId().equals(value)) {
 
@@ -530,7 +530,7 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
 
                 } else {
                     //if there's no record for this local ID, create a new record
-                    localIdentifier = new RdbmsPatientSearchLocalIdentifier2();
+                    localIdentifier = new RdbmsPatientSearchLocalIdentifier();
                     localIdentifier.setServiceId(serviceId.toString());
                     localIdentifier.setPatientId(patientId);
                     localIdentifier.setLocalIdSystem(system);
@@ -543,7 +543,7 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
                 //we have some patients with multiple instances of the same Identifier, which causes Hibernate to
                 //throw an error. So simply spot this and don't add to the list
                 boolean alreadyAddedDuplicate = false;
-                for (RdbmsPatientSearchLocalIdentifier2 identifierAlreadyToSave: identifiersToSave) {
+                for (RdbmsPatientSearchLocalIdentifier identifierAlreadyToSave: identifiersToSave) {
                     if (identifierAlreadyToSave.getLocalIdSystem().equalsIgnoreCase(system)
                             && identifierAlreadyToSave.getLocalId().equalsIgnoreCase(value)) {
                         alreadyAddedDuplicate = true;
@@ -560,7 +560,7 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
         }
 
         //any identifiers still in the list should now be deleted, since they're no longer in the patient
-        for (RdbmsPatientSearchLocalIdentifier2 localIdentifier: existingIdentifiers) {
+        for (RdbmsPatientSearchLocalIdentifier localIdentifier: existingIdentifiers) {
             identifiersToDelete.add(localIdentifier);
         }
 
@@ -772,13 +772,13 @@ public class RdbmsPatientSearch2Dal implements PatientSearchDalI {
 
         String sql = "SELECT ps.service_id, ps.patient_id, ps.nhs_number, ps.forenames, ps.surname, ps.date_of_birth, ps.date_of_death, ps.address_line_1, ps.address_line_2, ps.address_line_3, ps.city, ps.district, ps.postcode, ps.gender, ps.registered_practice_ods_code, "
                 + " pse.episode_id, pse.registration_start, pse.registration_end, pse.care_mananger, pse.organisation_name, pse.organisation_type_code, pse.registration_type_code"
-                + " FROM patient_search_2 ps"
-                + " INNER JOIN patient_search_episode_2 pse"
+                + " FROM patient_search ps"
+                + " INNER JOIN patient_search_episode pse"
                 + " ON ps.patient_id = pse.patient_id"
                 + " AND ps.service_id = pse.service_id";
 
         if (!Strings.isNullOrEmpty(localId)) {
-            sql += " INNER JOIN patient_search_local_identifier_2 psi"
+            sql += " INNER JOIN patient_search_local_identifier psi"
                     + " ON psi.patient_id = ps.patient_id"
                     + " AND psi.service_id = ps.service_id";
         }

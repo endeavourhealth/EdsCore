@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "patient_search_episode_2")
-public class RdbmsPatientSearchEpisode2 implements Serializable {
+public class RdbmsPatientSearchEpisode implements Serializable {
 
     private String serviceId = null;
     private String patientId = null;
@@ -22,7 +22,7 @@ public class RdbmsPatientSearchEpisode2 implements Serializable {
     private String registrationTypeCode = null;
     private Date lastUpdated = null;
 
-    public RdbmsPatientSearchEpisode2() {}
+    public RdbmsPatientSearchEpisode() {}
 
     @Id
     @Column(name = "service_id", nullable = false)

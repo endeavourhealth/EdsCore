@@ -29,7 +29,7 @@ public class FhirStorageService {
 
     private static final ResourceDalI resourceRepository = DalProvider.factoryResourceDal();
     private static final PatientLinkDalI patientLinkDal = DalProvider.factoryPatientLinkDal();
-    private static final PatientSearchDalI patientSearch2Dal = DalProvider.factoryPatientSearch2Dal();
+    private static final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearch2Dal();
 
     private final UUID serviceId;
     private final UUID systemId;
@@ -91,7 +91,7 @@ public class FhirStorageService {
             }
 
             try {
-                patientSearch2Dal.update(serviceId, (Patient)resource);
+                patientSearchDal.update(serviceId, (Patient)resource);
             } catch (Throwable t) {
                 LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
                 throw t;
@@ -101,7 +101,7 @@ public class FhirStorageService {
             //LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
 
             try {
-                patientSearch2Dal.update(serviceId, (EpisodeOfCare)resource);
+                patientSearchDal.update(serviceId, (EpisodeOfCare)resource);
             } catch (Throwable t) {
                 LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
                 throw t;
@@ -133,7 +133,7 @@ public class FhirStorageService {
         //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
         if (resource instanceof Patient) {
 
-            patientSearch2Dal.deletePatient(serviceId, (Patient)resource);
+            patientSearchDal.deletePatient(serviceId, (Patient)resource);
         }
 
         return entry;
