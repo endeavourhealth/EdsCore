@@ -261,9 +261,12 @@ public class DalProvider {
     }
 
     public static CTV3ToSnomedMapDalI factoryCTV3ToSnomedMapDal() {
-        return new RdmsCTV3ToSnomedMapDal();
+        return new RdbmsCTV3ToSnomedMapDal();
     }
 
+    public static MultiLexToCTV3MapDalI factoryMultiLexToCTV3MapDal() {
+        return new RdbmsMultiLexToCTV3MapDal();
+    }
 
     public static PatientLinkDalI factoryPatientLinkDal() {
         return new RdbmsPatientLinkDal();

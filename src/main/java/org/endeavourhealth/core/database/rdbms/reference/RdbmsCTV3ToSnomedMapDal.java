@@ -10,7 +10,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.List;
 
-public class RdmsCTV3ToSnomedMapDal implements CTV3ToSnomedMapDalI {
+public class RdbmsCTV3ToSnomedMapDal implements CTV3ToSnomedMapDalI {
 
     public CTV3ToSnomedMap getCTV3ToSnomedMap(String ctv3ConceptId) throws Exception {
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
