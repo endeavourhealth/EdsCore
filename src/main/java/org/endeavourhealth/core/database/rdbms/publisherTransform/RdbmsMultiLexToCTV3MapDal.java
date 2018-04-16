@@ -26,7 +26,7 @@ public class RdbmsMultiLexToCTV3MapDal implements MultiLexToCTV3MapDalI {
                     + " RdbmsMultiLexToCTV3Map c"
                     + " where c.multiLexProductId = :multilex_product_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsCTV3ToSnomedMap.class)
+            Query query = entityManager.createQuery(sql, RdbmsMultiLexToCTV3Map.class)
                     .setParameter("multilex_product_id", multiLexProductId);
 
             try {

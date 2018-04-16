@@ -112,6 +112,12 @@ public class DalProvider {
         return new RdbmsTransformWarningDal();
     }
 
+    public static MultiLexToCTV3MapDalI factoryMultiLexToCTV3MapDal() {
+        return new RdbmsMultiLexToCTV3MapDal();
+    }
+
+    public static CTV3HierarchyRefDalI factoryCTV3HierarchyRefDal() { return new RdbmsCTV3HierarchyRefDal(); }
+
     /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {
             return new CassandraResourceRepository();
@@ -262,10 +268,6 @@ public class DalProvider {
 
     public static CTV3ToSnomedMapDalI factoryCTV3ToSnomedMapDal() {
         return new RdbmsCTV3ToSnomedMapDal();
-    }
-
-    public static MultiLexToCTV3MapDalI factoryMultiLexToCTV3MapDal() {
-        return new RdbmsMultiLexToCTV3MapDal();
     }
 
     public static PatientLinkDalI factoryPatientLinkDal() {
