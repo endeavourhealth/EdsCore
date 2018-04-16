@@ -1,14 +1,12 @@
-package org.endeavourhealth.core.database.rdbms.reference.models;
+package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.reference.models.MultiLexToCTV3Map;
-import org.endeavourhealth.core.database.dal.reference.models.Read2ToSnomedMap;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.MultiLexToCTV3Map;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Date;
 
 @Entity
 @Table(name = "multilex_to_ctv3_map")

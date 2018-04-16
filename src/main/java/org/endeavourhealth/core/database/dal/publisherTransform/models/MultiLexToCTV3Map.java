@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.dal.reference.models;
+package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMultiLexToCTV3Map;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsMultiLexToCTV3Map;
 
 public class MultiLexToCTV3Map {
 
@@ -16,6 +16,16 @@ public class MultiLexToCTV3Map {
         this.multiLexProductId = proxy.getMultiLexProductId();
         this.ctv3ReadCode = proxy.getCTV3ReadCode();
         this.ctv3ReadTerm = proxy.getCTV3ReadTerm();
+    }
+
+    public MultiLexToCTV3Map(long rowId,
+                         long multiLexProductId,
+                         String ctv3ReadCode,
+                         String ctv3ReadTerm) {
+        this.rowId = rowId;
+        this.multiLexProductId = multiLexProductId;
+        this.ctv3ReadCode = ctv3ReadCode;
+        this.ctv3ReadTerm = ctv3ReadTerm;
     }
 
     public long getRowId() {
