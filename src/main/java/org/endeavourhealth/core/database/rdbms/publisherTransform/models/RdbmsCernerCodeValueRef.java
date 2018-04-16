@@ -13,7 +13,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "cerner_code_value_ref")
 public class RdbmsCernerCodeValueRef implements Serializable {
-    private long codeValueCd;
+    private String codeValueCd;
     private Date date;
     private byte activeInd;
     private String codeDescTxt;
@@ -45,11 +45,11 @@ public class RdbmsCernerCodeValueRef implements Serializable {
 
     @Id
     @Column(name = "code_value_cd", nullable = false)
-    public long getCodeValueCd() {
+    public String getCodeValueCd() {
         return codeValueCd;
     }
 
-    public void setCodeValueCd(long codeValueCd) {
+    public void setCodeValueCd(String codeValueCd) {
         this.codeValueCd = codeValueCd;
     }
 

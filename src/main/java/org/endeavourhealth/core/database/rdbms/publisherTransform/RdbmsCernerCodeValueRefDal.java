@@ -24,7 +24,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsCernerCodeValueRefDal.class);
 
     @Override
-    public CernerCodeValueRef getCodeFromCodeSet(Long codeSet, Long code, UUID serviceId) throws Exception {
+    public CernerCodeValueRef getCodeFromCodeSet(Long codeSet, String code, UUID serviceId) throws Exception {
         //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
@@ -58,7 +58,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     }
 
     @Override
-    public CernerCodeValueRef getCodeWithoutCodeSet(Long code, UUID serviceId) throws Exception {
+    public CernerCodeValueRef getCodeWithoutCodeSet(String code, UUID serviceId) throws Exception {
         //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
@@ -90,7 +90,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     }
 
     @Override
-    public CernerCodeValueRef getCodeFromMultipleCodeSets(Long code, UUID serviceId, Long... codeSets) throws Exception {
+    public CernerCodeValueRef getCodeFromMultipleCodeSets(String code, UUID serviceId, Long... codeSets) throws Exception {
         //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
@@ -169,7 +169,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
-            ps.setLong(1, cernerMapping.getCodeValueCd());
+            ps.setString(1, cernerMapping.getCodeValueCd());
             ps.setDate(2, new java.sql.Date(cernerMapping.getDate().getTime()));
             ps.setByte(3, cernerMapping.getActiveInd());
             ps.setString(4,cernerMapping.getCodeDescTxt());

@@ -30,7 +30,7 @@ public class CernerCodeValueRef {
     public static final Long CLINICAL_EVENT_UNITS = 54L;
     public static final Long ENCOUNTER_TYPE = 71L;
 
-    private long codeValueCd;
+    private String codeValueCd;
     private Date date;
     private byte activeInd;
     private String codeDescTxt;
@@ -59,7 +59,7 @@ public class CernerCodeValueRef {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
     }
-    public CernerCodeValueRef(long codeValueCd,
+    public CernerCodeValueRef(String codeValueCd,
                               Date date,
                               byte activeInd,
                               String codeDescTxt,
@@ -85,11 +85,11 @@ public class CernerCodeValueRef {
 
 
 
-    public long getCodeValueCd() {
+    public String getCodeValueCd() {
         return codeValueCd;
     }
 
-    public void setCodeValueCd(long codeValueCd) {
+    public void setCodeValueCd(String codeValueCd) {
         this.codeValueCd = codeValueCd;
     }
 

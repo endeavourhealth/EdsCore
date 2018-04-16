@@ -6,9 +6,9 @@ import java.util.UUID;
 
 public interface CernerCodeValueRefDalI {
 
-    CernerCodeValueRef getCodeFromCodeSet(Long codeSet, Long code, UUID serviceId) throws Exception;
+    CernerCodeValueRef getCodeFromCodeSet(Long codeSet, String code, UUID serviceId) throws Exception;
     void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception;
 
-    CernerCodeValueRef getCodeWithoutCodeSet(Long code, UUID serviceId) throws Exception;
-    CernerCodeValueRef getCodeFromMultipleCodeSets(Long code, UUID serviceId, Long... codeSets) throws Exception;
+    CernerCodeValueRef getCodeWithoutCodeSet(String code, UUID serviceId) throws Exception;
+    CernerCodeValueRef getCodeFromMultipleCodeSets(String code, UUID serviceId, Long... codeSets) throws Exception;
 }
