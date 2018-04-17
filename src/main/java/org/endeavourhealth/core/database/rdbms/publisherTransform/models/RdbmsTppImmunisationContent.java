@@ -14,6 +14,7 @@ public class RdbmsTppImmunisationContent {
     private String content;
     private Timestamp dateDeleted;
     private String serviceId;
+    private String auditJson;
 
     public RdbmsTppImmunisationContent() {}
 
@@ -22,6 +23,9 @@ public class RdbmsTppImmunisationContent {
         this.name = proxy.getName();
         this.content = proxy.getContent();
         this.serviceId = proxy.getServiceId();
+        if (proxy.getAudit() != null) {
+            this.auditJson = proxy.getAudit().writeToJson();
+        }
     }
 
     @Id
@@ -90,4 +94,15 @@ public class RdbmsTppImmunisationContent {
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }
+
+    @Basic
+    @Column(name = "audit_json")
+    public String getAuditJson() {
+        return auditJson;
+    }
+
+    public void setAuditJson(String auditJson) {
+        this.auditJson = auditJson;
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppImmunisationContent;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ public class TppImmunisationContent {
     private String content;
     private String serviceId;
     private Date dateDeleted;
+    private ResourceFieldMappingAudit audit = null;
 
     public TppImmunisationContent(RdbmsTppImmunisationContent proxy) throws Exception {
 
@@ -19,17 +21,22 @@ public class TppImmunisationContent {
         this.content = proxy.getContent();
         this.serviceId = proxy.getServiceId();
         this.dateDeleted = proxy.getDateDeleted();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
     }
     public TppImmunisationContent(long rowId,
                          String name,
                          String content,
                          String serviceId,
-                         Date dateDeleted) {
+                         Date dateDeleted,
+                         ResourceFieldMappingAudit audit ) {
         this.rowId = rowId;
         this.name = name;
         this.content = content;
         this.serviceId = content;
         this.dateDeleted = dateDeleted;
+        this.audit = audit;
     }
 
     public long getRowId() {
@@ -70,5 +77,13 @@ public class TppImmunisationContent {
 
     public void setDateDeleted(Date dateDeleted) {
         this.dateDeleted = dateDeleted;
+    }
+
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 }
