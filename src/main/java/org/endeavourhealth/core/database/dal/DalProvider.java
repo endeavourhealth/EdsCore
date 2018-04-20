@@ -90,8 +90,6 @@ public class DalProvider {
 
     public static TppImmunisationContentDalI factoryTppImmunisationContentDal() { return new RdbmsTppImmunisationContentDal(); }
 
-    public static TppProfileRoleDalI factoryTppProfileRoleDal() { return new RdbmsTppProfileRoleDal(); }
-
     public static TppConfigListOptionDalI factoryTppConfigListOptionDal() { return new RdbmsTppConfigListOptionDal(); }
 
     public static JDBCReaderDalI factoryJDBCReaderDal() {

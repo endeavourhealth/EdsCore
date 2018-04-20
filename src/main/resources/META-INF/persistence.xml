@@ -165,7 +165,6 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppImmunisationContent</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppProfileRole</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
