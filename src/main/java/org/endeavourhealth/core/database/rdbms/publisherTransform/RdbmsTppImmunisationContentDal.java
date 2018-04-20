@@ -74,7 +74,6 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
                     + " (row_id, name, content, service_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id), "
                     + " name = VALUES(name),"
                     + " content = VALUES(content),"
                     + " service_id = VALUES(service_id),"

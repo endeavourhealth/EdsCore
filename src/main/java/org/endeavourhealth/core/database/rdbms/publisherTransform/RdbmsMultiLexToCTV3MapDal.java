@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 import org.endeavourhealth.core.database.dal.publisherTransform.MultiLexToCTV3MapDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.MultiLexToCTV3Map;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsCTV3ToSnomedMap;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsMultiLexToCTV3Map;
 import org.hibernate.internal.SessionImpl;
 
@@ -70,7 +69,6 @@ public class RdbmsMultiLexToCTV3MapDal implements MultiLexToCTV3MapDalI {
                     + " (row_id, multilex_product_id, ctv3_read_code, ctv3_read_term)"
                     + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id), "
                     + " multilex_product_id = VALUES(multilex_product_id),"
                     + " ctv3_read_code = VALUES(ctv3_read_code),"
                     + " ctv3_read_term = VALUES(ctv3_read_term)";

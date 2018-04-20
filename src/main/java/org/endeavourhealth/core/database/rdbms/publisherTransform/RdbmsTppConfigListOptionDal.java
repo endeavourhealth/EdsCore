@@ -2,10 +2,8 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.TppConfigListOptionDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.TppConfigListOption;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -109,10 +107,7 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                     + " (row_id, config_list_id, list_option_name, service_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id), "
-                    + " config_list_id = VALUES(config_list_id),"
                     + " list_option_name = VALUES(list_option_name),"
-                    + " service_id = VALUES(service_id),"
                     + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public interface CTV3HierarchyRefDalI {
 
-    boolean isChildCodeUnderParentCode (String childReadCode, String ParentReadCode, UUID serviceId) throws Exception;
+    boolean isChildCodeUnderParentCode(String childReadCode, String ParentReadCode, UUID serviceId) throws Exception;
 
     void save(CTV3HierarchyRef ref, UUID serviceId) throws Exception;
 }

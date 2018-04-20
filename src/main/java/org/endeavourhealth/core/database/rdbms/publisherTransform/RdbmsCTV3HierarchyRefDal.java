@@ -16,7 +16,7 @@ import java.util.UUID;
 
 public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
 
-    public boolean isChildCodeUnderParentCode (String childReadCode, String ParentReadCode, UUID serviceId) throws Exception {
+    public boolean isChildCodeUnderParentCode(String childReadCode, String ParentReadCode, UUID serviceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
         try {

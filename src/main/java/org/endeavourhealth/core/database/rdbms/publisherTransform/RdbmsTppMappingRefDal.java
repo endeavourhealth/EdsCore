@@ -1,11 +1,8 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.CernerCodeValueRefDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.TppMappingRefDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -17,11 +14,7 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMappingRefDal.class);
@@ -114,10 +107,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
                     + " (row_id, group_id, mapped_term, service_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id), "
-                    + " group_id = VALUES(group_id),"
                     + " mapped_term = VALUES(mapped_term),"
-                    + " service_id = VALUES(service_id),"
                     + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
