@@ -305,7 +305,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
     private String findRegistrationType(EpisodeOfCare fhirEpisode) {
 
-        Extension extension = ExtensionConverter.findExtension(fhirEpisode, FhirExtensionUri.PATIENT_REGISTRATION_TYPE);
+        Extension extension = ExtensionConverter.findExtension(fhirEpisode, FhirExtensionUri.EPISODE_OF_CARE_REGISTRATION_TYPE);
         if (extension != null) {
             Coding coding = (Coding)extension.getValue();
             return coding.getCode();
