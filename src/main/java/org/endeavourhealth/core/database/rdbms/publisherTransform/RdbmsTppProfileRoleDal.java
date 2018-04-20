@@ -26,9 +26,11 @@ public class RdbmsTppProfileRoleDal implements TppProfileRoleDalI {
             String sql = "select r"
                     + " from "
                     + " RdbmsTppProfileRole r"
-                    + " where r.rowId = :row_id";
+                    + " where r.serviceId = :service_id"
+                    + " and r.rowId = :row_id";
 
             Query query = entityManager.createQuery(sql, RdbmsTppProfileRole.class)
+                    .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setMaxResults(1);
 
@@ -68,21 +70,23 @@ public class RdbmsTppProfileRoleDal implements TppProfileRoleDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO tpp_profile_role "
-                    + " (row_id, role_description, audit_json)"
+                    + " (row_id, role_description, service_id, audit_json)"
                     + " VALUES (?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " row_id = VALUES(row_id), "
                     + " role_description = VALUES(role_description),"
+                    + " service_id = VALUES(service_id),"
                     + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
             ps.setLong(1, tppImmunisationContent.getRowId());
             ps.setString(2, tppImmunisationContent.getRoleDescription());
+            ps.setString(3,tppImmunisationContent.getServiceId());
             if (tppImmunisationContent.getAuditJson() == null) {
-                ps.setNull(3, Types.VARCHAR);
+                ps.setNull(4, Types.VARCHAR);
             } else {
-                ps.setString(3, tppImmunisationContent.getAuditJson());
+                ps.setString(4, tppImmunisationContent.getAuditJson());
             }
 
             ps.executeUpdate();

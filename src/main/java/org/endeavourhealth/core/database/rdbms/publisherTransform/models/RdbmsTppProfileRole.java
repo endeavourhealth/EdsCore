@@ -11,12 +11,14 @@ public class RdbmsTppProfileRole {
     private long rowId;
     private String roleDescription;
     private String auditJson;
+    private String serviceId;
 
     public RdbmsTppProfileRole() {}
 
     public RdbmsTppProfileRole(TppProfileRole proxy) throws Exception {
         this.rowId = proxy.getRowId();
         this.roleDescription = proxy.getRoleDescription();
+        this.serviceId = proxy.getServiceId();
         if (proxy.getAudit() != null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -66,5 +68,15 @@ public class RdbmsTppProfileRole {
     public int hashCode() {
 
         return Objects.hash(rowId, roleDescription, auditJson);
+    }
+
+    @Basic
+    @Column(name = "service_id")
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 }
