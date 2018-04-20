@@ -124,7 +124,9 @@ public class DalProvider {
         return new RdbmsMultiLexToCTV3MapDal();
     }
 
-    public static CTV3HierarchyRefDalI factoryCTV3HierarchyRefDal() { return new RdbmsCTV3HierarchyRefDal(); }
+    public static CTV3HierarchyRefDalI factoryCTV3HierarchyRefDal() {
+        return new RdbmsCTV3HierarchyRefDal();
+    }
 
     /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {

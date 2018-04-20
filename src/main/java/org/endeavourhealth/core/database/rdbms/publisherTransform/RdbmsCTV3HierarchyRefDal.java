@@ -2,11 +2,8 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.CTV3HierarchyRefDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CTV3HierarchyRef;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.MultiLexToCTV3Map;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCTV3HierarchyRef;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsMultiLexToCTV3Map;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsCTV3ToSnomedMap;
 import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
@@ -70,7 +67,6 @@ public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
                     + " (row_id, ctv3_parent_read_code, ctv3_child_read_code, child_level)"
                     + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id), "
                     + " ctv3_parent_read_code = VALUES(ctv3_parent_read_code),"
                     + " ctv3_child_read_code = VALUES(ctv3_child_read_code),"
                     + " child_level = VALUES(child_level)";
