@@ -1,7 +1,8 @@
-package org.endeavourhealth.core.database.dal.publisherTransform.models;
+package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppImmunisationContent;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppImmunisationContent;
 
 import java.util.Date;
 

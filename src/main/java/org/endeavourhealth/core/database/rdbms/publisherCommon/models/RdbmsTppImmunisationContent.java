@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
+package org.endeavourhealth.core.database.rdbms.publisherCommon.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.TppImmunisationContent;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppImmunisationContent;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -12,8 +12,8 @@ public class RdbmsTppImmunisationContent {
     private long rowId;
     private String name;
     private String content;
-    private Timestamp dateDeleted;
     private String serviceId;
+    private Timestamp dateDeleted;
     private String auditJson;
 
     public RdbmsTppImmunisationContent() {}
@@ -59,33 +59,6 @@ public class RdbmsTppImmunisationContent {
     }
 
     @Basic
-    @Column(name = "date_deleted")
-    public Timestamp getDateDeleted() {
-        return dateDeleted;
-    }
-
-    public void setDateDeleted(Timestamp dateDeleted) {
-        this.dateDeleted = dateDeleted;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RdbmsTppImmunisationContent that = (RdbmsTppImmunisationContent) o;
-        return rowId == that.rowId &&
-                Objects.equals(name, that.name) &&
-                Objects.equals(content, that.content) &&
-                Objects.equals(dateDeleted, that.dateDeleted);
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(rowId, name, content, dateDeleted);
-    }
-
-    @Basic
     @Column(name = "service_id")
     public String getServiceId() {
         return serviceId;
@@ -93,6 +66,16 @@ public class RdbmsTppImmunisationContent {
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    @Basic
+    @Column(name = "date_deleted")
+    public Timestamp getDateDeleted() {
+        return dateDeleted;
+    }
+
+    public void setDateDeleted(Timestamp dateDeleted) {
+        this.dateDeleted = dateDeleted;
     }
 
     @Basic
@@ -105,4 +88,22 @@ public class RdbmsTppImmunisationContent {
         this.auditJson = auditJson;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RdbmsTppImmunisationContent that = (RdbmsTppImmunisationContent) o;
+        return rowId == that.rowId &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(content, that.content) &&
+                Objects.equals(serviceId, that.serviceId) &&
+                Objects.equals(dateDeleted, that.dateDeleted) &&
+                Objects.equals(auditJson, that.auditJson);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(rowId, name, content, serviceId, dateDeleted, auditJson);
+    }
 }

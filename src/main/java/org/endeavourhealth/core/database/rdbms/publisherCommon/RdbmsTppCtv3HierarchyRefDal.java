@@ -1,9 +1,9 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform;
+package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.CTV3HierarchyRefDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.CTV3HierarchyRef;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppCtv3HierarchyRefDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppCtv3HierarchyRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCTV3HierarchyRef;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3HierarchyRef;
 import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
@@ -12,26 +12,25 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.UUID;
 
-public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
-
-    public boolean isChildCodeUnderParentCode(String childReadCode, String ParentReadCode, UUID serviceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
+    @Override
+    public boolean isChildCodeUnderParentCode(String childReadCode, String ParentReadCode) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {
             String sql = "select c"
                     + " from"
-                    + " RdbmsCTV3HierarchyRef c"
+                    + " RdbmsTppCtv3HierarchyRef c"
                     + " where c.ctv3ChildReadCode = :ctv3_child_read_code"
                     + " and c.ctv3ParentReadCode = :ctv3_parent_read_code";
 
-            Query query = entityManager.createQuery(sql, RdbmsCTV3HierarchyRef.class)
+            Query query = entityManager.createQuery(sql, RdbmsTppCtv3HierarchyRef.class)
                     .setParameter("ctv3_child_read_code", childReadCode)
                     .setParameter("ctv3_parent_read_code", ParentReadCode);
 
             try {
-                List<RdbmsCTV3HierarchyRef> result = (List<RdbmsCTV3HierarchyRef>) query.getResultList();
+                List<RdbmsTppCtv3HierarchyRef> result = (List<RdbmsTppCtv3HierarchyRef>) query.getResultList();
                 return  (result.size() > 0);
 
             } catch (NoResultException ex) {
@@ -43,15 +42,15 @@ public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
         }
     }
 
-    public void save(CTV3HierarchyRef ref, UUID serviceId) throws Exception
-    {
+    @Override
+    public void save(TppCtv3HierarchyRef ref) throws Exception {
         if (ref == null) {
             throw new IllegalArgumentException("ref is null");
         }
 
-        RdbmsCTV3HierarchyRef ctv3HierarchyRef = new RdbmsCTV3HierarchyRef(ref);
+        RdbmsTppCtv3HierarchyRef ctv3HierarchyRef = new RdbmsTppCtv3HierarchyRef(ref);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
@@ -63,7 +62,7 @@ public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO ctv3_hierarchy_ref "
+            String sql = "INSERT INTO tpp_ctv3_hierarchy_ref "
                     + " (row_id, ctv3_parent_read_code, ctv3_child_read_code, child_level)"
                     + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
@@ -74,8 +73,8 @@ public class RdbmsCTV3HierarchyRefDal implements CTV3HierarchyRefDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setLong(1, ctv3HierarchyRef.getRowId());
-            ps.setString(2, ctv3HierarchyRef.getCTV3ParentReadCode());
-            ps.setString(3,ctv3HierarchyRef.getCTV3ChildReadTerm());
+            ps.setString(2, ctv3HierarchyRef.getCtv3ParentReadCode());
+            ps.setString(3,ctv3HierarchyRef.getCtv3ChildReadCode());
             ps.setInt(4,ctv3HierarchyRef.getChildLevel());
 
             ps.executeUpdate();

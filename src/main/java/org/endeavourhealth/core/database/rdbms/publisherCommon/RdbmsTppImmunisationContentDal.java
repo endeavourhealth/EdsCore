@@ -1,9 +1,9 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform;
+package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.TppImmunisationContentDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.TppImmunisationContent;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppImmunisationContent;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppImmunisationContentDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppImmunisationContent;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppImmunisationContent;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,23 +14,20 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.UUID;
 
 public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppImmunisationContentDal.class);
 
     @Override
-    public TppImmunisationContent getContentFromRowId(Long rowId, UUID serviceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+    public TppImmunisationContent getContentFromRowId(Long rowId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         try {
             String sql = "select c"
                     + " from "
                     + " RdbmsTppImmunisationContent c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.rowId = :row_id";
+                    + " where c.rowId = :row_id";
 
             Query query = entityManager.createQuery(sql, RdbmsTppImmunisationContent.class)
-                    .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setMaxResults(1);
 
@@ -39,7 +36,7 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
                 return new TppImmunisationContent(result);
             }
             catch (NoResultException e) {
-                LOG.error("No code found for rowId " + rowId + ", service " + serviceId);
+                LOG.error("No code found for rowId " + rowId);
                 return null;
             }
         } finally {
@@ -50,7 +47,7 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
     }
 
     @Override
-    public void save(TppImmunisationContent mapping, UUID serviceId) throws Exception {
+    public void save(TppImmunisationContent mapping) throws Exception {
 
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
@@ -58,7 +55,7 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
 
         RdbmsTppImmunisationContent tppImmunisationContent = new RdbmsTppImmunisationContent(mapping);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
