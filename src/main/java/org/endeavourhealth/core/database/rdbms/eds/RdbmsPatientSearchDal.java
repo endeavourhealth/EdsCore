@@ -644,7 +644,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         List<Address> homeAddresses = new ArrayList<>();
 
         for (Address fhirAddress: fhirPatient.getAddress()) {
-            if (fhirAddress.getUse() == Address.AddressUse.HOME) {
+            if (fhirAddress.getUse() == null
+                || fhirAddress.getUse() == Address.AddressUse.HOME) {
                 homeAddresses.add(fhirAddress);
             }
         }
