@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
-import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
@@ -70,7 +69,7 @@ public class RdbmsUserAuditDal implements UserAuditDalI {
         }
 
         RdbmsUserEvent userEvent = new RdbmsUserEvent();
-        userEvent.setId(UUIDs.timeBased().toString());
+        userEvent.setId(UUID.randomUUID().toString());
         userEvent.setUserId(userId.toString());
         userEvent.setModule(module);
         userEvent.setSubModule(subModule);
@@ -119,6 +118,8 @@ public class RdbmsUserAuditDal implements UserAuditDalI {
             if (organisationId != null) {
                 sql += " and c.organisationId = :organisation_id";
             }
+
+            sql += " order by c.timestamp";
 
             Query query = entityManager.createQuery(sql, RdbmsUserEvent.class)
                     .setParameter("module", module)

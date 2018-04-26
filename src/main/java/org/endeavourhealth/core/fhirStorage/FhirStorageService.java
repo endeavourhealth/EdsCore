@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.fhirStorage;
 
-import com.datastax.driver.core.utils.UUIDs;
 import org.endeavourhealth.common.utility.JsonSerializer;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
@@ -203,7 +202,7 @@ public class FhirStorageService {
         ResourceWrapper entry = new ResourceWrapper();
         entry.setResourceId(FhirResourceHelper.getResourceId(resource));
         entry.setResourceType(FhirResourceHelper.getResourceType(resource));
-        entry.setVersion(UUIDs.timeBased());
+        entry.setVersion(UUID.randomUUID());
         entry.setCreatedAt(new Date());
         entry.setServiceId(serviceId);
         entry.setSystemId(systemId);

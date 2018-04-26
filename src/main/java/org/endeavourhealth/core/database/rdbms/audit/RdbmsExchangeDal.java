@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
-import com.datastax.driver.core.utils.UUIDs;
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
 import org.endeavourhealth.core.database.dal.audit.models.*;
@@ -79,7 +78,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
     public void save(ExchangeEvent event) throws Exception {
 
         RdbmsExchangeEvent dbObj = new RdbmsExchangeEvent(event);
-        dbObj.setId(UUIDs.timeBased().toString()); //not set by the proxy constructor but needed
+        dbObj.setId(UUID.randomUUID().toString()); //not set by the proxy constructor but needed
 
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         try {
