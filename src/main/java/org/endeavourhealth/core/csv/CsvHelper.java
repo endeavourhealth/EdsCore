@@ -26,6 +26,9 @@ public class CsvHelper {
 
     public static String[] getHeaderMapAsArray(CSVParser parser) {
         Map<String, Integer> headerMap = parser.getHeaderMap();
+        if (headerMap == null) {
+            throw new RuntimeException("Null header map returned from CSV file - ensure that .withHeader() is specified on the CSVFormat used");
+        }
 
         String[] ret = new String[headerMap.size()];
 
