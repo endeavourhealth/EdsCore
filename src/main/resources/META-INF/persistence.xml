@@ -37,6 +37,8 @@
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsUserEvent</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarningType</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarning</class>
+        <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeGeneralError</class>
+        <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeProtocolError</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />

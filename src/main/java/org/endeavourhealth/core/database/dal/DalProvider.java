@@ -68,6 +68,15 @@ public class DalProvider {
         return new RdbmsExchangeBatchDal();
     }
 
+    public static ExchangeGeneralErrorDalI factoryExchangeGeneralErrorDal() {
+        return new RdbmsExchangeGeneralErrorDal();
+    }
+
+    public static ExchangeProtocolErrorDalI factoryExchangeProtocolErrorDal() {
+        return new RdbmsExchangeProtocolErrorDal();
+    }
+
+
     public static ExchangeDalI factoryExchangeDal() {
         return new RdbmsExchangeDal();
     }
