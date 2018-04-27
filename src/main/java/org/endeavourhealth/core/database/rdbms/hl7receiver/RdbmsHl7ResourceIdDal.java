@@ -4,69 +4,121 @@ import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.models.ResourceId;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId;
+import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
+import java.util.UUID;
 
 public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsHl7ResourceIdDal.class);
 
-    public ResourceId getResourceId(String scope, String resource, String uniqueId) throws Exception {
+    /*
+     *
+     */
+    public ResourceId getResourceId(String scope, String resourceType, String uniqueId) throws Exception {
         EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
+
+        PreparedStatement ps = null;
 
         try {
             if (!entityManager.isOpen())
                 throw new IllegalStateException("No connection to HL7 DB");
 
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsResourceId c"
-                    + " where c.scopeId = :scopeId"
-                    + " and c.resourceType = :resourceType"
-                    + " and c.uniqueId = :uniqueId";
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
 
-            Query query = entityManager.createQuery(sql, RdbmsResourceId.class)
-                    .setParameter("scopeId", scope).setParameter("resourceType", resource).setParameter("uniqueId", uniqueId);
+            Connection connection = session.connection();
 
-            if (query == null) {
-                LOG.trace("Failed to create query");
-                LOG.trace("scopeId [" + scope + "]");
-                LOG.trace("resourceType [" + resource + "]");
-                LOG.trace("uniqueId [" + uniqueId + "]");
-                throw new IllegalStateException("Failed to create query");
+            //syntax for postreSQL is slightly different
+            String sql = null;
+            if (ConnectionManager.isPostgreSQL(connection)) {
+                sql = "SELECT resource_uuid FROM mapping.resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?;";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, scope);
+                ps.setString(2, resourceType);
+                ps.setString(3, uniqueId);
+            } else {
+                sql = "SELECT resource_uuid FROM resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?;";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, scope);
+                ps.setString(2, resourceType);
+                ps.setString(3, uniqueId);
             }
 
-            List results = query.getResultList();
-            if (results.isEmpty())
-                return null;
+            ResultSet rs = ps.executeQuery();
 
-            RdbmsResourceId result = (RdbmsResourceId) results.get(0);
-            if (result != null) {
-                LOG.trace("Read recourceId:" + result.getUniqueId() + "==>" + result.getResourceId());
-                return new ResourceId(result);
+            if (rs.next()) {
+                ResourceId resourceId = new ResourceId();
+                resourceId.setScopeId(scope);
+                resourceId.setResourceType(resourceType);
+                resourceId.setUniqueId(uniqueId);
+                if (ConnectionManager.isPostgreSQL(connection)) {
+                    resourceId.setResourceId((UUID) rs.getObject(1));
+                } else {
+                    resourceId.setResourceId(UUID.fromString(rs.getString(1)));
+                }
+
+                return resourceId;
+
             } else {
                 return null;
             }
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
 
+    /*
+     *
+     */
     public void saveResourceId(ResourceId resourceId)  throws Exception {
 
-        RdbmsResourceId dbObj = new RdbmsResourceId(resourceId);
+        //RdbmsResourceId dbObj = new RdbmsResourceId(resourceId);
 
         EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
 
+        PreparedStatement ps = null;
+
         try {
             entityManager.getTransaction().begin();
-            entityManager.persist(dbObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+
+            Connection connection = session.connection();
+
+            //syntax for postreSQL is slightly different
+            String sql = null;
+            if (ConnectionManager.isPostgreSQL(connection)) {
+                sql = "INSERT INTO mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES(?, ?, ?, ?);";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, resourceId.getScopeId());
+                ps.setString(2, resourceId.getResourceType());
+                ps.setString(3, resourceId.getUniqueId());
+                ps.setObject(4, resourceId.getResourceId());
+            } else {
+                sql = "INSERT INTO resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES(?, ?, ?, ?);";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, resourceId.getScopeId());
+                ps.setString(2, resourceId.getResourceType());
+                ps.setString(3, resourceId.getUniqueId());
+                ps.setString(4, resourceId.getResourceId().toString());
+            }
+
+            ps.executeUpdate();
+
             entityManager.getTransaction().commit();
+
             LOG.trace("Saved recourceId:" + resourceId.getUniqueId() + "==>" + resourceId.getResourceId());
 
         } catch (Exception ex) {
@@ -74,6 +126,9 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             throw ex;
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
