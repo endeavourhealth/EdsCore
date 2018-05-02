@@ -8,9 +8,9 @@ public class PostcodeLookup {
     private String postcode = null;
     private String lsoaCode = null;
     private String msoaCode = null;
-    private String ward = null;
-    private String ward1998 = null;
-    private String ccg = null;
+    private String wardCode = null;
+    private String ccgCode = null;
+    private String localAuthorityCode = null;
     
     public PostcodeLookup() {}
 
@@ -19,9 +19,9 @@ public class PostcodeLookup {
         this.postcode = proxy.getPostcode();
         this.lsoaCode = proxy.getLsoaCode();
         this.msoaCode = proxy.getMsoaCode();
-        this.ward = proxy.getWard();
-        this.ward1998 = proxy.getWard1998();
-        this.ccg = proxy.getCcg();
+        this.wardCode = proxy.getWardCode();
+        this.ccgCode = proxy.getCcgCode();
+        this.localAuthorityCode = proxy.getLocalAuthorityCode();
     }
 
     public String getPostcodeNoSpace() {
@@ -56,27 +56,27 @@ public class PostcodeLookup {
         this.msoaCode = msoaCode;
     }
 
-    public String getWard() {
-        return ward;
+    public String getWardCode() {
+        return wardCode;
     }
 
-    public void setWard(String ward) {
-        this.ward = ward;
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
     }
 
-    public String getWard1998() {
-        return ward1998;
+    public String getCcgCode() {
+        return ccgCode;
     }
 
-    public void setWard1998(String ward1998) {
-        this.ward1998 = ward1998;
+    public void setCcgCode(String ccgCode) {
+        this.ccgCode = ccgCode;
     }
 
-    public String getCcg() {
-        return ccg;
+    public String getLocalAuthorityCode() {
+        return localAuthorityCode;
     }
 
-    public void setCcg(String ccg) {
-        this.ccg = ccg;
+    public void setLocalAuthorityCode(String localAuthorityCode) {
+        this.localAuthorityCode = localAuthorityCode;
     }
 }
