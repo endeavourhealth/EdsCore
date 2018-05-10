@@ -11,7 +11,10 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,10 +37,7 @@ public class RdbmsExchangeProtocolErrorDal implements ExchangeProtocolErrorDalI 
 
             String sql = "INSERT INTO exchange_protocol_error"
                     + " (exchange_id)"
-                    + " VALUES (?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " exchange_id = VALUES(exchange_id),"
-                    + " inserted_at = VALUES(inserted_at);";
+                    + " VALUES (?);";
 
             ps = connection.prepareStatement(sql);
 
@@ -63,13 +63,18 @@ public class RdbmsExchangeProtocolErrorDal implements ExchangeProtocolErrorDalI 
     public List<ExchangeProtocolError> getProtocolErrors() throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
+        LocalDateTime ldt = LocalDateTime.now().minusDays(2);
+        Date twoDaysAgo = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+
         try {
             String sql = "select c"
                     + " from"
                     + " RdbmsExchangeProtocolError c"
+                    + " where c.insertedAt > :twoDays  "
                     + " order by c.insertedAt desc ";
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeProtocolError.class);
+            Query query = entityManager.createQuery(sql, RdbmsExchangeProtocolError.class)
+                    .setParameter("twoDays", new java.sql.Date(twoDaysAgo.getTime()));
 
 
             List<RdbmsExchangeProtocolError> results = query.getResultList();
