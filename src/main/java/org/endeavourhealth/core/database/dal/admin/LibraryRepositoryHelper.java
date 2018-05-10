@@ -73,11 +73,13 @@ public class LibraryRepositoryHelper {
 					TechnicalInterface technicalInterface = system.getTechnicalInterface().stream()
 							.filter(ti -> ti.getUuid().equals(serviceContract.getTechnicalInterface().getUuid()))
 							.findFirst()
-							.get();
+							.orElse(null);
 
-					serviceContract.setTechnicalInterface(technicalInterface);
+					if (technicalInterface != null) {
+						serviceContract.setTechnicalInterface(technicalInterface);
 
-					ret.add(libraryItem);
+						ret.add(libraryItem);
+					}
 				}
 			}
 		}

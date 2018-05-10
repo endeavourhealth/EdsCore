@@ -2,10 +2,7 @@ package org.endeavourhealth.core.database.rdbms.reference;
 
 import org.endeavourhealth.core.database.dal.reference.ReferenceUpdaterDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsDeprivationLookup;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoaLookup;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoaLookup;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsPostcodeLookup;
+import org.endeavourhealth.core.database.rdbms.reference.models.*;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -87,8 +84,118 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
         }
     }
 
+
     @Override
-    public void updatePostcodeMap(String postcode, String lsoaCode, String msoaCode, String ward, String ward1998, String ccgCode) throws Exception {
+    public void updateCcgMap(String ccgCode, String ccgName) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        try {
+            String sql = "select r"
+                    + " from RdbmsCcgLookup r"
+                    + " where r.code = :ccgCode";
+
+
+            Query query = entityManager
+                    .createQuery(sql, RdbmsCcgLookup.class)
+                    .setParameter("ccgCode", ccgCode);
+
+            RdbmsCcgLookup lookup = null;
+            try {
+                lookup = (RdbmsCcgLookup) query.getSingleResult();
+            } catch (NoResultException e) {
+                lookup = new RdbmsCcgLookup();
+                lookup.setCode(ccgCode);
+            }
+
+            lookup.setName(ccgName);
+
+            entityManager.getTransaction().begin();
+            entityManager.persist(lookup);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void updateWardMap(String wardCode, String wardName) throws Exception {
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        try {
+            String sql = "select r"
+                    + " from RdbmsWardLookup r"
+                    + " where r.code = :wardCode";
+
+
+            Query query = entityManager
+                    .createQuery(sql, RdbmsWardLookup.class)
+                    .setParameter("wardCode", wardCode);
+
+            RdbmsWardLookup lookup = null;
+            try {
+                lookup = (RdbmsWardLookup) query.getSingleResult();
+            } catch (NoResultException e) {
+                lookup = new RdbmsWardLookup();
+                lookup.setCode(wardCode);
+            }
+
+            lookup.setName(wardName);
+
+            entityManager.getTransaction().begin();
+            entityManager.persist(lookup);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void updateLocalAuthorityMap(String localAuthorityCode, String localAuthorityName) throws Exception {
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        try {
+            String sql = "select r"
+                    + " from RdbmsLocalAuthorityLookup r"
+                    + " where r.code = :localAuthorityCode";
+
+
+            Query query = entityManager
+                    .createQuery(sql, RdbmsLocalAuthorityLookup.class)
+                    .setParameter("localAuthorityCode", localAuthorityCode);
+
+            RdbmsLocalAuthorityLookup lookup = null;
+            try {
+                lookup = (RdbmsLocalAuthorityLookup) query.getSingleResult();
+            } catch (NoResultException e) {
+                lookup = new RdbmsLocalAuthorityLookup();
+                lookup.setCode(localAuthorityCode);
+            }
+
+            lookup.setName(localAuthorityName);
+
+            entityManager.getTransaction().begin();
+            entityManager.persist(lookup);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void updatePostcodeMap(String postcode, String lsoaCode, String msoaCode, String ward, String ccgCode, String localAuthority) throws Exception {
 
         //always make sure this is uppercase
         postcode = postcode.toUpperCase();
@@ -116,12 +223,11 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             }
 
             postcodeReference.setPostcode(postcode);
-            postcodeReference.setCcg(ccgCode);
+            postcodeReference.setCcgCode(ccgCode);
             postcodeReference.setLsoaCode(lsoaCode);
             postcodeReference.setMsoaCode(msoaCode);
-            postcodeReference.setWard(ward);
-            postcodeReference.setWard1998(ward1998);
-            //postcodeReference.setTownsendScore(townsendScore);
+            postcodeReference.setWardCode(ward);
+            postcodeReference.setLocalAuthorityCode(localAuthority);
 
             entityManager.getTransaction().begin();
             entityManager.persist(postcodeReference);

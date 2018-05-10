@@ -16,10 +16,9 @@ public class RdbmsPostcodeLookup implements Serializable {
     private String postcode = null;
     private String lsoaCode = null;
     private String msoaCode = null;
-    private String ward = null;
-    private String ward1998 = null;
-    private String ccg = null;
-    //private BigDecimal townsendScore = null;
+    private String wardCode = null;
+    private String ccgCode = null;
+    private String localAuthorityCode = null;
 
     public RdbmsPostcodeLookup() {}
 
@@ -28,9 +27,9 @@ public class RdbmsPostcodeLookup implements Serializable {
         this.postcode = proxy.getPostcode();
         this.lsoaCode = proxy.getLsoaCode();
         this.msoaCode = proxy.getMsoaCode();
-        this.ward = proxy.getWard();
-        this.ward1998 = proxy.getWard1998();
-        this.ccg = proxy.getCcg();
+        this.wardCode = proxy.getWardCode();
+        this.ccgCode = proxy.getCcgCode();
+        this.localAuthorityCode = proxy.getLocalAuthorityCode();
     }
 
     @Id
@@ -70,39 +69,31 @@ public class RdbmsPostcodeLookup implements Serializable {
         this.msoaCode = msoaCode;
     }
 
-    @Column(name = "ward")
-    public String getWard() {
-        return ward;
+    @Column(name = "ward_code")
+    public String getWardCode() {
+        return wardCode;
     }
 
-    public void setWard(String ward) {
-        this.ward = ward;
+    public void setWardCode(String wardCode) {
+        this.wardCode = wardCode;
     }
 
-    @Column(name = "ward_1998")
-    public String getWard1998() {
-        return ward1998;
+    @Column(name = "ccg_code")
+    public String getCcgCode() {
+        return ccgCode;
     }
 
-    public void setWard1998(String ward1998) {
-        this.ward1998 = ward1998;
+    public void setCcgCode(String ccgCode) {
+        this.ccgCode = ccgCode;
     }
 
-    @Column(name = "ccg")
-    public String getCcg() {
-        return ccg;
+    @Column(name = "local_authority_code")
+    public String getLocalAuthorityCode() {
+        return localAuthorityCode;
     }
 
-    public void setCcg(String ccg) {
-        this.ccg = ccg;
+    public void setLocalAuthorityCode(String localAuthorityCode) {
+        this.localAuthorityCode = localAuthorityCode;
     }
 
-    /*@Column(name = "townsend_score")
-    public BigDecimal getTownsendScore() {
-        return townsendScore;
-    }
-
-    public void setTownsendScore(BigDecimal townsendScore) {
-        this.townsendScore = townsendScore;
-    }*/
 }

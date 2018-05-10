@@ -270,7 +270,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
 
     private static String findCity(Patient fhirPatient) {
-        Address address = findAddress(fhirPatient);
+        Address address = AddressHelper.findHomeAddress(fhirPatient);
         if (address != null
                 && address.hasCity()) {
             return address.getCity();
@@ -280,7 +280,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     }
 
     private static String findDistrict(Patient fhirPatient) {
-        Address address = findAddress(fhirPatient);
+        Address address = AddressHelper.findHomeAddress(fhirPatient);
         if (address != null
                 && address.hasDistrict()) {
             return address.getDistrict();
@@ -290,7 +290,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     }
 
     private static String findAddressLine(Patient fhirPatient, int index) {
-        Address address = findAddress(fhirPatient);
+        Address address = AddressHelper.findHomeAddress(fhirPatient);
         if (address != null
                 && address.hasLine()) {
             List<StringType> lines = address.getLine();
@@ -639,37 +639,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         return String.join(" ", surnames);
     }
 
-    private static Address findAddress(Patient fhirPatient) {
-
-        List<Address> homeAddresses = new ArrayList<>();
-
-        for (Address fhirAddress: fhirPatient.getAddress()) {
-            if (fhirAddress.getUse() == null
-                || fhirAddress.getUse() == Address.AddressUse.HOME) {
-                homeAddresses.add(fhirAddress);
-            }
-        }
-
-        //return first non-ended one
-        for (Address address: homeAddresses) {
-            if (!address.hasPeriod()
-                    || PeriodHelper.isActive(address.getPeriod())) {
-                return address;
-            }
-        }
-
-        //if no non-ended one, then return the last one, as it was added most recently
-        if (!homeAddresses.isEmpty()) {
-            int size = homeAddresses.size();
-            return homeAddresses.get(size-1);
-        }
-
-        return null;
-    }
-
     private static String findPostcode(Patient fhirPatient) {
 
-        Address fhirAddress = findAddress(fhirPatient);
+        Address fhirAddress = AddressHelper.findHomeAddress(fhirPatient);
         if (fhirAddress != null) {
 
             //Homerton seem to sometimes enter extra information in the postcode

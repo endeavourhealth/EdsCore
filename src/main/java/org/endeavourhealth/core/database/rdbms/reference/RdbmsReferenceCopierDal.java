@@ -3,9 +3,7 @@ package org.endeavourhealth.core.database.rdbms.reference;
 import org.endeavourhealth.core.database.dal.reference.ReferenceCopierDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.enterprise.EnterpriseConnector;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsDeprivationLookup;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoaLookup;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoaLookup;
+import org.endeavourhealth.core.database.rdbms.reference.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +28,9 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
         try {
             copyLsoas(enterpriseConnection, entityManager);
             copyMsoas(enterpriseConnection, entityManager);
-            copyDeprivation(enterpriseConnection, entityManager);
+            copyDeprivation(enterpriseConnection, entityManager); //this must be done AFTER the LSOAs
+            copyWards(enterpriseConnection, entityManager);
+            copyLocalAuthorities(enterpriseConnection, entityManager);
 
         } finally {
             enterpriseConnection.close();
@@ -38,8 +38,120 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
         }
     }
 
+    /**
+     * copies the local_authority_lookup table from the main reference database to the subscriber DB specified
+     */
+    private void copyLocalAuthorities(Connection enterpriseConnection, EntityManager entityManager) throws Exception {
+        LOG.info("Starting LocalAuthority copying");
+
+        PreparedStatement ps = null;
+        try {
+            String sql = "INSERT INTO local_authority_lookup (local_authority_code, local_authority_name)"
+                    + " VALUES (?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " local_authority_name = VALUES(local_authority_name);";
+
+            ps = enterpriseConnection.prepareStatement(sql);
+
+            int batch = 0;
+            while (copyLocalAuthorityBatch(entityManager, batch, enterpriseConnection, ps)) {
+                batch ++;
+                LOG.info("Done " + (batch * BATCH_SIZE));
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+
+        LOG.info("Finished LocalAuthority copying");
+    }
+
+    private static boolean copyLocalAuthorityBatch(EntityManager entityManager, int batch, Connection enterpriseConnection, PreparedStatement ps) throws Exception {
+
+        String sql = "select c"
+                + " from RdbmsLocalAuthorityLookup c";
+
+        Query query = entityManager.createQuery(sql, RdbmsLocalAuthorityLookup.class)
+                .setFirstResult(batch * BATCH_SIZE)
+                .setMaxResults(BATCH_SIZE);
+
+        List<RdbmsLocalAuthorityLookup> results = query.getResultList();
+
+        for (RdbmsLocalAuthorityLookup lookup: results) {
+            String code = lookup.getCode();
+            String name = lookup.getName();
+
+            //attempt an update first, and check if it affected any rows
+            ps.setString(1, code);
+            ps.setString(2, name);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        enterpriseConnection.commit();
+
+        return results.size() == BATCH_SIZE;
+    }
 
 
+    /**
+     * copies the ward_lookup table from the main reference database to the subscriber DB specified
+     */
+    private void copyWards(Connection enterpriseConnection, EntityManager entityManager) throws Exception {
+        LOG.info("Starting Ward copying");
+
+        PreparedStatement ps = null;
+        try {
+            String sql = "INSERT INTO ward_lookup (ward_code, ward_name)"
+                    + " VALUES (?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " ward_name = VALUES(ward_name);";
+
+            ps = enterpriseConnection.prepareStatement(sql);
+
+            int batch = 0;
+            while (copyWardBatch(entityManager, batch, enterpriseConnection, ps)) {
+                batch ++;
+                LOG.info("Done " + (batch * BATCH_SIZE));
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+
+        LOG.info("Finished Ward copying");
+    }
+
+    private static boolean copyWardBatch(EntityManager entityManager, int batch, Connection enterpriseConnection, PreparedStatement ps) throws Exception {
+
+        String sql = "select c"
+                + " from RdbmsWardLookup c";
+
+        Query query = entityManager.createQuery(sql, RdbmsWardLookup.class)
+                .setFirstResult(batch * BATCH_SIZE)
+                .setMaxResults(BATCH_SIZE);
+
+        List<RdbmsWardLookup> results = query.getResultList();
+
+        for (RdbmsWardLookup lookup: results) {
+            String code = lookup.getCode();
+            String name = lookup.getName();
+
+            //attempt an update first, and check if it affected any rows
+            ps.setString(1, code);
+            ps.setString(2, name);
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        enterpriseConnection.commit();
+
+        return results.size() == BATCH_SIZE;
+    }
 
 
     /**
