@@ -96,7 +96,7 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
 
             String sql = "INSERT INTO tpp_ctv3_lookup "
                     + " (row_id, ctv3_code, ctv3_text, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " row_id = VALUES(row_id), "
                     + " ctv3_code = VALUES(ctv3_code),"
