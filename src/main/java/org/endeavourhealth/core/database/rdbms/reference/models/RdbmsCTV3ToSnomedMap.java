@@ -47,23 +47,23 @@ public class RdbmsCTV3ToSnomedMap implements Serializable {
     }
 
     @Column(name = "ctv3_concept_id", nullable = false)
-    public String getCTV3ConceptId() {
+    public String getCtv3ConceptId() {
         return ctv3ConceptId;
     }
-    public void setCTV3ConceptId(String mapId) {
+    public void setCtv3ConceptId(String mapId) {
         this.ctv3ConceptId = ctv3ConceptId;
     }
 
     @Column(name = "ctv3_term_id", nullable = false)
-    public String getCTV3TermId() {
+    public String getCtv3TermId() {
         return ctv3TermId;
     }
-    public void setCTV3TermId(String mapId) {
+    public void setCtv3TermId(String mapId) {
         this.ctv3TermId = ctv3TermId;
     }
 
     @Column(name = "ctv3_term_type", nullable = true)
-    public String getCTV3TermType() {
+    public String getCtv3TermType() {
         return ctv3TermType;
     }
     public void setCTV3TermType(String mapId) {
@@ -79,7 +79,7 @@ public class RdbmsCTV3ToSnomedMap implements Serializable {
     }
 
     @Column(name = "sct_description_id", nullable = true)
-    public String getSCTDescriptionId() {
+    public String getSctDescriptionId() {
         return sctDecriptionId;
     }
     public void setSCTDescriptionId(String sctDecriptionId) { this.sctDecriptionId = sctDecriptionId; }
