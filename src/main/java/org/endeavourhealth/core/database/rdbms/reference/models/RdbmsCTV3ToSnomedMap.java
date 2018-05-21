@@ -27,11 +27,11 @@ public class RdbmsCTV3ToSnomedMap implements Serializable {
 
     public RdbmsCTV3ToSnomedMap(CTV3ToSnomedMap proxy) {
         this.mapId = proxy.getMapId();
-        this.ctv3ConceptId = proxy.getCTV3ConceptId();
-        this.ctv3TermId = proxy.getCTV3TermId() ;
-        this.ctv3TermType = proxy.getCTV3TermType();
-        this.sctConceptId = proxy.getSCTConceptId();
-        this.sctDecriptionId = proxy.getSCTDescriptionId();
+        this.ctv3ConceptId = proxy.getCtv3ConceptId();
+        this.ctv3TermId = proxy.getCtv3TermId() ;
+        this.ctv3TermType = proxy.getCtv3TermType();
+        this.sctConceptId = proxy.getSctConceptId();
+        this.sctDecriptionId = proxy.getSctDescriptionId();
         this.mapStatus = proxy.getMapStatus();
         this.effectiveDate = proxy.getEffectiveDate();
         this.isAssured = proxy.getIsAssured();
@@ -66,15 +66,15 @@ public class RdbmsCTV3ToSnomedMap implements Serializable {
     public String getCtv3TermType() {
         return ctv3TermType;
     }
-    public void setCTV3TermType(String mapId) {
+    public void setCtv3TermType(String mapId) {
         this.ctv3TermType = ctv3TermType;
     }
 
     @Column(name = "sct_concept_id", nullable = false)
-    public String getSCTConceptId() {
+    public String getSctConceptId() {
         return sctConceptId;
     }
-    public void setSCTConceptId(String mapId) {
+    public void setSctConceptId(String mapId) {
         this.sctConceptId = sctConceptId;
     }
 
@@ -82,7 +82,7 @@ public class RdbmsCTV3ToSnomedMap implements Serializable {
     public String getSctDescriptionId() {
         return sctDecriptionId;
     }
-    public void setSCTDescriptionId(String sctDecriptionId) { this.sctDecriptionId = sctDecriptionId; }
+    public void setSctDescriptionId(String sctDecriptionId) { this.sctDecriptionId = sctDecriptionId; }
 
     @Column(name = "effective_date", nullable = false)
     public Date getEffectiveDate() {

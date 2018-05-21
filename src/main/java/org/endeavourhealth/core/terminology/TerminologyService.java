@@ -54,7 +54,7 @@ public abstract class TerminologyService {
     public static SnomedCode translateCtv3ToSnomed(String code) throws Exception {
         //get conceptId from CTV3/Snomed map table
         CTV3ToSnomedMap ctv3ToSnomedMap = ctv3ToSnomedRepository.getCTV3ToSnomedMap(code);
-        String sctConceptId = ctv3ToSnomedMap.getSCTConceptId();
+        String sctConceptId = ctv3ToSnomedMap.getSctConceptId();
 
         //get Snomed term from lookup table using conceptId
         SnomedLookup snomedLookup = snomedRepository.getSnomedLookup(sctConceptId);
