@@ -19,8 +19,8 @@ public class RdbmsCTV3ToSnomedMapDal implements CTV3ToSnomedMapDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsCTV3ToSnomedMap c"
-                    + " where c.ctv3ConceptId = :ctv3_concept_id"
-                    + " and c.isAssured = :is_assured"
+                    + " where c.ctv3_concept_id = :ctv3_concept_id"
+                    + " and c.is_assured = :is_assured"
                     + " order by c.effectiveDate desc";
 
             Query query = entityManager.createQuery(sql, RdbmsCTV3ToSnomedMap.class)
