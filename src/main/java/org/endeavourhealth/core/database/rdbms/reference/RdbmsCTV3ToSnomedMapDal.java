@@ -19,12 +19,12 @@ public class RdbmsCTV3ToSnomedMapDal implements CTV3ToSnomedMapDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsCTV3ToSnomedMap c"
-                    + " where c.ctv3ConceptId = :ctv_concept_id"
+                    + " where c.ctv3ConceptId = :ctv3_concept_id"
                     + " and c.isAssured = :is_assured"
                     + " order by c.effectiveDate desc";
 
             Query query = entityManager.createQuery(sql, RdbmsCTV3ToSnomedMap.class)
-                    .setParameter("ctv_concept_id", ctv3ConceptId)
+                    .setParameter("ctv3_concept_id", ctv3ConceptId)
                     .setParameter("is_assured", 1);
 
             try {
