@@ -12,7 +12,6 @@ public class RdbmsTppImmunisationContent {
     private long rowId;
     private String name;
     private String content;
-    private String serviceId;
     private Timestamp dateDeleted;
     private String auditJson;
 
@@ -22,7 +21,6 @@ public class RdbmsTppImmunisationContent {
         this.rowId = proxy.getRowId();
         this.name = proxy.getName();
         this.content = proxy.getContent();
-        this.serviceId = proxy.getServiceId();
         if (proxy.getAudit() != null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -59,16 +57,6 @@ public class RdbmsTppImmunisationContent {
     }
 
     @Basic
-    @Column(name = "service_id")
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    @Basic
     @Column(name = "date_deleted")
     public Timestamp getDateDeleted() {
         return dateDeleted;
@@ -96,7 +84,6 @@ public class RdbmsTppImmunisationContent {
         return rowId == that.rowId &&
                 Objects.equals(name, that.name) &&
                 Objects.equals(content, that.content) &&
-                Objects.equals(serviceId, that.serviceId) &&
                 Objects.equals(dateDeleted, that.dateDeleted) &&
                 Objects.equals(auditJson, that.auditJson);
     }
@@ -104,6 +91,6 @@ public class RdbmsTppImmunisationContent {
     @Override
     public int hashCode() {
 
-        return Objects.hash(rowId, name, content, serviceId, dateDeleted, auditJson);
+        return Objects.hash(rowId, name, content, dateDeleted, auditJson);
     }
 }

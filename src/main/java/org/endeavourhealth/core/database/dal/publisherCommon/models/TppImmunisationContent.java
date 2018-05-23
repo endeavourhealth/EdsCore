@@ -11,7 +11,6 @@ public class TppImmunisationContent {
     private long rowId;
     private String name;
     private String content;
-    private String serviceId;
     private Date dateDeleted;
     private ResourceFieldMappingAudit audit = null;
 
@@ -20,7 +19,6 @@ public class TppImmunisationContent {
         this.rowId = proxy.getRowId();
         this.name = proxy.getName();
         this.content = proxy.getContent();
-        this.serviceId = proxy.getServiceId();
         this.dateDeleted = proxy.getDateDeleted();
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
@@ -29,13 +27,11 @@ public class TppImmunisationContent {
     public TppImmunisationContent(long rowId,
                          String name,
                          String content,
-                         String serviceId,
                          Date dateDeleted,
                          ResourceFieldMappingAudit audit ) {
         this.rowId = rowId;
         this.name = name;
         this.content = content;
-        this.serviceId = content;
         this.dateDeleted = dateDeleted;
         this.audit = audit;
     }
@@ -62,14 +58,6 @@ public class TppImmunisationContent {
 
     public void setContent(String content) {
         this.content = content;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
     }
 
     public Date getDateDeleted() {

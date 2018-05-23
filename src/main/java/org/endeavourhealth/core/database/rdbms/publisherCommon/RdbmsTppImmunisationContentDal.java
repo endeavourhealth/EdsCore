@@ -68,12 +68,11 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
             Connection connection = session.connection();
 
             String sql = "INSERT INTO tpp_immunisation_content "
-                    + " (row_id, name, content, service_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " (row_id, name, content, audit_json)"
+                    + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " name = VALUES(name),"
                     + " content = VALUES(content),"
-                    + " service_id = VALUES(service_id),"
                     + " audit_json = VALUES(audit_json);";
 
             ps = connection.prepareStatement(sql);
@@ -81,11 +80,10 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
             ps.setLong(1, tppImmunisationContent.getRowId());
             ps.setString(2, tppImmunisationContent.getName());
             ps.setString(3,tppImmunisationContent.getContent());
-            ps.setString(4,tppImmunisationContent.getServiceId());
             if (tppImmunisationContent.getAuditJson() == null) {
-                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(4, Types.VARCHAR);
             } else {
-                ps.setString(5, tppImmunisationContent.getAuditJson());
+                ps.setString(4, tppImmunisationContent.getAuditJson());
             }
 
             ps.executeUpdate();
