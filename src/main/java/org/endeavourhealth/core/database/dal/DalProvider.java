@@ -319,6 +319,18 @@ public class DalProvider {
         return new RdbmsEnterpriseAgeUpdaterDal(subscriberConfigName);
     }
 
+    public static PcrPersonUpdaterHistoryDalI factoryPcrPersonUpdateHistoryDal(String subscriberConfigName) {
+        return new RdbmsPcrPersonUpdaterHistoryDal(subscriberConfigName);
+    }
+
+    public static PcrIdDalI factoryPcrIdDal(String subscriberConfigName) {
+        return new RdbmsPcrIdDal(subscriberConfigName);
+    }
+
+    public static PcrAgeUpdaterlDalI factoryPcrAgeUpdaterlDal(String subscriberConfigName) {
+        return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
+    }
+
     public static PostcodeDalI factoryPostcodeDal() {
         return new RdbmsPostcodeDal();
     }
