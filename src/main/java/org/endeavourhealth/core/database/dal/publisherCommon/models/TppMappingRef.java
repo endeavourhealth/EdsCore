@@ -1,17 +1,14 @@
-package org.endeavourhealth.core.database.dal.publisherTransform.models;
+package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
-
-import java.util.Date;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMappingRef;
 
 public class TppMappingRef {
 
     private long rowId;
     private long groupId;
     private String mappedTerm;
-    private String serviceId;
     private ResourceFieldMappingAudit audit = null;
 
     public TppMappingRef() {}
@@ -21,7 +18,6 @@ public class TppMappingRef {
         this.rowId = proxy.getRowId();
         this.groupId = proxy.getGroupId();
         this.mappedTerm = proxy.getMappedTerm();
-        this.serviceId = proxy.getServiceId();
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
@@ -29,12 +25,10 @@ public class TppMappingRef {
     public TppMappingRef(long rowId,
                          long groupId,
                          String mappedTerm,
-                         String serviceId,
                          ResourceFieldMappingAudit audit) {
         this.rowId = rowId;
         this.groupId = groupId;
         this.mappedTerm = mappedTerm;
-        this.serviceId = serviceId;
         this.audit = audit;
     }
 
@@ -58,14 +52,6 @@ public class TppMappingRef {
 
     public void setMappedTerm(String mappedTerm) {
         this.mappedTerm = mappedTerm;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
     }
 
     public ResourceFieldMappingAudit getAudit() {

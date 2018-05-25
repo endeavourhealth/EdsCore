@@ -1,9 +1,9 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform;
+package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.TppMappingRefDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppMappingRefDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMappingRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMappingRef;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,24 +14,21 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.UUID;
 
 public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMappingRefDal.class);
 
     @Override
-    public TppMappingRef getMappingFromRowId(Long rowId, UUID serviceId) throws Exception {
+    public TppMappingRef getMappingFromRowId(Long rowId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         try {
             String sql = "select c"
                     + " from "
                     + " RdbmsTppMappingRef c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.rowId = :row_id";
+                    + " where c.rowId = :row_id";
 
             Query query = entityManager.createQuery(sql, RdbmsTppMappingRef.class)
-                    .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setMaxResults(1);
 
@@ -40,7 +37,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
                 return new TppMappingRef(result);
             }
             catch (NoResultException e) {
-                LOG.error("No code found for rowId " + rowId + ", service " + serviceId);
+                LOG.error("No mapping code found for rowId " + rowId);
                 return null;
             }
         } finally {
@@ -51,19 +48,17 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
     }
 
     @Override
-    public TppMappingRef getMappingFromRowAndGroupId(Long rowId, Long groupId, UUID serviceId) throws Exception {
+    public TppMappingRef getMappingFromRowAndGroupId(Long rowId, Long groupId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         try {
             String sql = "select c"
                     + " from "
                     + " RdbmsTppMappingRef c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.groupId = :group_id"
+                    + " where c.groupId = :group_id"
                     + " and c.rowId = :row_id";
 
             Query query = entityManager.createQuery(sql, RdbmsTppMappingRef.class)
-                    .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setParameter("group_id", groupId)
                     .setMaxResults(1);
@@ -73,7 +68,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
                 return new TppMappingRef(result);
             }
             catch (NoResultException e) {
-                LOG.error("No code found for rowId " + rowId + ", groupId " + groupId + ", service " + serviceId);
+                LOG.error("No mapping code found for rowId " + rowId + ", groupId " + groupId);
                 return null;
             }
         } finally {
@@ -83,7 +78,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
         }
     }
 
-    public void save(TppMappingRef mapping, UUID serviceId) throws Exception
+    public void save(TppMappingRef mapping) throws Exception
     {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
@@ -91,7 +86,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
 
         RdbmsTppMappingRef tppMapping = new RdbmsTppMappingRef(mapping);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
 
         try {
@@ -104,9 +99,11 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO tpp_mapping_ref "
-                    + " (row_id, group_id, mapped_term, service_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " (row_id, group_id, mapped_term, audit_json)"
+                    + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
+                    + " row_id = VALUES(row_id),"
+                    + " group_id = VALUES(group_id),"
                     + " mapped_term = VALUES(mapped_term),"
                     + " audit_json = VALUES(audit_json);";
 
@@ -115,11 +112,10 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             ps.setLong(1, tppMapping.getRowId());
             ps.setLong(2, tppMapping.getGroupId());
             ps.setString(3,tppMapping.getMappedTerm());
-            ps.setString(4,tppMapping.getServiceId());
             if (tppMapping.getAuditJson() == null) {
-                ps.setNull(5, Types.VARCHAR);
+                ps.setNull(4, Types.VARCHAR);
             } else {
-                ps.setString(5, tppMapping.getAuditJson());
+                ps.setString(4, tppMapping.getAuditJson());
             }
 
             ps.executeUpdate();

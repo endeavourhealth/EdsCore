@@ -1,6 +1,6 @@
-package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
+package org.endeavourhealth.core.database.rdbms.publisherCommon.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.TppMappingRef;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMappingRef;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -15,7 +15,6 @@ public class RdbmsTppMappingRef implements Serializable {
     private long rowId;
     private long groupId;
     private String mappedTerm;
-    private String serviceId;
     private String auditJson;
 
     public RdbmsTppMappingRef() {}
@@ -24,7 +23,6 @@ public class RdbmsTppMappingRef implements Serializable {
         this.rowId = proxy.getRowId();
         this.groupId = proxy.getGroupId();
         this.mappedTerm = proxy.getMappedTerm();
-        this.serviceId = proxy.getServiceId();
         if (proxy.getAudit() != null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -58,15 +56,6 @@ public class RdbmsTppMappingRef implements Serializable {
         this.mappedTerm = mappedTerm;
     }
 
-    @Column(name = "service_id", nullable = false)
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
     @Column(name = "audit_json", nullable = true)
     public String getAuditJson() {
         return auditJson;
@@ -84,12 +73,11 @@ public class RdbmsTppMappingRef implements Serializable {
         return rowId == that.rowId &&
                 groupId == that.groupId &&
                 Objects.equals(mappedTerm, that.mappedTerm) &&
-                Objects.equals(serviceId, that.serviceId) &&
                 Objects.equals(auditJson, that.auditJson);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rowId, groupId, mappedTerm, serviceId, auditJson);
+        return Objects.hash(rowId, groupId, mappedTerm, auditJson);
     }
 }

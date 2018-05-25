@@ -2,7 +2,6 @@ package org.endeavourhealth.core.database.dal.publisherTransform.models;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption;
-import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppMappingRef;
 
 public class TppConfigListOption {
 
