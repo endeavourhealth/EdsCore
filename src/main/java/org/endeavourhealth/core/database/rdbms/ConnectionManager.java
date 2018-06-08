@@ -121,29 +121,11 @@ public class ConnectionManager {
                 String dialect = child.asText();
                 properties.put("hibernate.dialect", dialect);
 
+            } else if (fieldName.equals("connection_properties")) {
+                populateConnectionProperties(child, properties, dbName, explicitConfigName);
+
             } else {
-
-                //if not one of the generally-used fields above, then just interpret as a
-                //properly named property, and just set in according to its type
-                if (child.isTextual()) {
-                    String value = child.asText();
-                    properties.put(fieldName, value);
-
-                } else if (child.isInt()) {
-                    int value = child.asInt();
-                    properties.put(fieldName, new Integer(value));
-
-                } else if (child.isBigInteger()) {
-                    long value = child.asLong();
-                    properties.put(fieldName, new Long(value));
-
-                } else if (child.isBoolean()) {
-                    boolean value = child.asBoolean();
-                    properties.put(fieldName, new Boolean(value));
-
-                } else {
-                    throw new IllegalArgumentException("Unsupported JSON element type for database " + dbName + " " + explicitConfigName + ": " + json.getNodeType());
-                }
+                //ignore it, as it's nothing to do with the DB connection
             }
         }
 
@@ -151,6 +133,42 @@ public class ConnectionManager {
         EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
 
         return factory;
+    }
+
+    private static void populateConnectionProperties(JsonNode connectionPropertiesRoot, Map<String, Object> properties, Db dbName, String explicitConfigName) {
+
+        if (!connectionPropertiesRoot.isArray()) {
+            throw new IllegalArgumentException("connection_properties should be an array");
+        }
+
+        Iterator<String> fieldNames = connectionPropertiesRoot.fieldNames();
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            JsonNode child = connectionPropertiesRoot.get(fieldName);
+
+            //if not one of the generally-used fields above, then just interpret as a
+            //properly named property, and just set in according to its type
+            if (child.isTextual()) {
+                String value = child.asText();
+                properties.put(fieldName, value);
+
+            } else if (child.isInt()) {
+                int value = child.asInt();
+                properties.put(fieldName, new Integer(value));
+
+            } else if (child.isBigInteger()) {
+                long value = child.asLong();
+                properties.put(fieldName, new Long(value));
+
+            } else if (child.isBoolean()) {
+                boolean value = child.asBoolean();
+                properties.put(fieldName, new Boolean(value));
+
+            } else {
+                throw new IllegalArgumentException("Unsupported JSON element type for database " + dbName + " " + explicitConfigName + ": " + child.getNodeType());
+            }
+        }
+
     }
 
     /*private static synchronized EntityManagerFactory createEntityManager(Db dbName, String explicitConfigName) throws Exception {
