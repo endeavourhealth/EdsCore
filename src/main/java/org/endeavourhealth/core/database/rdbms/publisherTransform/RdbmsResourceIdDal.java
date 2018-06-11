@@ -33,18 +33,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     private static final List<String> recentIdsGenerated = new ArrayList<>();
     private static final Map<String, UUID> recentIdsGeneratedMap = new HashMap<>();
 
-    //private static CallableStatementCache saveMappingStatementCache = new CallableStatementCache("{call save_resource_id_map(?, ?, ?, ?, ?)}");
 
-    private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, String resourceType, String sourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-
-        try {
-            return getResourceIdMap(entityManager, serviceId, resourceType, sourceId);
-
-        } finally {
-            entityManager.close();
-        }
-    }
 
     private RdbmsResourceIdMap getResourceIdMap(EntityManager entityManager, UUID serviceId, String resourceType, String sourceId) throws Exception {
 
@@ -72,7 +61,12 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     @Override
-    public UUID findOrCreateThreadSafe(UUID serviceId, String resourceType, String sourceId) throws Exception {
+    public UUID findOrCreate(UUID serviceId, String resourceType, String sourceId) throws Exception {
+        return findOrCreate(serviceId, resourceType, sourceId, null);
+    }
+
+    @Override
+    public UUID findOrCreate(UUID serviceId, String resourceType, String sourceId, UUID explicitDestinationUuid) throws Exception {
 
         String cacheKey = serviceId.toString() + "\\" + resourceType + "\\" + sourceId;
         //LOG.trace("<<<<Looking for " + cacheKey);
@@ -107,7 +101,11 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
                 recentIdLock.unlock();
             }
 
-            edsId = UUID.randomUUID();
+            //if we get here, we want to generate a new ID, unless an explicit one was passed in
+            edsId = explicitDestinationUuid;
+            if (edsId == null) {
+                edsId = UUID.randomUUID();
+            }
 
             RdbmsResourceIdMap mapping = new RdbmsResourceIdMap();
             mapping.setServiceId(serviceId.toString());
@@ -118,6 +116,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
             //CallableStatement callableStatement = null;
 
+            //simplest approach is to try saving the new ID and if that fails, retrieve the existing one from the DB
             try {
                 entityManager.getTransaction().begin();
 

@@ -8,7 +8,9 @@ import java.util.UUID;
 
 public interface ResourceIdTransformDalI {
 
-    UUID findOrCreateThreadSafe(UUID serviceId, String resourceType, String sourceId) throws Exception;
+    UUID findOrCreate(UUID serviceId, String resourceType, String sourceId) throws Exception;
+    UUID findOrCreate(UUID serviceId, String resourceType, String sourceId, UUID explicitDestinationUuid) throws Exception;
+
     Map<Reference, Reference> findEdsReferencesFromSourceReferences(UUID serviceId, List<Reference> sourceReferences) throws Exception;
     Map<Reference, Reference> findSourceReferencesFromEdsReferences(UUID serviceId, List<Reference> edsReferences) throws Exception;
 
