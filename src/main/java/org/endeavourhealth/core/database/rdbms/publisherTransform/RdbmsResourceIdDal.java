@@ -35,7 +35,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
     //private static CallableStatementCache saveMappingStatementCache = new CallableStatementCache("{call save_resource_id_map(?, ?, ?, ?, ?)}");
 
-    private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
+    private RdbmsResourceIdMap getResourceIdMap(UUID serviceId, String resourceType, String sourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
         try {
@@ -72,7 +72,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     @Override
-    public UUID findOrCreateThreadSafe(UUID serviceId, UUID systemId, String resourceType, String sourceId) throws Exception {
+    public UUID findOrCreateThreadSafe(UUID serviceId, String resourceType, String sourceId) throws Exception {
 
         String cacheKey = serviceId.toString() + "\\" + resourceType + "\\" + sourceId;
         //LOG.trace("<<<<Looking for " + cacheKey);
@@ -120,14 +120,6 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
 
             try {
                 entityManager.getTransaction().begin();
-
-                /*callableStatement = saveMappingStatementCache.getCallableStatement(entityManager);
-                callableStatement.setString(1, serviceId.toString());
-                callableStatement.setString(2, systemId.toString());
-                callableStatement.setString(3, resourceType);
-                callableStatement.setString(4, sourceId);
-                callableStatement.setString(5, edsId.toString());
-                callableStatement.execute();*/
 
                 entityManager.persist(mapping);
 
@@ -189,7 +181,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
     }
 
     @Override
-    public Map<Reference, Reference> findEdsReferencesFromSourceReferences(UUID serviceId, UUID systemId, List<Reference> sourceReferences) throws Exception {
+    public Map<Reference, Reference> findEdsReferencesFromSourceReferences(UUID serviceId, List<Reference> sourceReferences) throws Exception {
 
         Map<Reference, Reference> ret = new HashMap<>();
 
