@@ -3,17 +3,14 @@ package org.endeavourhealth.core.database.rdbms.hl7receiver;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.models.ResourceId;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.UUID;
 
 public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
@@ -119,7 +116,7 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
 
             entityManager.getTransaction().commit();
 
-            LOG.trace("Saved recourceId:" + resourceId.getUniqueId() + "==>" + resourceId.getResourceId());
+            //LOG.trace("Saved recourceId:" + resourceId.getUniqueId() + "==>" + resourceId.getResourceId());
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
