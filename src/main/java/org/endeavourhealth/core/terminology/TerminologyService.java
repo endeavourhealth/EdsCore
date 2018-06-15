@@ -41,6 +41,9 @@ public abstract class TerminologyService {
     public static SnomedCode translateRead2ToSnomed(String code) throws Exception {
         //get conceptId from Read2/Snomed map table
         Read2ToSnomedMap read2ToSnomedMap = read2ToSnomedRepository.getRead2ToSnomedMap(code);
+        if (read2ToSnomedMap == null) {
+            return null;
+        }
         String conceptId = read2ToSnomedMap.getConceptId();
 
         //get Snomed term from lookup table using conceptId
