@@ -60,6 +60,8 @@ public class MetadataFactory {
                 return new SlotMetadata((Slot)resource);
             case Order:
                 return new OrderMetadata((Order)resource);
+            case Flag:
+                return new FlagMetadata((Flag)resource);
 
             default:
                 throw new UnprocessableEntityException("Resource Type not supported:" + resource.getResourceType().toString());
