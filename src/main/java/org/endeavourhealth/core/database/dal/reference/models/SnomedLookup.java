@@ -45,4 +45,11 @@ public class SnomedLookup {
     public void setTerm(String term) {
         this.term = term;
     }
+
+    /**
+     * for debugging
+     */
+    public String toString() {
+        return "Concept=" + conceptId + " Term=" + term;
+    }
 }

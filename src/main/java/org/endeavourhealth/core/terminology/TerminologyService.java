@@ -38,6 +38,23 @@ public abstract class TerminologyService {
         return new SnomedCode(conceptId, snomedLookup.getTerm());
     }
 
+    public static String lookupSnomedPreferredTermForDescription(String descriptionId) throws Exception {
+        SnomedCode snomedCode = lookupSnomedConceptForDescriptionId(descriptionId);
+        if (snomedCode == null) {
+            return null;
+        } else {
+            return snomedCode.getTerm();
+        }
+    }
+
+    public static SnomedCode lookupSnomedConceptForDescriptionId(String descriptionId) throws Exception {
+        SnomedLookup snomedLookup = snomedRepository.getSnomedLookupForDescId(descriptionId);
+        if (snomedLookup == null) {
+            return null;
+        }
+        return new SnomedCode(snomedLookup.getConceptId(), snomedLookup.getTerm());
+    }
+
     public static SnomedCode translateRead2ToSnomed(String code) throws Exception {
         //get conceptId from Read2/Snomed map table
         Read2ToSnomedMap read2ToSnomedMap = read2ToSnomedRepository.getRead2ToSnomedMap(code);
