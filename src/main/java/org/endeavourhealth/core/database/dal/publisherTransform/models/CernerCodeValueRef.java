@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class CernerCodeValueRef {
 
@@ -16,7 +17,7 @@ public class CernerCodeValueRef {
     private Long codeSetNbr;
     private String codeSetDescTxt;
     private String aliasNhsCdAlias;
-    private String serviceId;
+    private UUID serviceId;
     private ResourceFieldMappingAudit audit = null;
 
     public CernerCodeValueRef() {}
@@ -31,7 +32,7 @@ public class CernerCodeValueRef {
         this.codeSetNbr = proxy.getCodeSetNbr();
         this.codeSetDescTxt = proxy.getCodeSetDescTxt();
         this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
-        this.serviceId = proxy.getServiceId();
+        this.serviceId = UUID.fromString(proxy.getServiceId());
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
@@ -45,7 +46,7 @@ public class CernerCodeValueRef {
                               Long codeSetNbr,
                               String codeSetDescTxt,
                               String aliasNhsCdAlias,
-                              String serviceId,
+                              UUID serviceId,
                               ResourceFieldMappingAudit audit) {
         this.codeValueCd = codeValueCd;
         this.date = date;
@@ -134,11 +135,11 @@ public class CernerCodeValueRef {
         this.aliasNhsCdAlias = aliasNhsCdAlias;
     }
 
-    public String getServiceId() {
+    public UUID getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(String serviceId) {
+    public void setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
     }
 

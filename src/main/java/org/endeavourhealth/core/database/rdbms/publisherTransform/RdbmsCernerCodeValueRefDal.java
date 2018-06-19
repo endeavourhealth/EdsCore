@@ -2,8 +2,10 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
 import org.endeavourhealth.core.database.dal.publisherTransform.CernerCodeValueRefDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerNomenclatureRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerNomenclatureRef;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,8 +131,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
         }
     }
 
-    public void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception
-    {
+    public void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
         }
@@ -201,4 +202,140 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             entityManager.close();
         }
     }
+
+
+    @Override
+    public CernerNomenclatureRef getNomenclatureRefForId(UUID serviceId, Long nomenclatureId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsCernerNomenclatureRef c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.nomenclatureId = :nomenclature_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsCernerNomenclatureRef.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("nomenclature_id", nomenclatureId)
+                    .setMaxResults(1);
+
+            try {
+                RdbmsCernerNomenclatureRef result = (RdbmsCernerNomenclatureRef)query.getSingleResult();
+                return new CernerNomenclatureRef(result);
+            }
+            catch (NoResultException e) {
+                LOG.error("No nomenclature ref service " + serviceId + " and ID " + nomenclatureId);
+                return null;
+            }
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
+
+    @Override
+    public void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception {
+
+        if (nomenclatureRef == null) {
+            throw new IllegalArgumentException("mapping is null");
+        }
+
+        RdbmsCernerNomenclatureRef dbObj = new RdbmsCernerNomenclatureRef(nomenclatureRef);
+        UUID serviceId = nomenclatureRef.getServiceId();
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisMapping);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            //primary key (service_id, nomenclature_id)
+            String sql = "INSERT INTO cerner_nomenclature_ref "
+                    + " (service_id, nomenclature_id, active, mneomonic_text, value_text, display_text, description_text, nomenclature_type_code, vocabulary_code, concept_identifier, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " active = VALUES(active), "
+                    + " mneomonic_text = VALUES(mneomonic_text),"
+                    + " value_text = VALUES(value_text),"
+                    + " display_text = VALUES(display_text),"
+                    + " description_text = VALUES(description_text),"
+                    + " nomenclature_type_code = VALUES(nomenclature_type_code),"
+                    + " vocabulary_code = VALUES (vocabulary_code),"
+                    + " concept_identifier = VALUES(concept_identifier),"
+                    + " audit_json = VALUES(audit_json);";
+
+            int col = 1;
+
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(col++, dbObj.getServiceId());
+            ps.setLong(col++, dbObj.getNomenclatureId());
+            ps.setBoolean(col++, dbObj.isActive());
+            if (dbObj.getMnemonicText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getMnemonicText());
+            }
+            if (dbObj.getValueText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getValueText());
+            }
+            if (dbObj.getDisplayText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getDisplayText());
+            }
+            if (dbObj.getDescriptionText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getDescriptionText());
+            }
+            if (dbObj.getNomenclatureTypeCode() == null) {
+                ps.setNull(col++, Types.BIGINT);
+            } else {
+                ps.setLong(col++, dbObj.getNomenclatureTypeCode());
+            }
+            if (dbObj.getVocabularyCode() == null) {
+                ps.setNull(col++, Types.BIGINT);
+            } else {
+                ps.setLong(col++, dbObj.getVocabularyCode());
+            }
+            if (dbObj.getConceptIdentifier() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getConceptIdentifier());
+            }
+            if (dbObj.getAuditJson() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, dbObj.getAuditJson());
+            }
+
+            ps.executeUpdate();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
 }

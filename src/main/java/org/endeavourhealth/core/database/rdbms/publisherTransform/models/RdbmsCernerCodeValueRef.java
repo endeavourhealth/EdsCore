@@ -37,7 +37,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeSetNbr = proxy.getCodeSetNbr();
         this.codeSetDescTxt = proxy.getCodeSetDescTxt();
         this.aliasNhsCdAlias = proxy.getAliasNhsCdAlias();
-        this.serviceId = proxy.getServiceId();
+        this.serviceId = proxy.getServiceId().toString();
         if (proxy.getAudit() != null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -98,6 +98,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.codeMeaningTxt = codeMeaningTxt;
     }
 
+    @Id
     @Column(name = "code_set_nbr", nullable = false)
     public Long getCodeSetNbr() {
         return codeSetNbr;
@@ -125,6 +126,7 @@ public class RdbmsCernerCodeValueRef implements Serializable {
         this.aliasNhsCdAlias = aliasNhsCdAlias;
     }
 
+    @Id
     @Column(name = "service_id", nullable = false)
     public String getServiceId() {
         return serviceId;

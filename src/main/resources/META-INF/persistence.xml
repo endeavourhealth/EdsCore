@@ -163,6 +163,7 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileRecord</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerNomenclatureRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption</class>
 
