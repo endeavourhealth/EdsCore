@@ -83,7 +83,7 @@ public class FhirStorageService {
         if (resource instanceof Patient) {
             //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
             try {
-                patientLinkDal.updatePersonId((Patient) resource);
+                patientLinkDal.updatePersonId(serviceId, (Patient)resource);
             } catch (Throwable t) {
                 LOG.error("Exception updating patient link table for " + resource.getResourceType() + " " + resource.getId());
                 throw t;

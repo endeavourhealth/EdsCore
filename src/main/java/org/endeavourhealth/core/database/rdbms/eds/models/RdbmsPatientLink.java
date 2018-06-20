@@ -11,6 +11,7 @@ import java.io.Serializable;
 public class RdbmsPatientLink implements Serializable {
 
     private String patientId = null;
+    private String serviceId = null;
     private String personId = null;
 
     @Id
@@ -21,6 +22,15 @@ public class RdbmsPatientLink implements Serializable {
 
     public void setPatientId(String patientId) {
         this.patientId = patientId;
+    }
+
+    @Column(name = "service_id", nullable = false)
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
     }
 
     @Column(name = "person_id", nullable = false)

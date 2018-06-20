@@ -12,6 +12,7 @@ import java.util.Date;
 public class RdbmsPatientLinkHistory implements Serializable {
 
     private String patientId = null;
+    private String serviceId = null;
     private Date updated = null;
     private String newPersonId = null;
     private String previousPersonId = null;
@@ -25,6 +26,16 @@ public class RdbmsPatientLinkHistory implements Serializable {
     public void setPatientId(String patientId) {
         this.patientId = patientId;
     }
+
+    @Column(name = "service_id", nullable = false)
+    public String getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(String serviceId) {
+        this.serviceId = serviceId;
+    }
+
 
     @Id
     @Column(name = "updated", nullable = false)

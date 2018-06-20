@@ -18,7 +18,7 @@ import java.util.*;
 
 public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
-    public PatientLinkPair updatePersonId(Patient fhirPatient) throws Exception {
+    public PatientLinkPair updatePersonId(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
         String newPersonId = null;
@@ -77,6 +77,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
                 RdbmsPatientLinkHistory history = new RdbmsPatientLinkHistory();
                 history.setPatientId(patientId);
+                history.setServiceId(serviceId.toString());
                 history.setNewPersonId(newPersonId);
                 history.setPreviousPersonId(previousPersonId);
                 history.setUpdated(new Date());
@@ -84,6 +85,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
                 if (patientLink == null) {
                     patientLink = new RdbmsPatientLink();
                     patientLink.setPatientId(patientId);
+                    patientLink.setServiceId(serviceId.toString());
                 }
                 patientLink.setPersonId(newPersonId);
 
@@ -140,7 +142,8 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
         }
     }
 
-    public List<String> getPatientIds(String personId) throws Exception {
+    @Override
+    public Map<String, String> getPatientAndServiceIdsForPerson(String personId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
         try {
@@ -152,12 +155,15 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
             Query query = entityManager.createQuery(sql, RdbmsPatientLink.class)
                     .setParameter("personId", personId);
 
-            List<String> ret = new ArrayList<>();
+            Map<String, String> ret = new HashMap<>();
 
             List<RdbmsPatientLink> links = query.getResultList();
             for (RdbmsPatientLink link : links) {
-                ret.add(link.getPatientId());
+                String patientId = link.getPatientId();
+                String serviceId = link.getServiceId();
+                ret.put(patientId, serviceId);
             }
+
             return ret;
 
         } finally {

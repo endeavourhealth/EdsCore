@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.ehr;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ParserPool;
+import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
@@ -19,12 +20,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.List;
-import java.util.UUID;
+import java.sql.*;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RdbmsResourceDal implements ResourceDalI {
@@ -687,6 +684,107 @@ public class RdbmsResourceDal implements ResourceDalI {
                     .collect(Collectors.toList());
 
         } finally {
+            entityManager.close();
+        }
+    }
+
+    /**
+     * getResourcesForBatch(..) returns the resources as they exactly were when the batch was created,
+     * so can return an older version than is currently on the DB. This function returns the CURRENT version
+     * of each resource that's in the batch.
+     */
+    @Override
+    public List<ResourceWrapper> getCurrentVersionOfResourcesForBatch(UUID serviceId, UUID batchId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            //deleted resources are removed from resource_current, so we need a left outer join
+            //and have to select enough columns from resource_history to be able to spot the deleted
+            //resources and create resource wrappers for them
+            String sql = "select h.service_id, h.system_id, h.resource_type, h.resource_id, h.patient_id, "
+                    + " c.system_id, c.patient_id, c.resource_data"
+                    + " from resource_history h"
+                    + " left outer join resource_current c"
+                    + " on h.resource_id = c.resource_id"
+                    + " and h.resource_type = c.resource_type"
+                    + " where h.exchange_batch_id = ?;";
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, batchId.toString());
+
+            List<ResourceWrapper> ret = new ArrayList<>();
+
+            //some transforms can end up saving the same resource multiple times in a batch, so we'll have duplicate
+            //rows in our resource_history table. Since they all join to the latest data in resource_current table, we
+            //don't need to worry about which we keep, so just use this to avoid duplicates
+            Set<String> resourcesDone = new HashSet<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int col = 1;
+                String historyServiceId = rs.getString(col++);
+                String historySystemId = rs.getString(col++);
+                String historyResourceType = rs.getString(col++);
+                String historyResourceId = rs.getString(col++);
+                String historyPatientId = rs.getString(col++);
+
+                //since we're not dealing with any primitive types, we can just use getString(..)
+                //and check that the result is null or not, without needing to use wasNull(..)
+                String currentSystemId = rs.getString(col++);
+                String currentPatientId = rs.getString(col++);
+                String currentResourceData = rs.getString(col);
+
+                //skip if we've already done this resource
+                String referenceStr = ReferenceHelper.createResourceReference(historyResourceType, historyResourceId);
+                if (resourcesDone.contains(referenceStr)) {
+                    continue;
+                }
+                resourcesDone.add(referenceStr);
+
+                //populate the resource wrapper with what we've got, depending on what's null or not.
+                //NOTE: the resource wrapper will have the following fields null:
+                //UUID version;
+                //Date createdAt;
+                //String resourceMetadata;
+                //Long resourceChecksum;
+                //UUID exchangeId;
+
+                ResourceWrapper wrapper = new ResourceWrapper();
+                wrapper.setServiceId(UUID.fromString(historyServiceId));
+                wrapper.setResourceType(historyResourceType);
+                wrapper.setResourceId(UUID.fromString(historyResourceId));
+                wrapper.setExchangeBatchId(batchId);
+
+                //if we have no resource data, the resource is deleted, so populate with what we've got from the history table
+                if (currentResourceData == null) {
+                    wrapper.setDeleted(true);
+                    wrapper.setSystemId(UUID.fromString(historySystemId));
+                    if (!Strings.isNullOrEmpty(historyPatientId)) {
+                        wrapper.setPatientId(UUID.fromString(historyPatientId));
+                    }
+
+                } else {
+                    //if we have resource data, then populate with what we've got from resource_current
+                    wrapper.setSystemId(UUID.fromString(currentSystemId));
+                    wrapper.setResourceData(currentResourceData);
+                    if (!Strings.isNullOrEmpty(currentPatientId)) {
+                        wrapper.setPatientId(UUID.fromString(currentPatientId));
+                    }
+                }
+
+                ret.add(wrapper);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
