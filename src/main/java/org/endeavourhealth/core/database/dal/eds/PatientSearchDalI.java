@@ -14,7 +14,9 @@ public interface PatientSearchDalI {
     void update(UUID serviceId, Patient fhirPatient) throws Exception;
     void update(UUID serviceId, EpisodeOfCare fhirEpisode) throws Exception;
     void deleteForService(UUID serviceId) throws Exception;
+
     void deletePatient(UUID serviceId, Patient fhirPatient) throws Exception;
+    void deleteEpisode(UUID serviceId, EpisodeOfCare episodeOfCare) throws Exception;
 
     List<PatientSearch> searchByLocalId(Set<String> serviceIds, String localId) throws Exception;
     List<PatientSearch> searchByDateOfBirth(Set<String> serviceIds, Date dateOfBirth) throws Exception;

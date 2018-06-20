@@ -938,5 +938,40 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
+    @Override
+    public void deleteEpisode(UUID serviceId, EpisodeOfCare episodeOfCare) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+
+        try {
+            String patientId = findPatientId(null, episodeOfCare);
+            String episodeId = episodeOfCare.getId();
+
+            entityManager.getTransaction().begin();
+
+            String sql = "delete"
+                    + " from"
+                    + " RdbmsPatientSearchEpisode c"
+                    + " where c.serviceId = :serviceId"
+                    + " and c.patientId = :patientId"
+                    + " and c.episodeId = :episodeId";
+
+            Query query = entityManager.createQuery(sql)
+                    .setParameter("serviceId", serviceId.toString())
+                    .setParameter("patientId", patientId)
+                    .setParameter("episodeId", episodeId);
+            query.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
 
 }

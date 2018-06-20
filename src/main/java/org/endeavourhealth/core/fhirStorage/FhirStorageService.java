@@ -62,23 +62,6 @@ public class FhirStorageService {
 
         resourceRepository.save(entry);
 
-        //count per minute
-        /*try {
-            countLock.lock();
-            long now = System.currentTimeMillis();
-            if (millisCutoff == -1
-                    || now > millisCutoff) {
-                if (millisCutoff != -1) {
-                    LOG.trace("Done " + count + " in " + (now - millisCutoff) + "ms");
-                }
-                count = 0;
-                millisCutoff = now + (1000L * 30L);
-            }
-            count++;
-        } finally {
-            countLock.unlock();
-        }*/
-
         //call out to our patient search and person matching services
         if (resource instanceof Patient) {
             //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
@@ -131,9 +114,19 @@ public class FhirStorageService {
         //if we're deleting the patient, then delete the row from the patient_search table
         //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
         if (resource instanceof Patient) {
-
             patientSearchDal.deletePatient(serviceId, (Patient)resource);
+
+        } else if (resource instanceof EpisodeOfCare) {
+            patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare)resource);
+
+        try {
+            patientSearchDal.update(serviceId, (EpisodeOfCare)resource);
+        } catch (Throwable t) {
+            LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+            throw t;
         }
+    }
+
 
         return entry;
     }
