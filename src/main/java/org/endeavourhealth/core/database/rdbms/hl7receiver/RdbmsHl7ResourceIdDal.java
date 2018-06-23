@@ -90,21 +90,20 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
         try {
             entityManager.getTransaction().begin();
 
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
 
             //syntax for postreSQL is slightly different
             String sql = null;
             if (ConnectionManager.isPostgreSQL(connection)) {
-                sql = "INSERT INTO mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES(?, ?, ?, ?);";
+                sql = "INSERT INTO mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?);";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, resourceId.getScopeId());
                 ps.setString(2, resourceId.getResourceType());
                 ps.setString(3, resourceId.getUniqueId());
                 ps.setObject(4, resourceId.getResourceId());
             } else {
-                sql = "INSERT INTO resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES(?, ?, ?, ?);";
+                sql = "INSERT INTO resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?);";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, resourceId.getScopeId());
                 ps.setString(2, resourceId.getResourceType());
