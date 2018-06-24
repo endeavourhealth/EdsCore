@@ -131,6 +131,36 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
         }
     }
 
+    @Override
+    public List<CernerCodeValueRef> getCodesForCodeSet(UUID serviceId, Long codeSet) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsCernerCodeValueRef c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.codeSetNbr = :code_set";
+
+            Query query = entityManager.createQuery(sql, RdbmsCernerCodeValueRef.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("code_set", codeSet);
+
+            List<RdbmsCernerCodeValueRef> results = query.getResultList();
+
+            List<CernerCodeValueRef> ret = new ArrayList<>();
+            for (RdbmsCernerCodeValueRef result: results) {
+                ret.add(new CernerCodeValueRef(result));
+            }
+            return ret;
+
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
+
     public void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");

@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal.publisherTransform;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerNomenclatureRef;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface CernerCodeValueRefDalI {
@@ -13,6 +14,7 @@ public interface CernerCodeValueRefDalI {
 
     CernerCodeValueRef getCodeWithoutCodeSet(String code, UUID serviceId) throws Exception;
     CernerCodeValueRef getCodeFromMultipleCodeSets(String code, UUID serviceId, Long... codeSets) throws Exception;
+    List<CernerCodeValueRef> getCodesForCodeSet(UUID serviceId, Long codeSet) throws Exception;
 
     //NOMREF
     CernerNomenclatureRef getNomenclatureRefForId(UUID serviceId, Long nomenclatureId) throws Exception;
