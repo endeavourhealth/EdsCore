@@ -17,17 +17,17 @@ public interface ResourceDalI {
     Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception;
     ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
     List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
-    List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId) throws Exception;
-    List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId, String resourceType) throws Exception;
+    List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception;
+    List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception;
     List<ResourceWrapper> getResourcesByPatientAllSystems(UUID serviceId, UUID patientId, String resourceType) throws Exception;
-    List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType, List<UUID> resourceIds) throws Exception;
+    List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType, List<UUID> resourceIds) throws Exception;
     List<ResourceWrapper> getResourcesByServiceAllSystems(UUID serviceId, String resourceType, List<UUID> resourceIds) throws Exception;
     List<ResourceWrapper> getResourcesForBatch(UUID serviceId, UUID batchId) throws Exception;
     List<ResourceWrapper> getCurrentVersionOfResourcesForBatch(UUID serviceId, UUID batchId) throws Exception;
     Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
-    boolean dataExists(UUID serviceId, UUID systemId) throws Exception;
-    ResourceWrapper getFirstResourceByService(UUID serviceId, UUID systemId, ResourceType resourceType) throws Exception;
-    List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType) throws Exception;
-    <T extends ResourceMetadata> ResourceMetadataIterator<T> getMetadataByService(UUID serviceId, UUID systemId, String resourceType, Class<T> classOfT) throws Exception;
-    long getResourceCountByService(UUID serviceId, UUID systemId, String resourceType) throws Exception;
+    boolean dataExists(UUID serviceId) throws Exception;
+    ResourceWrapper getFirstResourceByService(UUID serviceId, ResourceType resourceType) throws Exception;
+    List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType) throws Exception;
+    <T extends ResourceMetadata> ResourceMetadataIterator<T> getMetadataByService(UUID serviceId, String resourceType, Class<T> classOfT) throws Exception;
+    long getResourceCountByService(UUID serviceId, String resourceType) throws Exception;
 }

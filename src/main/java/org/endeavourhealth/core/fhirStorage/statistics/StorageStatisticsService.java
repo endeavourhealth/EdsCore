@@ -38,7 +38,6 @@ public class StorageStatisticsService {
         long deceasedCount = 0;
 
         ResourceMetadataIterator<PatientMetadata> patientMetadataIterator = repository.getMetadataByService(serviceId,
-                systemId,
                 ResourceType.Patient.toString(),
                 PatientMetadata.class);
 
@@ -66,7 +65,7 @@ public class StorageStatisticsService {
 
     private ResourceStatistics createResourceStatistics(UUID serviceId, UUID systemId, String resourceType) throws Exception {
         ResourceStatistics statistics = new ResourceStatistics(resourceType);
-        statistics.setTotalCount(repository.getResourceCountByService(serviceId, systemId, resourceType));
+        statistics.setTotalCount(repository.getResourceCountByService(serviceId, resourceType));
         return statistics;
     }
 }

@@ -512,7 +512,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId) throws Exception {
+    public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -538,7 +538,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID systemId, UUID patientId, String resourceType) throws Exception {
+    public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -594,7 +594,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType, List<UUID> resourceIds) throws Exception {
+    public List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType, List<UUID> resourceIds) throws Exception {
 
         //convert the list of UUIDs to strings
         List<String> resourceIdStrs = resourceIds
@@ -826,7 +826,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     /**
      * tests if we have any patient cassandra stored for the given service and system
      */
-    public boolean dataExists(UUID serviceId, UUID systemId) throws Exception {
+    public boolean dataExists(UUID serviceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -850,7 +850,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public ResourceWrapper getFirstResourceByService(UUID serviceId, UUID systemId, ResourceType resourceType) throws Exception {
+    public ResourceWrapper getFirstResourceByService(UUID serviceId, ResourceType resourceType) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -877,7 +877,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public List<ResourceWrapper> getResourcesByService(UUID serviceId, UUID systemId, String resourceType) throws Exception {
+    public List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -903,7 +903,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public <T extends ResourceMetadata> ResourceMetadataIterator<T> getMetadataByService(UUID serviceId, UUID systemId, String resourceType, Class<T> classOfT) throws Exception {
+    public <T extends ResourceMetadata> ResourceMetadataIterator<T> getMetadataByService(UUID serviceId, String resourceType, Class<T> classOfT) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
@@ -925,7 +925,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    public long getResourceCountByService(UUID serviceId, UUID systemId, String resourceType) throws Exception {
+    public long getResourceCountByService(UUID serviceId, String resourceType) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
         try {
