@@ -50,7 +50,8 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                 return new CernerCodeValueRef(result);
             }
             catch (NoResultException e) {
-                LOG.error("No code found for codeSet " + codeSet + ", code " + code + ", service " + serviceId);
+                //don't assume that a lack of a result is a bad thing - let the caller decide
+                //LOG.error("No code found for codeSet " + codeSet + ", code " + code + ", service " + serviceId);
                 return null;
             }
         } finally {
