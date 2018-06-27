@@ -137,8 +137,8 @@ public class ConnectionManager {
 
     private static void populateConnectionProperties(JsonNode connectionPropertiesRoot, Map<String, Object> properties, Db dbName, String explicitConfigName) {
 
-        if (!connectionPropertiesRoot.isArray()) {
-            throw new IllegalArgumentException("connection_properties should be an array");
+        if (!connectionPropertiesRoot.isObject()) {
+            throw new IllegalArgumentException("connection_properties should be an object");
         }
 
         Iterator<String> fieldNames = connectionPropertiesRoot.fieldNames();
