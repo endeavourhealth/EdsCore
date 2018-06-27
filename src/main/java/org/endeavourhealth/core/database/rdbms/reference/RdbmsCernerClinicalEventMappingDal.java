@@ -20,9 +20,7 @@ public class RdbmsCernerClinicalEventMappingDal implements CernerClinicalEventMa
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
 
             //primary key (service_id, nomenclature_id)
