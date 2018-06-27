@@ -135,6 +135,11 @@ public class DalProvider {
         return new RdbmsTppCtv3HierarchyRefDal();
     }
 
+    public static CernerClinicalEventMappingDalI factoryCernerClinicalEventMappingDal() {
+        return new RdbmsCernerClinicalEventMappingDal();
+    }
+
+
     /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {
             return new CassandraResourceRepository();

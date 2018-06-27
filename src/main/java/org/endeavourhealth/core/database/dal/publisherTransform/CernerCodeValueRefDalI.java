@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherTransform;
 
+import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerClinicalEventMappingState;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerCodeValueRef;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.CernerNomenclatureRef;
 
@@ -19,4 +20,8 @@ public interface CernerCodeValueRefDalI {
     //NOMREF
     CernerNomenclatureRef getNomenclatureRefForId(UUID serviceId, Long nomenclatureId) throws Exception;
     void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception;
+
+    //CLEVE mapping
+    void updateCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception;
+    void deleteCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception;
 }

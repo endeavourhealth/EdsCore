@@ -36,6 +36,22 @@ public class RdbmsResourceDal implements ResourceDalI {
     //private static Map<UUID, Integer> counts = new HashMap<>();
 
     public void save(ResourceWrapper resourceEntry) throws Exception {
+
+        //attempts the save, and if the save fails because of a deadlock, it will have a second attempt
+        try {
+            trySave(resourceEntry);
+
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            if (msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
+                LOG.error("Deadlock when writing to ehr database - will try again");
+                Thread.sleep(1000);
+                trySave(resourceEntry);
+            }
+        }
+    }
+
+    public void trySave(ResourceWrapper resourceEntry) throws Exception {
         if (resourceEntry == null) {
             throw new IllegalArgumentException("resourceEntry is null");
         }
