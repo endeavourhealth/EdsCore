@@ -48,10 +48,6 @@ public class RdbmsCernerClinicalEventMappingDal implements CernerClinicalEventMa
 
             return null;
 
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
         } finally {
             if (ps != null) {
                 ps.close();
