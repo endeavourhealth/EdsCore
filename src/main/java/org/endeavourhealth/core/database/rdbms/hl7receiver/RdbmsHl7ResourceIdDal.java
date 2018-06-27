@@ -76,9 +76,6 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
         }
     }
 
-    /*
-     *
-     */
     public void saveResourceId(ResourceId resourceId)  throws Exception {
 
         //RdbmsResourceId dbObj = new RdbmsResourceId(resourceId);
@@ -129,5 +126,53 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
         }
     }
 
+    /**
+     * unlike other DALs we want explicit separate insert and update functions, rather than a general-purpose upsert one
+     */
+    public void updateResourceId(ResourceId resourceId)  throws Exception {
 
+        EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
+
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            //syntax for postreSQL is slightly different
+            String sql = null;
+            if (ConnectionManager.isPostgreSQL(connection)) {
+                sql = "UPDATE mapping.resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?;";
+                ps = connection.prepareStatement(sql);
+                ps.setObject(1, resourceId.getResourceId());
+                ps.setString(2, resourceId.getScopeId());
+                ps.setString(3, resourceId.getResourceType());
+                ps.setString(4, resourceId.getUniqueId());
+
+            } else {
+                sql = "UPDATE resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?;";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, resourceId.getResourceId().toString());
+                ps.setString(2, resourceId.getScopeId());
+                ps.setString(3, resourceId.getResourceType());
+                ps.setString(4, resourceId.getUniqueId());
+            }
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
 }
