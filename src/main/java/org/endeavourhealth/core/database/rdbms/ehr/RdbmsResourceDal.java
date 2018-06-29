@@ -718,13 +718,22 @@ public class RdbmsResourceDal implements ResourceDalI {
             //deleted resources are removed from resource_current, so we need a left outer join
             //and have to select enough columns from resource_history to be able to spot the deleted
             //resources and create resource wrappers for them
-            String sql = "select h.service_id, h.system_id, h.resource_type, h.resource_id, h.patient_id, "
-                    + " c.system_id, c.patient_id, c.resource_data"
+            //changed the order of columns so that we never get a null string in the last column,
+            //which exposed a bug in the MySQL driver (https://bugs.mysql.com/bug.php?id=84084)
+            String sql = "select h.service_id, h.system_id, h.patient_id, "
+                    + " c.system_id, c.patient_id, c.resource_data, h.resource_type, h.resource_id"
                     + " from resource_history h"
                     + " left outer join resource_current c"
                     + " on h.resource_id = c.resource_id"
                     + " and h.resource_type = c.resource_type"
                     + " where h.exchange_batch_id = ?;";
+            /*String sql = "select h.service_id, h.system_id, h.resource_type, h.resource_id, h.patient_id, "
+                    + " c.system_id, c.patient_id, c.resource_data"
+                    + " from resource_history h"
+                    + " left outer join resource_current c"
+                    + " on h.resource_id = c.resource_id"
+                    + " and h.resource_type = c.resource_type"
+                    + " where h.exchange_batch_id = ?;";*/
 
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
@@ -744,63 +753,59 @@ public class RdbmsResourceDal implements ResourceDalI {
                 int col = 1;
                 String historyServiceId = rs.getString(col++);
                 String historySystemId = rs.getString(col++);
+                /*String historyResourceType = rs.getString(col++);
+                String historyResourceId = rs.getString(col++);*/
+                String historyPatientId = rs.getString(col++);
+
+                //since we're not dealing with any primitive types, we can just use getString(..)
+                //and check that the result is null or not, without needing to use wasNull(..)
+                String currentSystemId = rs.getString(col++);
+                String currentPatientId = rs.getString(col++);
+                String currentResourceData = rs.getString(col++);
+
+                //moved these columns to be the last in the result set, to avoid MySQL bug https://bugs.mysql.com/bug.php?id=84084
                 String historyResourceType = rs.getString(col++);
                 String historyResourceId = rs.getString(col++);
 
-                try {
-                    String historyPatientId = rs.getString(col++);
-
-
-                    //since we're not dealing with any primitive types, we can just use getString(..)
-                    //and check that the result is null or not, without needing to use wasNull(..)
-                    String currentSystemId = rs.getString(col++);
-                    String currentPatientId = rs.getString(col++);
-                    String currentResourceData = rs.getString(col);
-
-                    //skip if we've already done this resource
-                    String referenceStr = ReferenceHelper.createResourceReference(historyResourceType, historyResourceId);
-                    if (resourcesDone.contains(referenceStr)) {
-                        continue;
-                    }
-                    resourcesDone.add(referenceStr);
-
-                    //populate the resource wrapper with what we've got, depending on what's null or not.
-                    //NOTE: the resource wrapper will have the following fields null:
-                    //UUID version;
-                    //Date createdAt;
-                    //String resourceMetadata;
-                    //Long resourceChecksum;
-                    //UUID exchangeId;
-
-                    ResourceWrapper wrapper = new ResourceWrapper();
-                    wrapper.setServiceId(UUID.fromString(historyServiceId));
-                    wrapper.setResourceType(historyResourceType);
-                    wrapper.setResourceId(UUID.fromString(historyResourceId));
-                    wrapper.setExchangeBatchId(batchId);
-
-                    //if we have no resource data, the resource is deleted, so populate with what we've got from the history table
-                    if (currentResourceData == null) {
-                        wrapper.setDeleted(true);
-                        wrapper.setSystemId(UUID.fromString(historySystemId));
-                        if (!Strings.isNullOrEmpty(historyPatientId)) {
-                            wrapper.setPatientId(UUID.fromString(historyPatientId));
-                        }
-
-                    } else {
-                        //if we have resource data, then populate with what we've got from resource_current
-                        wrapper.setSystemId(UUID.fromString(currentSystemId));
-                        wrapper.setResourceData(currentResourceData);
-                        if (!Strings.isNullOrEmpty(currentPatientId)) {
-                            wrapper.setPatientId(UUID.fromString(currentPatientId));
-                        }
-                    }
-
-                    ret.add(wrapper);
-                } catch (ArrayIndexOutOfBoundsException ex) {
-                    LOG.error("Error on " + historyResourceType + " " + historyResourceId + " was null? " + rs.wasNull());
-                    LOG.error("SQL was " + ps.toString());
-                    throw ex;
+                //skip if we've already done this resource
+                String referenceStr = ReferenceHelper.createResourceReference(historyResourceType, historyResourceId);
+                if (resourcesDone.contains(referenceStr)) {
+                    continue;
                 }
+                resourcesDone.add(referenceStr);
+
+                //populate the resource wrapper with what we've got, depending on what's null or not.
+                //NOTE: the resource wrapper will have the following fields null:
+                //UUID version;
+                //Date createdAt;
+                //String resourceMetadata;
+                //Long resourceChecksum;
+                //UUID exchangeId;
+
+                ResourceWrapper wrapper = new ResourceWrapper();
+                wrapper.setServiceId(UUID.fromString(historyServiceId));
+                wrapper.setResourceType(historyResourceType);
+                wrapper.setResourceId(UUID.fromString(historyResourceId));
+                wrapper.setExchangeBatchId(batchId);
+
+                //if we have no resource data, the resource is deleted, so populate with what we've got from the history table
+                if (currentResourceData == null) {
+                    wrapper.setDeleted(true);
+                    wrapper.setSystemId(UUID.fromString(historySystemId));
+                    if (!Strings.isNullOrEmpty(historyPatientId)) {
+                        wrapper.setPatientId(UUID.fromString(historyPatientId));
+                    }
+
+                } else {
+                    //if we have resource data, then populate with what we've got from resource_current
+                    wrapper.setSystemId(UUID.fromString(currentSystemId));
+                    wrapper.setResourceData(currentResourceData);
+                    if (!Strings.isNullOrEmpty(currentPatientId)) {
+                        wrapper.setPatientId(UUID.fromString(currentPatientId));
+                    }
+                }
+
+                ret.add(wrapper);
             }
 
             return ret;
