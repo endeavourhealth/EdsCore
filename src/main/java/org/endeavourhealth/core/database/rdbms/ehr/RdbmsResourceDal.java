@@ -746,53 +746,61 @@ public class RdbmsResourceDal implements ResourceDalI {
                 String historySystemId = rs.getString(col++);
                 String historyResourceType = rs.getString(col++);
                 String historyResourceId = rs.getString(col++);
-                String historyPatientId = rs.getString(col++);
 
-                //since we're not dealing with any primitive types, we can just use getString(..)
-                //and check that the result is null or not, without needing to use wasNull(..)
-                String currentSystemId = rs.getString(col++);
-                String currentPatientId = rs.getString(col++);
-                String currentResourceData = rs.getString(col);
+                try {
+                    String historyPatientId = rs.getString(col++);
 
-                //skip if we've already done this resource
-                String referenceStr = ReferenceHelper.createResourceReference(historyResourceType, historyResourceId);
-                if (resourcesDone.contains(referenceStr)) {
-                    continue;
-                }
-                resourcesDone.add(referenceStr);
 
-                //populate the resource wrapper with what we've got, depending on what's null or not.
-                //NOTE: the resource wrapper will have the following fields null:
-                //UUID version;
-                //Date createdAt;
-                //String resourceMetadata;
-                //Long resourceChecksum;
-                //UUID exchangeId;
+                    //since we're not dealing with any primitive types, we can just use getString(..)
+                    //and check that the result is null or not, without needing to use wasNull(..)
+                    String currentSystemId = rs.getString(col++);
+                    String currentPatientId = rs.getString(col++);
+                    String currentResourceData = rs.getString(col);
 
-                ResourceWrapper wrapper = new ResourceWrapper();
-                wrapper.setServiceId(UUID.fromString(historyServiceId));
-                wrapper.setResourceType(historyResourceType);
-                wrapper.setResourceId(UUID.fromString(historyResourceId));
-                wrapper.setExchangeBatchId(batchId);
+                    //skip if we've already done this resource
+                    String referenceStr = ReferenceHelper.createResourceReference(historyResourceType, historyResourceId);
+                    if (resourcesDone.contains(referenceStr)) {
+                        continue;
+                    }
+                    resourcesDone.add(referenceStr);
 
-                //if we have no resource data, the resource is deleted, so populate with what we've got from the history table
-                if (currentResourceData == null) {
-                    wrapper.setDeleted(true);
-                    wrapper.setSystemId(UUID.fromString(historySystemId));
-                    if (!Strings.isNullOrEmpty(historyPatientId)) {
-                        wrapper.setPatientId(UUID.fromString(historyPatientId));
+                    //populate the resource wrapper with what we've got, depending on what's null or not.
+                    //NOTE: the resource wrapper will have the following fields null:
+                    //UUID version;
+                    //Date createdAt;
+                    //String resourceMetadata;
+                    //Long resourceChecksum;
+                    //UUID exchangeId;
+
+                    ResourceWrapper wrapper = new ResourceWrapper();
+                    wrapper.setServiceId(UUID.fromString(historyServiceId));
+                    wrapper.setResourceType(historyResourceType);
+                    wrapper.setResourceId(UUID.fromString(historyResourceId));
+                    wrapper.setExchangeBatchId(batchId);
+
+                    //if we have no resource data, the resource is deleted, so populate with what we've got from the history table
+                    if (currentResourceData == null) {
+                        wrapper.setDeleted(true);
+                        wrapper.setSystemId(UUID.fromString(historySystemId));
+                        if (!Strings.isNullOrEmpty(historyPatientId)) {
+                            wrapper.setPatientId(UUID.fromString(historyPatientId));
+                        }
+
+                    } else {
+                        //if we have resource data, then populate with what we've got from resource_current
+                        wrapper.setSystemId(UUID.fromString(currentSystemId));
+                        wrapper.setResourceData(currentResourceData);
+                        if (!Strings.isNullOrEmpty(currentPatientId)) {
+                            wrapper.setPatientId(UUID.fromString(currentPatientId));
+                        }
                     }
 
-                } else {
-                    //if we have resource data, then populate with what we've got from resource_current
-                    wrapper.setSystemId(UUID.fromString(currentSystemId));
-                    wrapper.setResourceData(currentResourceData);
-                    if (!Strings.isNullOrEmpty(currentPatientId)) {
-                        wrapper.setPatientId(UUID.fromString(currentPatientId));
-                    }
+                    ret.add(wrapper);
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    LOG.error("Error on " + historyResourceType + " " + historyResourceId + " was null? " + rs.wasNull());
+                    LOG.error("SQL was " + ps.toString());
+                    throw ex;
                 }
-
-                ret.add(wrapper);
             }
 
             return ret;
