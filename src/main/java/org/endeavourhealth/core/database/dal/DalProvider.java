@@ -1,9 +1,6 @@
 package org.endeavourhealth.core.database.dal;
 
-import org.endeavourhealth.core.database.dal.admin.LibraryDalI;
-import org.endeavourhealth.core.database.dal.admin.OrganisationDalI;
-import org.endeavourhealth.core.database.dal.admin.PatientCohortDalI;
-import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
+import org.endeavourhealth.core.database.dal.admin.*;
 import org.endeavourhealth.core.database.dal.audit.*;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
@@ -16,10 +13,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.*;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
-import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
-import org.endeavourhealth.core.database.rdbms.admin.RdbmsOrganisationDal;
-import org.endeavourhealth.core.database.rdbms.admin.RdbmsPatientCohortDal;
-import org.endeavourhealth.core.database.rdbms.admin.RdbmsServiceDal;
+import org.endeavourhealth.core.database.rdbms.admin.*;
 import org.endeavourhealth.core.database.rdbms.audit.*;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
@@ -122,6 +116,10 @@ public class DalProvider {
     public static PatientCohortDalI factoryPatientCohortDal() {
         return new RdbmsPatientCohortDal();
     }
+
+    public static LinkDistributorTaskListDalI factoryLinkDistributorTaskListDal() { return new RdbmsLinkDistributorTaskListDal(); }
+
+    public static LinkDistributorPopulatorDalI factoryLinkDistributorPopulatorDal() { return new RdbmsLinkDistributorPopulatorDal(); }
 
     public static TransformWarningDalI factoryTransformWarningDal() {
         return new RdbmsTransformWarningDal();
