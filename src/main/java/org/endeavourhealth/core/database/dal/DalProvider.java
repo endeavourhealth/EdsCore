@@ -87,11 +87,17 @@ public class DalProvider {
         return new RdbmsCernerCodeValueRefDal();
     }
 
-    public static TppMappingRefDalI factoryTppMappingRefDal() { return new RdbmsTppMappingRefDal(); }
+    public static TppMappingRefDalI factoryTppMappingRefDal() {
+        return new RdbmsTppMappingRefDal();
+    }
 
-    public static TppImmunisationContentDalI factoryTppImmunisationContentDal() { return new RdbmsTppImmunisationContentDal(); }
+    public static TppImmunisationContentDalI factoryTppImmunisationContentDal() {
+        return new RdbmsTppImmunisationContentDal();
+    }
 
-    public static TppConfigListOptionDalI factoryTppConfigListOptionDal() { return new RdbmsTppConfigListOptionDal(); }
+    public static TppConfigListOptionDalI factoryTppConfigListOptionDal() {
+        return new RdbmsTppConfigListOptionDal();
+    }
 
     public static JDBCReaderDalI factoryJDBCReaderDal() {
         return new RdbmsJDBCReaderDal();
@@ -117,9 +123,13 @@ public class DalProvider {
         return new RdbmsPatientCohortDal();
     }
 
-    public static LinkDistributorTaskListDalI factoryLinkDistributorTaskListDal() { return new RdbmsLinkDistributorTaskListDal(); }
+    public static LinkDistributorTaskListDalI factoryLinkDistributorTaskListDal() {
+        return new RdbmsLinkDistributorTaskListDal();
+    }
 
-    public static LinkDistributorPopulatorDalI factoryLinkDistributorPopulatorDal() { return new RdbmsLinkDistributorPopulatorDal(); }
+    public static LinkDistributorPopulatorDalI factoryLinkDistributorPopulatorDal() {
+        return new RdbmsLinkDistributorPopulatorDal();
+    }
 
     public static TransformWarningDalI factoryTransformWarningDal() {
         return new RdbmsTransformWarningDal();
@@ -135,6 +145,10 @@ public class DalProvider {
 
     public static CernerClinicalEventMappingDalI factoryCernerClinicalEventMappingDal() {
         return new RdbmsCernerClinicalEventMappingDal();
+    }
+
+    public static SubscriberApiAuditDalI factorySubscriberAuditApiDal() {
+        return new RdbmsSubscriberApiAuditDal();
     }
 
 
@@ -278,8 +292,6 @@ public class DalProvider {
             return new RdbmsPatientCohortDal();
         }
     }*/
-
-
 
 
     public static Read2ToSnomedMapDalI factoryRead2ToSnomedMapDal() {
