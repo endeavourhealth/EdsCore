@@ -26,8 +26,8 @@ public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO subscriber_api_audit"
-                    + " (timestmp, user_uuid, remote_address, request_path, request_headers, response_code, response_body)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?);";
+                    + " (timestmp, user_uuid, remote_address, request_path, request_headers, response_code, response_body, duration_ms)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
             ps = connection.prepareStatement(sql);
 
@@ -43,6 +43,7 @@ public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
                 ps.setInt(col++, audit.getResponseCode().intValue());
             }
             ps.setString(col++, audit.getResponseBody());
+            ps.setLong(col++, audit.getDurationMs());
 
             ps.executeUpdate();
 

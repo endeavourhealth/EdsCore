@@ -12,6 +12,7 @@ public class SubscriberApiAudit {
     private String requestHeaders;
     private Integer responseCode;
     private String responseBody;
+    private Long durationMs;
 
     public SubscriberApiAudit() {}
 
@@ -69,5 +70,13 @@ public class SubscriberApiAudit {
 
     public void setResponseBody(String responseBody) {
         this.responseBody = responseBody;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 }
