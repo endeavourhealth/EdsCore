@@ -840,7 +840,13 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 throw new IllegalArgumentException("Insufficient parameters passed in to search function");
             }
 
+            String sqlStr = ps.toString();
+            long msStart = System.currentTimeMillis();
+
             ResultSet rs = ps.executeQuery();
+
+            long msEnd = System.currentTimeMillis();
+            LOG.debug("Searching for patient took " + (msEnd - msStart) + "ms: " + sqlStr);
 
             List<PatientSearch> ret = new ArrayList<>();
 
