@@ -4,10 +4,7 @@ import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Patient;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public interface PatientSearchDalI {
 
@@ -24,4 +21,5 @@ public interface PatientSearchDalI {
     List<PatientSearch> searchByNames(Set<String> serviceIds, List<String> names) throws Exception;
     PatientSearch searchByPatientId(UUID patientId) throws Exception;
 
+    Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
 }

@@ -979,5 +979,53 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
+    /**
+     * faster way to look up patient (and service ID) for an NHS number, without the join to patient_search_episode
+     */
+    public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
 
+        String sql = "SELECT ps.service_id, ps.patient_id"
+                + " FROM patient_search ps"
+                + " WHERE ps.nhs_number = ?"
+                + " AND ps.service_id IN ("
+                + String.join(",", Collections.nCopies(serviceIds.size(), "?"))
+                + ")";
+
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+            ps = connection.prepareStatement(sql);
+
+            int index = 1;
+            ps.setString(index++, nhsNumber);
+
+            for (String serviceId: serviceIds) {
+                ps.setString(index++, serviceId);
+            }
+
+            ResultSet rs = ps.executeQuery();
+
+            Map<UUID, UUID> ret = new HashMap<>();
+
+            while (rs.next()) {
+
+                PatientSearch obj = new PatientSearch();
+
+                int col = 1;
+                UUID serviceId = UUID.fromString(rs.getString(col++));
+                UUID patientId = UUID.fromString(rs.getString(col++));
+                ret.put(patientId, serviceId);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
 }
