@@ -981,8 +981,48 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
     /**
      * faster way to look up patient (and service ID) for an NHS number, without the join to patient_search_episode
+     * or the SQL filtering on a long list of service IDs
      */
     public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
+
+        String sql = "SELECT ps.service_id, ps.patient_id"
+                + " FROM patient_search ps"
+                + " WHERE ps.nhs_number = ?;";
+
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, nhsNumber);
+
+            ResultSet rs = ps.executeQuery();
+
+            Map<UUID, UUID> ret = new HashMap<>();
+
+            while (rs.next()) {
+
+                int col = 1;
+                UUID serviceId = UUID.fromString(rs.getString(col++));
+                UUID patientId = UUID.fromString(rs.getString(col++));
+
+                if (serviceIds.contains(serviceId.toString())) {
+                    ret.put(patientId, serviceId);
+                }
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+    /*public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
 
         String sql = "SELECT ps.service_id, ps.patient_id"
                 + " FROM patient_search ps"
@@ -1027,5 +1067,5 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             }
             entityManager.close();
         }
-    }
+    }*/
 }
