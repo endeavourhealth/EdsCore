@@ -198,7 +198,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + "code_set_desc_txt = VALUES(code_set_desc_txt),"
                     + "alias_nhs_cd_alias = VALUES(alias_nhs_cd_alias),"
                     + "service_id = VALUES(service_id),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
@@ -303,7 +303,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " nomenclature_type_code = VALUES(nomenclature_type_code),"
                     + " vocabulary_code = VALUES (vocabulary_code),"
                     + " concept_identifier = VALUES(concept_identifier),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             int col = 1;
 
@@ -391,7 +391,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             //primary key (service_id, nomenclature_id)
             String sql = "DELETE FROM cerner_clinical_event_mapping_state "
-                    + " WHERE service_id = ? and event_id = ?;";
+                    + " WHERE service_id = ? and event_id = ?";
 
             int col = 1;
 
@@ -460,7 +460,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " event_title_text = VALUES(event_title_text),"
                     + " event_tag_text = VALUES(event_tag_text),"
                     + " mapped_snomed_concept_id = VALUES(mapped_snomed_concept_id),"
-                    + " dt_mapping_updated = VALUES(dt_mapping_updated);";
+                    + " dt_mapping_updated = VALUES(dt_mapping_updated)";
 
             ps = connection.prepareStatement(sql);
 
@@ -563,7 +563,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             //primary key (service_id, nomenclature_id)
             String sql = "DELETE FROM cerner_clinical_event_mapping_state "
-                    + " WHERE service_id = ? and event_id = ?;";
+                    + " WHERE service_id = ? and event_id = ?";
 
             ps = connection.prepareStatement(sql);
 
@@ -630,7 +630,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " event_title_text = VALUES(event_title_text),"
                     + " event_tag_text = VALUES(event_tag_text),"
                     + " mapped_snomed_concept_id = VALUES(mapped_snomed_concept_id),"
-                    + " dt_mapping_updated = VALUES(dt_mapping_updated);";
+                    + " dt_mapping_updated = VALUES(dt_mapping_updated)";
 
             int col = 1;
 
