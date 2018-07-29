@@ -4,6 +4,7 @@ import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.dal.publisherTransform.SourceFileMappingDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMapping;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.SourceFileRecord;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.*;
 import org.hibernate.internal.SessionImpl;
@@ -84,6 +85,10 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             entityManager.getTransaction().commit();
 
             return fileObj.getId().intValue();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
@@ -213,6 +218,10 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
             return newId;
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
         } finally {
             entityManager.close();
             if (ps != null) {
@@ -221,34 +230,104 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
     }
 
-    public long auditFileRow(UUID serviceId, String[] values, int recordLineNumber, int sourceFileId) throws Exception {
+    @Override
+    public void auditFileRow(UUID serviceId, SourceFileRecord record) throws Exception {
 
-
-        String rowStr = String.join(CSV_DELIM, values);
-
-        long recordAuditId;
+        String rowStr = String.join(CSV_DELIM, record.getValues());
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             entityManager.getTransaction().begin();
 
             RdbmsSourceFileRecord fieldObj = new RdbmsSourceFileRecord();
-            fieldObj.setSourceFileId(sourceFileId);
 
-            fieldObj.setSourceFileId(sourceFileId);
-            fieldObj.setSourceLocation("" + recordLineNumber);
+            fieldObj.setSourceFileId(record.getSourceFileId());
+            fieldObj.setSourceLocation(record.getSourceLocation());
             fieldObj.setValue(rowStr);
             entityManager.persist(fieldObj);
 
-            recordAuditId = fieldObj.getId().longValue();
+            //and set the generated ID back on the record object
+            long recordAuditId = fieldObj.getId().longValue();
+            record.setId(recordAuditId);
 
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();
         }
+    }
 
-        return recordAuditId;
+    @Override
+    public void auditFileRows(UUID serviceId, List<SourceFileRecord> records) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+        PreparedStatement psInsert = null;
+        //PreparedStatement psRowCount = null;
+        PreparedStatement psLastId = null;
+
+        try {
+
+            String sql = "INSERT INTO source_file_record"
+                    + " (source_file_id, source_location, value)"
+                    + " VALUES (?, ?, ?)";
+
+            psInsert = connection.prepareStatement(sql);
+
+            //entityManager.getTransaction().begin();
+
+            for (SourceFileRecord record : records) {
+
+                String rowStr = String.join(CSV_DELIM, record.getValues());
+
+                int col = 1;
+                psInsert.setInt(col++, record.getSourceFileId());
+                psInsert.setString(col++, record.getSourceLocation());
+                psInsert.setString(col++, rowStr);
+
+                psInsert.addBatch();
+            }
+
+            psInsert.executeBatch();
+
+            //calling commit on the entity manager closes the connection, so do it directly
+            connection.commit();
+            //entityManager.getTransaction().commit();
+
+            //to get the auto-assigned nubmers for the new rows, we use a SQL function which returns
+            //the FIRST auto generated ID generated in the last transaction, and because innodb_autoinc_lock_mode is
+            //set to 1, the other assigned IDs are guaranteed to be contiguous
+            psLastId = connection.prepareStatement("SELECT LAST_INSERT_ID()");
+            ResultSet rs = psLastId.executeQuery();
+            rs.next();
+            long lastId = rs.getLong(1);
+            rs.close();
+
+            //and set the generated ID back on the record object
+            for (SourceFileRecord record : records) {
+                record.setId(lastId);
+                lastId++;
+            }
+        } catch (Exception ex) {
+            connection.rollback();
+
+        } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
+            /*if (psRowCount != null) {
+                psRowCount.close();
+            }*/
+            if (psLastId != null) {
+                psLastId.close();
+            }
+            entityManager.close();
+        }
     }
 
 
@@ -585,8 +664,9 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         return ret;
     }*/
 
-    public void saveResourceMappings(UUID serviceId, ResourceWrapper resourceWrapper, ResourceFieldMappingAudit audit) throws Exception {
+    public void saveResourceMappings(ResourceWrapper resourceWrapper, ResourceFieldMappingAudit audit) throws Exception {
 
+        UUID serviceId = resourceWrapper.getServiceId();
         String mappingJson = audit.writeToJson();
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -602,6 +682,70 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             entityManager.getTransaction().begin();
             entityManager.persist(dbObj);
             entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveResourceMappings(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
+
+        if (audits == null || audits.isEmpty()) {
+            return;
+        }
+
+        UUID serviceId = null;
+        for (ResourceWrapper wrapper: audits.keySet()) {
+            if (serviceId == null) {
+                serviceId = wrapper.getServiceId();
+            } else if (!serviceId.equals(wrapper.getServiceId())) {
+                throw new IllegalArgumentException("Can't save audits for multiple services at once");
+            }
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        PreparedStatement ps = null;
+        try {
+
+            String sql = "INSERT INTO resource_field_mappings"
+                    + " (resource_id, resource_type, created_at, version, mappings_json)"
+                    + " VALUES (?, ?, ?, ?, ?)";
+            //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (ResourceWrapper wrapper: audits.keySet()) {
+                ResourceFieldMappingAudit audit = audits.get(wrapper);
+                String mappingJson = audit.writeToJson();
+
+                int col = 1;
+                ps.setString(col++, wrapper.getResourceId().toString());
+                ps.setString(col++, wrapper.getResourceType());
+                ps.setTimestamp(col++, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+                ps.setString(col++, wrapper.getVersion().toString());
+                ps.setString(col++, mappingJson);
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

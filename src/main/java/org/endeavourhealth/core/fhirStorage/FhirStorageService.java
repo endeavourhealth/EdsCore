@@ -17,8 +17,7 @@ import org.hl7.fhir.instance.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Date;
-import java.util.UUID;
+import java.util.*;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -43,6 +42,108 @@ public class FhirStorageService {
         this.systemId = systemId;
     }
 
+
+    public List<ResourceWrapper> saveResources(UUID exchangeId, Map<Resource, UUID> resourcesAndBatchIds, Set<Resource> definitelyNewResources) throws Exception {
+
+        List<ResourceWrapper> wrappers = new ArrayList<>();
+        for (Resource resource: resourcesAndBatchIds.keySet()) {
+            Validate.resourceId(resource);
+
+            UUID batchId = resourcesAndBatchIds.get(resource);
+            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+
+            //if we're updating a resource but there's no change, don't commit the save
+            //this is because Emis send us up to thousands of duplicated resources each day
+            boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
+            if (shouldSaveResource(entry, isDefinitelyNewResource)) {
+                wrappers.add(entry);
+            }
+        }
+
+        if (wrappers.isEmpty()) {
+            return wrappers;
+        }
+
+        resourceRepository.save(wrappers);
+
+        //call out to our patient search and person matching services
+        for (Resource resource: resourcesAndBatchIds.keySet()) {
+            if (resource instanceof Patient) {
+                //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
+                try {
+                    patientLinkDal.updatePersonId(serviceId, (Patient) resource);
+                } catch (Throwable t) {
+                    LOG.error("Exception updating patient link table for " + resource.getResourceType() + " " + resource.getId());
+                    throw t;
+                }
+
+                try {
+                    patientSearchDal.update(serviceId, (Patient) resource);
+                } catch (Throwable t) {
+                    LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                    throw t;
+                }
+
+            } else if (resource instanceof EpisodeOfCare) {
+                //LOG.info("Updating PATIENT_SEARCH with EPISODEOFCARE resource " + resource.getId());
+
+                try {
+                    patientSearchDal.update(serviceId, (EpisodeOfCare) resource);
+                } catch (Throwable t) {
+                    LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                    throw t;
+                }
+            }
+        }
+
+        return wrappers;
+    }
+
+
+    public List<ResourceWrapper> deleteResources(UUID exchangeId, Map<Resource, UUID> resourcesAndBatchIds, Set<Resource> definitelyNewResources) throws Exception {
+
+        List<ResourceWrapper> wrappers = new ArrayList<>();
+        for (Resource resource: resourcesAndBatchIds.keySet()) {
+            Validate.resourceId(resource);
+
+            UUID batchId = resourcesAndBatchIds.get(resource);
+            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+
+            //if we're updating a resource but there's no change, don't commit the save
+            //this is because Emis send us up to thousands of duplicated resources each day
+            boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
+            if (shouldDeleteResource(entry, isDefinitelyNewResource)) {
+                wrappers.add(entry);
+            }
+        }
+
+        if (wrappers.isEmpty()) {
+            return wrappers;
+        }
+
+        resourceRepository.delete(wrappers);
+
+        //if we're deleting the patient, then delete the row from the patient_search table
+        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
+        for (Resource resource: resourcesAndBatchIds.keySet()) {
+            if (resource instanceof Patient) {
+                patientSearchDal.deletePatient(serviceId, (Patient) resource);
+
+            } else if (resource instanceof EpisodeOfCare) {
+                patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare) resource);
+
+                try {
+                    patientSearchDal.update(serviceId, (EpisodeOfCare) resource);
+                } catch (Throwable t) {
+                    LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                    throw t;
+                }
+            }
+        }
+
+        return wrappers;
+    }
+
     public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         return exchangeBatchUpdate(exchangeId, batchId, resource, false);
     }
@@ -58,7 +159,7 @@ public class FhirStorageService {
             return null;
         }
 
-        FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
+        //FhirResourceHelper.updateMetaTags(resource, entry.getVersion(), entry.getCreatedAt());
 
         resourceRepository.save(entry);
 
@@ -114,18 +215,18 @@ public class FhirStorageService {
         //if we're deleting the patient, then delete the row from the patient_search table
         //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
         if (resource instanceof Patient) {
-            patientSearchDal.deletePatient(serviceId, (Patient)resource);
+            patientSearchDal.deletePatient(serviceId, (Patient) resource);
 
         } else if (resource instanceof EpisodeOfCare) {
-            patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare)resource);
+            patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare) resource);
 
-        try {
-            patientSearchDal.update(serviceId, (EpisodeOfCare)resource);
-        } catch (Throwable t) {
-            LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
-            throw t;
+            try {
+                patientSearchDal.update(serviceId, (EpisodeOfCare) resource);
+            } catch (Throwable t) {
+                LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
+                throw t;
+            }
         }
-    }
 
 
         return entry;

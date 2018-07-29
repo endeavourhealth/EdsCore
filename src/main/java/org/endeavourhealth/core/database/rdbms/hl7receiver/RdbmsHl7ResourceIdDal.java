@@ -112,8 +112,6 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
 
             entityManager.getTransaction().commit();
 
-            //LOG.trace("Saved recourceId:" + resourceId.getUniqueId() + "==>" + resourceId.getResourceId());
-
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

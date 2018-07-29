@@ -416,6 +416,185 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
         }
     }
 
+    private UUID findServiceId(List<CernerClinicalEventMappingState> mappings) throws Exception {
+
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("trying to save null or empty mappings");
+        }
+
+        UUID serviceId = null;
+        for (CernerClinicalEventMappingState mapping: mappings) {
+            if (serviceId == null) {
+                serviceId = mapping.getServiceId();
+            } else if (!serviceId.equals(mapping.getServiceId())) {
+                throw new IllegalArgumentException("Can't save resources for different services");
+            }
+        }
+        return serviceId;
+    }
+
+    @Override
+    public void updateCleveMappingStateTable(List<CernerClinicalEventMappingState> mappings) throws Exception {
+
+        UUID serviceId = findServiceId(mappings);
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            //primary key (service_id, nomenclature_id)
+            String sql = "INSERT INTO cerner_clinical_event_mapping_state "
+                    + " (service_id, event_id, event_cd, event_cd_term, event_class_cd, event_class_cd_term, event_results_units_cd, event_results_units_cd_term, event_result_text, event_title_text, event_tag_text, mapped_snomed_concept_id, dt_mapping_updated)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " event_cd = VALUES(event_cd), "
+                    + " event_cd_term = VALUES(event_cd_term),"
+                    + " event_class_cd = VALUES(event_class_cd),"
+                    + " event_class_cd_term = VALUES(event_class_cd_term),"
+                    + " event_results_units_cd = VALUES(event_results_units_cd),"
+                    + " event_results_units_cd_term = VALUES(event_results_units_cd_term),"
+                    + " event_result_text = VALUES (event_result_text),"
+                    + " event_title_text = VALUES(event_title_text),"
+                    + " event_tag_text = VALUES(event_tag_text),"
+                    + " mapped_snomed_concept_id = VALUES(mapped_snomed_concept_id),"
+                    + " dt_mapping_updated = VALUES(dt_mapping_updated);";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (CernerClinicalEventMappingState mapping: mappings) {
+                int col = 1;
+
+                ps.setString(col++, mapping.getServiceId().toString());
+                ps.setLong(col++, mapping.getEventId().longValue());
+                if (mapping.getEventCd() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventCd());
+                }
+                if (mapping.getEventCdTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventCdTerm());
+                }
+                if (mapping.getEventClassCd() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventClassCd());
+                }
+                if (mapping.getEventClassCdTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventClassCdTerm());
+                }
+                if (mapping.getEventResultUnitsCd() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventResultUnitsCd());
+                }
+                if (mapping.getEventResultUnitsCdTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventResultUnitsCdTerm());
+                }
+                if (mapping.getEventResultText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventResultText());
+                }
+                if (mapping.getEventTitleText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventTitleText());
+                }
+                if (mapping.getEventTagText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getEventTagText());
+                }
+                if (mapping.getMappedSnomedId() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getMappedSnomedId());
+                }
+                //always set the date time column to NULL since this column is used to tell us when
+                //we need to go back and update the FHIR
+                ps.setNull(col++, Types.DATE);
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void deleteCleveMappingStateTable(List<CernerClinicalEventMappingState> mappings) throws Exception {
+
+        UUID serviceId = findServiceId(mappings);
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisMapping);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            //primary key (service_id, nomenclature_id)
+            String sql = "DELETE FROM cerner_clinical_event_mapping_state "
+                    + " WHERE service_id = ? and event_id = ?;";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (CernerClinicalEventMappingState mapping: mappings) {
+                int col = 1;
+
+                ps.setString(col++, mapping.getServiceId().toString());
+                ps.setLong(col++, mapping.getEventId().longValue());
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
     public void updateCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception {
 
         if (mapping == null) {

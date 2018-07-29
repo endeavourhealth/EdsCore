@@ -78,7 +78,7 @@ public class RdbmsEmisCsvCodeMap implements Serializable {
         this.codeType = codeType;
     }
 
-    @Column(name = "codeable_concept", nullable = false)
+    @Column(name = "codeable_concept", nullable = true)
     public String getCodeableConcept() {
         return codeableConcept;
     }

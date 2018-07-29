@@ -167,6 +167,8 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
                 ret = new Integer(newType.getId());
 
             } catch (Exception ex) {
+                entityManager.getTransaction().rollback();
+
                 //if we get an exception saving the new type, then it'll be because another thread/app beat
                 //us to it, in which case we try to search again (unless we've already tried again)
                 if (firstAttempt) {

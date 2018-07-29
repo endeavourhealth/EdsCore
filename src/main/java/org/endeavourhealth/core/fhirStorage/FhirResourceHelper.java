@@ -44,11 +44,12 @@ public class FhirResourceHelper {
                 .collect(Collectors.toList());
     }
 
-    public static void updateMetaTags(Resource resource, UUID version, Date createdAt) {
+    //always called after save to does nothing
+    /*public static void updateMetaTags(Resource resource, UUID version, Date createdAt) {
         Meta meta = resource.getMeta();
         meta.setVersionId(version.toString());
         meta.setLastUpdated(createdAt);
-    }
+    }*/
 
     public static Resource deserialiseResouce(ResourceWrapper resourceWrapper) throws Exception {
         String json = resourceWrapper.getResourceData();

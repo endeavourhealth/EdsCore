@@ -261,11 +261,17 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
         entityManager.getTransaction().begin();
         try {
             Query q = entityManager.createNativeQuery(script);
+            int ret = q.executeUpdate();
 
-            return q.executeUpdate();
-        }
-        finally {
             entityManager.getTransaction().commit();
+
+            return ret;
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
             entityManager.close();
         }
     }

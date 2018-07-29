@@ -20,8 +20,126 @@ import java.util.List;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
-    public void save(EmisCsvCodeMap mapping) throws Exception
-    {
+    @Override
+    public void save(List<EmisCsvCodeMap> mappings) throws Exception {
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("Trying to save null or empty mappings");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO emis_csv_code_map"
+                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " code_type = VALUES(code_type),"
+                    + " codeable_concept = VALUES(codeable_concept),"
+                    + " read_term = VALUES(read_term),"
+                    + " read_code = VALUES(read_code),"
+                    + " snomed_concept_id = VALUES(snomed_concept_id),"
+                    + " snomed_description_id = VALUES(snomed_description_id),"
+                    + " snomed_term = VALUES(snomed_term),"
+                    + " national_code = VALUES(national_code),"
+                    + " national_code_category = VALUES(national_code_category),"
+                    + " national_code_description = VALUES(national_code_description),"
+                    + " parent_code_id = VALUES(parent_code_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+            
+            for (EmisCsvCodeMap mapping: mappings) {
+
+                int col = 1;
+                ps.setBoolean(col++, mapping.isMedication());
+                ps.setLong(col++, mapping.getCodeId());
+                if (Strings.isNullOrEmpty(mapping.getCodeType())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getCodeType());
+                }
+                if (Strings.isNullOrEmpty(mapping.getCodeableConcept())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getCodeableConcept());
+                }
+                if (Strings.isNullOrEmpty(mapping.getReadTerm())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getReadTerm());
+                }
+                if (Strings.isNullOrEmpty(mapping.getReadCode())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getReadCode());
+                }
+                if (mapping.getSnomedConceptId() == null) {
+                    ps.setNull(col++, Types.BIGINT);
+                } else {
+                    ps.setLong(col++, mapping.getSnomedConceptId());
+                }
+                if (mapping.getSnomedDescriptionId() == null) {
+                    ps.setNull(col++, Types.BIGINT);
+                } else {
+                    ps.setLong(col++, mapping.getSnomedDescriptionId());
+                }
+                if (Strings.isNullOrEmpty(mapping.getSnomedTerm())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getSnomedTerm());
+                }
+                if (Strings.isNullOrEmpty(mapping.getNationalCode())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getNationalCode());
+                }
+                if (Strings.isNullOrEmpty(mapping.getNationalCodeCategory())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getNationalCodeCategory());
+                }
+                if (Strings.isNullOrEmpty(mapping.getNationalCodeDescription())) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getNationalCodeDescription());
+                }
+                if (mapping.getParentCodeId() == null) {
+                    ps.setNull(col++, Types.BIGINT);
+                } else {
+                    ps.setLong(col++, mapping.getParentCodeId());
+                }
+                if (mapping.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+    
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(EmisCsvCodeMap mapping) throws Exception {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
         }
@@ -141,7 +259,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public EmisCsvCodeMap getMostRecentCode(String dataSharingAgreementGuid, boolean medication, Long codeId) throws Exception {
+    public EmisCsvCodeMap getMostRecentCode(boolean medication, Long codeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {

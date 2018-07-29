@@ -29,11 +29,141 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     private static final ParserPool PARSER_POOL = new ParserPool();
 
-    /*private static CallableStatementCache saveResourceStatementCache = new CallableStatementCache("{call save_resource(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-    private static CallableStatementCache deleteResourceStatementCache = new CallableStatementCache("{call delete_resource(?, ?, ?, ?, ?, ?, ?, ?)}");
-    private static CallableStatementCache physicalDeleteResourceStatementCache = new CallableStatementCache("{call physical_delete_resource(?, ?, ?, ?, ?, ?, ?)}");*/
+    @Override
+    public void save(List<ResourceWrapper> wrappers) throws Exception {
+        //allow several attempts if it fails due to a deadlock
+        int attempts = 5;
+        while (attempts > 0) {
+            try {
+                trySave(wrappers);
+                break;
 
-    //private static Map<UUID, Integer> counts = new HashMap<>();
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (msg != null
+                    && msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
+
+                    LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
+                    Thread.sleep(1000);
+                    attempts --;
+                    continue;
+                } else {
+                    throw ex;
+                }
+            }
+        }
+    }
+
+    private UUID findServiceId(List<ResourceWrapper> wrappers) throws Exception {
+
+        if (wrappers == null || wrappers.isEmpty()) {
+            throw new IllegalArgumentException("trying to save null or empty resources");
+        }
+
+        UUID serviceId = null;
+        for (ResourceWrapper wrapper: wrappers) {
+            if (serviceId == null) {
+                serviceId = wrapper.getServiceId();
+            } else if (!serviceId.equals(wrapper.getServiceId())) {
+                throw new IllegalArgumentException("Can't save resources for different services");
+            }
+        }
+        return serviceId;
+    }
+
+    private void trySave(List<ResourceWrapper> wrappers) throws Exception {
+
+        UUID serviceId = findServiceId(wrappers);
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+        PreparedStatement psResourceHistory = null;
+        PreparedStatement psResourceCurrent = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
+            for (ResourceWrapper wrapper: wrappers) {
+                populateInsertResourceHistoryPreparedStatement(wrapper, psResourceHistory);
+                psResourceHistory.addBatch();
+            }
+            psResourceHistory.executeBatch();
+
+            psResourceCurrent = createInsertResourceCurrentPreparedStatement(entityManager);
+            for (ResourceWrapper wrapper: wrappers) {
+                populateInsertResourceCurrentPreparedStatement(wrapper, psResourceCurrent);
+                psResourceCurrent.addBatch();
+            }
+            psResourceCurrent.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psResourceCurrent != null) {
+                psResourceCurrent.close();
+            }
+            if (psResourceHistory != null) {
+                psResourceHistory.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void delete(List<ResourceWrapper> wrappers) throws Exception {
+
+        UUID serviceId = findServiceId(wrappers);
+
+        //we want to insert a "deleted" row into the resource history, so need to clear some fields
+        for (ResourceWrapper wrapper: wrappers) {
+            wrapper.setDeleted(true);
+            wrapper.setResourceData(null);
+            wrapper.setResourceChecksum(null);
+        }
+
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+        PreparedStatement psResourceCurrent = null;
+        PreparedStatement psResourceHistory = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
+            for (ResourceWrapper wrapper: wrappers) {
+                populateInsertResourceHistoryPreparedStatement(wrapper, psResourceHistory);
+                psResourceHistory.addBatch();
+            }
+            psResourceHistory.executeBatch();
+
+            psResourceCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
+            for (ResourceWrapper wrapper: wrappers) {
+                populateDeleteResourceCurrentPreparedStatement(wrapper, psResourceCurrent);
+                psResourceCurrent.addBatch();
+            }
+            psResourceCurrent.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            //deleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
+
+            if (psResourceCurrent != null) {
+                psResourceCurrent.close();
+            }
+            if (psResourceHistory != null) {
+                psResourceHistory.close();
+            }
+            entityManager.close();
+        }
+    }
+
 
     public void save(ResourceWrapper resourceEntry) throws Exception {
 
@@ -56,9 +186,6 @@ public class RdbmsResourceDal implements ResourceDalI {
             throw new IllegalArgumentException("resourceEntry is null");
         }
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
-
         UUID serviceId = resourceEntry.getServiceId();
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
         //CallableStatement storedProcedure = null;
@@ -68,35 +195,15 @@ public class RdbmsResourceDal implements ResourceDalI {
         try {
             entityManager.getTransaction().begin();
 
-            //we want to do an INSERT ... ON DUPLICATE KEY UPDATE, which isn't possible through JPA, so
-            //I'm just dropping to using a prepared statement to save it, which means we don't need to perform
-            //a read before each write as it's all handled in MySQL
-            //entityManager.persist(resourceCurrent);
-            //entityManager.persist(resourceHistory);
-
-            /*storedProcedure = createAndPopulateSaveResourceCallableStatement(entityManager, resourceEntry);
-            storedProcedure.execute();*/
-
-            psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
+            populateInsertResourceHistoryPreparedStatement(resourceEntry, psResourceHistory);
             psResourceHistory.executeUpdate();
 
-            psResourceCurrent = createAndPopulateInsertResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+            psResourceCurrent = createInsertResourceCurrentPreparedStatement(entityManager);
+            populateInsertResourceCurrentPreparedStatement(resourceEntry, psResourceCurrent);
             psResourceCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
-
-
-            /*if (resourceEntry.getResourceType().equals("Organization")) {
-                Integer integer = counts.get(serviceId);
-                if (integer == null) {
-                    integer = new Integer(1);
-                } else {
-                    integer = new Integer(integer.intValue()+1);
-                }
-                counts.put(serviceId, integer);
-                LOG.trace("Saved " + integer + " orgs for " + serviceId);
-            }*/
-
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
@@ -193,30 +300,28 @@ public class RdbmsResourceDal implements ResourceDalI {
                 + " updated_at = VALUES(updated_at),"
                 + " resource_data = VALUES(resource_data),"
                 + " resource_checksum = VALUES(resource_checksum),"
-                + " resource_metadata = VALUES(resource_metadata);";
+                + " resource_metadata = VALUES(resource_metadata)";
 
         return connection.prepareStatement(sql);
     }
 
-    private static PreparedStatement createAndPopulateInsertResourceCurrentPreparedStatement(EntityManager entityManager, RdbmsResourceCurrent resourceCurrent) throws Exception {
+    private static void populateInsertResourceCurrentPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws Exception {
 
-        PreparedStatement ps = createInsertResourceCurrentPreparedStatement(entityManager);
-
-        ps.setString(1, resourceCurrent.getServiceId());
-        ps.setString(2, resourceCurrent.getSystemId());
-        ps.setString(3, resourceCurrent.getResourceType());
-        ps.setString(4, resourceCurrent.getResourceId());
-        ps.setTimestamp(5, new java.sql.Timestamp(resourceCurrent.getUpdatedAt().getTime()));
-        if (resourceCurrent.getPatientId() != null) {
-            ps.setString(6, resourceCurrent.getPatientId());
+        ps.setString(1, wrapper.getServiceId().toString());
+        ps.setString(2, wrapper.getSystemId().toString());
+        ps.setString(3, wrapper.getResourceType());
+        ps.setString(4, wrapper.getResourceId().toString());
+        ps.setTimestamp(5, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+        if (wrapper.getPatientId() != null) {
+            ps.setString(6, wrapper.getPatientId().toString());
         } else {
-            ps.setNull(6, Types.VARCHAR);
+            //the patient_id column doesn't allow nulls, as it's part of an index, so insert empty String instead
+            ps.setString(6, "");
+            //ps.setNull(6, Types.VARCHAR);
         }
-        ps.setString(7, resourceCurrent.getResourceData());
-        ps.setLong(8, resourceCurrent.getResourceChecksum());
-        ps.setString(9, resourceCurrent.getResourceMetadata());
-
-        return ps;
+        ps.setString(7, wrapper.getResourceData());
+        ps.setLong(8, wrapper.getResourceChecksum());
+        ps.setString(9, wrapper.getResourceMetadata());
     }
 
     private static PreparedStatement createInsertResourceHistoryPreparedStatement(EntityManager entityManager) throws Exception {
@@ -232,47 +337,44 @@ public class RdbmsResourceDal implements ResourceDalI {
         return connection.prepareStatement(sql);
     }
     
-    private static PreparedStatement createAndPopulateInsertResourceHistoryPreparedStatement(EntityManager entityManager, RdbmsResourceHistory resourceHistory) throws Exception {
+    private static void populateInsertResourceHistoryPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws Exception {
 
-        PreparedStatement ps = createInsertResourceHistoryPreparedStatement(entityManager);
-
-        ps.setString(1, resourceHistory.getServiceId());
-        ps.setString(2, resourceHistory.getSystemId());
-        ps.setString(3, resourceHistory.getResourceType());
-        ps.setString(4, resourceHistory.getResourceId());
-        ps.setTimestamp(5, new java.sql.Timestamp(resourceHistory.getCreatedAt().getTime()));
-        if (!Strings.isNullOrEmpty(resourceHistory.getPatientId())) {
-            ps.setString(6, resourceHistory.getPatientId());    
+        ps.setString(1, wrapper.getServiceId().toString());
+        ps.setString(2, wrapper.getSystemId().toString());
+        ps.setString(3, wrapper.getResourceType());
+        ps.setString(4, wrapper.getResourceId().toString());
+        ps.setTimestamp(5, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+        if (wrapper.getPatientId() != null) {
+            ps.setString(6, wrapper.getPatientId().toString());
         } else {
             ps.setNull(6, Types.VARCHAR);
         }
-        if (!Strings.isNullOrEmpty(resourceHistory.getResourceData())) {
-            ps.setString(7, resourceHistory.getResourceData());    
+        if (!Strings.isNullOrEmpty(wrapper.getResourceData())) {
+            ps.setString(7, wrapper.getResourceData());
         } else {
             ps.setNull(7, Types.VARCHAR);
         }
-        if (resourceHistory.getResourceChecksum() != null) {
-            ps.setLong(8, resourceHistory.getResourceChecksum());    
+        if (wrapper.getResourceChecksum() != null) {
+            ps.setLong(8, wrapper.getResourceChecksum());
         } else {
             ps.setNull(8, Types.BIGINT);
         }
-        ps.setBoolean(9, resourceHistory.isDeleted());
-        ps.setString(10, resourceHistory.getExchangeBatchId());
-        ps.setString(11, resourceHistory.getVersion());
-
-        return ps;
+        ps.setBoolean(9, wrapper.isDeleted());
+        ps.setString(10, wrapper.getExchangeBatchId().toString());
+        ps.setString(11, wrapper.getVersion().toString());
     }
 
-    private static PreparedStatement createAndPopulateDeleteResourceCurrentPreparedStatement(EntityManager entityManager, RdbmsResourceCurrent resourceCurrent) throws SQLException {
+    private static void populateDeleteResourceCurrentPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws SQLException {
 
-        PreparedStatement ps = createDeleteResourceCurrentPreparedStatement(entityManager);
-
-        ps.setString(1, resourceCurrent.getServiceId());
-        ps.setString(2, resourceCurrent.getPatientId());
-        ps.setString(3, resourceCurrent.getResourceType());
-        ps.setString(4, resourceCurrent.getResourceId());
-
-        return ps;
+        int col = 1;
+        ps.setString(col++, wrapper.getServiceId().toString());
+        if (wrapper.getPatientId() != null) {
+            ps.setString(col++, wrapper.getPatientId().toString());
+        } else {
+            ps.setString(col++, ""); //DB field doesn't allow nulls so save as empty String
+        }
+        ps.setString(col++, wrapper.getResourceType());
+        ps.setString(col++, wrapper.getResourceId().toString());
     }
 
     private static PreparedStatement createDeleteResourceCurrentPreparedStatement(EntityManager entityManager) throws SQLException {
@@ -288,16 +390,12 @@ public class RdbmsResourceDal implements ResourceDalI {
         return connection.prepareStatement(sql);
     }
 
-    private static PreparedStatement createAndPopulateDeleteResourceHistoryPreparedStatement(EntityManager entityManager, RdbmsResourceHistory resourceHistory) throws SQLException {
+    private static void populateDeleteResourceHistoryPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws SQLException {
 
-        PreparedStatement ps = createDeleteResourceHistoryPreparedStatement(entityManager);
-
-        ps.setString(1, resourceHistory.getResourceId());
-        ps.setString(2, resourceHistory.getResourceType());
-        ps.setTimestamp(3, new java.sql.Timestamp(resourceHistory.getCreatedAt().getTime())); //have to use a timestamp otherwise it treats as a date only
-        ps.setString(4, resourceHistory.getVersion());
-
-        return ps;
+        ps.setString(1, wrapper.getResourceId().toString());
+        ps.setString(2, wrapper.getResourceType());
+        ps.setTimestamp(3, new java.sql.Timestamp(wrapper.getCreatedAt().getTime())); //have to use a timestamp otherwise it treats as a date only
+        ps.setString(4, wrapper.getVersion().toString());
     }
 
     private static PreparedStatement createDeleteResourceHistoryPreparedStatement(EntityManager entityManager) throws SQLException {
@@ -322,13 +420,10 @@ public class RdbmsResourceDal implements ResourceDalI {
             throw new IllegalArgumentException("resourceEntry is null");
         }
 
-        RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
-        RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
-
         //we want to insert a "deleted" row into the resource history, so need to clear some fields
-        resourceHistory.setDeleted(true);
-        resourceHistory.setResourceData(null);
-        resourceHistory.setResourceChecksum(null);
+        resourceEntry.setDeleted(true);
+        resourceEntry.setResourceData(null);
+        resourceEntry.setResourceChecksum(null);
 
         UUID serviceId = resourceEntry.getServiceId();
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
@@ -347,10 +442,12 @@ public class RdbmsResourceDal implements ResourceDalI {
             /*callableStatement = createAndPopulateDeleteResourceCallableStatement(entityManager, resourceEntry);
             callableStatement.execute();*/
 
-            psResourceHistory = createAndPopulateInsertResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
+            populateInsertResourceHistoryPreparedStatement(resourceEntry, psResourceHistory);
             psResourceHistory.executeUpdate();
 
-            psResourceCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+            psResourceCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
+            populateDeleteResourceCurrentPreparedStatement(resourceEntry, psResourceCurrent);
             psResourceCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
@@ -400,7 +497,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             callableStatement.execute();*/
 
             //delete the entry from resource_history
-            psHistory = createAndPopulateDeleteResourceHistoryPreparedStatement(entityManager, resourceHistory);
+            psHistory = createDeleteResourceHistoryPreparedStatement(entityManager);
+            populateDeleteResourceHistoryPreparedStatement(resourceEntry, psHistory);
             psHistory.executeUpdate();
 
             //and either update or delete from resource_current, depending on what's now the most recent entry in resource_history
@@ -418,7 +516,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             List<RdbmsResourceHistory> ret = query.getResultList();
             if (ret.size() == 0) {
                 //if there's no remaining resource history, delete from resource_current
-                psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+                psCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
+                populateDeleteResourceCurrentPreparedStatement(resourceEntry, psCurrent);
 
             } else {
                 RdbmsResourceHistory latestHistory = (RdbmsResourceHistory)ret.get(0);
@@ -426,12 +525,14 @@ public class RdbmsResourceDal implements ResourceDalI {
 
                 if (wrapper.isDeleted()) {
                     //if there is history, but the most recent one is deleted, then delete from resource_current
-                    psCurrent = createAndPopulateDeleteResourceCurrentPreparedStatement(entityManager, resourceCurrent);
+                    psCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
+                    populateDeleteResourceCurrentPreparedStatement(resourceEntry, psCurrent);
 
                 } else {
                     //if there is history and it's non-deleted, update resource_current to match
                     RdbmsResourceCurrent newCurrent = new RdbmsResourceCurrent(wrapper);
-                    psCurrent = createAndPopulateInsertResourceCurrentPreparedStatement(entityManager, newCurrent);
+                    psCurrent = createInsertResourceCurrentPreparedStatement(entityManager);
+                    populateInsertResourceCurrentPreparedStatement(resourceEntry, psCurrent);
                 }
             }
 
@@ -726,14 +827,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " left outer join resource_current c"
                     + " on h.resource_id = c.resource_id"
                     + " and h.resource_type = c.resource_type"
-                    + " where h.exchange_batch_id = ?;";
-            /*String sql = "select h.service_id, h.system_id, h.resource_type, h.resource_id, h.patient_id, "
-                    + " c.system_id, c.patient_id, c.resource_data"
-                    + " from resource_history h"
-                    + " left outer join resource_current c"
-                    + " on h.resource_id = c.resource_id"
-                    + " and h.resource_type = c.resource_type"
-                    + " where h.exchange_batch_id = ?;";*/
+                    + " where h.exchange_batch_id = ?";
 
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();

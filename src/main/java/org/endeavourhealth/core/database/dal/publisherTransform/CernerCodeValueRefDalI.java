@@ -24,4 +24,6 @@ public interface CernerCodeValueRefDalI {
     //CLEVE mapping
     void updateCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception;
     void deleteCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception;
+    void updateCleveMappingStateTable(List<CernerClinicalEventMappingState> mappings) throws Exception;
+    void deleteCleveMappingStateTable(List<CernerClinicalEventMappingState> mappings) throws Exception;
 }

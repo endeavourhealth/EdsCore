@@ -10,7 +10,6 @@ public class EmisCsvCodeMap {
 
     private static final String CODEABLE_CONCEPT = "CodeableConcept";
 
-    private String dataSharingAgreementGuid = null;
     private boolean medication = false;
     private long codeId = -1;
     private String codeType = null;
@@ -29,7 +28,6 @@ public class EmisCsvCodeMap {
     public EmisCsvCodeMap() {}
 
     public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) throws Exception {
-        //this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid(); //not present in the proxy
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
         this.codeType = proxy.getCodeType();
@@ -48,31 +46,6 @@ public class EmisCsvCodeMap {
         }
     }
 
-    /*public EmisCsvCodeMap(CassandraEmisCsvCodeMap proxy) {
-        this.dataSharingAgreementGuid = proxy.getDataSharingAgreementGuid();
-        this.medication = proxy.isMedication();
-        this.codeId = proxy.getCodeId();
-        this.codeType = proxy.getCodeType();
-        this.codeableConcept = proxy.getCodeableConcept();
-        this.readTerm = proxy.getReadTerm();
-        this.readCode = proxy.getReadCode();
-        this.snomedConceptId = proxy.getSnomedConceptId();
-        this.snomedDescriptionId = proxy.getSnomedDescriptionId();
-        this.snomedTerm = proxy.getSnomedTerm();
-        this.nationalCode = proxy.getNationalCode();
-        this.nationalCodeCategory = proxy.getNationalCodeCategory();
-        this.nationalCodeDescription = proxy.getNationalCodeDescription();
-        this.parentCodeId = proxy.getParentCodeId();
-        //no audit JSON
-    }*/
-
-    public String getDataSharingAgreementGuid() {
-        return dataSharingAgreementGuid;
-    }
-
-    public void setDataSharingAgreementGuid(String dataSharingAgreementGuid) {
-        this.dataSharingAgreementGuid = dataSharingAgreementGuid;
-    }
 
     public boolean isMedication() {
         return medication;

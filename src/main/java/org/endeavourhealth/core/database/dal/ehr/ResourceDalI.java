@@ -10,6 +10,9 @@ import java.util.UUID;
 
 public interface ResourceDalI {
 
+    void save(List<ResourceWrapper> wrappers) throws Exception;
+    void delete(List<ResourceWrapper> wrappers) throws Exception;
+
     void save(ResourceWrapper resourceEntry) throws Exception;
     void delete(ResourceWrapper resourceEntry) throws Exception;
     void hardDelete(ResourceWrapper keys) throws Exception;

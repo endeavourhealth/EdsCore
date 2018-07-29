@@ -119,15 +119,8 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             //simplest approach is to try saving the new ID and if that fails, retrieve the existing one from the DB
             try {
                 entityManager.getTransaction().begin();
-
                 entityManager.persist(mapping);
-
                 entityManager.getTransaction().commit();
-
-                /*if (resourceType.equals("Organization")) {
-                    LOG.trace("Created org map for " + sourceId + " -> " + edsId);
-                }*/
-                //LOG.trace("    " + cacheKey + " successfully created ID " + edsId);
 
             } catch (Exception ex) {
                 entityManager.getTransaction().rollback();

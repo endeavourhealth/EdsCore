@@ -116,7 +116,6 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-            //LOG.trace("Saved kvp:" + kvp.getBatchName() + "+" + kvp.getConnectionName() + "+" + kvp.getKeyValue() + "=" + kvp.getDataValue());
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();

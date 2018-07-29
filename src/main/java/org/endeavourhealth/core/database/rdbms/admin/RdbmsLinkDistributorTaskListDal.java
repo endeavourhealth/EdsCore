@@ -131,6 +131,9 @@ public class RdbmsLinkDistributorTaskListDal implements LinkDistributorTaskListD
 
             entityManager.getTransaction().commit();
 
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             entityManager.close();

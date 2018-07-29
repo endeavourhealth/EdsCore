@@ -94,7 +94,6 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-            //LOG.trace("Saved mergeRecord for " + resourceType + " " + resourceFrom.toString() + "==>" + resourceTo.toString());
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
@@ -146,7 +145,6 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
             dbObj.setUpdatedAt(new Date());
             entityManager.refresh(dbObj);
             entityManager.getTransaction().commit();
-            //LOG.trace("Saved mergeRecord for " + resourceType + " " + resourceFrom.toString() + "==>" + resourceTo.toString());
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
