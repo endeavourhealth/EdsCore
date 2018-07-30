@@ -48,6 +48,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     attempts --;
                     continue;
                 } else {
+                    LOG.error("Error saving batch of " + wrappers.size() + " resource wrappers");
                     throw ex;
                 }
             }
