@@ -20,7 +20,7 @@ public class RdbmsRead2ToSnomedMapDal implements Read2ToSnomedMapDalI {
                     + " from"
                     + " RdbmsRead2ToSnomedMap c"
                     + " where c.readCode = :read_code"
-                    + " order by c.effectiveDate desc";
+                    + " order by c.termCode asc, c.effectiveDate desc";
 
             Query query = entityManager.createQuery(sql, RdbmsRead2ToSnomedMap.class)
                     .setParameter("read_code", readCode);
