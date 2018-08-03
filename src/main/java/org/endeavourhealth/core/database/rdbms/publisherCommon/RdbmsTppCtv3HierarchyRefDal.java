@@ -31,7 +31,7 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
 
             try {
                 List<RdbmsTppCtv3HierarchyRef> result = (List<RdbmsTppCtv3HierarchyRef>) query.getResultList();
-                return  (result.size() > 0);
+                return (result.size() > 0);
 
             } catch (NoResultException ex) {
                 return false;
@@ -74,10 +74,62 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
 
             ps.setLong(1, ctv3HierarchyRef.getRowId());
             ps.setString(2, ctv3HierarchyRef.getCtv3ParentReadCode());
-            ps.setString(3,ctv3HierarchyRef.getCtv3ChildReadCode());
-            ps.setInt(4,ctv3HierarchyRef.getChildLevel());
+            ps.setString(3, ctv3HierarchyRef.getCtv3ChildReadCode());
+            ps.setInt(4, ctv3HierarchyRef.getChildLevel());
 
             ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(List<TppCtv3HierarchyRef> refs) throws Exception {
+        if (refs == null || refs.isEmpty()) {
+            throw new IllegalArgumentException("ref is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO tpp_ctv3_hierarchy_ref "
+                    + " (row_id, ctv3_parent_read_code, ctv3_child_read_code, child_level)"
+                    + " VALUES (?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " ctv3_parent_read_code = VALUES(ctv3_parent_read_code),"
+                    + " ctv3_child_read_code = VALUES(ctv3_child_read_code),"
+                    + " child_level = VALUES(child_level)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (TppCtv3HierarchyRef ref : refs) {
+
+                int col = 1;
+
+                ps.setLong(col++, ref.getRowId());
+                ps.setString(col++, ref.getCtv3ParentReadCode());
+                ps.setString(col++, ref.getCtv3ChildReadCode());
+                ps.setInt(col++, ref.getChildLevel());
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 
