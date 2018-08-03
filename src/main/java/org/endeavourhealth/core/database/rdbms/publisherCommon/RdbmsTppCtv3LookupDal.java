@@ -14,6 +14,7 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
+import java.util.List;
 
 public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppCtv3LookupDal.class);
@@ -32,10 +33,9 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
                     .setMaxResults(1);
 
             try {
-                RdbmsTppCtv3Lookup result = (RdbmsTppCtv3Lookup)query.getSingleResult();
+                RdbmsTppCtv3Lookup result = (RdbmsTppCtv3Lookup) query.getSingleResult();
                 return new TppCtv3Lookup(result);
-            }
-            catch (NoResultException e) {
+            } catch (NoResultException e) {
                 LOG.error("No code found for rowId " + rowId);
                 return null;
             }
@@ -60,10 +60,9 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
                     .setMaxResults(1);
 
             try {
-                RdbmsTppCtv3Lookup result = (RdbmsTppCtv3Lookup)query.getSingleResult();
+                RdbmsTppCtv3Lookup result = (RdbmsTppCtv3Lookup) query.getSingleResult();
                 return new TppCtv3Lookup(result);
-            }
-            catch (NoResultException e) {
+            } catch (NoResultException e) {
                 LOG.error("No code found for ctv3 code " + ctv3Code);
                 return null;
             }
@@ -107,7 +106,7 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
             // Only JSON audit field is nullable
             ps.setLong(1, tppCtv3Lookup.getRowId());
             ps.setString(2, tppCtv3Lookup.getCtv3Code());
-            ps.setString(3,tppCtv3Lookup.getCtv3Text());
+            ps.setString(3, tppCtv3Lookup.getCtv3Text());
             if (tppCtv3Lookup.getAuditJson() == null) {
                 ps.setNull(4, Types.VARCHAR);
             } else {
@@ -115,6 +114,67 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
             }
 
             ps.executeUpdate();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(List<TppCtv3Lookup> ctv3Lookups) throws Exception {
+        if (ctv3Lookups == null || ctv3Lookups.isEmpty()) {
+            throw new IllegalArgumentException("ctv3 lookup is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement ps = null;
+        try {
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisMapping);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO tpp_ctv3_lookup "
+                    + " (row_id, ctv3_code, ctv3_text, audit_json)"
+                    + " VALUES (?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " row_id = VALUES(row_id), "
+                    + " ctv3_code = VALUES(ctv3_code),"
+                    + " ctv3_text = VALUES(ctv3_text),"
+                    + " audit_json = VALUES(audit_json);";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (TppCtv3Lookup lookup : ctv3Lookups) {
+
+                int col = 1;
+                // Only JSON audit field is nullable
+                ps.setLong(col++, lookup.getRowId());
+                ps.setString(col++, lookup.getCtv3Code());
+                ps.setString(col++, lookup.getCtv3Text());
+                if (lookup.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, lookup.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();

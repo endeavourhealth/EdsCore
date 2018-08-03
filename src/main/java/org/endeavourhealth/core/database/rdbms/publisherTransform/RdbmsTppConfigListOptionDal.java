@@ -14,6 +14,7 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
@@ -36,10 +37,9 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                     .setMaxResults(1);
 
             try {
-                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption)query.getSingleResult();
+                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption) query.getSingleResult();
                 return new TppConfigListOption(result);
-            }
-            catch (NoResultException e) {
+            } catch (NoResultException e) {
                 LOG.error("No code found for rowId " + rowId + ", service " + serviceId);
                 return null;
             }
@@ -69,10 +69,9 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                     .setMaxResults(1);
 
             try {
-                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption)query.getSingleResult();
+                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption) query.getSingleResult();
                 return new TppConfigListOption(result);
-            }
-            catch (NoResultException e) {
+            } catch (NoResultException e) {
                 LOG.error("No code found for rowId " + rowId + ", configListId " + configListId + ", service " + serviceId);
                 return null;
             }
@@ -83,8 +82,7 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
         }
     }
 
-    public void save(TppConfigListOption configListOption, UUID serviceId) throws Exception
-    {
+    public void save(UUID serviceId, TppConfigListOption configListOption) throws Exception {
         if (configListOption == null) {
             throw new IllegalArgumentException("configListOption is null");
         }
@@ -114,8 +112,8 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
             // Only JSON audit field is nullable
             ps.setLong(1, tppConfigListOption.getRowId());
             ps.setLong(2, tppConfigListOption.getConfigListId());
-            ps.setString(3,tppConfigListOption.getListOptionName());
-            ps.setString(4,tppConfigListOption.getServiceId());
+            ps.setString(3, tppConfigListOption.getListOptionName());
+            ps.setString(4, tppConfigListOption.getServiceId());
             if (tppConfigListOption.getAuditJson() == null) {
                 ps.setNull(5, Types.VARCHAR);
             } else {
@@ -123,6 +121,68 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
             }
 
             ps.executeUpdate();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(UUID serviceId, List<TppConfigListOption> mappings) throws Exception {
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("configListOption is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisMapping);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO tpp_config_list_option "
+                    + " (row_id, config_list_id, list_option_name, service_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " list_option_name = VALUES(list_option_name),"
+                    + " audit_json = VALUES(audit_json);";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (TppConfigListOption mapping: mappings) {
+
+                int col = 1;
+
+                // Only JSON audit field is nullable
+                ps.setLong(col++, mapping.getRowId());
+                ps.setLong(col++, mapping.getConfigListId());
+                ps.setString(col++, mapping.getListOptionName());
+                ps.setString(col++, mapping.getServiceId());
+                if (mapping.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();
