@@ -9,6 +9,8 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.*;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -18,6 +20,7 @@ import java.sql.ResultSet;
 import java.util.*;
 
 public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsSourceFileMappingDal.class);
 
     private static final String CSV_DELIM = "|";
 
@@ -267,6 +270,23 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
+
+        //if the connection property "rewriteBatchedStatements=true" is specified then SELECT LAST_INSERT_ID()
+        //will return the FIRST auto assigned ID for the batch. If that property is false or absent, then
+        //SELECT LAST_INSERT_ID() will return the ID of the LAST assigned ID (because it sends the transactions one by one)
+        String connectionUrl = connection.getMetaData().getURL();
+        if (!connectionUrl.contains("rewriteBatchedStatements=true")) {
+
+            LOG.debug("Doing it the old way");
+            entityManager.close();
+
+            for (SourceFileRecord record: records) {
+                auditFileRow(serviceId, record);
+            }
+
+            return;
+        }
+
         PreparedStatement psInsert = null;
         //PreparedStatement psRowCount = null;
         PreparedStatement psLastId = null;
@@ -308,11 +328,14 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             long lastId = rs.getLong(1);
             rs.close();
 
+            LOG.debug("Doing it the new way");
+
             //and set the generated ID back on the record object
             for (SourceFileRecord record : records) {
                 record.setId(lastId);
                 lastId++;
             }
+
         } catch (Exception ex) {
             connection.rollback();
 
