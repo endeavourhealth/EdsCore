@@ -277,7 +277,6 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         String connectionUrl = connection.getMetaData().getURL();
         if (!connectionUrl.contains("rewriteBatchedStatements=true")) {
 
-            LOG.debug("Doing it the old way");
             entityManager.close();
 
             for (SourceFileRecord record: records) {
@@ -327,8 +326,6 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             rs.next();
             long lastId = rs.getLong(1);
             rs.close();
-
-            LOG.debug("Doing it the new way");
 
             //and set the generated ID back on the record object
             for (SourceFileRecord record : records) {
