@@ -83,7 +83,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
     }
 
     @Override
-    public void upsertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
+    public void save(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
         //LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -104,11 +104,12 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, serviceId.toString());
-            ps.setString(2, idType);
-            ps.setString(3, sourceId);
-            ps.setString(4, destinationId);
-            ps.setTimestamp(5, new java.sql.Timestamp(new Date().getTime()));
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            ps.setString(col++, idType);
+            ps.setString(col++, sourceId);
+            ps.setString(col++, destinationId);
+            ps.setTimestamp(col++, new java.sql.Timestamp(new Date().getTime()));
 
             ps.executeUpdate();
 
@@ -116,6 +117,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
             //LOG.trace("Saved mergeRecord for " + resourceType + " " + resourceFrom.toString() + "==>" + resourceTo.toString());
 
         } catch (Exception ex) {
+            LOG.error("Exception executing prepared statement " + ps);
             entityManager.getTransaction().rollback();
             throw ex;
 
@@ -128,36 +130,46 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
     }
 
     @Override
-    public void insertRecord(UUID serviceId, String idType, String sourceId, String destinationId) throws Exception {
-        //LOG.trace("insertMergeRecord:" + idType + " " + sourceId + " " + destinationId);
+    public void save(List<InternalIdMap> mappings) throws Exception {
 
+        UUID serviceId = findServiceId(mappings);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
 
             String sql = "INSERT INTO internal_id_map"
                     + " (service_id, id_type, source_id, destination_id, updated_at)"
-                    + " VALUES (?, ?, ?, ?, ?);";
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " destination_id = VALUES(destination_id),"
+                    + " updated_at = VALUES(updated_at);";
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, serviceId.toString());
-            ps.setString(2, idType);
-            ps.setString(3, sourceId);
-            ps.setString(4, destinationId);
-            ps.setTimestamp(5, new java.sql.Timestamp(new Date().getTime()));
+            entityManager.getTransaction().begin();
 
-            ps.executeUpdate();
+            for (InternalIdMap mapping: mappings) {
+
+                int col = 1;
+                ps.setString(col++, mapping.getServiceId().toString());
+                ps.setString(col++, mapping.getIdType());
+                ps.setString(col++, mapping.getSourceId());
+                ps.setString(col++, mapping.getDestinationId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(new Date().getTime()));
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
             //LOG.trace("Saved mergeRecord for " + resourceType + " " + resourceFrom.toString() + "==>" + resourceTo.toString());
 
         } catch (Exception ex) {
+            LOG.error("Exception executing prepared statement " + ps);
             entityManager.getTransaction().rollback();
             throw ex;
 
@@ -169,4 +181,20 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
         }
     }
 
+    private UUID findServiceId(List<InternalIdMap> mappings) throws Exception {
+
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("trying to save null or empty mappings");
+        }
+
+        UUID serviceId = null;
+        for (InternalIdMap mapping: mappings) {
+            if (serviceId == null) {
+                serviceId = mapping.getServiceId();
+            } else if (!serviceId.equals(mapping.getServiceId())) {
+                throw new IllegalArgumentException("Can't save resources for different services");
+            }
+        }
+        return serviceId;
+    }
 }

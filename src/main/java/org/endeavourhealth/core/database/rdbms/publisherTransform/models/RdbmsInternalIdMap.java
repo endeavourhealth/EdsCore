@@ -22,7 +22,7 @@ public class RdbmsInternalIdMap implements Serializable {
     public RdbmsInternalIdMap() {}
 
     public RdbmsInternalIdMap(InternalIdMap r) {
-        this.serviceId = r.getServiceId();
+        this.serviceId = r.getServiceId().toString();
         this.idType = r.getIdType();
         this.sourceId = r.getSourceId();
         this.destinationId = r.getDestinationId();

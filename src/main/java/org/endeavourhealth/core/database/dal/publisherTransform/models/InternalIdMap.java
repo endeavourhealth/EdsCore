@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal.publisherTransform.models;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap;
 
 import java.util.Date;
+import java.util.UUID;
 
 public class InternalIdMap {
 
@@ -18,25 +19,27 @@ public class InternalIdMap {
     public static final String TYPE_TPP_STAFF_PROFILE_ID_TO_STAFF_MEMBER_ID = "STAFFPROFILEIDtoSTAFFMEMBERID";
     public static final String TYPE_CERNER_ODS_CODE_TO_ORG_ID = "CERNER_ODS_CODE_TO_ORD_ID";
 
-    private String serviceId = null;
+    private UUID serviceId = null;
     private String idType = null;
     private String sourceId = null;
     private String destinationId = null;
     private Date updatedAt = null;
 
+    public InternalIdMap() {}
+
     public InternalIdMap(RdbmsInternalIdMap r) {
-        this.serviceId = r.getServiceId();
+        this.serviceId = UUID.fromString(r.getServiceId());
         this.idType = r.getIdType();
         this.sourceId = r.getSourceId();
         this.destinationId = r.getDestinationId();
         this.updatedAt = r.getUpdatedAt();
     }
 
-    public String getServiceId() {
+    public UUID getServiceId() {
         return serviceId;
     }
 
-    public void setServiceId(String serviceId) {
+    public void setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
     }
 
