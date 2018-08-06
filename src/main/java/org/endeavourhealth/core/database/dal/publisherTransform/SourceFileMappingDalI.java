@@ -17,6 +17,7 @@ public interface SourceFileMappingDalI {
     int auditFile(UUID serviceId, UUID systemId, UUID exchangeId, int fileTypeId, String filePath) throws Exception;
 
     Long findRecordAuditIdForRow(UUID serviceId, int fileAuditId, int rowIndex) throws Exception;
+    SourceFileRecord findSourceFileRecordRow(UUID serviceId, long auditId) throws Exception;
     void auditFileRow(UUID serviceId, SourceFileRecord record) throws Exception;
     void auditFileRows(UUID serviceId, List<SourceFileRecord> records) throws Exception;
 

@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
@@ -43,15 +45,22 @@ public class FhirDeletionService {
     }
 
     public void deleteData() throws Exception {
-        LOG.info("Deleting cassandra for service " + service.getId());
+        LOG.info("Deleting data for service " + service.getName() + " " + service.getId());
 
         retrieveExchangeIds();
+
+        if (exchangeIdsToDelete.isEmpty()) {
+            LOG.trace("No exchanges to delete");
+            this.progress = "Aborted - nothing to delete";
+            this.isComplete = true;
+            return;
+        }
 
         //count exactly how many exchanges there are over all the systems
         int countExchanges = exchangeIdsToDelete.size();
         LOG.trace("Found " + countExchanges + " exchanges with " + countBatchesToDelete + " batches to delete");
 
-        threadPool = new ThreadPool(5, 1000);
+        this.threadPool = new ThreadPool(5, 1000);
 
         //start looping through our exchange IDs, backwards, so we delete data in reverse order
         for (int i=exchangeIdsToDelete.size()-1; i>=0; i--) {
@@ -75,6 +84,24 @@ public class FhirDeletionService {
     }
 
     private void retrieveExchangeIds() throws Exception {
+
+        ExchangeDalI exchangeDal = DalProvider.factoryExchangeDal();
+        this.exchangeIdsToDelete = exchangeDal.getExchangeIdsForService(service.getId(), systemId);
+
+        this.countBatchesToDelete = 0;
+        for (UUID exchangeId: exchangeIdsToDelete) {
+            List<ExchangeTransformAudit> audits = exchangeDal.getAllExchangeTransformAudits(service.getId(), systemId, exchangeId);
+            for (ExchangeTransformAudit audit: audits) {
+                Integer batchesCreated = audit.getNumberBatchesCreated();
+
+                if (batchesCreated != null) {
+                    countBatchesToDelete += batchesCreated.intValue();
+                }
+            }
+        }
+    }
+
+    /*private void retrieveExchangeIds() throws Exception {
 
         countBatchesToDelete = 0;
         HashSet<UUID> hsExchangeIds = new HashSet<>();
@@ -103,7 +130,7 @@ public class FhirDeletionService {
         for (int i=exchangeIds.size()-1; i>=0; i--) {
             this.exchangeIdsToDelete.add(exchangeIds.get(i));
         }
-    }
+    }*/
 
 
 

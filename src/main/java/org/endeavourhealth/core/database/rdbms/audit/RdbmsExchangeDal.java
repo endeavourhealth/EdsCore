@@ -625,7 +625,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    @Override
+    /*@Override
     public List<ExchangeTransformAudit> getAllExchangeTransformAuditsForService(UUID serviceId, UUID systemId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
@@ -658,7 +658,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     @Override
     public void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception {

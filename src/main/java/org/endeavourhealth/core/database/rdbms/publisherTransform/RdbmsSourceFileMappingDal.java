@@ -137,6 +137,33 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
     }
 
     @Override
+    public SourceFileRecord findSourceFileRecordRow(UUID serviceId, long auditId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        try {
+            List<Long> auditIds = new ArrayList<>();
+            auditIds.add(new Long(auditId));
+            List<RdbmsSourceFileRecord> records = findSourceFileRecords(entityManager, auditIds);
+            if (records.isEmpty()) {
+                return null;
+            }
+
+            RdbmsSourceFileRecord record = records.get(0);
+
+            SourceFileRecord ret = new SourceFileRecord();
+            ret.setId(record.getId());
+            ret.setSourceFileId(record.getSourceFileId());
+            ret.setSourceLocation(record.getSourceLocation());
+            ret.setValues(record.getValue().split(CSV_DELIM));
+
+            return ret;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
     public int findOrCreateFileTypeId(UUID serviceId, String typeDescription, List<String> columns) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
@@ -511,7 +538,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         return ret;
     }
 
-    private List<RdbmsSourceFileRecord> findSourceFileRecords(EntityManager entityManager,  List<Long> auditRowIds) throws Exception {
+    private List<RdbmsSourceFileRecord> findSourceFileRecords(EntityManager entityManager, List<Long> auditRowIds) throws Exception {
 
         String sql = "select c"
                 + " from"
