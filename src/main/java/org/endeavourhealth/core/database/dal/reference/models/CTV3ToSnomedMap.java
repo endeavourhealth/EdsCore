@@ -40,28 +40,28 @@ public class CTV3ToSnomedMap {
     public String getCtv3ConceptId() {
         return ctv3ConceptId;
     }
-    public void setCtv3ConceptId(String mapId) {
+    public void setCtv3ConceptId(String ctv3ConceptId) {
         this.ctv3ConceptId = ctv3ConceptId;
     }
 
     public String getCtv3TermId() {
         return ctv3TermId;
     }
-    public void setCtv3TermId(String mapId) {
+    public void setCtv3TermId(String ctv3TermId) {
         this.ctv3TermId = ctv3TermId;
     }
 
     public String getCtv3TermType() {
         return ctv3TermType;
     }
-    public void setCtv3TermType(String mapId) {
+    public void setCtv3TermType(String ctv3TermType) {
         this.ctv3TermType = ctv3TermType;
     }
 
     public String getSctConceptId() {
         return sctConceptId;
     }
-    public void setSctConceptId(String mapId) {
+    public void setSctConceptId(String sctConceptId) {
         this.sctConceptId = sctConceptId;
     }
 
