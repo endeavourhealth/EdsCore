@@ -531,9 +531,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
                 } else {
                     //if there is history and it's non-deleted, update resource_current to match
-                    RdbmsResourceCurrent newCurrent = new RdbmsResourceCurrent(wrapper);
                     psCurrent = createInsertResourceCurrentPreparedStatement(entityManager);
-                    populateInsertResourceCurrentPreparedStatement(resourceEntry, psCurrent);
+                    populateInsertResourceCurrentPreparedStatement(wrapper, psCurrent);
                 }
             }
 

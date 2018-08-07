@@ -8,6 +8,7 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 import org.hibernate.internal.SessionImpl;
+import org.hl7.fhir.instance.model.ResourceType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -21,7 +22,7 @@ import java.util.List;
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
     @Override
-    public void save(List<EmisCsvCodeMap> mappings) throws Exception {
+    public void saveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
         if (mappings == null || mappings.isEmpty()) {
             throw new IllegalArgumentException("Trying to save null or empty mappings");
         }
@@ -139,7 +140,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     @Override
-    public void save(EmisCsvCodeMap mapping) throws Exception {
+    public void saveCodeMapping(EmisCsvCodeMap mapping) throws Exception {
         if (mapping == null) {
             throw new IllegalArgumentException("mapping is null");
         }
@@ -175,7 +176,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " national_code_category = VALUES(national_code_category),"
                     + " national_code_description = VALUES(national_code_description),"
                     + " parent_code_id = VALUES(parent_code_id),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
@@ -259,7 +260,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public EmisCsvCodeMap getMostRecentCode(boolean medication, Long codeId) throws Exception {
+    @Override
+    public EmisCsvCodeMap getCodeMapping(boolean medication, Long codeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {
@@ -284,7 +286,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public void save(EmisAdminResourceCache resourceCache) throws Exception {
+    public void saveAdminResource(EmisAdminResourceCache resourceCache) throws Exception {
         if (resourceCache == null) {
             throw new IllegalArgumentException("resourceCache is null");
         }
@@ -309,7 +311,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " resource_data = VALUES(resource_data),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
@@ -336,7 +338,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public void delete(EmisAdminResourceCache resourceCache) throws Exception {
+    public void deleteAdminResource(EmisAdminResourceCache resourceCache) throws Exception {
         if (resourceCache == null) {
             throw new IllegalArgumentException("resourceCache is null");
         }
@@ -358,7 +360,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             String sql = "DELETE FROM emis_admin_resource_cache"
                     + " WHERE data_sharing_agreement_guid = ?"
                     + " AND emis_guid = ?"
-                    + " AND resource_type = ?;";
+                    + " AND resource_type = ?";
 
             ps = connection.prepareStatement(sql);
 
@@ -382,7 +384,119 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public List<EmisAdminResourceCache> getCachedResources(String dataSharingAgreementGuid) throws Exception {
+    @Override
+    public void saveAdminResources(List<EmisAdminResourceCache> resources) throws Exception {
+        if (resources == null || resources.isEmpty()) {
+            throw new IllegalArgumentException("resources is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement ps = null;
+
+        try {
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO emis_admin_resource_cache"
+                    + " (data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " resource_data = VALUES(resource_data),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (EmisAdminResourceCache resource: resources) {
+
+                int col = 1;
+                ps.setString(col++, resource.getDataSharingAgreementGuid());
+                ps.setString(col++, resource.getEmisGuid());
+                ps.setString(col++, resource.getResourceType());
+                ps.setString(col++, resource.getResourceData());
+                if (resource.getAudit() != null) {
+                    ps.setString(col++, resource.getAudit().writeToJson());
+                } else {
+                    ps.setNull(col++, Types.VARCHAR);
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void deleteAdminResources(List<EmisAdminResourceCache> resources) throws Exception {
+        if (resources == null || resources.isEmpty()) {
+            throw new IllegalArgumentException("resources is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement ps = null;
+        try {
+
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.remove(emisObj);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "DELETE FROM emis_admin_resource_cache"
+                    + " WHERE data_sharing_agreement_guid = ?"
+                    + " AND emis_guid = ?"
+                    + " AND resource_type = ?";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (EmisAdminResourceCache resource: resources) {
+
+                int col = 1;
+                ps.setString(col++, resource.getDataSharingAgreementGuid());
+                ps.setString(col++, resource.getEmisGuid());
+                ps.setString(col++, resource.getResourceType());
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception {
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
 
         try {
@@ -402,6 +516,36 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             }
 
             return ret;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public EmisAdminResourceCache getAdminResource(String dataSharingAgreementGuid, ResourceType resourceType, String sourceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEmisAdminResourceCache c"
+                    + " where c.dataSharingAgreementGuid = :data_sharing_agreement_guid"
+                    + " and c.resourceType = :resource_type"
+                    + " and c.emisGuid = :emis_guid";
+
+            Query query = entityManager.createQuery(sql, RdbmsEmisAdminResourceCache.class)
+                    .setParameter("data_sharing_agreement_guid", dataSharingAgreementGuid)
+                    .setParameter("resource_type", resourceType.toString())
+                    .setParameter("emis_guid", sourceId);
+
+            try {
+                RdbmsEmisAdminResourceCache result = (RdbmsEmisAdminResourceCache)query.getSingleResult();
+                return new EmisAdminResourceCache(result);
+
+            } catch (NoResultException ex) {
+                return null;
+            }
 
         } finally {
             entityManager.close();
