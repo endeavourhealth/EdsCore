@@ -39,7 +39,7 @@ public class RdbmsEncounterCodeDal implements EncounterCodeDalI {
         }
     }
 
-    private static RdbmsEncounterCode findOrCreateCode(String term, EntityManager entityManager, int attemptsRamaining) throws Exception {
+    private static RdbmsEncounterCode findOrCreateCode(String term, EntityManager entityManager, int attemptsRemaining) throws Exception {
 
         if (Strings.isNullOrEmpty(term)) {
             return null;
@@ -66,9 +66,9 @@ public class RdbmsEncounterCodeDal implements EncounterCodeDalI {
 
             //if another thread/process has beat us to it, either storing our mapping or assigning the code
             //we were going to use, we'll get an exception, so try the find again
-            attemptsRamaining --;
-            if (attemptsRamaining > 0) {
-                return findOrCreateCode(term, entityManager, attemptsRamaining);
+            attemptsRemaining --;
+            if (attemptsRemaining > 0) {
+                return findOrCreateCode(term, entityManager, attemptsRemaining);
             }
 
             //if we've tried the above a few times and still failed, we've probably got a DB problem

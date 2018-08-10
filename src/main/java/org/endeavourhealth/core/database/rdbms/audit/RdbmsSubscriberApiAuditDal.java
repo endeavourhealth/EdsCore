@@ -16,6 +16,12 @@ public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
     @Override
     public void saveSubscriberApiAudit(SubscriberApiAudit audit) throws Exception {
 
+        //if the duration hasn't been set, calculate it now
+        if (audit.getDurationMs() == null) {
+            long duration = java.lang.System.currentTimeMillis() - audit.getTimestmp().getTime();
+            audit.setDurationMs(new Long(duration));
+        }
+
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
 
