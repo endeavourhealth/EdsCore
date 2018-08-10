@@ -4,6 +4,8 @@ import org.endeavourhealth.core.database.dal.audit.SubscriberApiAuditDalI;
 import org.endeavourhealth.core.database.dal.audit.models.SubscriberApiAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import java.sql.Connection;
@@ -11,7 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.Types;
 
 public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
-
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsSubscriberApiAuditDal.class);
 
     @Override
     public void saveSubscriberApiAudit(SubscriberApiAudit audit) throws Exception {
@@ -56,6 +58,7 @@ public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
             entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
+            LOG.error("Error saving " + ps);
             entityManager.getTransaction().rollback();
             throw ex;
 
