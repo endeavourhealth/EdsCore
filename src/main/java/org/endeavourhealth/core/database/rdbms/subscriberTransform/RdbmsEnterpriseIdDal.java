@@ -108,14 +108,14 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         }
     }
 
-    public void saveEnterpriseOrganisationId(String serviceId, String systemId, Long enterpriseId) throws Exception {
+    public void saveEnterpriseOrganisationId(String serviceId, Long enterpriseId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
-                throw new Exception("EnterpriseOrganisationIdMap already exists for service " + serviceId + " system " + systemId + " config " + subscriberConfigName);
+                throw new Exception("EnterpriseOrganisationIdMap already exists for service " + serviceId + " config " + subscriberConfigName);
             }
 
             mapping = new RdbmsEnterpriseOrganisationIdMap();
@@ -135,7 +135,7 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         }
     }
 
-    private static RdbmsEnterpriseOrganisationIdMap findEnterpriseOrganisationMapping(String serviceId, String systemId, EntityManager entityManager) throws Exception {
+    private static RdbmsEnterpriseOrganisationIdMap findEnterpriseOrganisationMapping(String serviceId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"
                 + " from"
@@ -154,12 +154,12 @@ public class RdbmsEnterpriseIdDal implements EnterpriseIdDalI {
         }
     }
 
-    public Long findEnterpriseOrganisationId(String serviceId, String systemId) throws Exception {
+    public Long findEnterpriseOrganisationId(String serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsEnterpriseOrganisationIdMap mapping = findEnterpriseOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
                 return mapping.getEnterpriseId();
             } else {
