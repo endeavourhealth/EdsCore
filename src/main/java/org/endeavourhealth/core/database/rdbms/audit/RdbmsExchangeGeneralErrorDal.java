@@ -11,15 +11,13 @@ import org.hibernate.internal.SessionImpl;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import javax.persistence.TemporalType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
 
@@ -164,20 +162,21 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
     }
 
     private static void initialiseReportResultTable(JsonGraphOptions options, String tableGUID) throws Exception {
+        List<Object> params = new ArrayList<>();
         String startDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(options.getStartTime());
         String endDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(options.getEndTime());
 
-        String insert = String.format("create table audit.graph_date_range_" + tableGUID + " \n" +
+        String insert = "create table audit.graph_date_range_" + tableGUID + " \n" +
                 "select a.Date as reference_date\n" +
                 "from (\n" +
-                "    select '%s' - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) %s as Date\n" +
+                "    select " + parameterize(params, endDate) + " - INTERVAL (a.a + (10 * b.a) + (100 * c.a)) " + parameterize(params, options.getPeriod()) + " as Date\n" +
                 "    from (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as a\n" +
                 "    cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as b\n" +
                 "    cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as c\n" +
                 ") a\n" +
-                "where a.Date between '%s' and '%s' ;", endDate, options.getPeriod(), startDate, endDate);
+                "where a.Date between " + parameterize(params, startDate)+ " and " + parameterize(params, endDate) + ";";
 
-        runSQLScript(insert);
+        runSQLScript(insert, params);
 
     }
 
@@ -185,30 +184,35 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
 
         String delete = "drop table audit.graph_date_range_" + tableGUID + " ;";
 
-        runSQLScript(delete);
+        runSQLScript(delete, null);
     }
 
     public static List getGraphValues(String period, String tableGUID, String errorTable) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
+        List<Object> params = new ArrayList<>();
+
         String sql = "";
 
         switch (period) {
             case "YEAR":
-                sql = getYearSQLScript(tableGUID, errorTable);
+                sql = getYearSQLScript(tableGUID, errorTable, params);
                 break;
             case "MONTH":
-                sql = getMonthSQLScript(tableGUID, errorTable);
+                sql = getMonthSQLScript(tableGUID, errorTable, params);
                 break;
             case "DAY":
-                sql = getDaySQLScript(tableGUID, errorTable);
+                sql = getDaySQLScript(tableGUID, errorTable, params);
                 break;
             case "HOUR":
-                sql = getHourSQLScript(tableGUID, errorTable);
+                sql = getHourSQLScript(tableGUID, errorTable, params);
                 break;
         }
 
         Query q = entityManager.createNativeQuery(sql);
+
+        if (params != null && !params.isEmpty())
+            setQueryParams(q, params);
 
         List resultList =  q.getResultList();
 
@@ -217,50 +221,55 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
         return resultList;
     }
 
-    private static String getHourSQLScript(String tableGUID, String errorTable) throws Exception {
+    private static String getHourSQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
 
-        return String.format("select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y %%H\"), count(e.exchange_id)  \n" +
+
+        return "select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y %%H\"), count(e.exchange_id)  \n" +
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
-                " left outer join audit.%s e    \n" +
+                " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on HOUR(e.inserted_at) = HOUR(r.reference_date)   \n" +
                 " and DATE(e.inserted_at) = DATE(r.reference_date)   \n" +
-                " group by DATE(r.reference_date), HOUR(r.reference_date);", errorTable );
+                " group by DATE(r.reference_date), HOUR(r.reference_date);";
     }
 
-    private static String getYearSQLScript(String tableGUID, String errorTable) throws Exception {
+    private static String getYearSQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
 
-        return String.format("select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y\"), count(e.exchange_id)  \n" +
+        return "select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y\"), count(e.exchange_id)  \n" +
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
-                " left outer join audit.%s e    \n" +
+                " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on YEAR(e.inserted_at) = YEAR(r.reference_date)   \n" +
-                " group by YEAR(r.reference_date;", errorTable );
+                " group by YEAR(r.reference_date;";
     }
 
-    private static String getMonthSQLScript(String tableGUID, String errorTable) throws Exception {
+    private static String getMonthSQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
 
-        return String.format("select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y %%H\"), count(e.exchange_id)  \n" +
+        return "select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y %%H\"), count(e.exchange_id)  \n" +
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
-                " left outer join audit.%s e    \n" +
+                " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on MONTH(e.inserted_at) = MONTH(r.reference_date)   \n" +
                 " and YEAR(e.inserted_at) = YEAR(r.reference_date)   \n" +
-                " group by MONTH(r.reference_date), YEAR(r.reference_date);", errorTable );
+                " group by MONTH(r.reference_date), YEAR(r.reference_date);";
     }
 
-    private static String getDaySQLScript(String tableGUID, String errorTable) throws Exception {
+    private static String getDaySQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
 
-        return String.format("select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y\"), count(e.exchange_id)  \n" +
+        return "select DATE_FORMAT(r.reference_date, \"%%d/%%m/%%Y\"), count(e.exchange_id)  \n" +
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
-                " left outer join audit.%s e    \n" +
+                " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on DATE(e.inserted_at) = DATE(r.reference_date)   \n" +
-                " group by DATE(r.reference_date;", errorTable );
+                " group by DATE(r.reference_date;";
     }
 
-    private static int runSQLScript(String script) throws Exception {
+    private static int runSQLScript(String script, List<Object> params) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
         entityManager.getTransaction().begin();
         try {
             Query q = entityManager.createNativeQuery(script);
+
+            if (params != null && !params.isEmpty())
+                setQueryParams(q, params);
+
             int ret = q.executeUpdate();
 
             entityManager.getTransaction().commit();
@@ -273,6 +282,20 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
 
         } finally {
             entityManager.close();
+        }
+    }
+
+    private static String parameterize(List<Object> list, Object value) {
+        list.add(value);
+        return " ?" + list.size() + " ";
+    }
+
+    public static void setQueryParams(Query q, List<Object> params) {
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i) instanceof Calendar)
+                q.setParameter(i + 1, (Calendar) params.get(i), TemporalType.TIMESTAMP);
+            else
+                q.setParameter(i + 1, params.get(i));
         }
     }
 }
