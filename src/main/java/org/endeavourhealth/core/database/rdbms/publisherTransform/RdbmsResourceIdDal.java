@@ -197,6 +197,10 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             ResourceType resourceType = comps.getResourceType();
             String sourceId = comps.getId();
 
+            //this should never be necessary, but since we're not using a parameterised prepared statement,
+            //we should escape anything that could potentially contain a quote char
+            sourceId = sourceId.replace("'", "''");
+
             if (i>0) {
                 sql += " OR ";
             }
