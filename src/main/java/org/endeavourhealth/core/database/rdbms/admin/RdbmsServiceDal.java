@@ -112,47 +112,66 @@ public class RdbmsServiceDal implements ServiceDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO service"
-                + " (id, name, local_id, endpoints, organisations, publisher_config_name, notes)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?)"
+                + " (id, name, local_id, endpoints, organisations, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " name = VALUES(name),"
                 + " local_id = VALUES(local_id),"
                 + " endpoints = VALUES(endpoints),"
                 + " organisations = VALUES(organisations),"
                 + " publisher_config_name = VALUES(publisher_config_name),"
-                + " notes = VALUES(notes);";
+                + " notes = VALUES(notes),"
+                + " postcode = VALUES(postcode),"
+                + " ccg_code = VALUES(ccg_code),"
+                + " organisation_type = VALUES(organisation_type)";
 
         return connection.prepareStatement(sql);
     }
 
     public static void addToSaveServicePreparedStatement(PreparedStatement ps, RdbmsService service) throws Exception {
 
-        ps.setString(1, service.getId());
-        ps.setString(2, service.getName());
+        int col = 1;
+        ps.setString(col++, service.getId());
+        ps.setString(col++, service.getName());
         if (!Strings.isNullOrEmpty(service.getLocalId())) {
-            ps.setString(3, service.getLocalId());
+            ps.setString(col++, service.getLocalId());
         } else {
-            ps.setNull(3, Types.VARCHAR);
+            ps.setNull(col++, Types.VARCHAR);
         }
         if (!Strings.isNullOrEmpty(service.getEndpoints())) {
-            ps.setString(4, service.getEndpoints());
+            ps.setString(col++, service.getEndpoints());
         } else {
-            ps.setNull(4, Types.VARCHAR);
+            ps.setNull(col++, Types.VARCHAR);
         }
         if (!Strings.isNullOrEmpty(service.getOrganisations())) {
-            ps.setString(5, service.getOrganisations());
+            ps.setString(col++, service.getOrganisations());
         } else {
-            ps.setNull(5, Types.VARCHAR);
+            ps.setNull(col++, Types.VARCHAR);
         }
         if (!Strings.isNullOrEmpty(service.getPublisherConfigName())) {
-            ps.setString(6, service.getPublisherConfigName());
+            ps.setString(col++, service.getPublisherConfigName());
         } else {
-            ps.setNull(6, Types.VARCHAR);
+            ps.setNull(col++, Types.VARCHAR);
         }
         if (!Strings.isNullOrEmpty(service.getNotes())) {
-            ps.setString(7, service.getNotes());
+            ps.setString(col++, service.getNotes());
         } else {
-            ps.setNull(7, Types.VARCHAR);
+            ps.setNull(col++, Types.VARCHAR);
+        }
+        if (!Strings.isNullOrEmpty(service.getPostcode())) {
+            ps.setString(col++, service.getPostcode());
+        } else {
+            ps.setNull(col++, Types.VARCHAR);
+        }
+        if (!Strings.isNullOrEmpty(service.getCcgCode())) {
+            ps.setString(col++, service.getCcgCode());
+        } else {
+            ps.setNull(col++, Types.VARCHAR);
+        }
+        if (!Strings.isNullOrEmpty(service.getOrganisationType())) {
+            ps.setString(col++, service.getOrganisationType());
+        } else {
+            ps.setNull(col++, Types.VARCHAR);
         }
 
         ps.executeUpdate();

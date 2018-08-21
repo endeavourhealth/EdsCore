@@ -22,6 +22,9 @@ public class RdbmsService implements Serializable {
     private String organisations = null; //json containing a map of linked organisations UUIDs and names
     private String publisherConfigName = null; //config name that will tell us where published data is
     private String notes = null;
+    private String postcode = null;
+    private String ccgCode = null;
+    private String organisationType = null;
 
     public RdbmsService() {}
 
@@ -36,6 +39,11 @@ public class RdbmsService implements Serializable {
 
         this.publisherConfigName = proxy.getPublisherConfigName();
         this.notes = proxy.getNotes();
+        this.postcode = proxy.getPostcode();
+        this.ccgCode = proxy.getCcgCode();
+        if (proxy.getOrganisationType() != null) {
+            this.organisationType = proxy.getOrganisationType().getCode();
+        }
     }
 
     @Id
@@ -100,5 +108,32 @@ public class RdbmsService implements Serializable {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    @Column(name = "postcode", nullable = true)
+    public String getPostcode() {
+        return postcode;
+    }
+
+    public void setPostcode(String postcode) {
+        this.postcode = postcode;
+    }
+
+    @Column(name = "ccg_code", nullable = true)
+    public String getCcgCode() {
+        return ccgCode;
+    }
+
+    public void setCcgCode(String ccgCode) {
+        this.ccgCode = ccgCode;
+    }
+
+    @Column(name = "organisation_type", nullable = true)
+    public String getOrganisationType() {
+        return organisationType;
+    }
+
+    public void setOrganisationType(String organisationType) {
+        this.organisationType = organisationType;
     }
 }

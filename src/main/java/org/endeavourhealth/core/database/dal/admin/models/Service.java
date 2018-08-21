@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.dal.admin.models;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
+import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 
 import java.util.HashMap;
@@ -17,6 +18,9 @@ public class Service {
     private Map<UUID, String> organisations = null;
     private String publisherConfigName = null; //config name pointing to DB storing this services published data
     private String notes = null;
+    private String postcode = null;
+    private String ccgCode = null;
+    private OrganisationType organisationType = null;
 
     public Service() {}
 
@@ -47,6 +51,11 @@ public class Service {
 
         this.publisherConfigName = proxy.getPublisherConfigName();
         this.notes = proxy.getNotes();
+        this.postcode = proxy.getPostcode();
+        this.ccgCode = proxy.getCcgCode();
+        if (proxy.getOrganisationType() != null) {
+            this.organisationType = OrganisationType.fromCode(proxy.getOrganisationType());
+        }
     }
 
     public UUID getId() {
@@ -103,5 +112,29 @@ public class Service {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public String getPostcode() {
+        return postcode;
+    }
+
+    public void setPostcode(String postcode) {
+        this.postcode = postcode;
+    }
+
+    public String getCcgCode() {
+        return ccgCode;
+    }
+
+    public void setCcgCode(String ccgCode) {
+        this.ccgCode = ccgCode;
+    }
+
+    public OrganisationType getOrganisationType() {
+        return organisationType;
+    }
+
+    public void setOrganisationType(OrganisationType organisationType) {
+        this.organisationType = organisationType;
     }
 }

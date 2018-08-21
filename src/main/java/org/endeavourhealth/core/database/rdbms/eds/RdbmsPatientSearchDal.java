@@ -326,6 +326,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String orgName = null;
         String orgTypeCode = null;
         String registrationType = findRegistrationType(fhirEpisode);
+        String registrationStatus = findRegistrationStatus(fhirEpisode);
 
         if (fhirEpisode.hasPeriod()) {
             Period period = fhirEpisode.getPeriod();
@@ -410,6 +411,11 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 ps.setNull(col++, Types.VARCHAR);
             }
             ps.setDate(col++, new java.sql.Date(new Date().getTime()));
+            if (!Strings.isNullOrEmpty(registrationStatus)) {
+                ps.setString(col++, registrationStatus);
+            } else {
+                ps.setNull(col++, Types.VARCHAR);
+            }
 
             ps.executeUpdate();
 
@@ -427,14 +433,52 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         }
     }
 
+    private String findRegistrationStatus(EpisodeOfCare fhirEpisode) {
+
+        //status is stored in a contained List resource, referred to by an extension
+        if (!fhirEpisode.hasContained()) {
+            return null;
+        }
+
+        Extension extension = ExtensionConverter.findExtension(fhirEpisode, FhirExtensionUri.EPISODE_OF_CARE_REGISTRATION_STATUS);
+        if (extension == null) {
+            return null;
+        }
+        Reference idReference = (Reference)extension.getValue();
+        String idReferenceValue = idReference.getReference();
+        idReferenceValue = idReferenceValue.substring(1); //remove the leading "#" char
+
+        List_ list = null;
+        for (Resource containedResource: fhirEpisode.getContained()) {
+            if (containedResource.getId().equals(idReferenceValue)) {
+                list = (List_)containedResource;
+                break;
+            }
+        }
+        if (list == null
+                || !list.hasEntry()) {
+            return null;
+        }
+
+        //status is on the most recent entry
+        List<List_.ListEntryComponent> entries = list.getEntry();
+        List_.ListEntryComponent entry = entries.get(entries.size()-1);
+        if (!entry.hasFlag()) {
+            return null;
+        }
+
+        CodeableConcept codeableConcept = entry.getFlag();
+        return CodeableConceptHelper.findCodingCode(codeableConcept, FhirValueSetUri.VALUE_SET_REGISTRATION_STATUS);
+    }
+
     private static PreparedStatement createEpisodeOfCarePreparedStatement(EntityManager entityManager) throws Exception {
 
         SessionImpl session = (SessionImpl)entityManager.getDelegate();
         Connection connection = session.connection();
 
         String sql = "INSERT INTO patient_search_episode"
-                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated, registration_status_code)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " patient_id = VALUES(patient_id)," //even though this is part of the primary key, the patient ID may change due to merges, so update it here
                 + " registration_start = VALUES(registration_start),"
@@ -443,7 +487,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " organisation_name = VALUES(organisation_name),"
                 + " organisation_type_code = VALUES(organisation_type_code),"
                 + " registration_type_code = VALUES(registration_type_code),"
-                + " last_updated = VALUES(last_updated);";
+                + " last_updated = VALUES(last_updated),"
+                + " registration_status_code = VALUES(registration_status_code);";
 
         return connection.prepareStatement(sql);
     }
