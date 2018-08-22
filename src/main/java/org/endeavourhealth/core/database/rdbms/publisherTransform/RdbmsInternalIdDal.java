@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -130,8 +131,9 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
     }
 
     @Override
-    public void save(List<InternalIdMap> mappings) throws Exception {
+    public void save(List<InternalIdMap> mappingsParam) throws Exception {
 
+        List<InternalIdMap> mappings = new ArrayList<>(mappingsParam);
         UUID serviceId = findServiceId(mappings);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
