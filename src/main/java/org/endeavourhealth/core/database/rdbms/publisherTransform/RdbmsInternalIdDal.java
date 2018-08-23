@@ -172,6 +172,12 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
         } catch (Exception ex) {
             LOG.error("Exception executing prepared statement " + ps);
+            for (InternalIdMap mapping: mappings) {
+                LOG.error(mapping.getServiceId().toString());
+                LOG.error(mapping.getIdType());
+                LOG.error(mapping.getSourceId());
+                LOG.error(mapping.getDestinationId());
+            }
             entityManager.getTransaction().rollback();
             throw ex;
 
