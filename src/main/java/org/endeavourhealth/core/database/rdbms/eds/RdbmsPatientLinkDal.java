@@ -34,7 +34,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
             }
 
             //work out what the person ID should be
-            String nhsNumber = IdentifierHelper.findNhsNumberTrueNhsNumber(fhirPatient);
+            String nhsNumber = IdentifierHelper.findNhsNumber(fhirPatient);
             if (!Strings.isNullOrEmpty(nhsNumber)) {
                 String sql = "select c"
                         + " from"
