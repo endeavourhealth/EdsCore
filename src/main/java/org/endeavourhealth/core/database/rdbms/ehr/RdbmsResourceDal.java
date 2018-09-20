@@ -41,11 +41,11 @@ public class RdbmsResourceDal implements ResourceDalI {
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (msg != null
-                    && msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
+                        && msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
 
                     LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
                     Thread.sleep(1000);
-                    attempts --;
+                    attempts--;
                     continue;
                 } else {
                     LOG.error("Error saving batch of " + wrappers.size() + " resource wrappers");
@@ -62,7 +62,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
 
         UUID serviceId = null;
-        for (ResourceWrapper wrapper: wrappers) {
+        for (ResourceWrapper wrapper : wrappers) {
             if (serviceId == null) {
                 serviceId = wrapper.getServiceId();
             } else if (!serviceId.equals(wrapper.getServiceId())) {
@@ -83,14 +83,14 @@ public class RdbmsResourceDal implements ResourceDalI {
             entityManager.getTransaction().begin();
 
             psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
-            for (ResourceWrapper wrapper: wrappers) {
+            for (ResourceWrapper wrapper : wrappers) {
                 populateInsertResourceHistoryPreparedStatement(wrapper, psResourceHistory);
                 psResourceHistory.addBatch();
             }
             psResourceHistory.executeBatch();
 
             psResourceCurrent = createInsertResourceCurrentPreparedStatement(entityManager);
-            for (ResourceWrapper wrapper: wrappers) {
+            for (ResourceWrapper wrapper : wrappers) {
                 populateInsertResourceCurrentPreparedStatement(wrapper, psResourceCurrent);
                 psResourceCurrent.addBatch();
             }
@@ -100,6 +100,22 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
+            LOG.debug("Prepared statement values:");
+            for (ResourceWrapper wrapper : wrappers) {
+                LOG.debug("ServiceId:" +wrapper.getServiceId().toString());
+                LOG.debug("SystemId:" + wrapper.getSystemId().toString());
+                LOG.debug("ResType:" + wrapper.getResourceType());
+                LOG.debug("CreatedAt:" + wrapper.getCreatedAt().getTime());
+                if (wrapper.getPatientId() != null) {
+                    LOG.debug("Patient:"+wrapper.getPatientId().toString());
+                } else {
+                    LOG.debug("No patientid");
+                }
+                LOG.debug("ResData:" + wrapper.getResourceData());
+                LOG.debug("ResChkSum:" + wrapper.getResourceChecksum());
+                LOG.debug("ResMeta" + wrapper.getResourceMetadata());
+            }
+
             throw ex;
 
         } finally {
@@ -119,7 +135,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         UUID serviceId = findServiceId(wrappers);
 
         //we want to insert a "deleted" row into the resource history, so need to clear some fields
-        for (ResourceWrapper wrapper: wrappers) {
+        for (ResourceWrapper wrapper : wrappers) {
             wrapper.setDeleted(true);
             wrapper.setResourceData(null);
             wrapper.setResourceChecksum(null);
@@ -133,14 +149,14 @@ public class RdbmsResourceDal implements ResourceDalI {
             entityManager.getTransaction().begin();
 
             psResourceHistory = createInsertResourceHistoryPreparedStatement(entityManager);
-            for (ResourceWrapper wrapper: wrappers) {
+            for (ResourceWrapper wrapper : wrappers) {
                 populateInsertResourceHistoryPreparedStatement(wrapper, psResourceHistory);
                 psResourceHistory.addBatch();
             }
             psResourceHistory.executeBatch();
 
             psResourceCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
-            for (ResourceWrapper wrapper: wrappers) {
+            for (ResourceWrapper wrapper : wrappers) {
                 populateDeleteResourceCurrentPreparedStatement(wrapper, psResourceCurrent);
                 psResourceCurrent.addBatch();
             }
@@ -286,7 +302,6 @@ public class RdbmsResourceDal implements ResourceDalI {
     }*/
 
 
-
     private static PreparedStatement createInsertResourceCurrentPreparedStatement(EntityManager entityManager) throws Exception {
 
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -326,7 +341,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     private static PreparedStatement createInsertResourceHistoryPreparedStatement(EntityManager entityManager) throws Exception {
-        
+
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
 
@@ -337,7 +352,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         return connection.prepareStatement(sql);
     }
-    
+
     private static void populateInsertResourceHistoryPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws Exception {
 
         ps.setString(1, wrapper.getServiceId().toString());
@@ -379,7 +394,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     private static PreparedStatement createDeleteResourceCurrentPreparedStatement(EntityManager entityManager) throws SQLException {
-        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
 
         String sql = "DELETE FROM resource_current"
@@ -400,7 +415,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     private static PreparedStatement createDeleteResourceHistoryPreparedStatement(EntityManager entityManager) throws SQLException {
-        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
 
         String sql = "DELETE FROM resource_history"
@@ -471,8 +486,6 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
 
-
-
     /**
      * physical delete, when we want to remove all trace of data from Discovery
      */
@@ -521,7 +534,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 populateDeleteResourceCurrentPreparedStatement(resourceEntry, psCurrent);
 
             } else {
-                RdbmsResourceHistory latestHistory = (RdbmsResourceHistory)ret.get(0);
+                RdbmsResourceHistory latestHistory = (RdbmsResourceHistory) ret.get(0);
                 ResourceWrapper wrapper = new ResourceWrapper(latestHistory);
 
                 if (wrapper.isDeleted()) {
@@ -558,7 +571,6 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
 
-
     /**
      * convenience fn to save repetitive code
      */
@@ -586,7 +598,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     .setParameter("resource_type", resourceType)
                     .setParameter("resource_id", resourceId.toString());
 
-            RdbmsResourceCurrent result = (RdbmsResourceCurrent)query.getSingleResult();
+            RdbmsResourceCurrent result = (RdbmsResourceCurrent) query.getSingleResult();
             return new ResourceWrapper(result);
 
         } catch (NoResultException ex) {
@@ -829,7 +841,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " and h.resource_type = c.resource_type"
                     + " where h.exchange_batch_id = ?";
 
-            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
             ps = connection.prepareStatement(sql);
@@ -962,7 +974,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     .setParameter("service_id", serviceId.toString())
                     .setMaxResults(1);
 
-            RdbmsResourceCurrent r = (RdbmsResourceCurrent)query.getSingleResult();
+            RdbmsResourceCurrent r = (RdbmsResourceCurrent) query.getSingleResult();
             return true;
 
         } catch (NoResultException ex) {
@@ -989,7 +1001,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     .setParameter("resource_type", resourceType.toString())
                     .setMaxResults(1);
 
-            RdbmsResourceCurrent result = (RdbmsResourceCurrent)query.getSingleResult();
+            RdbmsResourceCurrent result = (RdbmsResourceCurrent) query.getSingleResult();
             return new ResourceWrapper(result);
 
         } catch (NoResultException ex) {
@@ -1061,7 +1073,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     .setParameter("service_id", serviceId.toString())
                     .setParameter("resource_type", resourceType);
 
-            return (long)q.getSingleResult();
+            return (long) q.getSingleResult();
 
         } finally {
             entityManager.close();
