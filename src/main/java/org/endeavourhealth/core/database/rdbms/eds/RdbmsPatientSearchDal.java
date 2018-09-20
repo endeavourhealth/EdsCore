@@ -25,10 +25,12 @@ import java.util.*;
 public class RdbmsPatientSearchDal implements PatientSearchDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsPatientSearchDal.class);
 
+    private static Set<String> cachedSearchableIdentifiers = null;
+
     public void update(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
-        String nhsNumber = IdentifierHelper.findNhsNumberTrueNhsNumber(fhirPatient);
+        String nhsNumber = IdentifierHelper.findNhsNumber(fhirPatient);
         String forenames = findForenames(fhirPatient);
         String surname = findSurname(fhirPatient);
         String addressLine1 = findAddressLine(fhirPatient, 0);
@@ -124,7 +126,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             List<RdbmsPatientSearchLocalIdentifier> identifiersToSave = new ArrayList<>();
             List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete = new ArrayList<>();
 
-            createOrUpdateLocalIdentifiers(serviceId, fhirPatient, entityManager, identifiersToSave, identifiersToDelete);
+            createOrUpdateLocalIdentifiers(serviceId, fhirPatient, entityManager, identifiersToSave, identifiersToDelete, nhsNumber);
 
             //do the deletes
             for (RdbmsPatientSearchLocalIdentifier localIdentifier: identifiersToDelete) {
@@ -520,10 +522,38 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         return connection.prepareStatement(sql);
     }
 
+    private static Set<String> getSearchableIdentifiers() {
+        if (cachedSearchableIdentifiers == null) {
+            Set<String> s = new HashSet<>();
+
+            //common
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER);
+
+            //Cerner
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_BARTS_MRN_PATIENT_ID);
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_HOMERTON_MRN_PATIENT_ID);
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_NEWHAM_MRN_PATIENT_ID);
+
+            //Emis
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_EMIS_PATIENT_NUMBER);
+
+            //Vision
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_VISION_PATIENT_NUMBER);
+
+            //TPP
+
+            //Adastra
+
+            cachedSearchableIdentifiers = s;
+        }
+        return cachedSearchableIdentifiers;
+    }
+
     private static void createOrUpdateLocalIdentifiers(UUID serviceId, Patient fhirPatient,
                                                        EntityManager entityManager,
                                                        List<RdbmsPatientSearchLocalIdentifier> identifiersToSave,
-                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete) {
+                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete,
+                                                       String currentNhsNumber) {
 
         String patientId = findPatientId(fhirPatient, null);
 
@@ -543,8 +573,17 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
 
                 //NHS number is on the main patient_search table, so ignore any identifiers with that system here
-                if (fhirIdentifier.getSystem().equalsIgnoreCase(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
+                String system = fhirIdentifier.getSystem();
+                if (!getSearchableIdentifiers().contains(system)) {
                     continue;
+                }
+
+                if (system.equals(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
+                    //the main table only includes the CURRENT NHS number, so allow this table to store any past ones (or just any others)
+                    String value = fhirIdentifier.getValue();
+                    if (value.equals(currentNhsNumber)) {
+                        continue;
+                    }
                 }
 
                 //if the identifier has been ended, skip it, since we don't want it on our search table
@@ -556,7 +595,6 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                     }
                 }*/
 
-                String system = fhirIdentifier.getSystem();
                 String value = fhirIdentifier.getValue();
 
                 RdbmsPatientSearchLocalIdentifier localIdentifier = null;
