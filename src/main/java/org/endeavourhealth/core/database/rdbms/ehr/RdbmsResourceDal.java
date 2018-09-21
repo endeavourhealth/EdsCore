@@ -114,6 +114,10 @@ public class RdbmsResourceDal implements ResourceDalI {
                 LOG.debug("ResData:" + wrapper.getResourceData());
                 LOG.debug("ResChkSum:" + wrapper.getResourceChecksum());
                 LOG.debug("ResMeta" + wrapper.getResourceMetadata());
+                LOG.debug("isDeleted:" + wrapper.isDeleted() );
+                LOG.debug("ExchgBatchId:" + wrapper.getExchangeBatchId().toString());
+                LOG.debug("Version:" + wrapper.getVersion().toString() );
+                LOG.debug("ResId:" + wrapper.getResourceId());
             }
 
             throw ex;
@@ -346,7 +350,9 @@ public class RdbmsResourceDal implements ResourceDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO resource_history"
-                + " (service_id, system_id, resource_type, resource_id, created_at, patient_id, resource_data, resource_checksum, is_deleted, exchange_batch_id, version)"
+                + " (service_id, system_id, resource_type,"
+                + " resource_id, created_at, patient_id, " +
+                "+ resource_data, resource_checksum, is_deleted, exchange_batch_id, version)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
 
