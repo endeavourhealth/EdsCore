@@ -350,10 +350,9 @@ public class RdbmsResourceDal implements ResourceDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO resource_history"
-                + " (service_id, system_id, resource_type,"
-                + " resource_id, created_at, patient_id, " +
-                "+ resource_data, resource_checksum, is_deleted, exchange_batch_id, version)"
+                + " (service_id, system_id, resource_type, resource_id, created_at, patient_id, resource_data, resource_checksum, is_deleted, exchange_batch_id, version)"
                 + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
         //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
 
         return connection.prepareStatement(sql);
