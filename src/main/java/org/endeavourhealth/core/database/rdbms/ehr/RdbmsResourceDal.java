@@ -72,7 +72,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         return serviceId;
     }
 
-    private void trySave(List<ResourceWrapper> wrappers) throws Exception {
+    private synchronized void trySave(List<ResourceWrapper> wrappers) throws Exception {
 
         UUID serviceId = findServiceId(wrappers);
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
