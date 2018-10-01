@@ -72,7 +72,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         return serviceId;
     }
 
-    private synchronized void trySave(List<ResourceWrapper> wrappers) throws Exception {
+    private void trySave(List<ResourceWrapper> wrappers) throws Exception {
 
         UUID serviceId = findServiceId(wrappers);
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
@@ -100,26 +100,6 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
-            LOG.debug("Prepared statement values:");
-            for (ResourceWrapper wrapper : wrappers) {
-                LOG.debug("ServiceId:" +wrapper.getServiceId().toString());
-                LOG.debug("SystemId:" + wrapper.getSystemId().toString());
-                LOG.debug("ResType:" + wrapper.getResourceType());
-                LOG.debug("CreatedAt:" + wrapper.getCreatedAt().getTime());
-                if (wrapper.getPatientId() != null) {
-                    LOG.debug("Patient:"+wrapper.getPatientId().toString());
-                } else {
-                    LOG.debug("No patientid");
-                }
-                LOG.debug("ResData:" + wrapper.getResourceData());
-                LOG.debug("ResChkSum:" + wrapper.getResourceChecksum());
-                LOG.debug("ResMeta" + wrapper.getResourceMetadata());
-                LOG.debug("isDeleted:" + wrapper.isDeleted() );
-                LOG.debug("ExchgBatchId:" + wrapper.getExchangeBatchId().toString());
-                LOG.debug("Version:" + wrapper.getVersion().toString() );
-                LOG.debug("ResId:" + wrapper.getResourceId());
-            }
-
             throw ex;
 
         } finally {
