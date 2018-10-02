@@ -9,13 +9,14 @@ import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
+import org.endeavourhealth.core.exceptions.TransformException;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.plugin.dom.exception.InvalidStateException;
+
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -212,7 +213,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             // that might get introduced.
         } catch (NullPointerException npe) {
             if (npe.getClass().getName().equals("ServerPreparedQueryBindValue")) {
-                throw new InvalidStateException("Nullpointer in ServerPreparedQueryBindValue. MySql bug?");
+                throw new TransformException("Nullpointer in ServerPreparedQueryBindValue. MySql bug?");
             } else {
                 entityManager.getTransaction().rollback();
                 throw npe;
