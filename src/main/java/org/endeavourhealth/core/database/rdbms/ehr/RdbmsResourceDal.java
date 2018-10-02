@@ -15,6 +15,7 @@ import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -174,8 +175,9 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            if (msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
-                LOG.error("Deadlock when writing to ehr database - will try again");
+            if (msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")
+                    || msg.equals("Nullpointer in ServerPreparedQueryBindValue. MySql bug?")) {
+                LOG.error(msg + " - will try again");
                 Thread.sleep(1000);
                 trySave(resourceEntry);
             }
@@ -205,6 +207,16 @@ public class RdbmsResourceDal implements ResourceDalI {
             psResourceCurrent.executeUpdate();
 
             entityManager.getTransaction().commit();
+            // Try to handle what is probably a MySql driver bug. And yes I know catch with class name is bad.
+            // But this seems to be a quite specific bug in this one class and we don't want to miss other NPEs
+            // that might get introduced.
+        } catch (NullPointerException npe) {
+            if (npe.getClass().getName().equals("ServerPreparedQueryBindValue")) {
+                throw new InvalidStateException("Nullpointer in ServerPreparedQueryBindValue. MySql bug?");
+            } else {
+                entityManager.getTransaction().rollback();
+                throw npe;
+            }
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
