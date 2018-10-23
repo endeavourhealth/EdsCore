@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.fhirStorage;
 
-import org.endeavourhealth.common.utility.JsonSerializer;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
@@ -301,7 +300,8 @@ public class FhirStorageService {
         entry.setServiceId(serviceId);
         entry.setSystemId(systemId);
         //entry.setSchemaVersion(SCHEMA_VERSION);
-        entry.setResourceMetadata(JsonSerializer.serialize(metadata));
+        //entry.setResourceMetadata(JsonSerializer.serialize(metadata));
+        entry.setResourceMetadata(""); //we never use the metadata so don't save to the DB
         entry.setResourceData(resourceJson);
         entry.setResourceChecksum(generateChecksum(resourceJson));
         entry.setExchangeId(exchangeId);
