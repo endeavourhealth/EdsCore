@@ -18,16 +18,16 @@ import javax.persistence.Query;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class RdbmsPcrIdDal implements PcrIdDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPcrIdDal.class);
+public class PcrIdDal implements PcrIdDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(PcrIdDal.class);
 
     private String subscriberConfigName = null;
 
-    public RdbmsPcrIdDal(String subscriberConfigName) {
+    public PcrIdDal(String subscriberConfigName) {
         this.subscriberConfigName = subscriberConfigName;
     }
 
-    public Long findOrCreatePcrId(String resourceType, String resourceId) throws Exception {
+    public  Long findOrCreatePcrId(String resourceType, String resourceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
@@ -73,7 +73,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
             throw ex;
         }
 
-        return mapping.getPcrId();
+        return mapping.getId();
     }
 
     public Long findPcrId(String resourceType, String resourceId) throws Exception {
@@ -101,7 +101,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
 
         try {
             RdbmsPcrIdMap result = (RdbmsPcrIdMap)query.getSingleResult();
-            return result.getPcrId();
+            return result.getId();
 
         } catch (NoResultException ex) {
             return null;
@@ -235,6 +235,9 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
+
+
+
     public Long findPcrPersonId(String discoveryPersonId) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         try {
@@ -313,7 +316,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         List<RdbmsPcrIdMap> results = query.getResultList();
         for (RdbmsPcrIdMap result: results) {
             String resourceId = result.getResourceId();
-            Long pcrId = result.getPcrId();
+            Long pcrId = result.getId();
 
             ResourceWrapper resource = resourceIdMap.get(resourceId);
             ids.put(resource, pcrId);
@@ -357,7 +360,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
             for (ResourceWrapper resource: resourcesToCreate) {
 
                 RdbmsPcrIdMap mapping = mappingMap.get(resource);
-                Long pcrId = mapping.getPcrId();
+                Long pcrId = mapping.getId();
                 ids.put(resource, pcrId);
             }
 
