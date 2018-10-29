@@ -339,7 +339,7 @@ public class DalProvider {
     }
 
     public static PcrIdDalI factoryPcrIdDal(String subscriberConfigName) {
-        return new RdbmsPcrIdDal(subscriberConfigName);
+        return new PcrIdDal(subscriberConfigName);
     }
 
     public static PcrAgeUpdaterlDalI factoryPcrAgeUpdaterlDal(String subscriberConfigName) {
