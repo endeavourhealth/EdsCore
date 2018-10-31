@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -28,6 +27,7 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         this.subscriberConfigName = subscriberConfigName;
     }
 
+    @Override
     public List<EnterpriseAge> findAgesToUpdate() throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
@@ -37,7 +37,6 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
                     + " from"
                     + " RdbmsEnterpriseAge c"
                     + " where c.dateNextChange <= :dateNextChange";
-
 
             Query query = entityManager.createQuery(sql, RdbmsEnterpriseAge.class)
                     .setParameter("dateNextChange", new Date());
@@ -54,32 +53,39 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         }
     }
 
-    public Integer[] calculateAgeValues(long patientId, Date dateOfBirth) throws Exception {
+    @Override
+    public Integer[] calculateAgeValuesAndUpdateTable(long patientId, Date dateOfBirth, Date dateOfDeath) throws Exception {
 
         //if the date of birth is null, we can't calculate anything and shouldn't save anything
         if (dateOfBirth == null) {
             return new Integer[3];
         }
 
-        RdbmsEnterpriseAge map = findAgeObject(patientId);
-        if (map == null) {
-            map = new RdbmsEnterpriseAge();
-            map.setEnterprisePatientId(patientId);
+        EnterpriseAge proxyObj = new EnterpriseAge();
+        proxyObj.setEnterprisePatientId(patientId);
+        proxyObj.setDateOfBirth(dateOfBirth);
+
+        //call into this which will also calculate the next update date on the proxy obj
+        Integer[] ret = calculateAgeValues(proxyObj, dateOfDeath);
+
+        if (dateOfDeath == null) {
+            save(proxyObj);
+
+        } else {
+            //if date of death is set, delete from the table (if present)
+            delete(patientId);
         }
-
-        //always re-set these, in case they've changed
-        map.setDateOfBirth(dateOfBirth);
-        //map.setEnterpriseConfigName(enterpriseConfigName);
-
-        EnterpriseAge proxyObj = new EnterpriseAge(map);
-        Integer[] ret = calculateAgeValues(proxyObj);
-
-        save(proxyObj);
 
         return ret;
     }
 
-    public Integer[] calculateAgeValues(EnterpriseAge map) throws Exception {
+    @Override
+    public Integer[] reCalculateAgeValues(EnterpriseAge map) throws Exception {
+        //call into this which will also calculate the next update date on the proxy obj
+        return calculateAgeValues(map, null);
+    }
+
+    private Integer[] calculateAgeValues(EnterpriseAge map, Date dateOfDeath) throws Exception {
 
         Integer[] ret = new Integer[3];
 
@@ -88,7 +94,14 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         }
 
         LocalDate dobLocalDate = map.getDateOfBirth().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate nowLocalDate = LocalDate.now();
+
+        //if deceased, use date of death as the end date
+        LocalDate nowLocalDate = null;
+        if (dateOfDeath == null) {
+            nowLocalDate = LocalDate.now();
+        } else {
+            nowLocalDate = dateOfDeath.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
 
         Period period = Period.between(dobLocalDate, nowLocalDate);
         ret[EnterpriseAge.UNIT_YEARS] = new Integer(period.getYears());
@@ -115,6 +128,7 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         return ret;
     }
 
+    @Override
     public void save(EnterpriseAge obj) throws Exception {
 
         //just adding to make this clearer if it happens again
@@ -176,6 +190,35 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         }
     }
 
+    private void delete(long patientId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "DELETE FROM enterprise_age WHERE enterprise_patient_id = ?";
+            ps = connection.prepareStatement(sql);
+
+            ps.setLong(1, new Long(patientId));
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
 
     private static void calculateNextUpdateDate(LocalDate dobLocalDate,
                                                 LocalDate nowLocalDate,
@@ -287,7 +330,7 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         }
     }
 
-    private RdbmsEnterpriseAge findAgeObject(long enterprisePatientId) throws Exception {
+    /*private RdbmsEnterpriseAge findAgeObject(long enterprisePatientId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
@@ -308,7 +351,7 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
 

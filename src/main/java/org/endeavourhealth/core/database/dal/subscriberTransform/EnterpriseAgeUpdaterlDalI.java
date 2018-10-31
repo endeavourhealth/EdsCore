@@ -8,8 +8,8 @@ import java.util.List;
 public interface EnterpriseAgeUpdaterlDalI {
 
     List<EnterpriseAge> findAgesToUpdate() throws Exception;
-    Integer[] calculateAgeValues(long patientId, Date dateOfBirth) throws Exception;
-    Integer[] calculateAgeValues(EnterpriseAge map) throws Exception;
+    Integer[] calculateAgeValuesAndUpdateTable(long patientId, Date dateOfBirth, Date dateOfDeath) throws Exception;
+    Integer[] reCalculateAgeValues(EnterpriseAge map) throws Exception;
     void save(EnterpriseAge obj) throws Exception;
 
 }
