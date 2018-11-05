@@ -249,7 +249,7 @@ public class ConnectionManager {
                 throw new RuntimeException("Unknown database " + dbName);
             }
 
-            json = ConfigManager.getConfigurationAsJson(configName, "db_common");
+            json = ConfigManager.getConfigurationAsJson(configName);
         }
 
         if (json == null) {
