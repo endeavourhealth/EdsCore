@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal.subscriberTransform;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.hl7.fhir.instance.model.ResourceType;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public interface PcrIdDalI {
     List<Long> findPcrPersonIdsForPersonId(String discoveryPersonId) throws Exception;
     void findPcrIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception;
     void findOrCreatePcrIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception;
-
+    Long createPcrFreeTextId(String resId, String resType) throws  Exception;
     //instance mapping
     UUID findInstanceMappedId(ResourceType resourceType, UUID resourceId) throws Exception;
     UUID findOrCreateInstanceMappedId(ResourceType resourceType, UUID resourceId, String mappingValue) throws Exception;

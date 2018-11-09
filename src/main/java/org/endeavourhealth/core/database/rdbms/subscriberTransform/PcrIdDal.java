@@ -4,10 +4,7 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.dal.subscriberTransform.PcrIdDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrIdMap;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrInstanceMap;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrOrganisationIdMap;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrPersonIdMap;
+import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.*;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -269,6 +266,24 @@ public class PcrIdDal implements PcrIdDalI {
 
         } finally {
             entityManager.close();
+        }
+    }
+
+    public Long createPcrFreeTextId(String resId, String resType) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        RdbmsPcrFreeTextIdMap mapping = new RdbmsPcrFreeTextIdMap();
+        mapping.setResourceId(resId);
+        mapping.setResourceType(resType);
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(mapping);
+            entityManager.getTransaction().commit();
+
+            return mapping.getId();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         }
     }
 
