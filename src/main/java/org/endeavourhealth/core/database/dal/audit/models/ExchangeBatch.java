@@ -12,6 +12,7 @@ public class ExchangeBatch {
     private UUID batchId = null;
     private Date insertedAt = null;
     private UUID edsPatientId = null;
+    private boolean needsSaving = true;
 
     public ExchangeBatch() {}
 
@@ -29,6 +30,7 @@ public class ExchangeBatch {
         if (!Strings.isNullOrEmpty(proxy.getEdsPatientId())) {
             this.edsPatientId = UUID.fromString(proxy.getEdsPatientId());
         }
+        this.needsSaving = false; //if it's come from the DB, it doesn't need saving
     }
 
     public UUID getExchangeId() {
@@ -61,5 +63,13 @@ public class ExchangeBatch {
 
     public void setEdsPatientId(UUID edsPatientId) {
         this.edsPatientId = edsPatientId;
+    }
+
+    public boolean isNeedsSaving() {
+        return needsSaving;
+    }
+
+    public void setNeedsSaving(boolean needsSaving) {
+        this.needsSaving = needsSaving;
     }
 }
