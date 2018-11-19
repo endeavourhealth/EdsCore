@@ -46,7 +46,7 @@ public class RdbmsPcrIdMap implements Serializable {
     }
 
 
-    @Column(name = "discovery_resource_id")
+    @Column(name = "resource_id")
     public String getResourceId() {
         return resourceId;
     }
@@ -55,7 +55,7 @@ public class RdbmsPcrIdMap implements Serializable {
         this.resourceId = resourceId;
     }
 
-    @Column(name = "discovery_resource_type")
+    @Column(name = "resource_type")
     public String getResourceType() {
         return resourceType;
     }
