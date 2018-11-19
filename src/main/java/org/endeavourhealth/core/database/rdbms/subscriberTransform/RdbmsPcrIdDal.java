@@ -15,12 +15,12 @@ import javax.persistence.Query;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PcrIdDal implements PcrIdDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(PcrIdDal.class);
+public class RdbmsPcrIdDal implements PcrIdDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPcrIdDal.class);
 
     private String subscriberConfigName = null;
 
-    public PcrIdDal(String subscriberConfigName) {
+    public RdbmsPcrIdDal(String subscriberConfigName) {
         this.subscriberConfigName = subscriberConfigName;
     }
 
