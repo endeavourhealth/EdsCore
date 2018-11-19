@@ -17,7 +17,7 @@ public class RdbmsPcrIdMap implements Serializable {
     // where PCR data came from.
     // Mainly reserves an id in the pcr namespace for consistent upserts
     // Can be extended to allow support for more populous resource types
-    private long id;
+    private Long id;
     private String resourceId = null;
     protected String resourceType = null;
     private Integer sourceDb = null;  // Pointer to pcr_db_map
@@ -28,7 +28,7 @@ public class RdbmsPcrIdMap implements Serializable {
     @Id
     @Generated(GenerationTime.INSERT)
     @Column(name = "id", insertable = false)
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
