@@ -19,7 +19,7 @@ public class RdbmsPcrIdMap implements Serializable {
     // Can be extended to allow support for more populous resource types
     private Long pcrId = null;
     private String resourceId = null;
-    protected String resourceType = null;
+    private String resourceType = null;
     private Integer sourceDb = null;  // Pointer to pcr_db_map
 
     public RdbmsPcrIdMap() {
