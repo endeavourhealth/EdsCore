@@ -1,6 +1,8 @@
 package org.endeavourhealth.core.fhirStorage;
 
 import org.endeavourhealth.core.database.dal.DalProvider;
+import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
+import org.endeavourhealth.core.database.dal.audit.models.ExchangeBatch;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
@@ -17,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
 
@@ -27,6 +30,8 @@ public class FhirStorageService {
     private static final ResourceDalI resourceRepository = DalProvider.factoryResourceDal();
     private static final PatientLinkDalI patientLinkDal = DalProvider.factoryPatientLinkDal();
     private static final PatientSearchDalI patientSearchDal = DalProvider.factoryPatientSearchDal();
+    private static final ExchangeBatchDalI exchangeBatchRepository = DalProvider.factoryExchangeBatchDal();
+    private static final ReentrantLock exchangeBatchLock = new ReentrantLock();
 
     private final UUID serviceId;
     private final UUID systemId;
@@ -42,31 +47,43 @@ public class FhirStorageService {
     }
 
 
-    public List<ResourceWrapper> saveResources(UUID exchangeId, Map<Resource, UUID> resourcesAndBatchIds, Set<Resource> definitelyNewResources) throws Exception {
+    public List<ResourceWrapper> saveResources(UUID exchangeId, Map<Resource, ExchangeBatch> resourcesAndBatches, Set<Resource> definitelyNewResources) throws Exception {
 
-        List<ResourceWrapper> wrappers = new ArrayList<>();
-        for (Resource resource: resourcesAndBatchIds.keySet()) {
+        List<ResourceWrapper> wrappersToSave = new ArrayList<>();
+        List<ExchangeBatch> exchangeBatchesToSave = new ArrayList<>();
+
+        for (Resource resource: resourcesAndBatches.keySet()) {
             Validate.resourceId(resource);
 
-            UUID batchId = resourcesAndBatchIds.get(resource);
+            ExchangeBatch exchangeBatch = resourcesAndBatches.get(resource);
+            UUID batchId = exchangeBatch.getBatchId();
             ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
 
             //if we're updating a resource but there's no change, don't commit the save
             //this is because Emis send us up to thousands of duplicated resources each day
             boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
             if (shouldSaveResource(entry, isDefinitelyNewResource)) {
-                wrappers.add(entry);
+                wrappersToSave.add(entry);
+
+                //save the batch if necessary
+                if (exchangeBatch.isNeedsSaving()) {
+                    exchangeBatchesToSave.add(exchangeBatch);
+                }
             }
         }
 
-        if (wrappers.isEmpty()) {
-            return wrappers;
+        if (wrappersToSave.isEmpty()) {
+            return wrappersToSave;
         }
 
-        resourceRepository.save(wrappers);
+        //we must save any exchange batches for the resources themselves
+        saveExchangeBatches(exchangeBatchesToSave);
+
+        //then save the resources
+        resourceRepository.save(wrappersToSave);
 
         //call out to our patient search and person matching services
-        for (Resource resource: resourcesAndBatchIds.keySet()) {
+        for (Resource resource: resourcesAndBatches.keySet()) {
             if (resource instanceof Patient) {
                 //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
                 try {
@@ -95,54 +112,67 @@ public class FhirStorageService {
             }
         }
 
-        return wrappers;
+        return wrappersToSave;
     }
 
+    private void saveExchangeBatches(List<ExchangeBatch> exchangeBatchesToSave) throws Exception {
 
-    public List<ResourceWrapper> deleteResources(UUID exchangeId, Map<Resource, UUID> resourcesAndBatchIds, Set<Resource> definitelyNewResources) throws Exception {
+        //the storage service is invoked from multiple threads, so we need to lock to ensure
+        //all batches are saved before any resources
+        try {
+            exchangeBatchLock.lock();
 
-        List<ResourceWrapper> wrappers = new ArrayList<>();
-        for (Resource resource: resourcesAndBatchIds.keySet()) {
-            Validate.resourceId(resource);
-
-            UUID batchId = resourcesAndBatchIds.get(resource);
-            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
-
-            //if we're updating a resource but there's no change, don't commit the save
-            //this is because Emis send us up to thousands of duplicated resources each day
-            boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
-            if (shouldDeleteResource(entry, isDefinitelyNewResource)) {
-                wrappers.add(entry);
-            }
-        }
-
-        if (wrappers.isEmpty()) {
-            return wrappers;
-        }
-
-        resourceRepository.delete(wrappers);
-
-        //if we're deleting the patient, then delete the row from the patient_search table
-        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
-        for (Resource resource: resourcesAndBatchIds.keySet()) {
-            if (resource instanceof Patient) {
-                patientSearchDal.deletePatient(serviceId, (Patient) resource);
-
-            } else if (resource instanceof EpisodeOfCare) {
-                patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare) resource);
-
-                try {
-                    patientSearchDal.update(serviceId, (EpisodeOfCare) resource);
-                } catch (Throwable t) {
-                    LOG.error("Exception updating patient search table for " + resource.getResourceType() + " " + resource.getId());
-                    throw t;
+            //now we're locked, we should double-check that batches haven't been saved yet
+            for (int i=exchangeBatchesToSave.size()-1; i>=0; i--) {
+                ExchangeBatch exchangeBatch = exchangeBatchesToSave.get(i);
+                if (!exchangeBatch.isNeedsSaving()) {
+                    exchangeBatchesToSave.remove(i);
                 }
             }
-        }
 
-        return wrappers;
+            if (exchangeBatchesToSave.isEmpty()) {
+                return;
+            }
+
+            exchangeBatchRepository.save(exchangeBatchesToSave);
+
+            //mark as saved
+            for (ExchangeBatch exchangeBatch: exchangeBatchesToSave) {
+                exchangeBatch.setNeedsSaving(false);
+            }
+
+        } finally {
+            exchangeBatchLock.unlock();
+        }
     }
 
+    /*public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, ExchangeBatch exchangeBatch, Resource resource) throws Exception {
+        return exchangeBatchUpdate(exchangeId, exchangeBatch, resource, false);
+    }
+
+    public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, ExchangeBatch exchangeBatch, Resource resource, boolean isDefinitelyNewResource) throws Exception {
+
+        Map<Resource, ExchangeBatch> resourcesAndBatches = new HashMap<>();
+        resourcesAndBatches.put(resource, exchangeBatch);
+
+        Set<Resource> definitelyNewResources = new HashSet<>();
+        if (isDefinitelyNewResource) {
+            definitelyNewResources.add(resource);
+        }
+
+        List<ResourceWrapper> wrappers = saveResources(exchangeId, resourcesAndBatches, definitelyNewResources);
+        if (wrappers.isEmpty()) {
+            return null;
+
+        } else if (wrappers.size() > 1) {
+            throw new Exception("Got " + wrappers.size() + " back from saving resource " + resource.getResourceType() + " " + resource.getId());
+
+        } else {
+            return wrappers.get(0);
+        }
+    }*/
+
+    /*
     public ResourceWrapper exchangeBatchUpdate(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         return exchangeBatchUpdate(exchangeId, batchId, resource, false);
     }
@@ -191,10 +221,85 @@ public class FhirStorageService {
         }
 
         return entry;
+    }*/
+
+    public List<ResourceWrapper> deleteResources(UUID exchangeId, Map<Resource, ExchangeBatch> resourcesAndBatches, Set<Resource> definitelyNewResources) throws Exception {
+
+        List<ResourceWrapper> wrappers = new ArrayList<>();
+        List<ExchangeBatch> exchangeBatchesToSave = new ArrayList<>();
+
+        for (Resource resource: resourcesAndBatches.keySet()) {
+            Validate.resourceId(resource);
+
+            ExchangeBatch exchangeBatch = resourcesAndBatches.get(resource);
+            UUID batchId = exchangeBatch.getBatchId();
+            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+
+            //if we're updating a resource but there's no change, don't commit the save
+            //this is because Emis send us up to thousands of duplicated resources each day
+            boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
+            if (shouldDeleteResource(entry, isDefinitelyNewResource)) {
+                wrappers.add(entry);
+
+                //save the batch if necessary
+                if (exchangeBatch.isNeedsSaving()) {
+                    exchangeBatchesToSave.add(exchangeBatch);
+                }
+            }
+        }
+
+        if (wrappers.isEmpty()) {
+            return wrappers;
+        }
+
+        //we must save any exchange batches for the resources themselves
+        saveExchangeBatches(exchangeBatchesToSave);
+
+        //now delete the resources
+        resourceRepository.delete(wrappers);
+
+        //if we're deleting the patient, then delete the row from the patient_search table
+        //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
+        for (Resource resource: resourcesAndBatches.keySet()) {
+            if (resource instanceof Patient) {
+                patientSearchDal.deletePatient(serviceId, (Patient) resource);
+
+            } else if (resource instanceof EpisodeOfCare) {
+                patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare) resource);
+            }
+        }
+
+        return wrappers;
     }
 
 
-    public ResourceWrapper exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
+    /*public ResourceWrapper exchangeBatchDelete(UUID exchangeId, ExchangeBatch exchangeBatch, Resource resource) throws Exception {
+        return exchangeBatchDelete(exchangeId, exchangeBatch, resource, false);
+    }
+
+    public ResourceWrapper exchangeBatchDelete(UUID exchangeId, ExchangeBatch exchangeBatch, Resource resource, boolean isDefinitelyNewResource) throws Exception {
+
+        Map<Resource, ExchangeBatch> resourcesAndBatches = new HashMap<>();
+        resourcesAndBatches.put(resource, exchangeBatch);
+
+        Set<Resource> definitelyNewResources = new HashSet<>();
+        if (isDefinitelyNewResource) {
+            definitelyNewResources.add(resource);
+        }
+
+        List<ResourceWrapper> wrappers = deleteResources(exchangeId, resourcesAndBatches, definitelyNewResources);
+        if (wrappers.isEmpty()) {
+            return null;
+
+        } else if (wrappers.size() > 1) {
+            throw new Exception("Got " + wrappers.size() + " back from saving resource " + resource.getResourceType() + " " + resource.getId());
+
+        } else {
+            return wrappers.get(0);
+        }
+    }*/
+
+    /*public ResourceWrapper exchangeBatchDelete(UUID exchangeId, UUID batchId, Resource resource) throws Exception {
         return exchangeBatchDelete(exchangeId, batchId, resource, false);
     }
 
@@ -229,7 +334,7 @@ public class FhirStorageService {
 
 
         return entry;
-    }
+    }*/
 
 
     private boolean shouldDeleteResource(ResourceWrapper entry, boolean isDefinitelyNewResource) throws Exception {

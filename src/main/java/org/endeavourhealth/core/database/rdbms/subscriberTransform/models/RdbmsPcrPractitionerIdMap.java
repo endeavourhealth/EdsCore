@@ -15,6 +15,6 @@ public class RdbmsPcrPractitionerIdMap extends RdbmsPcrIdMap implements Serializ
 
     public RdbmsPcrPractitionerIdMap() {
         super();
-        this.resourceType="Practioner";
+        //this.resourceType="Practioner";    //TODO: what is this for?
     }
 }

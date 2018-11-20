@@ -15,12 +15,12 @@ import javax.persistence.Query;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class PcrIdDal implements PcrIdDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(PcrIdDal.class);
+public class RdbmsPcrIdDal implements PcrIdDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsPcrIdDal.class);
 
     private String subscriberConfigName = null;
 
-    public PcrIdDal(String subscriberConfigName) {
+    public RdbmsPcrIdDal(String subscriberConfigName) {
         this.subscriberConfigName = subscriberConfigName;
     }
 
@@ -70,7 +70,7 @@ public class PcrIdDal implements PcrIdDalI {
             throw ex;
         }
 
-        return mapping.getId();
+        return mapping.getPcrId();
     }
 
     public Long findPcrId(String resourceType, String resourceId) throws Exception {
@@ -92,27 +92,29 @@ public class PcrIdDal implements PcrIdDalI {
                 + " and c.resourceId = :resourceId";
 
 
+        //LOG.debug("findPcrId query params: resourceType -> "+resourceType+" , resourceId -> "+resourceId);
+
         Query query = entityManager.createQuery(sql, RdbmsPcrIdMap.class)
                 .setParameter("resourceType", resourceType)
                 .setParameter("resourceId", resourceId);
 
         try {
             RdbmsPcrIdMap result = (RdbmsPcrIdMap)query.getSingleResult();
-            return result.getId();
+            return result.getPcrId();
 
         } catch (NoResultException ex) {
             return null;
         }
     }
 
-    public void savePcrOrganisationId(String serviceId, String systemId, Long pcrId) throws Exception {
+    public void savePcrOrganisationId(String serviceId, Long pcrId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
-                throw new Exception("PcrOrganisationIdMap already exists for service " + serviceId + " system " + systemId + " config " + subscriberConfigName);
+                throw new Exception("PcrOrganisationIdMap already exists for service " + serviceId + " config " + subscriberConfigName);
             }
 
             mapping = new RdbmsPcrOrganisationIdMap();
@@ -132,7 +134,7 @@ public class PcrIdDal implements PcrIdDalI {
         }
     }
 
-    private static RdbmsPcrOrganisationIdMap findPcrOrganisationMapping(String serviceId, String systemId, EntityManager entityManager) throws Exception {
+    private static RdbmsPcrOrganisationIdMap findPcrOrganisationMapping(String serviceId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"
                 + " from"
@@ -151,12 +153,12 @@ public class PcrIdDal implements PcrIdDalI {
         }
     }
 
-    public Long findPcrOrganisationId(String serviceId, String systemId) throws Exception {
+    public Long findPcrOrganisationId(String serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
                 return mapping.getPcrId();
             } else {
@@ -279,7 +281,7 @@ public class PcrIdDal implements PcrIdDalI {
             entityManager.persist(mapping);
             entityManager.getTransaction().commit();
 
-            return mapping.getId();
+            return mapping.getPcrId();
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
@@ -331,7 +333,7 @@ public class PcrIdDal implements PcrIdDalI {
         List<RdbmsPcrIdMap> results = query.getResultList();
         for (RdbmsPcrIdMap result: results) {
             String resourceId = result.getResourceId();
-            Long pcrId = result.getId();
+            Long pcrId = result.getPcrId();
 
             ResourceWrapper resource = resourceIdMap.get(resourceId);
             ids.put(resource, pcrId);
@@ -375,7 +377,7 @@ public class PcrIdDal implements PcrIdDalI {
             for (ResourceWrapper resource: resourcesToCreate) {
 
                 RdbmsPcrIdMap mapping = mappingMap.get(resource);
-                Long pcrId = mapping.getId();
+                Long pcrId = mapping.getPcrId();
                 ids.put(resource, pcrId);
             }
 

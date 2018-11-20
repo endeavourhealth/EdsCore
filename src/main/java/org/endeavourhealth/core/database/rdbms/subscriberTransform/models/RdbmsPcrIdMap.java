@@ -3,47 +3,29 @@ package org.endeavourhealth.core.database.rdbms.subscriberTransform.models;
 import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.GenerationTime;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "pcr_id_map")
-@MappedSuperclass
 public class RdbmsPcrIdMap implements Serializable {
     // Provides a map from eg ehr.resource_current to pcr db so we can see
     // where PCR data came from.
     // Mainly reserves an id in the pcr namespace for consistent upserts
     // Can be extended to allow support for more populous resource types
-    private long id;
+
     private String resourceId = null;
-    protected String resourceType = null;
-    private Integer sourceDb = null;  // Pointer to pcr_db_map
+    private String resourceType = null;
+    private Long pcrId = null;
 
     public RdbmsPcrIdMap() {
     }
 
     @Id
-    @Generated(GenerationTime.INSERT)
-    @Column(name = "id", insertable = false)
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    @Column(name = "source_db")
-    public Integer getSourceDb() {
-        return sourceDb;
-    }
-
-    public void setSourceDb(Integer sourceDb) {
-        this.sourceDb = sourceDb;
-    }
-
-
-    @Column(name = "discovery_resource_id")
+    @Column(name = "resource_id", nullable = false)
     public String getResourceId() {
         return resourceId;
     }
@@ -52,13 +34,22 @@ public class RdbmsPcrIdMap implements Serializable {
         this.resourceId = resourceId;
     }
 
-    @Column(name = "discovery_resource_type")
+    @Id
+    @Column(name = "resource_type", nullable = false)
     public String getResourceType() {
         return resourceType;
     }
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    @Generated(GenerationTime.INSERT)
+    @Column(name = "pcr_id", insertable = false)
+    public Long getPcrId() { return pcrId; }
+
+    public void setPcrId(Long pcrId) {
+        this.pcrId = pcrId;
     }
 
 }
