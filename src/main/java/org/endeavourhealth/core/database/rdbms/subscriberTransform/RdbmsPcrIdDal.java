@@ -92,7 +92,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
                 + " and c.resourceId = :resourceId";
 
 
-        LOG.debug("findPcrId query params: resourceType -> "+resourceType+" , resourceId -> "+resourceId);
+        //LOG.debug("findPcrId query params: resourceType -> "+resourceType+" , resourceId -> "+resourceId);
 
         Query query = entityManager.createQuery(sql, RdbmsPcrIdMap.class)
                 .setParameter("resourceType", resourceType)
@@ -107,14 +107,14 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
-    public void savePcrOrganisationId(String serviceId, String systemId, Long pcrId) throws Exception {
+    public void savePcrOrganisationId(String serviceId, Long pcrId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
-                throw new Exception("PcrOrganisationIdMap already exists for service " + serviceId + " system " + systemId + " config " + subscriberConfigName);
+                throw new Exception("PcrOrganisationIdMap already exists for service " + serviceId + " config " + subscriberConfigName);
             }
 
             mapping = new RdbmsPcrOrganisationIdMap();
@@ -134,7 +134,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
-    private static RdbmsPcrOrganisationIdMap findPcrOrganisationMapping(String serviceId, String systemId, EntityManager entityManager) throws Exception {
+    private static RdbmsPcrOrganisationIdMap findPcrOrganisationMapping(String serviceId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"
                 + " from"
@@ -153,12 +153,12 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
-    public Long findPcrOrganisationId(String serviceId, String systemId) throws Exception {
+    public Long findPcrOrganisationId(String serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, systemId, entityManager);
+            RdbmsPcrOrganisationIdMap mapping = findPcrOrganisationMapping(serviceId, entityManager);
             if (mapping != null) {
                 return mapping.getPcrId();
             } else {
