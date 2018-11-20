@@ -8,7 +8,6 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "pcr_id_map")
-@MappedSuperclass
 public class RdbmsPcrIdMap implements Serializable {
     // Provides a map from eg ehr.resource_current to pcr db so we can see
     // where PCR data came from.
@@ -19,8 +18,7 @@ public class RdbmsPcrIdMap implements Serializable {
     private String resourceType = null;
     private Long pcrId = null;
 
-    public RdbmsPcrIdMap() {
-    }
+    public RdbmsPcrIdMap() { }
 
     @Id
     @Column(name = "resource_id", nullable = false)

@@ -301,6 +301,10 @@
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrOrganisationIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrPersonIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrPersonUpdateHistory</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrFreeTextIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrEventIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrPractitionerIdMap</class>
+        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrTableNameIdMap</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />

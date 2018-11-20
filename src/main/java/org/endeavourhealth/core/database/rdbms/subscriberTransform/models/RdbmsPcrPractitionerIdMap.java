@@ -11,16 +11,14 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "pcr_practitioner_id_map")
-
 public class RdbmsPcrPractitionerIdMap  implements Serializable  {
 
 
-        private String resourceId = null;
-        private String resourceType = null;
-        private Long pcrId = null;
+    private String resourceId = null;
+    private String resourceType = null;
+    private Long pcrId = null;
 
-    public RdbmsPcrPractitionerIdMap() {
-    }
+    public RdbmsPcrPractitionerIdMap() { }
 
     @Id
         @Column(name = "resource_id", nullable = false)

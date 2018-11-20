@@ -17,7 +17,7 @@ public class RdbmsPcrPersonIdMap implements Serializable {
     //private String pcrConfigName = null;
     private Long pcrPersonId;
 
-    public RdbmsPcrPersonIdMap() {}
+    public RdbmsPcrPersonIdMap() { }
 
     @Id
     @Column(name = "person_id", nullable = false)
