@@ -83,6 +83,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
+
     private static Long findPcrId(String resourceType, String resourceId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"
