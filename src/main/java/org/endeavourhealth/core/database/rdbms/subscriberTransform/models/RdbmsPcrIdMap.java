@@ -11,16 +11,15 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "pcr_id_map")
-
 public class RdbmsPcrIdMap implements Serializable {
     // Provides a map from eg ehr.resource_current to pcr db so we can see
     // where PCR data came from.
     // Mainly reserves an id in the pcr namespace for consistent upserts
     // Can be extended to allow support for more populous resource types
-    private Long pcrId = null;
+
     private String resourceId = null;
     private String resourceType = null;
-    private Integer sourceDb = null;  // Pointer to pcr_db_map
+    private Long pcrId = null;
 
     public RdbmsPcrIdMap() {
     }
@@ -47,22 +46,10 @@ public class RdbmsPcrIdMap implements Serializable {
 
     @Generated(GenerationTime.INSERT)
     @Column(name = "pcr_id", insertable = false)
-    public Long getId() {
-        return pcrId;
-    }
+    public Long getPcrId() { return pcrId; }
 
-    public void setId(Long pcrId) {
+    public void setPcrId(Long pcrId) {
         this.pcrId = pcrId;
     }
-
-
-//    @Column(name = "source_db")
-//    public Integer getSourceDb() {
-//        return sourceDb;
-//    }
-//
-//    public void setSourceDb(Integer sourceDb) {
-//        this.sourceDb = sourceDb;
-//    }
 
 }

@@ -70,7 +70,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
             throw ex;
         }
 
-        return mapping.getId();
+        return mapping.getPcrId();
     }
 
     public Long findPcrId(String resourceType, String resourceId) throws Exception {
@@ -100,7 +100,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
 
         try {
             RdbmsPcrIdMap result = (RdbmsPcrIdMap)query.getSingleResult();
-            return result.getId();
+            return result.getPcrId();
 
         } catch (NoResultException ex) {
             return null;
@@ -281,7 +281,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
             entityManager.persist(mapping);
             entityManager.getTransaction().commit();
 
-            return mapping.getId();
+            return mapping.getPcrId();
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
@@ -333,7 +333,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         List<RdbmsPcrIdMap> results = query.getResultList();
         for (RdbmsPcrIdMap result: results) {
             String resourceId = result.getResourceId();
-            Long pcrId = result.getId();
+            Long pcrId = result.getPcrId();
 
             ResourceWrapper resource = resourceIdMap.get(resourceId);
             ids.put(resource, pcrId);
@@ -377,7 +377,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
             for (ResourceWrapper resource: resourcesToCreate) {
 
                 RdbmsPcrIdMap mapping = mappingMap.get(resource);
-                Long pcrId = mapping.getId();
+                Long pcrId = mapping.getPcrId();
                 ids.put(resource, pcrId);
             }
 
