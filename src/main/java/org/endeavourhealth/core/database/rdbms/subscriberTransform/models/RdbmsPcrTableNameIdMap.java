@@ -5,17 +5,19 @@ import org.hibernate.annotations.GenerationTime;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 
 @Entity
 @Table(name = "pcr_tables")
 
-public class RdbmsPcrTableNameIdMap  implements Serializable  {
+public class RdbmsPcrTableNameIdMap implements Serializable {
 
     private long id;
     private String tableName = null;
 
+    @Id
     @Generated(GenerationTime.INSERT)
     @Column(name = "id", insertable = false)
     public long getId() {
@@ -31,7 +33,8 @@ public class RdbmsPcrTableNameIdMap  implements Serializable  {
         return tableName;
     }
 
-    public void setTableName(String tableName) {this.tableName = tableName;
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
     }
 
 
