@@ -272,8 +272,56 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
-    public Long createPcrFreeTextId(String resId, String resType) throws Exception {
+    public  Long findOrCreatePcrFreeTextId(String resourceType, String resourceId) throws Exception {
+
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        try {
+            Long ret = findPcrFreeTextId(resourceType, resourceId, entityManager);
+            if (ret != null) {
+                return ret;
+            }
+
+            return createPcrFreeTextId(resourceType, resourceId, entityManager);
+
+        } catch (Exception ex) {
+            //if another thread has beat us to it, we'll get an exception, so try the find again
+            Long ret = findPcrId(resourceType, resourceId, entityManager);
+            if (ret != null) {
+                return ret;
+            }
+
+            throw ex;
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    public Long findPcrFreeTextId(String resourceType, String resourceId, EntityManager entityManager) throws Exception {
+
+        String sql = "select c"
+                + " from"
+                + " RdbmsPcrFreeTextIdMap c"
+                + " where c.resourceType = :resourceType"
+                + " and c.resourceId = :resourceId";
+
+
+        //LOG.debug("findPcrId query params: resourceType -> "+resourceType+" , resourceId -> "+resourceId);
+
+        Query query = entityManager.createQuery(sql, RdbmsPcrIdMap.class)
+                .setParameter("resourceType", resourceType)
+                .setParameter("resourceId", resourceId);
+
+        try {
+            RdbmsPcrIdMap result = (RdbmsPcrIdMap) query.getSingleResult();
+            return result.getPcrId();
+
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+    public Long createPcrFreeTextId(String resId, String resType, EntityManager entityManager) throws Exception {
         RdbmsPcrFreeTextIdMap mapping = new RdbmsPcrFreeTextIdMap();
         mapping.setResourceId(resId);
         mapping.setResourceType(resType);
