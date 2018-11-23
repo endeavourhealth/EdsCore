@@ -313,7 +313,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
                 .setParameter("resourceId", resourceId);
 
         try {
-            RdbmsPcrIdMap result = (RdbmsPcrIdMap) query.getSingleResult();
+            RdbmsPcrFreeTextIdMap result = (RdbmsPcrFreeTextIdMap) query.getSingleResult();
             return result.getPcrId();
 
         } catch (NoResultException ex) {
