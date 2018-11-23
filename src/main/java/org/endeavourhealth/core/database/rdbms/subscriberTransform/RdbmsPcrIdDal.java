@@ -321,7 +321,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
         }
     }
 
-    public Long createPcrFreeTextId(String resId, String resType, EntityManager entityManager) throws Exception {
+    public Long createPcrFreeTextId(String resType, String resId, EntityManager entityManager) throws Exception {
         RdbmsPcrFreeTextIdMap mapping = new RdbmsPcrFreeTextIdMap();
         mapping.setResourceId(resId);
         mapping.setResourceType(resType);
