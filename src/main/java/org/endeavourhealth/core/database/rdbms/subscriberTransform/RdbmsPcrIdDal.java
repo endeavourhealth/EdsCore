@@ -308,7 +308,7 @@ public class RdbmsPcrIdDal implements PcrIdDalI {
 
         //LOG.debug("findPcrId query params: resourceType -> "+resourceType+" , resourceId -> "+resourceId);
 
-        Query query = entityManager.createQuery(sql, RdbmsPcrIdMap.class)
+        Query query = entityManager.createQuery(sql, RdbmsPcrFreeTextIdMap.class)
                 .setParameter("resourceType", resourceType)
                 .setParameter("resourceId", resourceId);
 
