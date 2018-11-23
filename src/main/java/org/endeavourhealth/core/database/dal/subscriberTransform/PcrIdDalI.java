@@ -17,7 +17,7 @@ public interface PcrIdDalI {
     List<Long> findPcrPersonIdsForPersonId(String discoveryPersonId) throws Exception;
     void findPcrIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception;
     void findOrCreatePcrIds(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception;
-    Long findOrCreatePcrFreeTextId(String resId, String resType) throws  Exception;
+    Long findOrCreatePcrFreeTextId(String resourceType, String resourceId) throws  Exception;
     //instance mapping
     UUID findInstanceMappedId(ResourceType resourceType, UUID resourceId) throws Exception;
     UUID findOrCreateInstanceMappedId(ResourceType resourceType, UUID resourceId, String mappingValue) throws Exception;
