@@ -27,6 +27,17 @@ public class RdbmsServiceDal implements ServiceDalI {
         UUID serviceUuid = null;
 
         if (service.getId() == null) {
+
+            //it can't be done using unique indexes, since the UPSERT SQL used during the save would result in
+            //overwrites, but manually validate that the national ID is unique if trying to save a new service
+            String localId = service.getLocalId();
+            if (!Strings.isNullOrEmpty(localId)) {
+                Service existingService = getByLocalIdentifier(localId);
+                if (existingService != null) {
+                    throw new Exception("Service already exists with ID " + localId);
+                }
+            }
+
             serviceUuid = UUID.randomUUID();
             // New service, just save with all orgs as additions
             service.setId(serviceUuid);
@@ -296,11 +307,12 @@ public class RdbmsServiceDal implements ServiceDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsService c"
-                    + " where c.name like :id_like"
-                    + " or c.localId = :id_like";
+                    + " where c.name like :search_param_1"
+                    + " or c.localId = :search_param_2";
 
             Query query = entityManager.createQuery(sql, RdbmsService.class)
-                    .setParameter("id_like", searchData + "%");
+                    .setParameter("search_param_1", searchData + "%")
+                    .setParameter("search_param_2", searchData);
 
             List<RdbmsService> results = query.getResultList();
 

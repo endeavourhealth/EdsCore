@@ -28,6 +28,17 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
         UUID orgUuid = null;
 
         if (organisation.getId() == null) {
+
+            //it can't be done using unique indexes, since the UPSERT SQL used during the save would result in
+            //overwrites, but manually validate that the national ID is unique if trying to save a new service
+            String odsCode = organisation.getNationalId();
+            if (!Strings.isNullOrEmpty(odsCode)) {
+                Organisation existingOrg = getByNationalId(odsCode);
+                if (existingOrg != null) {
+                    throw new Exception("Organisation already exists with ID " + odsCode);
+                }
+            }
+
             // New organisation, just save with all services as additions
             orgUuid = UUID.randomUUID();
             organisation.setId(orgUuid);
@@ -289,11 +300,12 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsOrganisation c"
-                    + " where c.name like :id_like"
-                    + " or c.nationalId = :id_like";
+                    + " where c.name like :param_1"
+                    + " or c.nationalId = :param_2";
 
             Query query = entityManager.createQuery(sql, RdbmsOrganisation.class)
-                    .setParameter("id_like", searchData + "%");
+                    .setParameter("param_1", searchData + "%")
+                    .setParameter("param_2", searchData);
 
             List<RdbmsOrganisation> results = query.getResultList();
 

@@ -18,6 +18,8 @@ public class RdbmsTransformWarning {
     private String param2;
     private String param3;
     private String param4;
+    private Integer publishedFileId;
+    private Integer recordNumber;
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -118,5 +120,23 @@ public class RdbmsTransformWarning {
 
     public void setParam4(String param4) {
         this.param4 = param4;
+    }
+
+    @Column(name = "published_file_id", nullable = true)
+    public Integer getPublishedFileId() {
+        return publishedFileId;
+    }
+
+    public void setPublishedFileId(Integer publishedFileId) {
+        this.publishedFileId = publishedFileId;
+    }
+
+    @Column(name = "record_number", nullable = true)
+    public Integer getRecordNumber() {
+        return recordNumber;
+    }
+
+    public void setRecordNumber(Integer recordNumber) {
+        this.recordNumber = recordNumber;
     }
 }

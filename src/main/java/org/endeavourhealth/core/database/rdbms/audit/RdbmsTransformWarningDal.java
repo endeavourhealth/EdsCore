@@ -20,7 +20,7 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
 
     private static Map<String, Integer> warningTypeCache = new ConcurrentHashMap<>();
 
-    public void recordWarning(UUID serviceId, UUID systemId, UUID exchangeId, Long sourceFileRecordId, String warningText, String... warningParams) throws Exception {
+    public void recordWarning(UUID serviceId, UUID systemId, UUID exchangeId, Integer publishedFileId, Integer recordNumber, String warningText, String... warningParams) throws Exception {
 
         //only support up to four params
         validateWarning(warningText, warningParams);
@@ -36,7 +36,7 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
             try {
                 entityManager.getTransaction().begin();
 
-                saveNewWarning(entityManager, warningTypeId, serviceId, systemId, exchangeId, sourceFileRecordId, now, warningParams);
+                saveNewWarning(entityManager, warningTypeId, serviceId, systemId, exchangeId, publishedFileId, recordNumber, now, warningParams);
                 updateWarningTypeDate(entityManager, warningTypeId, now);
 
                 entityManager.getTransaction().commit();
@@ -106,12 +106,13 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
         }
     }
 
-    private void saveNewWarning(EntityManager entityManager, int warningTypeId, UUID serviceId, UUID systemId, UUID exchangeId, Long sourceFileRecordId, Date now, String[] warningParams) {
+    private void saveNewWarning(EntityManager entityManager, int warningTypeId, UUID serviceId, UUID systemId, UUID exchangeId, Integer publishedFileId, Integer recordNumber, Date now, String[] warningParams) {
         RdbmsTransformWarning newWarning = new RdbmsTransformWarning();
         newWarning.setServiceId(serviceId.toString());
         newWarning.setSystemId(systemId.toString());
         newWarning.setExchangeId(exchangeId.toString());
-        newWarning.setSourceFileRecordId(sourceFileRecordId); //may be null
+        newWarning.setPublishedFileId(publishedFileId); //may be null
+        newWarning.setRecordNumber(recordNumber);
         newWarning.setInsertedAt(now);
         newWarning.setTransformWarningTypeId(warningTypeId);
         newWarning.setParam1(findParam(warningParams, 0));

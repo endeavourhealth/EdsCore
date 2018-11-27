@@ -395,6 +395,10 @@ public class DalProvider {
         return new RdbmsIcd10Dal();
     }
 
+    public static PublishedFileDalI factoryPublishedFileDal() {
+        return new RdbmsPublishedFileDal();
+    }
+
     /*private static boolean useCassandra() {
 
         if (cachedUseCassandra == null) {
