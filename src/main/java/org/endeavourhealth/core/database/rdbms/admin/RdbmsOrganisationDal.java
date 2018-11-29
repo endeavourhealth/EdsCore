@@ -8,6 +8,8 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -18,6 +20,7 @@ import java.sql.Types;
 import java.util.*;
 
 public class RdbmsOrganisationDal implements OrganisationDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsOrganisationDal.class);
 
     public UUID save(Organisation organisation) throws Exception {
 
@@ -308,6 +311,8 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
                     .setParameter("param_2", searchData);
 
             List<RdbmsOrganisation> results = query.getResultList();
+            //LOG.debug("Searching for [" + searchData + "] and got " + results.size() + " results");
+            //LOG.debug("Query = " + query);
 
             //can't use stream as the constructor throws an exception
             List<Organisation> ret = new ArrayList<>();
