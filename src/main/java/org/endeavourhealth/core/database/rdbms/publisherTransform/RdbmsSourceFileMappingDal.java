@@ -1277,7 +1277,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
     }
 
-    public static byte[] writeToZip(String jsonStr, String entryName) throws Exception {
+    private static byte[] writeToZip(String jsonStr, String entryName) throws Exception {
 
         //may as well zip the data, since it will compress well
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

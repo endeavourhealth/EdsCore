@@ -157,6 +157,11 @@ public class ResourceFieldMappingAudit {
         }
     }
 
+    public boolean isEmpty() {
+        return audits.isEmpty()
+                && (oldStyleAudits == null || oldStyleAudits.isEmpty());
+    }
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ResourceFieldMappingAuditRow {
         //variable names kept short as this object is persisted to JSON and I want to avoid using excessive storage space
