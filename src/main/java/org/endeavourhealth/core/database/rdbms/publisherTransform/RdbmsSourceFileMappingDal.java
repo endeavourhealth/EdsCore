@@ -1,18 +1,11 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.Strings;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.utility.FileHelper;
-import org.endeavourhealth.common.utility.FileInfo;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFile;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileColumn;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileRecord;
@@ -32,23 +25,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsSourceFileMappingDal.class);
 
     private static final String CSV_DELIM = "|";
 
-    private static String cachedAuditStoragePath = null;
+    //private static String cachedAuditStoragePath = null;
 
     /**
      * checks for a pre-existing audit of a CSV/tab-delimited file
@@ -944,76 +931,28 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
         //the audit history of a resource may be in the audit storage path or in the DB, depending on the configuration state,
         //so we need to look in both places (for the time being)
-        String topLevelStoragePath = getAuditStoragePath();
+        /*String topLevelStoragePath = getAuditStoragePath();
         if (!Strings.isNullOrEmpty(topLevelStoragePath)) {
+            findResourceMappingsFromDisk(ret, topLevelStoragePath, serviceId, resourceType, resourceId);
+        }*/
 
-            String storageDir = createAuditDir(topLevelStoragePath, serviceId, resourceType.toString(), resourceId);
-            List<FileInfo> infos = FileHelper.listFilesInSharedStorageWithInfo(storageDir);
-
-            for (FileInfo info: infos) {
-                Date d = info.getLastModified();
-                String path = info.getFilePath();
-                String extension = FilenameUtils.getExtension(path);
-
-                String json = null;
-
-                if (extension.equalsIgnoreCase("json")) {
-                    InputStreamReader reader = FileHelper.readFileReaderFromSharedStorage(path);
-                    json = IOUtils.toString(reader);
-                    reader.close();
-
-                } else if (extension.equalsIgnoreCase("zip")) {
-                    InputStream inputStream = FileHelper.readFileFromSharedStorage(path);
-                    ZipInputStream zis = new ZipInputStream(inputStream);
-
-                    ZipEntry entry = zis.getNextEntry();
-                    if (entry == null) {
-                        throw new Exception("No entry in zip file " + path);
-                    }
-                    byte[] entryBytes = IOUtils.toByteArray(zis);
-                    json = new String(entryBytes);
-
-                    inputStream.close();
-
-                } else {
-                    throw new Exception("Unexpected audit file extension for " + path);
-                }
-
-                ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
-
-                //the version ID is the parent part of the path, so stick that in a map so we can avoid duplicates
-                String dirPath = FilenameUtils.getPathNoEndSeparator(info.getFilePath());
-                String parentDirName = FilenameUtils.getName(dirPath);
-
-                AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(parentDirName), d);
-                ret.add(wrapper);
+        //look in the global FHIR audit DB
+        try {
+            EntityManager entityManager = ConnectionManager.getFhirAuditEntityManager();
+            try {
+                findResourceMappingsFromDatabase(ret, entityManager, serviceId, resourceType, resourceId);
+            } finally {
+                entityManager.close();
             }
+
+        } catch (Exception ex) {
+            //if the DB isn't configured, we'll get an exception
         }
 
-        //also look in the DB for any FHIR mapping audits
+        //also look in publisher transform DB for any FHIR mapping audits
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsResourceFieldMappings c"
-                    + " where c.resourceId = :resource_id"
-                    + " and c.resourceType = :resource_type";
-
-            Query query = entityManager.createQuery(sql, RdbmsResourceFieldMappings.class)
-                    .setParameter("resource_id", resourceId.toString())
-                    .setParameter("resource_type", resourceType.toString());
-
-            List<RdbmsResourceFieldMappings> dbObjs = query.getResultList();
-            for (RdbmsResourceFieldMappings dbObj: dbObjs) {
-
-                Date d = dbObj.getCreatedAt();
-                String json = dbObj.getMappingsJson();
-                ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
-                String version = dbObj.getVersion();
-
-                AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(version), d);
-                ret.add(wrapper);
-            }
+            findResourceMappingsFromDatabase(ret, entityManager, serviceId, resourceType, resourceId);
         } finally {
             entityManager.close();
         }
@@ -1023,6 +962,74 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
         return ret;
     }
+
+    private void findResourceMappingsFromDatabase(List<AuditWrapper> wrappers, EntityManager entityManager, UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception {
+        String sql = "select c"
+                + " from"
+                + " RdbmsResourceFieldMappings c"
+                + " where c.resourceId = :resource_id"
+                + " and c.resourceType = :resource_type";
+
+        Query query = entityManager.createQuery(sql, RdbmsResourceFieldMappings.class)
+                .setParameter("resource_id", resourceId.toString())
+                .setParameter("resource_type", resourceType.toString());
+
+        List<RdbmsResourceFieldMappings> dbObjs = query.getResultList();
+        for (RdbmsResourceFieldMappings dbObj: dbObjs) {
+
+            Date d = dbObj.getCreatedAt();
+            String json = dbObj.getMappingsJson();
+            ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
+            String version = dbObj.getVersion();
+
+            AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(version), d);
+            wrappers.add(wrapper);
+        }
+    }
+
+    /*private void findResourceMappingsFromDisk(List<AuditWrapper> wrappers, String topLevelStoragePath, UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception {
+        String storageDir = createAuditDir(topLevelStoragePath, serviceId, resourceType.toString(), resourceId);
+        List<FileInfo> infos = FileHelper.listFilesInSharedStorageWithInfo(storageDir);
+
+        for (FileInfo info: infos) {
+            Date d = info.getLastModified();
+            String path = info.getFilePath();
+            String extension = FilenameUtils.getExtension(path);
+
+            String json = null;
+
+            if (extension.equalsIgnoreCase("json")) {
+                InputStreamReader reader = FileHelper.readFileReaderFromSharedStorage(path);
+                json = IOUtils.toString(reader);
+                reader.close();
+
+            } else if (extension.equalsIgnoreCase("zip")) {
+                InputStream inputStream = FileHelper.readFileFromSharedStorage(path);
+                ZipInputStream zis = new ZipInputStream(inputStream);
+
+                ZipEntry entry = zis.getNextEntry();
+                if (entry == null) {
+                    throw new Exception("No entry in zip file " + path);
+                }
+                byte[] entryBytes = IOUtils.toByteArray(zis);
+                json = new String(entryBytes);
+
+                inputStream.close();
+
+            } else {
+                throw new Exception("Unexpected audit file extension for " + path);
+            }
+
+            ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
+
+            //the version ID is the parent part of the path, so stick that in a map so we can avoid duplicates
+            String dirPath = FilenameUtils.getPathNoEndSeparator(info.getFilePath());
+            String parentDirName = FilenameUtils.getName(dirPath);
+
+            AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(parentDirName), d);
+            wrappers.add(wrapper);
+        }
+    }*/
 
     /*private List<RdbmsResourceFieldMappings> findResourceMappings(EntityManager entityManager, ResourceType resourceType, UUID resourceId) throws Exception {
 
@@ -1218,7 +1225,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
     }*/
 
-    private static String getAuditStoragePath() {
+    /*private static String getAuditStoragePath() {
         if (cachedAuditStoragePath == null) {
             try {
                 JsonNode json = ConfigManager.getConfigurationAsJson("common_config", "queuereader");
@@ -1239,7 +1246,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         } else {
             return cachedAuditStoragePath;
         }
-    }
+    }*/
 
     @Override
     public void saveResourceMappings(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
@@ -1248,7 +1255,9 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             return;
         }
 
-        String auditStoragePath = getAuditStoragePath();
+        saveResourceMappingsToDatabase(audits);
+
+        /*String auditStoragePath = getAuditStoragePath();
         if (!Strings.isNullOrEmpty(auditStoragePath)) {
             //if we have an audit path, write the audits to that
             saveResourceMappingsToFile(audits, auditStoragePath);
@@ -1256,10 +1265,10 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         } else {
             //if we don't have an audit path, write the audits to the DB
             saveResourceMappingsToDatabase(audits);
-        }
+        }*/
     }
 
-    private void saveResourceMappingsToFile(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, String topLevelAuditStoragePath) throws Exception {
+    /*private void saveResourceMappingsToFile(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, String topLevelAuditStoragePath) throws Exception {
 
         for (ResourceWrapper wrapper : audits.keySet()) {
             ResourceFieldMappingAudit audit = audits.get(wrapper);
@@ -1292,7 +1301,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         zos.close();
 
         return baos.toByteArray();
-    }
+    }*/
 
     private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
 
@@ -1305,7 +1314,14 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             }
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        //if configured, use the common FHIR audit DB
+        EntityManager entityManager = null;
+        try {
+            entityManager = ConnectionManager.getFhirAuditEntityManager();
+        } catch (Exception ex) {
+            //if no global FHIR audit DB, then use the publisher transform DB
+            entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        }
 
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();

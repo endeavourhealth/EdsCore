@@ -39,7 +39,8 @@ public class ConnectionManager {
         Logback,
         JdbcReader,
         Coding, //once fully moved to MySQL, this can go as it will be the same as Reference
-        PublisherCommon;
+        PublisherCommon,
+        FhirAudit;
     }
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
@@ -245,6 +246,8 @@ public class ConnectionManager {
                 configName = "jdbcreader";
             } else if (dbName == Db.PublisherCommon) {
                 configName = "publisher_common";
+            } else if (dbName == Db.FhirAudit) {
+                configName = "fhir_audit";
             } else {
                 throw new RuntimeException("Unknown database " + dbName);
             }
@@ -284,6 +287,8 @@ public class ConnectionManager {
             return "JDBCReaderDb";
         } else if (dbName == Db.PublisherCommon) {
             return "PublisherCommonDb";
+        } else if (dbName == Db.FhirAudit) {
+            return "FhirAuditDb";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }
@@ -308,6 +313,10 @@ public class ConnectionManager {
 
     public static EntityManager getAuditEntityManager() throws Exception {
         return getEntityManager(Db.Audit);
+    }
+
+    public static EntityManager getFhirAuditEntityManager() throws Exception {
+        return getEntityManager(Db.FhirAudit);
     }
 
     public static EntityManager getPublisherTransformEntityManager(UUID serviceId) throws Exception {
