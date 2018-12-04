@@ -490,7 +490,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " organisation_type_code = VALUES(organisation_type_code),"
                 + " registration_type_code = VALUES(registration_type_code),"
                 + " last_updated = VALUES(last_updated),"
-                + " registration_status_code = VALUES(registration_status_code);";
+                + " registration_status_code = VALUES(registration_status_code)";
 
         return connection.prepareStatement(sql);
     }
@@ -517,7 +517,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " postcode = VALUES(postcode),"
                 + " gender = VALUES(gender),"
                 + " last_updated = VALUES(last_updated),"
-                + " registered_practice_ods_code = VALUES(registered_practice_ods_code);";
+                + " registered_practice_ods_code = VALUES(registered_practice_ods_code)";
 
         return connection.prepareStatement(sql);
     }
@@ -1070,7 +1070,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         String sql = "SELECT ps.service_id, ps.patient_id"
                 + " FROM patient_search ps"
-                + " WHERE ps.nhs_number = ?;";
+                + " WHERE ps.nhs_number = ?";
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;

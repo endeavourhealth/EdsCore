@@ -210,7 +210,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             hmTmp.put(sourceReference.getReference(), sourceReference);
         }
 
-        sql += ");";
+        sql += ")";
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         Statement statement = null;
@@ -279,7 +279,7 @@ public class RdbmsResourceIdDal implements ResourceIdTransformDalI {
             hmTmp.put(sourceReference.getReference(), sourceReference);
         }
 
-        sql += ");";
+        sql += ")";
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         Statement statement = null;

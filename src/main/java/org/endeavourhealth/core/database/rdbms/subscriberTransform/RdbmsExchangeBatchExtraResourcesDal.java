@@ -43,7 +43,7 @@ public class RdbmsExchangeBatchExtraResourcesDal implements ExchangeBatchExtraRe
             //MySQL "insert ignore" syntax means that if the insert fails due to a duplicate key then no error is thrown
             String sql = "INSERT IGNORE INTO exchange_batch_extra_resources"
                     + " (exchange_id, batch_id, resource_id, resource_type)"
-                    + " VALUES (?, ?, ?, ?);";
+                    + " VALUES (?, ?, ?, ?)";
 
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();

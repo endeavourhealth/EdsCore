@@ -41,7 +41,7 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
                     + " ON DUPLICATE KEY UPDATE"
                     + " message_body = VALUES(message_body),"
                     + " timestamp = VALUES(timestamp),"
-                    + " queued_message_type_id = VALUES(queued_message_type_id);";
+                    + " queued_message_type_id = VALUES(queued_message_type_id)";
 
 
             ps = connection.prepareStatement(sql);
@@ -108,7 +108,7 @@ public class RdbmsQueuedMessageDal implements QueuedMessageDalI {
             Connection connection = session.connection();
 
             String sql = "DELETE FROM queued_message"
-                    + " WHERE id = ?;";
+                    + " WHERE id = ?";
 
             ps = connection.prepareStatement(sql);
 

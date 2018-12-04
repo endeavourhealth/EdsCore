@@ -135,7 +135,7 @@ public class RdbmsOrganisationDal implements OrganisationDalI {
                 + " ON DUPLICATE KEY UPDATE"
                 + " name = VALUES(name),"
                 + " national_id = VALUES(national_id),"
-                + " services = VALUES(services);";
+                + " services = VALUES(services)";
 
         return connection.prepareStatement(sql);
     }

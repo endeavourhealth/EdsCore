@@ -81,7 +81,7 @@ public class RdbmsResourceMergeDal implements ResourceMergeDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " destination_resource_id = VALUES(destination_resource_id),"
-                    + " updated_at = VALUES(updated_at);";
+                    + " updated_at = VALUES(updated_at)";
 
             ps = connection.prepareStatement(sql);
 

@@ -143,7 +143,7 @@ public class RdbmsPcrAgeUpdaterDal implements PcrAgeUpdaterlDalI {
                         + " VALUES (?, ?, ?)"
                         + " ON CONFLICT (pcr_patient_id) DO UPDATE SET"
                         + " date_of_birth = EXCLUDED.date_of_birth,"
-                        + " date_next_change = EXCLUDED.date_next_change;";
+                        + " date_next_change = EXCLUDED.date_next_change";
 
             } else {
                 sql = "INSERT INTO pcr_age"
@@ -151,7 +151,7 @@ public class RdbmsPcrAgeUpdaterDal implements PcrAgeUpdaterlDalI {
                         + " VALUES (?, ?, ?)"
                         + " ON DUPLICATE KEY UPDATE"
                         + " date_of_birth = VALUES(date_of_birth),"
-                        + " date_next_change = VALUES(date_next_change);";
+                        + " date_next_change = VALUES(date_next_change)";
             }
 
             ps = connection.prepareStatement(sql);

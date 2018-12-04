@@ -49,7 +49,7 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
             } else {
                 sql += " AND t.variable_column_escape = ?";
             }
-            sql += " ORDER BY t.id, c.column_index;";
+            sql += " ORDER BY t.id, c.column_index";
 
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
@@ -168,7 +168,7 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
                     + " AND system_id = ?"
                     + " AND published_file_type_id = ?"
                     + " AND exchange_id = ?"
-                    + " AND file_path = ?;";
+                    + " AND file_path = ?";
 
             ps = connection.prepareStatement(sql);
 

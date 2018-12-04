@@ -37,7 +37,7 @@ public class RdbmsExchangeProtocolErrorDal implements ExchangeProtocolErrorDalI 
 
             String sql = "INSERT INTO exchange_protocol_error"
                     + " (exchange_id)"
-                    + " VALUES (?);";
+                    + " VALUES (?)";
 
             ps = connection.prepareStatement(sql);
 
@@ -112,7 +112,7 @@ public class RdbmsExchangeProtocolErrorDal implements ExchangeProtocolErrorDalI 
             Connection connection = session.connection();
 
             String sql = "DELETE FROM exchange_protocol_error"
-                    + " WHERE id = ?;";
+                    + " WHERE id = ?";
 
             ps = connection.prepareStatement(sql);
 

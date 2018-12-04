@@ -105,7 +105,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
                     + " row_id = VALUES(row_id),"
                     + " group_id = VALUES(group_id),"
                     + " mapped_term = VALUES(mapped_term),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable

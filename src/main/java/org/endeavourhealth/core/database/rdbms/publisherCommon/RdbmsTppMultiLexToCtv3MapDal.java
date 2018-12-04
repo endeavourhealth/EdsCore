@@ -71,7 +71,7 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
                     + " multilex_product_id = VALUES(multilex_product_id),"
                     + " ctv3_read_code = VALUES(ctv3_read_code),"
                     + " ctv3_read_term = VALUES(ctv3_read_term),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 

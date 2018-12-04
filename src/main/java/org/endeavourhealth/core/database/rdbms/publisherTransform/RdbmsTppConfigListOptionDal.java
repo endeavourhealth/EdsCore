@@ -106,7 +106,7 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " list_option_name = VALUES(list_option_name),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
@@ -158,7 +158,7 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " list_option_name = VALUES(list_option_name),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 

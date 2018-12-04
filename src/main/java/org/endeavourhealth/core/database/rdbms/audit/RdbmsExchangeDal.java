@@ -48,7 +48,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " headers = VALUES(headers),"
                     + " service_id = VALUES(service_id),"
                     + " system_id = VALUES(system_id),"
-                    + " body = VALUES(body);";
+                    + " body = VALUES(body)";
 
             ps = connection.prepareStatement(sql);
 
@@ -121,7 +121,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " error_xml = VALUES(error_xml),"
                     + " resubmitted = VALUES(resubmitted),"
                     + " deleted = VALUES(deleted),"
-                    + " number_batches_created = VALUES(number_batches_created);";
+                    + " number_batches_created = VALUES(number_batches_created)";
 
             ps = connection.prepareStatement(sql);
 
@@ -193,7 +193,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " (service_id, system_id, exchange_ids_in_error)"
                     + " VALUES (?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " exchange_ids_in_error = VALUES(exchange_ids_in_error);";
+                    + " exchange_ids_in_error = VALUES(exchange_ids_in_error)";
 
             ps = connection.prepareStatement(sql);
             ps.setString(1, dbObj.getServiceId());
@@ -258,7 +258,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
 
             String sql = "DELETE FROM exchange_transform_error_state"
                     + " WHERE service_id = ?"
-                    + " AND system_id = ?;";
+                    + " AND system_id = ?";
 
             ps = connection.prepareStatement(sql);
             ps.setString(1, dbObj.getServiceId());
@@ -684,7 +684,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " ended = VALUES(ended),"
                     + " error_xml = VALUES(error_xml),"
                     + " number_resources_transformed = VALUES(number_resources_transformed),"
-                    + " queued_message_id = VALUES(queued_message_id);";
+                    + " queued_message_id = VALUES(queued_message_id)";
 
             ps = connection.prepareStatement(sql);
 

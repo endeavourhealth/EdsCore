@@ -116,7 +116,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
                     + " (exchange_id, batch_id, inserted_at, eds_patient_id)"
                     + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " eds_patient_id = VALUES(eds_patient_id);";
+                    + " eds_patient_id = VALUES(eds_patient_id)";
 
             ps = connection.prepareStatement(sql);
 
@@ -175,7 +175,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
                     + " (exchange_id, batch_id, inserted_at, eds_patient_id)"
                     + " VALUES (?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " eds_patient_id = VALUES(eds_patient_id);";
+                    + " eds_patient_id = VALUES(eds_patient_id)";
 
             ps = connection.prepareStatement(sql);
 

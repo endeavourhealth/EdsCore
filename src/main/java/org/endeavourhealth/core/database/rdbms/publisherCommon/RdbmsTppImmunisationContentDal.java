@@ -1,7 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
-import org.endeavourhealth.core.database.dal.publisherCommon.models.TppImmunisationContent;
 import org.endeavourhealth.core.database.dal.publisherCommon.TppImmunisationContentDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppImmunisationContent;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppImmunisationContent;
 import org.hibernate.internal.SessionImpl;
@@ -73,7 +73,7 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
                     + " ON DUPLICATE KEY UPDATE"
                     + " name = VALUES(name),"
                     + " content = VALUES(content),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable

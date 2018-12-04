@@ -100,7 +100,7 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
                     + " row_id = VALUES(row_id), "
                     + " ctv3_code = VALUES(ctv3_code),"
                     + " ctv3_text = VALUES(ctv3_text),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
@@ -152,7 +152,7 @@ public class RdbmsTppCtv3LookupDal implements TppCtv3LookupDalI {
                     + " row_id = VALUES(row_id), "
                     + " ctv3_code = VALUES(ctv3_code),"
                     + " ctv3_text = VALUES(ctv3_text),"
-                    + " audit_json = VALUES(audit_json);";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 

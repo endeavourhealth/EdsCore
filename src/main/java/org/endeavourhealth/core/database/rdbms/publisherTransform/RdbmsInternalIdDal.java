@@ -101,7 +101,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " destination_id = VALUES(destination_id),"
-                    + " updated_at = VALUES(updated_at);";
+                    + " updated_at = VALUES(updated_at)";
 
             ps = connection.prepareStatement(sql);
 
@@ -147,7 +147,7 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " destination_id = VALUES(destination_id),"
-                    + " updated_at = VALUES(updated_at);";
+                    + " updated_at = VALUES(updated_at)";
 
             ps = connection.prepareStatement(sql);
 

@@ -28,7 +28,7 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
             sql = "INSERT INTO admin.link_distributor_populator"
                     + " select patient_id, nhs_number, date_of_birth, 0 " +
-                    " from eds.patient_search;";
+                    " from eds.patient_search";
 
 
             ps = connection.prepareStatement(sql);
@@ -96,7 +96,7 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
             String sql = null;
 
-            sql = "TRUNCATE TABLE admin.link_distributor_populator;";
+            sql = "TRUNCATE TABLE admin.link_distributor_populator";
 
             ps = connection.prepareStatement(sql);
 
@@ -125,7 +125,7 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
         String updateSQL = "UPDATE link_distributor_populator  " +
             " SET done = 1" +
-            " WHERE patient_id = ? ;";
+            " WHERE patient_id = ?";
 
         PreparedStatement update = adminConnection.prepareStatement(updateSQL);
 

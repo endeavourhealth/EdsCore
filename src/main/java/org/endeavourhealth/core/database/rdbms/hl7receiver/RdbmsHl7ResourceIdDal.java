@@ -36,13 +36,13 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             //syntax for postreSQL is slightly different
             String sql = null;
             if (ConnectionManager.isPostgreSQL(connection)) {
-                sql = "SELECT resource_uuid FROM mapping.resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?;";
+                sql = "SELECT resource_uuid FROM mapping.resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, scope);
                 ps.setString(2, resourceType);
                 ps.setString(3, uniqueId);
             } else {
-                sql = "SELECT resource_uuid FROM resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?;";
+                sql = "SELECT resource_uuid FROM resource_uuid WHERE scope_id=? and resource_type=? and unique_identifier=?";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, scope);
                 ps.setString(2, resourceType);
@@ -93,14 +93,14 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             //syntax for postreSQL is slightly different
             String sql = null;
             if (ConnectionManager.isPostgreSQL(connection)) {
-                sql = "INSERT INTO mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?);";
+                sql = "INSERT INTO mapping.resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?)";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, resourceId.getScopeId());
                 ps.setString(2, resourceId.getResourceType());
                 ps.setString(3, resourceId.getUniqueId());
                 ps.setObject(4, resourceId.getResourceId());
             } else {
-                sql = "INSERT INTO resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?);";
+                sql = "INSERT INTO resource_uuid (scope_id, resource_type, unique_identifier, resource_uuid) VALUES (?, ?, ?, ?)";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, resourceId.getScopeId());
                 ps.setString(2, resourceId.getResourceType());
@@ -142,7 +142,7 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             //syntax for postreSQL is slightly different
             String sql = null;
             if (ConnectionManager.isPostgreSQL(connection)) {
-                sql = "UPDATE mapping.resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?;";
+                sql = "UPDATE mapping.resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?";
                 ps = connection.prepareStatement(sql);
                 ps.setObject(1, resourceId.getResourceId());
                 ps.setString(2, resourceId.getScopeId());
@@ -150,7 +150,7 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
                 ps.setString(4, resourceId.getUniqueId());
 
             } else {
-                sql = "UPDATE resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?;";
+                sql = "UPDATE resource_uuid SET resource_uuid = ? WHERE scope_id = ? AND resource_type = ? AND unique_identifier = ?";
                 ps = connection.prepareStatement(sql);
                 ps.setString(1, resourceId.getResourceId().toString());
                 ps.setString(2, resourceId.getScopeId());

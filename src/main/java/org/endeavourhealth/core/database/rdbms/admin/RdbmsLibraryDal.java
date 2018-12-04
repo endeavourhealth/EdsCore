@@ -111,7 +111,7 @@ public class RdbmsLibraryDal implements LibraryDalI {
 
         String sql = "INSERT INTO item_dependency"
                 + " (item_id, audit_id, dependent_item_id, dependency_type_id)"
-                + " VALUES (?, ?, ?, ?);";
+                + " VALUES (?, ?, ?, ?)";
         //note there's no handler for errors due to duplicate keys, as item dependency should NEVER be updated
 
         return connection.prepareStatement(sql);
@@ -137,7 +137,7 @@ public class RdbmsLibraryDal implements LibraryDalI {
                 + " audit_id = VALUES(audit_id),"
                 + " item_type_id = VALUES(item_type_id),"
                 + " is_deleted = VALUES(is_deleted),"
-                + " organisation_id = VALUES(organisation_id);";
+                + " organisation_id = VALUES(organisation_id)";
 
         return connection.prepareStatement(sql);
     }
@@ -199,7 +199,7 @@ public class RdbmsLibraryDal implements LibraryDalI {
 
         String sql = "INSERT INTO audit"
                 + " (id, organisation_id, timestamp, end_user_id)"
-                + " VALUES (?, ?, ?, ?);";
+                + " VALUES (?, ?, ?, ?)";
         //note there's no handler for errors due to duplicate keys, as audit should NEVER be updated
 
         return connection.prepareStatement(sql);

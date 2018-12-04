@@ -49,7 +49,7 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
             String sql = "INSERT INTO local_authority_lookup (local_authority_code, local_authority_name)"
                     + " VALUES (?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " local_authority_name = VALUES(local_authority_name);";
+                    + " local_authority_name = VALUES(local_authority_name)";
 
             ps = enterpriseConnection.prepareStatement(sql);
 
@@ -107,7 +107,7 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
             String sql = "INSERT INTO ward_lookup (ward_code, ward_name)"
                     + " VALUES (?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " ward_name = VALUES(ward_name);";
+                    + " ward_name = VALUES(ward_name)";
 
             ps = enterpriseConnection.prepareStatement(sql);
 

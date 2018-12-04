@@ -55,7 +55,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                     + " AND system_id = ?"
                     + " AND source_file_type_id = ?"
                     + " AND exchange_id = ?"
-                    + " AND file_path = ?;";
+                    + " AND file_path = ?";
 
             ps = connection.prepareStatement(sql);
 
@@ -190,7 +190,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                     + " INNER JOIN source_file_type_column c"
                     + " ON t.id = c.source_file_type_id"
                     + " WHERE t.description = ?"
-                    + " ORDER BY t.id, c.column_index;";
+                    + " ORDER BY t.id, c.column_index";
 
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
@@ -464,7 +464,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                 sql += "?";
             }
             sql += ")";
-            sql += " ORDER BY t.id, c.column_index;";
+            sql += " ORDER BY t.id, c.column_index";
 
             ps = connection.prepareStatement(sql);
 

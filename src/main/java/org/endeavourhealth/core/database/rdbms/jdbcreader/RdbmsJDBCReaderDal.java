@@ -102,7 +102,7 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
                     + " batch_name = VALUES(batch_name),"
                     + " connection_name = VALUES(connection_name),"
                     + " key_value = VALUES(key_value),"
-                    + " data_value = VALUES(data_value);";
+                    + " data_value = VALUES(data_value)";
 
             PreparedStatement ps = connection.prepareStatement(sql);
 

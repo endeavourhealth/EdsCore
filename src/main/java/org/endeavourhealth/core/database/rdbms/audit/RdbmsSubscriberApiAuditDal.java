@@ -35,7 +35,7 @@ public class RdbmsSubscriberApiAuditDal implements SubscriberApiAuditDalI {
 
             String sql = "INSERT INTO subscriber_api_audit"
                     + " (timestmp, user_uuid, remote_address, request_path, request_headers, response_code, response_body, duration_ms)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
             ps = connection.prepareStatement(sql);
 

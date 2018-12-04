@@ -38,7 +38,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
 
             String sql = "INSERT INTO exchange_general_error"
                     + " (exchange_id, error_message)"
-                    + " VALUES (?, ?);";
+                    + " VALUES (?, ?)";
 
             ps = connection.prepareStatement(sql);
 
@@ -114,7 +114,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
             Connection connection = session.connection();
 
             String sql = "DELETE FROM exchange_general_error"
-                    + " WHERE id = ?;";
+                    + " WHERE id = ?";
 
             ps = connection.prepareStatement(sql);
 
@@ -174,7 +174,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
                 "    cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as b\n" +
                 "    cross join (select 0 as a union all select 1 union all select 2 union all select 3 union all select 4 union all select 5 union all select 6 union all select 7 union all select 8 union all select 9) as c\n" +
                 ") a\n" +
-                "where a.Date between " + parameterize(params, startDate)+ " and " + parameterize(params, endDate) + ";";
+                "where a.Date between " + parameterize(params, startDate)+ " and " + parameterize(params, endDate);
 
         runSQLScript(insert, params);
 
@@ -182,7 +182,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
 
     private static void deleteDateRangeTable(String tableGUID) throws Exception {
 
-        String delete = "drop table audit.graph_date_range_" + tableGUID + " ;";
+        String delete = "drop table audit.graph_date_range_" + tableGUID;
 
         runSQLScript(delete, null);
     }
@@ -229,7 +229,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
                 " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on HOUR(e.inserted_at) = HOUR(r.reference_date)   \n" +
                 " and DATE(e.inserted_at) = DATE(r.reference_date)   \n" +
-                " group by DATE(r.reference_date), HOUR(r.reference_date);";
+                " group by DATE(r.reference_date), HOUR(r.reference_date)";
     }
 
     private static String getYearSQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
@@ -238,7 +238,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
                 " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on YEAR(e.inserted_at) = YEAR(r.reference_date)   \n" +
-                " group by YEAR(r.reference_date;";
+                " group by YEAR(r.reference_date)";
     }
 
     private static String getMonthSQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
@@ -248,7 +248,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
                 " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on MONTH(e.inserted_at) = MONTH(r.reference_date)   \n" +
                 " and YEAR(e.inserted_at) = YEAR(r.reference_date)   \n" +
-                " group by MONTH(r.reference_date), YEAR(r.reference_date);";
+                " group by MONTH(r.reference_date), YEAR(r.reference_date)";
     }
 
     private static String getDaySQLScript(String tableGUID, String errorTable, List<Object> params) throws Exception {
@@ -257,7 +257,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
                 " from audit.graph_date_range_" + tableGUID + " r \n" +
                 " left outer join audit." + parameterize(params, errorTable) + " e    \n" +
                 " on DATE(e.inserted_at) = DATE(r.reference_date)   \n" +
-                " group by DATE(r.reference_date;";
+                " group by DATE(r.reference_date)";
     }
 
     private static int runSQLScript(String script, List<Object> params) throws Exception {
