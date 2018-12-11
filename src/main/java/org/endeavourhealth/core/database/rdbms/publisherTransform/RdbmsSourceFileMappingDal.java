@@ -1,10 +1,12 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.io.FilenameUtils;
+import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFile;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileColumn;
@@ -34,6 +36,10 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsSourceFileMappingDal.class);
 
     private static final String CSV_DELIM = "|";
+
+    private final Random random = new Random(System.currentTimeMillis());
+    private static Integer cachedPercentageToSendToFhirAudit = null;
+    private static long cachedPercentageExpiry = -1;
 
     //private static String cachedAuditStoragePath = null;
 
@@ -1306,7 +1312,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
     private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
 
         UUID serviceId = null;
-        for (ResourceWrapper wrapper: audits.keySet()) {
+        for (ResourceWrapper wrapper : audits.keySet()) {
             if (serviceId == null) {
                 serviceId = wrapper.getServiceId();
             } else if (!serviceId.equals(wrapper.getServiceId())) {
@@ -1315,13 +1321,31 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
 
         //if configured, use the common FHIR audit DB
+        //for the time-being, attempt to distribute the load between the publisher transform DB and the global
+        //FHIR audit DB. The load is too much for the global one, as it causes a massive bottleneck, but it's there
+        //so send some traffic to it.
         EntityManager entityManager = null;
+        int r = random.nextInt(100);
+        int percentage = getPercentageToSendToFhirAudit();
+        if (r < percentage) {
+            try {
+                entityManager = ConnectionManager.getFhirAuditEntityManager();
+            } catch (Exception ex) {
+                //if no global FHIR audit DB, then we'll use the publisher transform DB
+            }
+        }
+
+        if (entityManager == null) {
+            entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        }
+
+        /*EntityManager entityManager = null;
         try {
             entityManager = ConnectionManager.getFhirAuditEntityManager();
         } catch (Exception ex) {
             //if no global FHIR audit DB, then use the publisher transform DB
             entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        }
+        }*/
 
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
@@ -1338,7 +1362,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
             entityManager.getTransaction().begin();
 
-            for (ResourceWrapper wrapper: audits.keySet()) {
+            for (ResourceWrapper wrapper : audits.keySet()) {
                 ResourceFieldMappingAudit audit = audits.get(wrapper);
                 String mappingJson = audit.writeToJson();
 
@@ -1363,6 +1387,33 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         } finally {
             entityManager.close();
         }
+    }
+
+    public static int getPercentageToSendToFhirAudit() {
+        if (cachedPercentageToSendToFhirAudit == null
+                || System.currentTimeMillis() > cachedPercentageExpiry) {
+
+            //default to 10
+            cachedPercentageToSendToFhirAudit = new Integer(10);
+
+            //then overwrite with the setting
+            try {
+                JsonNode json = ConfigManager.getConfigurationAsJson("common_config", "queuereader");
+
+                JsonNode node = json.get("fhir_audit_db_percentage");
+                if (node != null) {
+                    cachedPercentageToSendToFhirAudit = node.asInt();
+                }
+
+            } catch (Exception ex) {
+                //if the config record is there, just log it out rather than throw an exception
+                LOG.warn("No common queuereader config found in config DB with app_id queuereader and config_id common_config");
+            }
+
+            cachedPercentageExpiry = System.currentTimeMillis() + (5l * 60l * 1000l);
+        }
+
+        return cachedPercentageToSendToFhirAudit.intValue();
     }
 
 
