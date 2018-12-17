@@ -79,6 +79,7 @@ public class LibraryRepositoryHelper {
 						serviceContract.setTechnicalInterface(technicalInterface);
 
 						ret.add(libraryItem);
+						break; //added so we don't add protocols multiple times if there are multiple matching service contracts
 					}
 				}
 			}
