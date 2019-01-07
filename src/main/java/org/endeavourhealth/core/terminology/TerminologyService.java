@@ -144,5 +144,29 @@ public abstract class TerminologyService {
     public static String lookupIcd10CodeDescription(String icd10Code) throws Exception {
         return icd10Repository.lookupCode(icd10Code);
     }
+
+    /**
+     * fn to ensure OPCS-4 codes are in the standard format as we get them in mixed formats
+     */
+    public static String standardiseOpcs4Code(String code) {
+
+        //if one of the "chapter" headings or already containing a code, just return it as is
+        if (code.length() <= 3
+            || code.indexOf(".") > -1) {
+            return code;
+        }
+
+        String prefix = code.substring(0, 3);
+        String suffix = code.substring(3);
+        return prefix + "." + suffix;
+    }
+
+    /**
+     * fn to ensure ICD-10 codes are in the standard format
+     */
+    public static String standardiseIcd10Code(String code) {
+        //ICD-10 is the same structure as OPCS-4, so just call into the same fn
+        return standardiseOpcs4Code(code);
+    }
 }
 
