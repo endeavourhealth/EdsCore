@@ -371,42 +371,80 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
     private static void copyDeprivationInBatch(List<RdbmsDeprivationLookup> lookups, Connection enterpriseConnection, PreparedStatement update) throws Exception {
 
         for (RdbmsDeprivationLookup lookup: lookups) {
-            String code = lookup.getLsoaCode();
-            Integer rank = lookup.getImdRank();
-            Integer decile = lookup.getImdDecile();
 
-            Integer incomeRank = lookup.getIncomeRank();
-            Integer incomeDecile = lookup.getIncomeDecile();
-            Integer employmentRank = lookup.getEmploymentRank();
-            Integer employmentDecile = lookup.getEmploymentDecile();
-            Integer educationRank = lookup.getEducationRank();
-            Integer educationDecile = lookup.getEducationDecile();
-            Integer healthRank = lookup.getHealthRank();
-            Integer healthDecile = lookup.getHealthDecile();
-            Integer crimeRank = lookup.getCrimeRank();
-            Integer crimeDecile = lookup.getCrimeDecile();
-            Integer housingAndServicesBarriersRank = lookup.getHousingAndServicesBarriersRank();
-            Integer housingAndServicesBarriersDecile = lookup.getHousingAndServicesBarriersDecile();
-            Integer livingEnvironmentRank = lookup.getLivingEnvironmentRank();
-            Integer livingEnvironmentDecile = lookup.getLivingEnvironmentDecile();
+            int col = 1;
 
-            update.setInt(1, rank.intValue());
-            update.setInt(2, decile.intValue());
-            update.setInt(3, incomeRank.intValue());
-            update.setInt(4, incomeDecile.intValue());
-            update.setInt(5, employmentRank.intValue());
-            update.setInt(6, employmentDecile.intValue());
-            update.setInt(7, educationRank.intValue());
-            update.setInt(8, educationDecile.intValue());
-            update.setInt(9, healthRank.intValue());
-            update.setInt(10, healthDecile.intValue());
-            update.setInt(11, crimeRank.intValue());
-            update.setInt(12, crimeDecile.intValue());
-            update.setInt(13, housingAndServicesBarriersRank.intValue());
-            update.setInt(14, housingAndServicesBarriersDecile.intValue());
-            update.setInt(15, livingEnvironmentRank.intValue());
-            update.setInt(16, livingEnvironmentDecile.intValue());
-            update.setString(17, code);
+            update.setDouble(col++, lookup.getImdScore());
+            update.setInt(col++, lookup.getImdRank());
+            update.setInt(col++, lookup.getImdDecile());
+
+            update.setDouble(col++, lookup.getIncomeScore());
+            update.setInt(col++, lookup.getIncomeRank());
+            update.setInt(col++, lookup.getIncomeDecile());
+
+            update.setDouble(col++, lookup.getEmploymentScore());
+            update.setInt(col++, lookup.getEmploymentRank());
+            update.setInt(col++, lookup.getEmploymentDecile());
+
+            update.setDouble(col++, lookup.getEducationScore());
+            update.setInt(col++, lookup.getEducationRank());
+            update.setInt(col++, lookup.getEducationDecile());
+
+            update.setDouble(col++, lookup.getHealthScore());
+            update.setInt(col++, lookup.getHealthRank());
+            update.setInt(col++, lookup.getHealthDecile());
+
+            update.setDouble(col++, lookup.getCrimeScore());
+            update.setInt(col++, lookup.getCrimeRank());
+            update.setInt(col++, lookup.getCrimeDecile());
+
+            update.setDouble(col++, lookup.getHousingAndServicesBarriersScore());
+            update.setInt(col++, lookup.getHousingAndServicesBarriersRank());
+            update.setInt(col++, lookup.getHousingAndServicesBarriersDecile());
+
+            update.setDouble(col++, lookup.getLivingEnvironmentScore());
+            update.setInt(col++, lookup.getLivingEnvironmentRank());
+            update.setInt(col++, lookup.getLivingEnvironmentDecile());
+
+            update.setDouble(col++, lookup.getIdaciScore());
+            update.setInt(col++, lookup.getIdaciRank());
+            update.setInt(col++, lookup.getIdaciDecile());
+
+            update.setDouble(col++, lookup.getIdaopiScore());
+            update.setInt(col++, lookup.getIdaopiRank());
+            update.setInt(col++, lookup.getIdaopiDecile());
+
+            update.setDouble(col++, lookup.getChildrenAndYoungSubDomainScore());
+            update.setInt(col++, lookup.getChildrenAndYoungSubDomainRank());
+            update.setInt(col++, lookup.getChildrenAndYoungSubDomainDecile());
+
+            update.setDouble(col++, lookup.getAdultSkillsSubDomainScore());
+            update.setInt(col++, lookup.getAdultSkillsSubDomainRank());
+            update.setInt(col++, lookup.getAdultSkillsSubDomainDecile());
+
+            update.setDouble(col++, lookup.getGeographicalBarriersSubDomainScore());
+            update.setInt(col++, lookup.getGeographicalBarriersSubDomainRank());
+            update.setInt(col++, lookup.getGeographicalBarriersSubDomainDecile());
+
+            update.setDouble(col++, lookup.getWiderBarriersSubDomainScore());
+            update.setInt(col++, lookup.getWiderBarriersSubDomainRank());
+            update.setInt(col++, lookup.getWiderBarriersSubDomainDecile());
+
+            update.setDouble(col++, lookup.getIndoorsSubDomainScore());
+            update.setInt(col++, lookup.getIndoorsSubDomainRank());
+            update.setInt(col++, lookup.getIndoorsSubDomainDecile());
+
+            update.setDouble(col++, lookup.getOutdoorsSubDomainScore());
+            update.setInt(col++, lookup.getOutdoorsSubDomainRank());
+            update.setInt(col++, lookup.getOutdoorsSubDomainDecile());
+
+            update.setInt(col++, lookup.getTotalPopulation());
+            update.setInt(col++, lookup.getDependentChildren0To15());
+            update.setInt(col++, lookup.getPopulation16To59());
+            update.setInt(col++, lookup.getOlderPopulation60AndOver());
+
+            update.setString(col++, lookup.getLsoaCode());
+
             update.addBatch();
         }
 
@@ -429,22 +467,75 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
     private static PreparedStatement createDeprivationUpdatePreparedStatement(Connection connection) throws SQLException {
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE lsoa_lookup SET ");
+
+        sb.append("imd_score = ?, ");
         sb.append("imd_rank = ?, ");
         sb.append("imd_decile = ?, ");
+
+        sb.append("income_score = ?, ");
         sb.append("income_rank = ?, ");
         sb.append("income_decile = ?, ");
+
+        sb.append("employment_score = ?, ");
         sb.append("employment_rank = ?, ");
         sb.append("employment_decile = ?, ");
+
+        sb.append("education_score = ?, ");
         sb.append("education_rank = ?, ");
         sb.append("education_decile = ?, ");
+
+        sb.append("health_score = ?, ");
         sb.append("health_rank = ?, ");
         sb.append("health_decile = ?, ");
+
+        sb.append("crime_score = ?, ");
         sb.append("crime_rank = ?, ");
         sb.append("crime_decile = ?, ");
+
+        sb.append("housing_and_services_barriers_score = ?, ");
         sb.append("housing_and_services_barriers_rank = ?, ");
         sb.append("housing_and_services_barriers_decile = ?, ");
+
+        sb.append("living_environment_score = ?, ");
         sb.append("living_environment_rank = ?, ");
-        sb.append("living_environment_decile = ? ");
+        sb.append("living_environment_decile = ?, ");
+
+        sb.append("idaci_score = ?, ");
+        sb.append("idaci_rank = ?, ");
+        sb.append("idaci_decile = ?, ");
+
+        sb.append("idaopi_score = ?, ");
+        sb.append("idaopi_rank = ?, ");
+        sb.append("idaopi_decile = ?, ");
+
+        sb.append("children_and_young_sub_domain_score = ?, ");
+        sb.append("children_and_young_sub_domain_rank = ?, ");
+        sb.append("children_and_young_sub_domain_decile = ?, ");
+
+        sb.append("adult_skills_sub_somain_score = ?, ");
+        sb.append("adult_skills_sub_somain_rank = ?, ");
+        sb.append("adult_skills_sub_somain_decile = ?, ");
+
+        sb.append("grographical_barriers_sub_domain_score = ?, ");
+        sb.append("grographical_barriers_sub_domain_rank = ?, ");
+        sb.append("grographical_barriers_sub_domain_decile = ?, ");
+
+        sb.append("wider_barriers_sub_domain_score = ?, ");
+        sb.append("wider_barriers_sub_domain_rank = ?, ");
+        sb.append("wider_barriers_sub_domain_decile = ?, ");
+
+        sb.append("indoors_sub_domain_score = ?, ");
+        sb.append("indoors_sub_domain_rank = ?, ");
+        sb.append("indoors_sub_domain_decile = ?, ");
+
+        sb.append("outdoors_sub_domain_score = ?, ");
+        sb.append("outdoors_sub_domain_rank = ?, ");
+        sb.append("outdoors_sub_domain_decile = ?, ");
+
+        sb.append("total_population = ?, ");
+        sb.append("dependent_children_0_to_15 = ?, ");
+        sb.append("population_16_to_59 = ?, ");
+        sb.append("older_population_60_and_over = ? ");
         sb.append("WHERE lsoa_code = ?");
 
         return connection.prepareStatement(sb.toString());

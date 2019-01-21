@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.reference;
 
 import org.endeavourhealth.core.database.dal.reference.ReferenceUpdaterDalI;
+import org.endeavourhealth.core.database.dal.reference.models.DeprivationLookup;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.reference.models.*;
 
@@ -243,9 +244,11 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
     }
 
     @Override
-    public void updateDeprivationMap(String lsoaCode, Integer rank, Integer decile, Integer incomeRank, Integer incomeDecile, Integer employmentRank, Integer employmentDecile, Integer educationRank, Integer educationDecile, Integer healthRank, Integer healthDecile, Integer crimeRank, Integer crimeDecile, Integer housingAndServicesBarriersRank, Integer housingAndServicesBarriersDecile, Integer livingEnvironmentRank, Integer livingEnvironmentDecile) throws Exception {
+    public void updateDeprivationMap(DeprivationLookup proxy) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+
+        String lsoaCode = proxy.getLsoaCode();
 
         try {
             String sql = "select r"
@@ -264,22 +267,59 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
                 lookup.setLsoaCode(lsoaCode);
             }
 
-            lookup.setImdRank(rank);
-            lookup.setImdDecile(decile);
-            lookup.setIncomeRank(incomeRank);
-            lookup.setIncomeDecile(incomeDecile);
-            lookup.setEmploymentRank(employmentRank);
-            lookup.setEmploymentDecile(employmentDecile);
-            lookup.setEducationRank(educationRank);
-            lookup.setEducationDecile(educationDecile);
-            lookup.setHealthRank(healthRank);
-            lookup.setHealthDecile(healthDecile);
-            lookup.setCrimeRank(crimeRank);
-            lookup.setCrimeDecile(crimeDecile);
-            lookup.setHousingAndServicesBarriersRank(housingAndServicesBarriersRank);
-            lookup.setHousingAndServicesBarriersDecile(housingAndServicesBarriersDecile);
-            lookup.setLivingEnvironmentRank(livingEnvironmentRank);
-            lookup.setLivingEnvironmentDecile(livingEnvironmentDecile);
+            lookup.setImdScore(proxy.getImdScore());
+            lookup.setImdRank(proxy.getImdRank());
+            lookup.setImdDecile(proxy.getImdDecile());
+            lookup.setIncomeScore(proxy.getIncomeScore());
+            lookup.setIncomeRank(proxy.getIncomeRank());
+            lookup.setIncomeDecile(proxy.getIncomeDecile());
+            lookup.setEmploymentScore(proxy.getEmploymentScore());
+            lookup.setEmploymentRank(proxy.getEmploymentRank());
+            lookup.setEmploymentDecile(proxy.getEmploymentDecile());
+            lookup.setEducationScore(proxy.getEducationScore());
+            lookup.setEducationRank(proxy.getEducationRank());
+            lookup.setEducationDecile(proxy.getEducationDecile());
+            lookup.setHealthScore(proxy.getHealthScore());
+            lookup.setHealthRank(proxy.getHealthRank());
+            lookup.setHealthDecile(proxy.getHealthDecile());
+            lookup.setCrimeScore(proxy.getCrimeScore());
+            lookup.setCrimeRank(proxy.getCrimeRank());
+            lookup.setCrimeDecile(proxy.getCrimeDecile());
+            lookup.setHousingAndServicesBarriersScore(proxy.getHousingAndServicesBarriersScore());
+            lookup.setHousingAndServicesBarriersRank(proxy.getHousingAndServicesBarriersRank());
+            lookup.setHousingAndServicesBarriersDecile(proxy.getHousingAndServicesBarriersDecile());
+            lookup.setLivingEnvironmentScore(proxy.getLivingEnvironmentScore());
+            lookup.setLivingEnvironmentRank(proxy.getLivingEnvironmentRank());
+            lookup.setLivingEnvironmentDecile(proxy.getLivingEnvironmentDecile());
+            lookup.setIdaciScore(proxy.getIdaciScore());
+            lookup.setIdaciRank(proxy.getIdaciRank());
+            lookup.setIdaciDecile(proxy.getIdaciDecile());
+            lookup.setIdaopiScore(proxy.getIdaopiScore());
+            lookup.setIdaopiRank(proxy.getIdaopiRank());
+            lookup.setIdaopiDecile(proxy.getIdaopiDecile());
+            lookup.setChildrenAndYoungSubDomainScore(proxy.getChildrenAndYoungSubDomainScore());
+            lookup.setChildrenAndYoungSubDomainRank(proxy.getChildrenAndYoungSubDomainRank());
+            lookup.setChildrenAndYoungSubDomainDecile(proxy.getChildrenAndYoungSubDomainDecile());
+            lookup.setAdultSkillsSubDomainScore(proxy.getAdultSkillsSubDomainScore());
+            lookup.setAdultSkillsSubDomainRank(proxy.getAdultSkillsSubDomainRank());
+            lookup.setAdultSkillsSubDomainDecile(proxy.getAdultSkillsSubDomainDecile());
+            lookup.setGeographicalBarriersSubDomainScore(proxy.getGeographicalBarriersSubDomainScore());
+            lookup.setGeographicalBarriersSubDomainRank(proxy.getGeographicalBarriersSubDomainRank());
+            lookup.setGeographicalBarriersSubDomainDecile(proxy.getGeographicalBarriersSubDomainDecile());
+            lookup.setWiderBarriersSubDomainScore(proxy.getWiderBarriersSubDomainScore());
+            lookup.setWiderBarriersSubDomainRank(proxy.getWiderBarriersSubDomainRank());
+            lookup.setWiderBarriersSubDomainDecile(proxy.getWiderBarriersSubDomainDecile());
+            lookup.setIndoorsSubDomainScore(proxy.getIndoorsSubDomainScore());
+            lookup.setIndoorsSubDomainRank(proxy.getIndoorsSubDomainRank());
+            lookup.setIndoorsSubDomainDecile(proxy.getIndoorsSubDomainDecile());
+            lookup.setOutdoorsSubDomainScore(proxy.getOutdoorsSubDomainScore());
+            lookup.setOutdoorsSubDomainRank(proxy.getOutdoorsSubDomainRank());
+            lookup.setOutdoorsSubDomainDecile(proxy.getOutdoorsSubDomainDecile());
+            lookup.setTotalPopulation(proxy.getTotalPopulation());
+            lookup.setDependentChildren0To15(proxy.getDependentChildren0To15());
+            lookup.setPopulation16To59(proxy.getPopulation16To59());
+            lookup.setOlderPopulation60AndOver(proxy.getOlderPopulation60AndOver());
+            //lookup.setWorkingAgePopulation(proxy.getWorkingAgePopulation());
 
             entityManager.getTransaction().begin();
             entityManager.persist(lookup);
