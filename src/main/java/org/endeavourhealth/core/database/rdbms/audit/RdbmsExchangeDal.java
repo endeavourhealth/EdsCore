@@ -387,7 +387,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    public boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception {
+    //removed as unreliable as it doesn't check END DATE, so changing to test for the presence of a FHIR resource
+    /*public boolean isServiceStarted(UUID serviceId, UUID systemId) throws Exception {
 
         //we assume a service is started if we've previously processed an exchange without error
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
@@ -417,7 +418,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
     public List<ExchangeTransformAudit> getAllExchangeTransformAudits(UUID serviceId, UUID systemId) throws Exception {
