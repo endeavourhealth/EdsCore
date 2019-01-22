@@ -388,7 +388,37 @@ public class RdbmsExchangeDal implements ExchangeDalI {
     }
 
     @Override
-    public boolean hasProcessedExchangeOk(UUID serviceId, UUID systemId) throws Exception {
+    public UUID getFirstExchangeId(UUID serviceId, UUID systemId) throws Exception {
+
+        //we assume a service is started if we've previously processed an exchange without error
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchange c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " order by c.timestamp ASC";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchange.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setMaxResults(1);
+
+            RdbmsExchange o = (RdbmsExchange)query.getSingleResult();
+            return UUID.fromString(o.getId());
+
+        } catch (NoResultException ex) {
+            return null;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+
+    /*public boolean hasProcessedExchangeOk(UUID serviceId, UUID systemId) throws Exception {
 
         //we assume a service is started if we've previously processed an exchange without error
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
@@ -419,7 +449,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
     public List<ExchangeTransformAudit> getAllExchangeTransformAudits(UUID serviceId, UUID systemId) throws Exception {

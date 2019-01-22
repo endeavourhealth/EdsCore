@@ -30,7 +30,7 @@ public interface ExchangeDalI {
     List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId, UUID systemId) throws Exception;
     List<ExchangeTransformErrorState> getAllErrorStates() throws Exception;
 
-    boolean hasProcessedExchangeOk(UUID serviceId, UUID systemId) throws Exception;
+    UUID getFirstExchangeId(UUID serviceId, UUID systemId) throws Exception;
 
     void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception;
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception;
