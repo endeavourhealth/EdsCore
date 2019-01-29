@@ -35,4 +35,8 @@ public interface ExchangeDalI {
     void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception;
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception;
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) throws Exception;
+
+    void save(LastDataReceived dataReceived) throws Exception;
+    List<LastDataReceived> getLastDataReceived() throws Exception;
+    List<LastDataReceived> getLastDataReceived(UUID serviceId) throws Exception;
 }

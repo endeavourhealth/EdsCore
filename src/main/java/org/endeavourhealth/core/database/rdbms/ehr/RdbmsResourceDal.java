@@ -17,7 +17,6 @@ import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
@@ -404,27 +403,6 @@ public class RdbmsResourceDal implements ResourceDalI {
         return connection.prepareStatement(sql);
     }
 
-    private static void populateDeleteResourceHistoryPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws SQLException {
-
-        ps.setString(1, wrapper.getResourceId().toString());
-        ps.setString(2, wrapper.getResourceType());
-        ps.setTimestamp(3, new java.sql.Timestamp(wrapper.getCreatedAt().getTime())); //have to use a timestamp otherwise it treats as a date only
-        ps.setString(4, wrapper.getVersion().toString());
-    }
-
-    private static PreparedStatement createDeleteResourceHistoryPreparedStatement(EntityManager entityManager) throws SQLException {
-        SessionImpl session = (SessionImpl) entityManager.getDelegate();
-        Connection connection = session.connection();
-
-        String sql = "DELETE FROM resource_history"
-                + " WHERE resource_id = ?"
-                + " AND resource_type = ?"
-                + " AND created_at = ?"
-                + " AND version = ?";
-
-        return connection.prepareStatement(sql);
-    }
-
 
     /**
      * logical delete, when we want to delete a resource but maintain our audits
@@ -483,11 +461,61 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-
     /**
      * physical delete, when we want to remove all trace of data from Discovery
      */
-    public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
+    @Override
+    public void hardDeleteResourceAndAllHistory(ResourceWrapper resourceEntry) throws Exception {
+
+        UUID serviceId = resourceEntry.getServiceId();
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+        PreparedStatement psCurrent = null;
+        PreparedStatement psHistory = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            //delete ALL entries from resource_history for this resource
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "DELETE FROM resource_history"
+                    + " WHERE resource_id = ?"
+                    + " AND resource_type = ?";
+
+            psHistory = connection.prepareStatement(sql);
+
+            int col = 1;
+            psHistory.setString(col++, resourceEntry.getResourceId().toString());
+            psHistory.setString(col++, resourceEntry.getResourceType());
+            psHistory.executeUpdate();
+
+            //we also delete from resource current at other times, so call the same fn for them
+            psCurrent = createDeleteResourceCurrentPreparedStatement(entityManager);
+            populateDeleteResourceCurrentPreparedStatement(resourceEntry, psCurrent);
+            psCurrent.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psCurrent != null) {
+                psCurrent.close();
+            }
+            if (psHistory != null) {
+                psHistory.close();
+            }
+            entityManager.close();
+        }
+    }
+
+
+
+
+    /*public void hardDelete(ResourceWrapper resourceEntry) throws Exception {
 
         RdbmsResourceHistory resourceHistory = new RdbmsResourceHistory(resourceEntry);
         RdbmsResourceCurrent resourceCurrent = new RdbmsResourceCurrent(resourceEntry);
@@ -500,13 +528,6 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         try {
             entityManager.getTransaction().begin();
-
-            //JPA remove doesn't seem to work without retrieving first, so I'm just using a prepared statement
-            //entityManager.remove(resourceHistory);
-            //entityManager.remove(resourceCurrent);
-
-            /*callableStatement = createAndPopulatePhysicalDeleteCallableStatement(entityManager, resourceEntry);
-            callableStatement.execute();*/
 
             //delete the entry from resource_history
             psHistory = createDeleteResourceHistoryPreparedStatement(entityManager);
@@ -556,8 +577,6 @@ public class RdbmsResourceDal implements ResourceDalI {
             throw ex;
 
         } finally {
-            //physicalDeleteResourceStatementCache.returnCallableStatement(entityManager, callableStatement);
-
             if (psCurrent != null) {
                 psCurrent.close();
             }
@@ -566,7 +585,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             }
             entityManager.close();
         }
-    }
+    }*/
 
 
     /**

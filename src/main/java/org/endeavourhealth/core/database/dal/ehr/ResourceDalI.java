@@ -15,7 +15,7 @@ public interface ResourceDalI {
 
     void save(ResourceWrapper resourceEntry) throws Exception;
     void delete(ResourceWrapper resourceEntry) throws Exception;
-    void hardDelete(ResourceWrapper keys) throws Exception;
+    void hardDeleteResourceAndAllHistory(ResourceWrapper resourceEntry) throws Exception;
 
     Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception;
     ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) throws Exception;

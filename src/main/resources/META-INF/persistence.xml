@@ -41,9 +41,9 @@
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarning</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeGeneralError</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeProtocolError</class>
-        <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsPublishedFileType</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsPublishedFileTypeColumn</class>
         <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsPublishedFileType</class>
+        <class>org.endeavourhealth.core.database.rdbms.audit.models.RdbmsLastDataReceived</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>

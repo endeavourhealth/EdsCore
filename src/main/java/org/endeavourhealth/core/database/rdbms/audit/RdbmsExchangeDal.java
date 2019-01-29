@@ -815,4 +815,93 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
+    @Override
+    public void save(LastDataReceived dataReceived) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO last_data_received"
+                    + " (service_id, system_id, data_date, received_date, exchange_id)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " data_date = VALUES(data_date),"
+                    + " received_date = VALUES(received_date),"
+                    + " exchange_id = VALUES(exchange_id)";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, dataReceived.getServiceId().toString());
+            ps.setString(col++, dataReceived.getSystemId().toString());
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataReceived.getDataDate().getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataReceived.getReceivedDate().getTime()));
+            ps.setString(col++, dataReceived.getExchangeId().toString());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<LastDataReceived> getLastDataReceived() throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from RdbmsLastDataReceived c";
+
+            Query query = entityManager.createQuery(sql, RdbmsLastDataReceived.class);
+
+            List<RdbmsLastDataReceived> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new LastDataReceived(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<LastDataReceived> getLastDataReceived(UUID serviceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from RdbmsLastDataReceived c"
+                    + " where c.serviceId = :service_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsLastDataReceived.class)
+                    .setParameter("service_id", serviceId.toString());
+
+            List<RdbmsLastDataReceived> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new LastDataReceived(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
 }
