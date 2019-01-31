@@ -12,13 +12,15 @@ public abstract class HeaderKeys {
     public static final String SystemVersion = "SystemVersion";
     public static final String MessageEvent = "MessageEvent";
     public static final String ResponseUri = "ResponseUri";
+    public static final String MessageFormat = "MessageFormat";
 
-    // Derrived from the SenderLocalIdentifier
+    // Derived from the SenderLocalIdentifier
     public static final String SenderServiceUuid = "SenderServiceUuid";
     public static final String SenderOrganisationUuid = "SenderOrganisationUuid";
     public static final String SenderSystemUuid = "SenderSystemUuid";
 
-    public static final String MessageFormat = "MessageFormat";
+    //derived from the body
+    public static final String DataDate = "DataDate"; //date of the date being published
 
     // PublisherTransform
     public static final String BatchIdsJson = "BatchIds";
