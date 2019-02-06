@@ -3,12 +3,14 @@ package org.endeavourhealth.core.database.dal.publisherTransform.models;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ResourceFieldMappingAudit {
-
+    private static final Logger LOG = LoggerFactory.getLogger(ResourceFieldMappingAudit.class);
     //although it seems simpler to use a list, the map is faster for lookups
     private List<ResourceFieldMappingAuditRow> audits = new ArrayList<>();
     private List<ResourceFieldMappingAuditRow> oldStyleAudits = null;
@@ -42,7 +44,8 @@ public class ResourceFieldMappingAudit {
                 }
 
                 ret.oldStyleAudits.add(audit);
-
+            } else if (fileId == -1) {
+                LOG.warn("Audit skipped for dummy CsvCell with -1 fileid hence no audit info:" + json);
             } else {
                 throw new Exception("No PRID in audit from " + json);
             }
