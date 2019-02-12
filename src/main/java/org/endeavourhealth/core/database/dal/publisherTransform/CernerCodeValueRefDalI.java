@@ -19,6 +19,8 @@ public interface CernerCodeValueRefDalI {
 
     //NOMREF
     CernerNomenclatureRef getNomenclatureRefForId(UUID serviceId, Long nomenclatureId) throws Exception;
+    CernerNomenclatureRef getNomenclatureRefForValueText(UUID serviceId, String valueText) throws Exception;
+
     void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception;
 
     //CLEVE mapping

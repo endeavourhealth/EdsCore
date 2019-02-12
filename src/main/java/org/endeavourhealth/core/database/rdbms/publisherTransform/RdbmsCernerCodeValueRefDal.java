@@ -269,6 +269,40 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     }
 
     @Override
+    public CernerNomenclatureRef getNomenclatureRefForValueText(UUID serviceId, String valueText) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsCernerNomenclatureRef c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.value_text = :value_text";
+
+            Query query = entityManager.createQuery(sql, RdbmsCernerNomenclatureRef.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("value_text", valueText)
+                    .setMaxResults(1);
+
+            try {
+                RdbmsCernerNomenclatureRef result = (RdbmsCernerNomenclatureRef)query.getSingleResult();
+                return new CernerNomenclatureRef(result);
+            }
+            catch (NoResultException e) {
+                LOG.error("No nomenclature ref service " + serviceId + " and ValueText " + valueText);
+                return null;
+            }
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
+
+
+
+    @Override
     public void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception {
 
         if (nomenclatureRef == null) {
