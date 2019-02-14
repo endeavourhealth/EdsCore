@@ -278,7 +278,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " from"
                     + " RdbmsCernerNomenclatureRef c"
                     + " where c.serviceId = :service_id"
-                    + " and c.value_text = :value_text";
+                    + " and c.valueText = :value_text";
 
             Query query = entityManager.createQuery(sql, RdbmsCernerNomenclatureRef.class)
                     .setParameter("service_id", serviceId.toString())
