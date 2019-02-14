@@ -278,7 +278,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " from"
                     + " RdbmsCernerNomenclatureRef c"
                     + " where c.serviceId = :service_id"
-                    + " and c.valueText = :value_text";
+                    + " and c.value_text = :value_text";
 
             Query query = entityManager.createQuery(sql, RdbmsCernerNomenclatureRef.class)
                     .setParameter("service_id", serviceId.toString())
@@ -326,11 +326,10 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             //primary key (service_id, nomenclature_id)
             String sql = "INSERT INTO cerner_nomenclature_ref "
-                    + " (service_id, nomenclature_id, active, mneomonic_text, value_text, display_text, description_text, nomenclature_type_code, vocabulary_code, concept_identifier, audit_json)"
+                    + " (service_id, nomenclature_id, active, mneomonic_text, value_text, display_text, description_text, " +
+                    "nomenclature_type_code, vocabulary_code, concept_identifier, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " service_id= VALUES(service_id),"
-                    + " nomenclature_id = VALUES(nomenclature_id),"
                     + " active = VALUES(active), "
                     + " mneomonic_text = VALUES(mneomonic_text),"
                     + " value_text = VALUES(value_text),"
@@ -388,7 +387,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             } else {
                 ps.setString(11, dbObj.getAuditJson());
             }
-            LOG.info("SQL string>>>>:" + ps.toString());
+
             ps.executeUpdate();
 
             //transaction.commit();
@@ -505,7 +504,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             for (CernerClinicalEventMappingState mapping: mappings) {
                 int col = 1;
 
-                ps.setString(col, mapping.getServiceId().toString());
+                ps.setString(col++, mapping.getServiceId().toString());
                 ps.setLong(col++, mapping.getEventId().longValue());
                 if (mapping.getEventCd() == null) {
                     ps.setNull(col++, Types.VARCHAR);
@@ -672,7 +671,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(col, mapping.getServiceId().toString());
+            ps.setString(col++, mapping.getServiceId().toString());
             ps.setLong(col++, mapping.getEventId().longValue());
             if (mapping.getEventCd() == null) {
                 ps.setNull(col++, Types.VARCHAR);
