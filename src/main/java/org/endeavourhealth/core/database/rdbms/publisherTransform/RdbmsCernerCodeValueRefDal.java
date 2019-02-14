@@ -329,6 +329,8 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " (service_id, nomenclature_id, active, mneomonic_text, value_text, display_text, description_text, nomenclature_type_code, vocabulary_code, concept_identifier, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
+                    + " service_id= VALUES(service_id),"
+                    + " nomenclature_id = VALUES(nomenclature_id),"
                     + " active = VALUES(active), "
                     + " mneomonic_text = VALUES(mneomonic_text),"
                     + " value_text = VALUES(value_text),"
@@ -343,48 +345,48 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(col, dbObj.getServiceId());
-            ps.setLong(col++, dbObj.getNomenclatureId());
-            ps.setBoolean(col++, dbObj.isActive());
+            ps.setString(1, dbObj.getServiceId());
+            ps.setLong(2, dbObj.getNomenclatureId());
+            ps.setBoolean(3, dbObj.isActive());
             if (dbObj.getMnemonicText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(4, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getMnemonicText());
+                ps.setString(4, dbObj.getMnemonicText());
             }
             if (dbObj.getValueText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(5, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getValueText());
+                ps.setString(5, dbObj.getValueText());
             }
             if (dbObj.getDisplayText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(6, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getDisplayText());
+                ps.setString(6, dbObj.getDisplayText());
             }
             if (dbObj.getDescriptionText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(7, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getDescriptionText());
+                ps.setString(7, dbObj.getDescriptionText());
             }
             if (dbObj.getNomenclatureTypeCode() == null) {
-                ps.setNull(col++, Types.BIGINT);
+                ps.setNull(8, Types.BIGINT);
             } else {
-                ps.setLong(col++, dbObj.getNomenclatureTypeCode());
+                ps.setLong(8, dbObj.getNomenclatureTypeCode());
             }
             if (dbObj.getVocabularyCode() == null) {
-                ps.setNull(col++, Types.BIGINT);
+                ps.setNull(9, Types.BIGINT);
             } else {
-                ps.setLong(col++, dbObj.getVocabularyCode());
+                ps.setLong(9, dbObj.getVocabularyCode());
             }
             if (dbObj.getConceptIdentifier() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(10, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getConceptIdentifier());
+                ps.setString(10, dbObj.getConceptIdentifier());
             }
             if (dbObj.getAuditJson() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(11, Types.VARCHAR);
             } else {
-                ps.setString(col++, dbObj.getAuditJson());
+                ps.setString(11, dbObj.getAuditJson());
             }
 
             ps.executeUpdate();
