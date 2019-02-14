@@ -343,7 +343,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(col++, dbObj.getServiceId());
+            ps.setString(col, dbObj.getServiceId());
             ps.setLong(col++, dbObj.getNomenclatureId());
             ps.setBoolean(col++, dbObj.isActive());
             if (dbObj.getMnemonicText() == null) {
@@ -503,7 +503,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             for (CernerClinicalEventMappingState mapping: mappings) {
                 int col = 1;
 
-                ps.setString(col++, mapping.getServiceId().toString());
+                ps.setString(col, mapping.getServiceId().toString());
                 ps.setLong(col++, mapping.getEventId().longValue());
                 if (mapping.getEventCd() == null) {
                     ps.setNull(col++, Types.VARCHAR);
@@ -670,7 +670,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(col++, mapping.getServiceId().toString());
+            ps.setString(col, mapping.getServiceId().toString());
             ps.setLong(col++, mapping.getEventId().longValue());
             if (mapping.getEventCd() == null) {
                 ps.setNull(col++, Types.VARCHAR);
