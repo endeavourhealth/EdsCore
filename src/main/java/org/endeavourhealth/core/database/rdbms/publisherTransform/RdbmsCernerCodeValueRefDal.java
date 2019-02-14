@@ -388,7 +388,7 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
             } else {
                 ps.setString(11, dbObj.getAuditJson());
             }
-
+            LOG.info("SQL string>>>>:" + ps.toString());
             ps.executeUpdate();
 
             //transaction.commit();
