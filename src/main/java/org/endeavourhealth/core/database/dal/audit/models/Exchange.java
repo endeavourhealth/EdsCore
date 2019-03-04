@@ -47,8 +47,14 @@ public class Exchange {
         String headersJson = proxy.getHeaders();
         this.headers = ObjectMapperPool.getInstance().readValue(headersJson, HashMap.class);
 
-        this.serviceId = UUID.fromString(proxy.getServiceId());
-        this.systemId = UUID.fromString(proxy.getSystemId());
+        if (!Strings.isNullOrEmpty(proxy.getServiceId())) {
+            this.serviceId = UUID.fromString(proxy.getServiceId());
+        }
+
+        if (!Strings.isNullOrEmpty(proxy.getSystemId())) {
+            this.systemId = UUID.fromString(proxy.getSystemId());
+        }
+
         this.body = proxy.getBody();
     }
 
