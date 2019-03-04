@@ -39,4 +39,8 @@ public interface ExchangeDalI {
     void save(LastDataReceived dataReceived) throws Exception;
     List<LastDataReceived> getLastDataReceived() throws Exception;
     List<LastDataReceived> getLastDataReceived(UUID serviceId) throws Exception;
+
+    void save(LastDataProcessed dataProcessed) throws Exception;
+    List<LastDataProcessed> getLastDataProcessed() throws Exception;
+    List<LastDataProcessed> getLastDataProcessed(UUID serviceId) throws Exception;
 }

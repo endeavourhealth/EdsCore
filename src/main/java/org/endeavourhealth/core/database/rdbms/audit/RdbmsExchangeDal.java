@@ -904,4 +904,93 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
+    @Override
+    public void save(LastDataProcessed dataProcessed) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO last_data_processed"
+                    + " (service_id, system_id, data_date, processed_date, exchange_id)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " data_date = VALUES(data_date),"
+                    + " processed_date = VALUES(processed_date),"
+                    + " exchange_id = VALUES(exchange_id)";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, dataProcessed.getServiceId().toString());
+            ps.setString(col++, dataProcessed.getSystemId().toString());
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataProcessed.getDataDate().getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataProcessed.getProcessedDate().getTime()));
+            ps.setString(col++, dataProcessed.getExchangeId().toString());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<LastDataProcessed> getLastDataProcessed() throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from RdbmsLastDataProcessed c";
+
+            Query query = entityManager.createQuery(sql, RdbmsLastDataProcessed.class);
+
+            List<RdbmsLastDataProcessed> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new LastDataProcessed(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<LastDataProcessed> getLastDataProcessed(UUID serviceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from RdbmsLastDataProcessed c"
+                    + " where c.serviceId = :service_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsLastDataProcessed.class)
+                    .setParameter("service_id", serviceId.toString());
+
+            List<RdbmsLastDataProcessed> ret = query.getResultList();
+
+            return ret
+                    .stream()
+                    .map(T -> new LastDataProcessed(T))
+                    .collect(Collectors.toList());
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
 }
