@@ -30,6 +30,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     private static final ParserPool PARSER_POOL = new ParserPool();
 
+    private static final String DEADLOCK_ERR = "Deadlock found when trying to get lock; try restarting transaction";
+
     @Override
     public void save(List<ResourceWrapper> wrappers) throws Exception {
         //allow several attempts if it fails due to a deadlock
@@ -42,7 +44,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             } catch (Exception ex) {
                 String msg = ex.getMessage();
                 if (msg != null
-                        && msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")) {
+                        && msg.equalsIgnoreCase(DEADLOCK_ERR)) {
 
                     LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
                     Thread.sleep(1000);
@@ -116,6 +118,32 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     @Override
     public void delete(List<ResourceWrapper> wrappers) throws Exception {
+        //allow several attempts if it fails due to a deadlock
+        int attempts = 5;
+        while (attempts > 0) {
+            try {
+                tryDelete(wrappers);
+                break;
+
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (msg != null
+                        && msg.equalsIgnoreCase(DEADLOCK_ERR)) {
+
+                    LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
+                    Thread.sleep(1000);
+                    attempts--;
+                    continue;
+                } else {
+                    LOG.error("Error saving batch of " + wrappers.size() + " resource wrappers");
+                    throw ex;
+                }
+            }
+        }
+
+    }
+
+    public void tryDelete(List<ResourceWrapper> wrappers) throws Exception {
 
         UUID serviceId = findServiceId(wrappers);
 
@@ -175,7 +203,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         } catch (Exception ex) {
             String msg = ex.getMessage();
-            if (msg.equalsIgnoreCase("Deadlock found when trying to get lock; try restarting transaction")
+            if (msg.equalsIgnoreCase(DEADLOCK_ERR)
                     || msg.equals("Nullpointer in ServerPreparedQueryBindValue. MySql bug?")) {
                 LOG.error(msg + " - will try again");
                 Thread.sleep(1000);
@@ -407,7 +435,25 @@ public class RdbmsResourceDal implements ResourceDalI {
     /**
      * logical delete, when we want to delete a resource but maintain our audits
      */
+    @Override
     public void delete(ResourceWrapper resourceEntry) throws Exception {
+
+        //attempts the save, and if the save fails because of a deadlock, it will have a second attempt
+        try {
+            tryDelete(resourceEntry);
+
+        } catch (Exception ex) {
+            String msg = ex.getMessage();
+            if (msg.equalsIgnoreCase(DEADLOCK_ERR)
+                    || msg.equals("Nullpointer in ServerPreparedQueryBindValue. MySql bug?")) {
+                LOG.error(msg + " - will try again");
+                Thread.sleep(1000);
+                tryDelete(resourceEntry);
+            }
+        }
+    }
+
+    public void tryDelete(ResourceWrapper resourceEntry) throws Exception {
         if (resourceEntry == null) {
             throw new IllegalArgumentException("resourceEntry is null");
         }
