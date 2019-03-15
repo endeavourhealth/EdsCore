@@ -12,6 +12,7 @@ import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
+import org.endeavourhealth.core.database.dal.reference.models.EhccDalI;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.rdbms.admin.*;
 import org.endeavourhealth.core.database.rdbms.audit.*;
@@ -389,6 +390,10 @@ public class DalProvider {
 
     public static Opcs4DalI factoryOpcs4Dal() {
         return new RdbmsOpcs4Dal();
+    }
+
+    public static EhccDalI factoryEhccDal(){
+        return new RdbmsEhccDal();
     }
 
     public static Icd10DalI factoryIcd10Dal() {
