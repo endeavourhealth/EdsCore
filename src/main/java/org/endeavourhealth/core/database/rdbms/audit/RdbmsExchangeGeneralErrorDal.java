@@ -4,8 +4,8 @@ import org.endeavourhealth.core.database.dal.audit.ExchangeGeneralErrorDalI;
 import org.endeavourhealth.core.database.dal.audit.models.ExchangeGeneralError;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeGeneralError;
-import org.endeavourhealth.dashboardinformation.json.JsonGraphOptions;
-import org.endeavourhealth.dashboardinformation.json.JsonGraphResults;
+//import org.endeavourhealth.dashboardinformation.json.JsonGraphOptions;
+//import org.endeavourhealth.dashboardinformation.json.JsonGraphResults;
 import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
@@ -135,6 +135,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
             entityManager.close();
         }
     }
+/*
 
     @Override
     public List<JsonGraphResults> getGraphData(JsonGraphOptions options) throws Exception {
@@ -179,6 +180,7 @@ public class RdbmsExchangeGeneralErrorDal implements ExchangeGeneralErrorDalI {
         runSQLScript(insert, params);
 
     }
+*/
 
     private static void deleteDateRangeTable(String tableGUID) throws Exception {
 

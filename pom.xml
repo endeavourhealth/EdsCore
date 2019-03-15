@@ -63,11 +63,11 @@
       <artifactId>configmanager</artifactId>
       <version>${eds-config.version}</version>
     </dependency>
-    <dependency>
+<!--    <dependency>
       <groupId>org.endeavourhealth.discoveryDashboard</groupId>
       <artifactId>DashboardInformation</artifactId>
       <version>${discovery-information.version}</version>
-    </dependency>
+    </dependency>-->
 
     <dependency>
       <groupId>javax.ws.rs</groupId>
