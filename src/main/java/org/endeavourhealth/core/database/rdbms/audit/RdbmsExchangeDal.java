@@ -508,6 +508,37 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
+    @Override
+    public ExchangeTransformAudit getLatestExchangeTransformAudit(UUID serviceId, UUID systemId, UUID exchangeId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsExchangeTransformAudit c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.systemId = :system_id"
+                    + " and c.exchangeId = :exchange_id"
+                    + " order by c.started desc";
+
+            Query query = entityManager.createQuery(sql, RdbmsExchangeTransformAudit.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("system_id", systemId.toString())
+                    .setParameter("exchange_id", exchangeId.toString())
+                    .setMaxResults(1);
+
+            try {
+                RdbmsExchangeTransformAudit result = (RdbmsExchangeTransformAudit)query.getSingleResult();
+                return new ExchangeTransformAudit(result);
+            } catch (NoResultException e) {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
     public List<Exchange> getExchangesByService(UUID serviceId, UUID systemId, int maxRows, Date dateFrom, Date dateTo) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
