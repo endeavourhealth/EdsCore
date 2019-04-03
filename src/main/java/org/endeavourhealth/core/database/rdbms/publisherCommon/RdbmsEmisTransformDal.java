@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
@@ -15,8 +16,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
@@ -495,32 +496,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    @Override
-    public List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-
-        try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsEmisAdminResourceCache c"
-                    + " where c.dataSharingAgreementGuid = :data_sharing_agreement_guid";
-
-            Query query = entityManager.createQuery(sql, RdbmsEmisAdminResourceCache.class)
-                    .setParameter("data_sharing_agreement_guid", dataSharingAgreementGuid);
-
-            List<RdbmsEmisAdminResourceCache> results = query.getResultList();
-
-            List<EmisAdminResourceCache> ret = new ArrayList<>();
-            for (RdbmsEmisAdminResourceCache result: results) {
-                ret.add(new EmisAdminResourceCache(result));
-            }
-
-            return ret;
-
-        } finally {
-            entityManager.close();
-        }
-    }
 
     @Override
     public EmisAdminResourceCache getAdminResource(String dataSharingAgreementGuid, ResourceType resourceType, String sourceId) throws Exception {
@@ -551,4 +526,101 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             entityManager.close();
         }
     }
+
+    private EntityManager adminCacheRetrieveEntityManager;
+    private PreparedStatement adminCacheRetrievePreparedStatement;
+    private ResultSet adminCacheRetrieveResultSet;
+
+
+    @Override
+    public void startRetrievingAdminResources(String dataSharingAgreementGuid) throws Exception {
+
+        if (adminCacheRetrieveEntityManager != null) {
+            throw new Exception("Already retreiving admin resources");
+        }
+
+        adminCacheRetrieveEntityManager = ConnectionManager.getPublisherCommonEntityManager();
+
+        SessionImpl session = (SessionImpl)adminCacheRetrieveEntityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "SELECT data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json "
+                + "FROM emis_admin_resource_cache"
+                + "WHERE data_sharing_agreement_guid = ?";
+
+        adminCacheRetrievePreparedStatement = connection.prepareStatement(sql);
+        adminCacheRetrievePreparedStatement.setFetchSize(10000); //only retrieve a limited amount at a time
+        adminCacheRetrieveResultSet = adminCacheRetrievePreparedStatement.executeQuery();
+    }
+
+    @Override
+    public EmisAdminResourceCache getNextAdminResource() throws Exception {
+
+        if (adminCacheRetrieveResultSet == null) {
+            throw new Exception("Haven't started retrieving admin resources");
+        }
+
+        if (adminCacheRetrieveResultSet.next()) {
+
+            int col = 1;
+
+            EmisAdminResourceCache ret = new EmisAdminResourceCache();
+            ret.setDataSharingAgreementGuid(adminCacheRetrieveResultSet.getString(col++));
+            ret.setEmisGuid(adminCacheRetrieveResultSet.getString(col++));
+            ret.setResourceType(adminCacheRetrieveResultSet.getString(col++));
+            ret.setResourceData(adminCacheRetrieveResultSet.getString(col++));
+
+            String auditJson = adminCacheRetrieveResultSet.getString(col++);
+            if (auditJson != null) {
+                ret.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+            }
+
+            return ret;
+
+        } else {
+
+            //if we've reeached the end, then close everything down
+            adminCacheRetrievePreparedStatement.close();
+            adminCacheRetrieveEntityManager.close();
+
+            //and null everything out
+            adminCacheRetrievePreparedStatement = null;
+            adminCacheRetrieveEntityManager = null;
+            adminCacheRetrieveResultSet = null;
+
+            return null;
+        }
+    }
+
+    /**
+     *
+     @Override
+     public List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception {
+         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+
+         try {
+         String sql = "select c"
+         + " from"
+         + " RdbmsEmisAdminResourceCache c"
+         + " where c.dataSharingAgreementGuid = :data_sharing_agreement_guid";
+
+         Query query = entityManager.createQuery(sql, RdbmsEmisAdminResourceCache.class)
+         .setParameter("data_sharing_agreement_guid", dataSharingAgreementGuid);
+
+         List<RdbmsEmisAdminResourceCache> results = query.getResultList();
+
+         List<EmisAdminResourceCache> ret = new ArrayList<>();
+         for (RdbmsEmisAdminResourceCache result: results) {
+         ret.add(new EmisAdminResourceCache(result));
+         }
+
+         return ret;
+
+         } finally {
+         entityManager.close();
+         }
+     }
+     */
+
+
 }

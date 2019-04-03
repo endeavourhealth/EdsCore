@@ -16,6 +16,11 @@ public interface EmisTransformDalI {
     void deleteAdminResource(EmisAdminResourceCache resourceCache) throws Exception;
     void saveAdminResources(List<EmisAdminResourceCache> resourceCache) throws Exception;
     void deleteAdminResources(List<EmisAdminResourceCache> resourceCache) throws Exception;
-    List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception;
+
     EmisAdminResourceCache getAdminResource(String dataSharingAgreementGuid, ResourceType resourceType, String sourceId) throws Exception;
+
+    //far too many admin resources to retrieve in one go, so changing to stream them
+    void startRetrievingAdminResources(String dataSharingAgreementGuid) throws Exception;
+    EmisAdminResourceCache getNextAdminResource() throws Exception;
+    //List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception;
 }
