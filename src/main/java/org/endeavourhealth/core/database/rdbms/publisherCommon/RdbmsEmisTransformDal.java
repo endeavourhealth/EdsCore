@@ -550,6 +550,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
         adminCacheRetrievePreparedStatement = connection.prepareStatement(sql);
         adminCacheRetrievePreparedStatement.setFetchSize(10000); //only retrieve a limited amount at a time
+        adminCacheRetrievePreparedStatement.setString(1, dataSharingAgreementGuid);
+
         adminCacheRetrieveResultSet = adminCacheRetrievePreparedStatement.executeQuery();
     }
 
