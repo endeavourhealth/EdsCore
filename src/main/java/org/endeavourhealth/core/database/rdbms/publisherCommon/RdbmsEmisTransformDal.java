@@ -544,9 +544,9 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         SessionImpl session = (SessionImpl)adminCacheRetrieveEntityManager.getDelegate();
         Connection connection = session.connection();
 
-        String sql = "SELECT data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json "
-                + "FROM emis_admin_resource_cache"
-                + "WHERE data_sharing_agreement_guid = ?";
+        String sql = "SELECT data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json"
+                + " FROM emis_admin_resource_cache"
+                + " WHERE data_sharing_agreement_guid = ?";
 
         adminCacheRetrievePreparedStatement = connection.prepareStatement(sql);
         adminCacheRetrievePreparedStatement.setFetchSize(10000); //only retrieve a limited amount at a time
