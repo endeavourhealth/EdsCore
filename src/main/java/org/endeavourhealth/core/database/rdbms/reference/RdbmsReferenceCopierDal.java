@@ -22,6 +22,35 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
     public void copyReferenceDataToEnterprise(String enterpriseConfigName) throws Exception {
 
         LOG.info("Reference Copy to " + enterpriseConfigName + " Starting");
+
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+
+        List<EnterpriseConnector.ConnectionWrapper> connectionWrappers = EnterpriseConnector.openConnection(enterpriseConfigName);
+
+        try {
+            for (EnterpriseConnector.ConnectionWrapper connectionWrapper: connectionWrappers) {
+
+                Connection enterpriseConnection = connectionWrapper.getConnection();
+                try {
+                    copyLsoas(enterpriseConnection, entityManager);
+                    copyMsoas(enterpriseConnection, entityManager);
+                    copyDeprivation(enterpriseConnection, entityManager); //this must be done AFTER the LSOAs
+                    copyWards(enterpriseConnection, entityManager);
+                    copyLocalAuthorities(enterpriseConnection, entityManager);
+                } finally {
+                    enterpriseConnection.close();
+                }
+            }
+
+        } finally {
+
+            entityManager.close();
+        }
+    }
+
+    /*public void copyReferenceDataToEnterprise(String enterpriseConfigName) throws Exception {
+
+        LOG.info("Reference Copy to " + enterpriseConfigName + " Starting");
         Connection enterpriseConnection = EnterpriseConnector.openConnection(enterpriseConfigName);
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
@@ -36,7 +65,7 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
             enterpriseConnection.close();
             entityManager.close();
         }
-    }
+    }*/
 
     /**
      * copies the local_authority_lookup table from the main reference database to the subscriber DB specified
