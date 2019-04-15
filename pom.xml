@@ -4,7 +4,7 @@
 
   <groupId>org.endeavourhealth.common</groupId>
   <artifactId>core</artifactId>
-  <version>1.353-SNAPSHOT</version>
+  <version>1.354-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -109,6 +109,10 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.microsoft.sqlserver</groupId>
+      <artifactId>mssql-jdbc</artifactId>
     </dependency>
     <dependency>
        <groupId>mysql</groupId>

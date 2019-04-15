@@ -367,6 +367,24 @@ public class ConnectionManager {
         }
     }
 
+    /**
+     * need to detect if SQL Server as the syntax is different for some things
+     */
+    public static boolean isSqlServer(Connection connection) {
+
+        if (connection instanceof com.microsoft.sqlserver.jdbc.SQLServerConnection) {
+            return true;
+
+        } else {
+            try {
+                connection.unwrap(com.microsoft.sqlserver.jdbc.SQLServerConnection.class);
+                return true;
+            } catch (SQLException ex) {
+                return false;
+            }
+        }
+    }
+
     private static String findConfigNameForPublisherService(UUID serviceId) throws Exception {
 
         String ret = publisherServiceToConfigMap.get(serviceId);
