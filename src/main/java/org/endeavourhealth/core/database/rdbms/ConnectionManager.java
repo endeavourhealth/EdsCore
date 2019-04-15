@@ -349,6 +349,7 @@ public class ConnectionManager {
         return getEntityManager(Db.PublisherCommon);
     }
 
+
     /**
      * there's a couple of places where we need to know if connection is to postgreSQL rather than MySQL
      */
