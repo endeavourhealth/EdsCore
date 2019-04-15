@@ -214,6 +214,7 @@
     <persistence-unit name="PublisherCommonDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3HierarchyRef</class>

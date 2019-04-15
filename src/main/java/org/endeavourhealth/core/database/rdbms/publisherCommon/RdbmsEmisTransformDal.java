@@ -7,6 +7,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeM
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
+import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.ResourceType;
@@ -18,7 +19,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
@@ -591,6 +594,55 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             adminCacheRetrieveResultSet = null;
 
             return null;
+        }
+    }
+
+    @Override
+    public boolean wasAdminCacheApplied(UUID serviceId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+
+        try {
+            String sql = "select c"
+                    + " from"
+                    + " RdbmsEmisAdminResourceCacheApplied c"
+                    + " where c.serviceId = :service_id";
+
+            Query query = entityManager.createQuery(sql, RdbmsEmisAdminResourceCacheApplied.class)
+                    .setParameter("service_id", serviceId.toString());
+
+            try {
+                RdbmsEmisAdminResourceCacheApplied result = (RdbmsEmisAdminResourceCacheApplied)query.getSingleResult();
+                return true;
+
+            } catch (NoResultException ex) {
+                return false;
+            }
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void adminCacheWasApplied(UUID serviceId, String dataSharingAgreementGuid) throws Exception {
+
+        RdbmsEmisAdminResourceCacheApplied o = new RdbmsEmisAdminResourceCacheApplied();
+        o.setServiceId(serviceId.toString());
+        o.setDataSharingAgreementGuid(dataSharingAgreementGuid);
+        o.setDateApplied(new Date());
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        try {
+            entityManager.getTransaction().begin();
+            entityManager.persist(o);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
         }
     }
 

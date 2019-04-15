@@ -5,6 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeM
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface EmisTransformDalI {
 
@@ -23,4 +24,7 @@ public interface EmisTransformDalI {
     void startRetrievingAdminResources(String dataSharingAgreementGuid) throws Exception;
     EmisAdminResourceCache getNextAdminResource() throws Exception;
     //List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception;
+
+    boolean wasAdminCacheApplied(UUID serviceId) throws Exception;
+    void adminCacheWasApplied(UUID serviceId, String dataSharingAgreementGuid) throws Exception;
 }
