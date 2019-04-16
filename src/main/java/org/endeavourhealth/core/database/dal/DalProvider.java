@@ -348,6 +348,10 @@ public class DalProvider {
         return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
     }
 
+    public static BartsStagingDataDalI factoryBartsStagingDataDalI() {
+        return new RdbmsBartsStagingDataDal();
+    }
+
     public static PostcodeDalI factoryPostcodeDal() {
         return new RdbmsPostcodeDal();
     }
