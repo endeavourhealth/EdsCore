@@ -40,7 +40,8 @@ public class ConnectionManager {
         JdbcReader,
         Coding, //once fully moved to MySQL, this can go as it will be the same as Reference
         PublisherCommon,
-        FhirAudit;
+        FhirAudit,
+        PublisherStaging;
     }
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
@@ -226,6 +227,12 @@ public class ConnectionManager {
                 json = json.get("core");
             }
 
+        }  else if (dbName == Db.PublisherStaging) {
+            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
+            if (json != null) {
+                json = json.get("staging");
+            }
+
         } else {
 
             if (dbName == Db.Eds) {
@@ -289,6 +296,8 @@ public class ConnectionManager {
             return "PublisherCommonDb";
         } else if (dbName == Db.FhirAudit) {
             return "FhirAuditDb";
+        } else if (dbName == Db.PublisherStaging) {
+            return "PublisherStagingDb";
         } else {
             throw new RuntimeException("Unknown database " + dbName);
         }
@@ -349,6 +358,10 @@ public class ConnectionManager {
         return getEntityManager(Db.PublisherCommon);
     }
 
+    public static EntityManager getPublisherStagingEntityMananger(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getEntityManager(Db.PublisherStaging, configName);
+    }
 
     /**
      * there's a couple of places where we need to know if connection is to postgreSQL rather than MySQL
