@@ -53,13 +53,13 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             throw new IllegalArgumentException("cds tail object is null");
         }
 
-        RdbmsStagingCdsTail stagingCdsTail = new RdbmsStagingCdsTail(cdsTail);
-
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cdsTail)) {
             LOG.error("staging_cds_tail data already filed with record_checksum: "+cdsTail.getRecordChecksum());
             return;
         }
+
+        RdbmsStagingCdsTail stagingCdsTail = new RdbmsStagingCdsTail(cdsTail);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;

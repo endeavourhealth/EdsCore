@@ -5,6 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCC;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class StagingSURCC {
     private String exchangeId;
@@ -43,18 +44,6 @@ public class StagingSURCC {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
     }
-
-//    public StagingCds(long rowId,
-//                      long multiLexProductId,
-//                      String ctv3ReadCode,
-//                      String ctv3ReadTerm,
-//                      ResourceFieldMappingAudit audit) {
-//        this.rowId = rowId;
-//        this.multiLexProductId = multiLexProductId;
-//        this.ctv3ReadCode = ctv3ReadCode;
-//        this.ctv3ReadTerm = ctv3ReadTerm;
-//        this.audit = audit;
-//    }
 
     public String getExchangeId() {
         return exchangeId;
@@ -146,5 +135,21 @@ public class StagingSURCC {
     }
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(surgicalCaseId,
+                            dtExtract,
+                            activeInd,
+                            personId,
+                            encounterId,
+                            dtCancelled,
+                            institutionCode,
+                            departmentCode,
+                            surgicalAreaCode,
+                            theatreNumberCode,
+                            personId);
     }
 }

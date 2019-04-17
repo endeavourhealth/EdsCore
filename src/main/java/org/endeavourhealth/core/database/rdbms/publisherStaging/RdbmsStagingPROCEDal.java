@@ -61,13 +61,13 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             throw new IllegalArgumentException("stagingPROCE is null");
         }
 
-        RdbmsStagingPROCE dbObj = new RdbmsStagingPROCE(stagingPROCE);
-
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingPROCE)) {
             LOG.error("staging_PROCE data already filed with record_checksum: "+stagingPROCE.getCheckSum());
             return;
         }
+
+        RdbmsStagingPROCE dbObj = new RdbmsStagingPROCE(stagingPROCE);
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;

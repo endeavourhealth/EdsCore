@@ -5,6 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCds;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class StagingCds {
     private String exchangeId;
@@ -166,5 +167,23 @@ public class StagingCds {
     }
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(susRecordType,
+                            cdsUniqueIdentifier,
+                            cdsUpdateType,
+                            mrn,
+                            nhsNumber,
+                            dateOfBirth,
+                            procedureDate,
+                            procedureOpcsCode,
+                            procedureOpcsTerm,
+                            procedureSeqNbr,
+                            consultantCode,
+                            location,
+                            personId);
     }
 }

@@ -53,13 +53,13 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             throw new IllegalArgumentException("surcc object is null");
         }
 
-        RdbmsStagingSURCC stagingSurcc = new RdbmsStagingSURCC(surcc);
-
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcc)) {
             LOG.error("staging_SURCC data already filed with record_checksum: "+surcc.getRecordChecksum());
             return;
         }
+
+        RdbmsStagingSURCC stagingSurcc = new RdbmsStagingSURCC(surcc);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;

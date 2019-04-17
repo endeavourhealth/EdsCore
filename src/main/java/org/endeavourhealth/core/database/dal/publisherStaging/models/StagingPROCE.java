@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal.publisherStaging.models;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 
 import java.util.Date;
+import java.util.Objects;
 
 public class StagingPROCE {
 
@@ -152,6 +153,23 @@ public class StagingPROCE {
 
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(procedureId,
+                            activeInd,
+                            encounterId,
+                            procedureDtTm,
+                            procedureType,
+                            procedureCode,
+                            procedureTerm,
+                            procedureSeqNo,
+                            lookupPersonId,
+                            lookupMrn,
+                            lookupNhsNumber,
+                            lookupDateOfBirth);
     }
 }
 

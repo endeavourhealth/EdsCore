@@ -53,13 +53,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             throw new IllegalArgumentException("cds object is null");
         }
 
-        RdbmsStagingCds stagingCds = new RdbmsStagingCds(cds);
-
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
             LOG.error("staging_cds data already filed with record_checksum: "+cds.getRecordChecksum());
             return;
         }
+
+        RdbmsStagingCds stagingCds = new RdbmsStagingCds(cds);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
