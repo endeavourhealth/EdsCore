@@ -26,14 +26,13 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     }
 
     @Override
-    public void saveStagingProcedure(StagingProcedure stagingProcedure) throws Exception {
+    public void save(StagingProcedure stagingProcedure,  UUID serviceId) throws Exception {
 
         if (stagingProcedure == null) {
             throw new IllegalArgumentException("mapping is null");
         }
 
         RdbmsStagingProcedure dbObj = new RdbmsStagingProcedure(stagingProcedure);
-        UUID serviceId = stagingProcedure.getServiceId();
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
@@ -47,22 +46,6 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            //primary key (service_id, nomenclature_id)
-            String sql1 = "INSERT INTO staging_procedure "
-                    + "(exchange_id,encntr_id, person_id, consultant, "
-                    + "proc_dt_tm, updt_by,create_dt_tm, proc_cd_type, proc_cd)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " exchange_id = VALUES(exchange_id), "
-                    + " person_id = VALUES(person_id),"
-                    + " consultant = VALUES(consultant),"
-                    + " proc_dt_tm = VALUES(proc_dt_tm),"
-                    + " updt_by = VALUES (updt_by),"
-                    + " create_dt_tm = VALUES(create_dt_tm),"
-                    + " proc_cd_type = VALUES(proc_cd_type),"
-                    + " proc_cd = VALUES(proc_cd)";
-
-            int col = 1;
 
             String sql = "INSERT INTO staging_procedure "
                     + " (exchange_id, dt_received, record_checksum, mrn, "
@@ -71,7 +54,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " proc_cd_type, proc_cd, proc_term, person_id, ward, site, "
                     + " lookup_person_id, lookup_consultant_personnel_id, "
                     + " lookup_recorded_by_personnel_id)"
-                    + " VALUES()"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "

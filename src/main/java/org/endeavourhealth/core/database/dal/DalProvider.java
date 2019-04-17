@@ -12,6 +12,7 @@ import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsTailDalI;
+import org.endeavourhealth.core.database.dal.publisherStaging.StagingPROCEDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingProcedureDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
@@ -27,6 +28,7 @@ import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.*;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsDal;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsTailDal;
+import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingPROCEDal;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingProcedureDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.*;
 import org.endeavourhealth.core.database.rdbms.reference.*;
@@ -353,7 +355,10 @@ public class DalProvider {
         return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
     }
 
-    public static StagingProcedureDalI factoryBartsStagingDataDalI() {return new RdbmsStagingProcedureDal() {};
+    public static StagingProcedureDalI factoryBartsStagingProcedureDalI() {return new RdbmsStagingProcedureDal() {};
+    }
+
+    public static StagingPROCEDalI factoryBartsStagingPROCEDalI() {return new RdbmsStagingPROCEDal() {};
     }
 
     public static PostcodeDalI factoryPostcodeDal() {
