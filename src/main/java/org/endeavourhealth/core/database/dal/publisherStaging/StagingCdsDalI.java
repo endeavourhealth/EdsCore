@@ -6,5 +6,5 @@ import java.util.UUID;
 
 public interface StagingCdsDalI {
 
-    void save(StagingCds mapping, UUID serviceId) throws Exception;
+    void save(StagingCds cds, UUID serviceId) throws Exception;
 }

@@ -20,7 +20,6 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             throw new IllegalArgumentException("cds object is null");
         }
 
-
         RdbmsStagingCds stagingCds = new RdbmsStagingCds(cds);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
@@ -35,8 +34,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "INSERT INTO staging_cds  "
                     + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, date_of_birth, procedure_date, procedure_opcs_code, " +
-                    " procedure_opcs_term, procedure_seq_nbr, consultant_code, location, person_id)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " procedure_opcs_term, procedure_seq_nbr, consultant_code, location, person_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -53,7 +52,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " procedure_seq_nbr = VALUES(procedure_seq_nbr),"
                     + " consultant_code = VALUES(consultant_code),"
                     + " location = VALUES(location),"
-                    + " person_id = VALUES(person_id)";
+                    + " person_id = VALUES(person_id),"
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
@@ -73,6 +73,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(14,stagingCds.getConsultantCode());
             ps.setString(15,stagingCds.getLocation());
             ps.setInt(16,stagingCds.getPersonId());
+            ps.setString(17,stagingCds.getAuditJson());
 
             ps.executeUpdate();
 
