@@ -6,5 +6,6 @@ import java.util.UUID;
 
 public interface StagingCdsDalI {
 
+    boolean getRecordChecksumFiled(UUID serviceId, StagingCds cds) throws Exception;
     void save(StagingCds cds, UUID serviceId) throws Exception;
 }
