@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform.models;
 
-import org.endeavourhealth.core.database.dal.publisherTransform.models.BartsStagingDataProcedure;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedure;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,7 +29,7 @@ public class RdbmsBartsStagingData implements Serializable {
     private String auditJson;
 
 
-    public RdbmsBartsStagingData(BartsStagingDataProcedure in) {
+    public RdbmsBartsStagingData(StagingProcedure in) {
         this.exchangeId = in.getExchangeId();
         this.encounterId = in.getEncounterId();
         this.personId = in.getPersonId();

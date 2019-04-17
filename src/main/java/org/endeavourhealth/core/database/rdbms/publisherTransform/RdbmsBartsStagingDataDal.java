@@ -1,7 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.publisherTransform;
 
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedure;
 import org.endeavourhealth.core.database.dal.publisherTransform.BartsStagingDataDalI;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.BartsStagingDataProcedure;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsBartsStagingData;
 import org.hibernate.internal.SessionImpl;
@@ -26,14 +26,14 @@ public class RdbmsBartsStagingDataDal implements BartsStagingDataDalI {
     }
 
     @Override
-    public void saveBartsStagingDataProcedure(BartsStagingDataProcedure bartsStagingDataProcedure) throws Exception {
+    public void saveBartsStagingDataProcedure(StagingProcedure stagingProcedure) throws Exception {
 
-        if (bartsStagingDataProcedure == null) {
+        if (stagingProcedure == null) {
             throw new IllegalArgumentException("mapping is null");
         }
 
-        RdbmsBartsStagingData dbObj = new RdbmsBartsStagingData(bartsStagingDataProcedure);
-        UUID serviceId = bartsStagingDataProcedure.getServiceId();
+        RdbmsBartsStagingData dbObj = new RdbmsBartsStagingData(stagingProcedure);
+        UUID serviceId = stagingProcedure.getServiceId();
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;

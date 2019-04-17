@@ -1,9 +1,9 @@
-package org.endeavourhealth.core.database.dal.publisherTransform.models;
+package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
 import java.util.Date;
 import java.util.UUID;
 
-public class BartsStagingDataProcedure {
+public class StagingProcedure {
     private String exchangeId;
     private UUID serviceId;
     private int encounterId;
@@ -20,7 +20,7 @@ public class BartsStagingDataProcedure {
     private int comparisonCode;
     private String auditJson;
 
-    public BartsStagingDataProcedure() { }
+    public StagingProcedure() { }
 
     public String getAuditJson() {
         return auditJson;
