@@ -1,33 +1,110 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
+
 import java.util.Date;
 import java.util.UUID;
 
 public class StagingProcedure {
-    private String exchangeId;
+
     private UUID serviceId;
+    private String exchangeId;
+    private Date dateReceived;
+    private int checkSum;
+    private String mrn;
+    private String nhsNumber;
+    private Date dob;
     private int encounterId;
+    private String consultant;
+    private Date proc_dt_tm;
+    private int updatedBy;
+    private String comments;
+    private Date create_dt_tm;
+    private String procedureCodeType;
+    private String procedureCode;
+    private String procedureTerm;
     private int personId;
     private String ward;
     private String site;
-    private String consultant;
-    private Date proc_dt_tm;
-    private Date create_dt_tm;
-    private int updatedBy;
-    private String notes;
-    private String procedureCode;
-    private String procedureCodeType;
-    private int comparisonCode;
-    private String auditJson;
+    private int lookupPersonId;
+    private int lookupConsultantPersonnelId;
+    private int lookuprecordedByPersonnelId;
 
-    public StagingProcedure() { }
+    private ResourceFieldMappingAudit audit = null;
 
-    public String getAuditJson() {
-        return auditJson;
+    public StagingProcedure() {
     }
 
-    public void setAuditJson(String auditJson) {
-        this.auditJson = auditJson;
+    public Date getDateReceived() {
+        return dateReceived;
+    }
+
+    public void setDateReceived(Date dateReceived) {
+        this.dateReceived = dateReceived;
+    }
+
+    public String getMrn() {
+        return mrn;
+    }
+
+    public void setMrn(String mrn) {
+        this.mrn = mrn;
+    }
+
+    public String getNhsNumber() {
+        return nhsNumber;
+    }
+
+    public void setNhsNumber(String nhsNumber) {
+        this.nhsNumber = nhsNumber;
+    }
+
+    public Date getDob() {
+        return dob;
+    }
+
+    public void setDob(Date dob) {
+        this.dob = dob;
+    }
+
+    public String getProcedureTerm() {
+        return procedureTerm;
+    }
+
+    public void setProcedureTerm(String procedureTerm) {
+        this.procedureTerm = procedureTerm;
+    }
+
+    public int getLookupPersonId() {
+        return lookupPersonId;
+    }
+
+    public void setLookupPersonId(int lookupPersonId) {
+        this.lookupPersonId = lookupPersonId;
+    }
+
+    public int getLookupConsultantPersonnelId() {
+        return lookupConsultantPersonnelId;
+    }
+
+    public void setLookupConsultantPersonnelId(int lookupConsultantPersonnelId) {
+        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
+    }
+
+    public int getLookuprecordedByPersonnelId() {
+        return lookuprecordedByPersonnelId;
+    }
+
+    public void setLookuprecordedByPersonnelId(int lookuprecordedByPersonnelId) {
+        this.lookuprecordedByPersonnelId = lookuprecordedByPersonnelId;
+    }
+
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 
     public UUID getServiceId() {
@@ -102,12 +179,12 @@ public class StagingProcedure {
         this.updatedBy = updatedBy;
     }
 
-    public String getNotes() {
-        return notes;
+    public String getComments() {
+        return comments;
     }
 
-    public void setNotes(String notes) {
-        this.notes = notes;
+    public void setComments(String comments) {
+        this.comments = comments;
     }
 
     public String getProcedureCode() {
@@ -126,12 +203,12 @@ public class StagingProcedure {
         this.procedureCodeType = procedureCodeType;
     }
 
-    public int getComparisonCode() {
-        return comparisonCode;
+    public int getCheckSum() {
+        return checkSum;
     }
 
-    public void setComparisonCode(int comparisonCode) {
-        this.comparisonCode = comparisonCode;
+    public void setCheckSum(int checkSum) {
+        this.checkSum = checkSum;
     }
 
 
@@ -144,13 +221,11 @@ public class StagingProcedure {
     }
 
 
-
 //        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
 //            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
 //        }
-    }
+}
 
-  
 
 //    public ResourceFieldMappingAudit getAudit() {
 //        return audit;
