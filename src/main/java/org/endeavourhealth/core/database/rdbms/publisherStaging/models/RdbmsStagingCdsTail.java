@@ -142,8 +142,10 @@ public class RdbmsStagingCdsTail {
     public void setResponsibleHcpPersonnelId (int responsibleHcpPersonnelId)
     { this.responsibleHcpPersonnelId = responsibleHcpPersonnelId; }
 
+    @Basic
     @Column(name = "audit_json", nullable = true)
     public String getAuditJson() { return auditJson; }
+    public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
 
 //    @Override

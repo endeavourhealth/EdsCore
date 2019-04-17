@@ -197,8 +197,10 @@ public class RdbmsStagingCds {
         this.personId = personId;
     }
 
+    @Basic
     @Column(name = "audit_json", nullable = true)
     public String getAuditJson() { return auditJson; }
+    public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
 
 //    @Override
