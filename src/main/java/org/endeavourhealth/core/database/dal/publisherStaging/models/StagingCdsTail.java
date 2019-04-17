@@ -132,7 +132,6 @@ public class StagingCdsTail {
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
-
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
     }
