@@ -5,13 +5,46 @@ import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCdsT
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCdsTail;
 import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.UUID;
 
 public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
+
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingCdsTailDal.class);
+
+    @Override
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingCdsTail cdsTail) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        try {
+            String sql = "select c"
+                    + " from "
+                    + " RdbmsStagingCdsTail c"
+                    + " where c.recordChecksum = :record_checksum";
+
+            Query query = entityManager.createQuery(sql, RdbmsStagingCdsTail.class)
+                    .setParameter("record_checksum", cdsTail.getRecordChecksum());
+
+            try {
+                RdbmsStagingCdsTail result = (RdbmsStagingCdsTail) query.getSingleResult();
+                return true;
+            }
+            catch (NoResultException e) {
+                return false;
+            }
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
 
     @Override
     public void save(StagingCdsTail cdsTail, UUID serviceId) throws Exception {
@@ -21,6 +54,12 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
         }
 
         RdbmsStagingCdsTail stagingCdsTail = new RdbmsStagingCdsTail(cdsTail);
+
+        //check if record already filed to avoid duplicates
+        if (getRecordChecksumFiled(serviceId, cdsTail)) {
+            LOG.error("staging_cds_tail data already filed with record_checksum: "+cdsTail.getRecordChecksum());
+            return;
+        }
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
