@@ -11,6 +11,7 @@ import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
+import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsTailDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
@@ -24,6 +25,7 @@ import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.*;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsDal;
+import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsTailDal;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.*;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
@@ -410,6 +412,8 @@ public class DalProvider {
     }
 
     public static StagingCdsDalI factoryStagingCdsDalI () { return new RdbmsStagingCdsDal(); }
+
+    public static StagingCdsTailDalI factoryStagingCdsTailDalI () { return new RdbmsStagingCdsTailDal(); }
 
     /*private static boolean useCassandra() {
 
