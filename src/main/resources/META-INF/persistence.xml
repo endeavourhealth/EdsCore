@@ -351,6 +351,7 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCds</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCdsTail</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingProcedure</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingPROCE</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCC</class>
 
         <properties>

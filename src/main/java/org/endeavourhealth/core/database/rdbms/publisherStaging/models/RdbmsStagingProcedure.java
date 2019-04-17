@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "staging_procedure")
@@ -35,10 +36,10 @@ public class RdbmsStagingProcedure implements Serializable {
     private int lookuprecordedByPersonnelId;
     private String auditJson;
 
-
-    public RdbmsStagingProcedure(StagingProcedure in) {
+    public RdbmsStagingProcedure(StagingProcedure in) throws Exception {
         this.exchangeId = in.getExchangeId();
         this.dateReceived = in.getDateReceived();
+        this.checkSum = in.getCheckSum();
         this.mrn = in.getMrn();
         this.nhsNumber = in.getNhsNumber();
         this.dob = in.getDob();
@@ -57,8 +58,10 @@ public class RdbmsStagingProcedure implements Serializable {
         this.lookupPersonId = in.getLookupPersonId();
         this.lookupConsultantPersonnelId = in.getLookupConsultantPersonnelId();
         this.lookuprecordedByPersonnelId = in.getLookuprecordedByPersonnelId();
-        this.checkSum = in.getCheckSum();
-        //  this.auditJson = in.getAuditJson();
+
+        if (in.getAudit()!= null) {
+            this.auditJson = in.getAudit().writeToJson();
+        }
     }
 
     @Id
@@ -252,11 +255,35 @@ public class RdbmsStagingProcedure implements Serializable {
         this.lookuprecordedByPersonnelId = lookuprecordedByPersonnelId;
     }
 
+    @Column(name="audit_json", nullable = true)
     public String getAuditJson() {
         return auditJson;
     }
-
     public void setAuditJson(String auditJson) {
         this.auditJson = auditJson;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(mrn,
+                            nhsNumber,
+                            dob,
+                            encounterId,
+                            personId,
+                            ward,
+                            site,
+                            consultant,
+                            proc_dt_tm,
+                            create_dt_tm,
+                            updatedBy,
+                            comments,
+                            procedureCode,
+                            procedureCodeType,
+                            procedureTerm,
+                            lookupPersonId,
+                            lookupConsultantPersonnelId,
+                            lookuprecordedByPersonnelId
+                );
     }
 }

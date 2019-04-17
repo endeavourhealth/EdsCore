@@ -147,18 +147,6 @@ public class RdbmsStagingCdsTail {
     public String getAuditJson() { return auditJson; }
     public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
-
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        RdbmsStagingCds that = (RdbmsStagingCds) o;
-//        return rowId == that.rowId &&
-//                multilexProductId == that.multilexProductId &&
-//                Objects.equals(ctv3ReadCode, that.ctv3ReadCode) &&
-//                Objects.equals(ctv3ReadTerm, that.ctv3ReadTerm);
-//    }
-
     @Override
     public int hashCode() {
 

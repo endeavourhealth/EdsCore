@@ -49,18 +49,6 @@ public class StagingCds {
         }
     }
 
-//    public StagingCds(long rowId,
-//                      long multiLexProductId,
-//                      String ctv3ReadCode,
-//                      String ctv3ReadTerm,
-//                      ResourceFieldMappingAudit audit) {
-//        this.rowId = rowId;
-//        this.multiLexProductId = multiLexProductId;
-//        this.ctv3ReadCode = ctv3ReadCode;
-//        this.ctv3ReadTerm = ctv3ReadTerm;
-//        this.audit = audit;
-//    }
-
     public String getExchangeId() {
         return exchangeId;
     }

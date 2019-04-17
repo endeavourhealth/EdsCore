@@ -1,7 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging.models;
 
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingPROCE;
-import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 
 @Entity
 @Table(name = "staging_procedure")
@@ -28,10 +28,9 @@ public class RdbmsStagingPROCE implements Serializable {
     private String lookupMrn;
     private String lookupNhsNumber;
     private Date lookupDateOfBirth;
-    private ResourceFieldMappingAudit audit = null;
+    private String auditJson;
 
-
-    public RdbmsStagingPROCE(StagingPROCE in) {
+    public RdbmsStagingPROCE(StagingPROCE in) throws Exception {
         this.exchangeId = in.getExchangeId();
         this.dateReceived = in.getDateReceived();
         this.checkSum=in.getCheckSum();
@@ -47,8 +46,9 @@ public class RdbmsStagingPROCE implements Serializable {
         this.lookupMrn=in.getLookupMrn();
         this.lookupNhsNumber=in.getLookupNhsNumber();
         this.lookupDateOfBirth=in.getLookupDateOfBirth();
-        this.checkSum = in.getCheckSum();
-        //  this.auditJson = in.getAuditJson();
+        if (in.getAudit()!= null) {
+            this.auditJson = in.getAudit().writeToJson();
+        }
     }
 
     @Id
@@ -178,19 +178,28 @@ public class RdbmsStagingPROCE implements Serializable {
         this.lookupNhsNumber = lookupNhsNumber;
     }
 
-    public Date getLookupDateOfBirth() {
-        return lookupDateOfBirth;
-    }
+    @Column(name="lookup_date_of_birth")
+    public Date getLookupDateOfBirth() {return lookupDateOfBirth;}
+    public void setLookupDateOfBirth(Date lookupDateOfBirth) { this.lookupDateOfBirth = lookupDateOfBirth; }
 
-    public void setLookupDateOfBirth(Date lookupDateOfBirth) {
-        this.lookupDateOfBirth = lookupDateOfBirth;
-    }
+    @Column(name = "audit_json", nullable = true)
+    public String getAuditJson() { return auditJson; }
+    public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
-    public ResourceFieldMappingAudit getAudit() {
-        return audit;
-    }
+    @Override
+    public int hashCode() {
 
-    public void setAudit(ResourceFieldMappingAudit audit) {
-        this.audit = audit;
+        return Objects.hash(procedureId,
+                activeInd,
+                encounterId,
+                procedureDtTm,
+                procedureType,
+                procedureCode,
+                procedureTerm,
+                procedureSeqNo,
+                lookupPersonId,
+                lookupMrn,
+                lookupNhsNumber,
+                lookupDateOfBirth);
     }
 }

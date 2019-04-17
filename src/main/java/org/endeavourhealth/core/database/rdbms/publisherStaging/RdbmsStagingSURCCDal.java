@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingSURCCDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingSURCC;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCds;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCC;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -30,7 +29,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " RdbmsStagingSURCC c"
                     + " where c.recordChecksum = :record_checksum";
 
-            Query query = entityManager.createQuery(sql, RdbmsStagingCds.class)
+            Query query = entityManager.createQuery(sql, RdbmsStagingSURCC.class)
                     .setParameter("record_checksum", surcc.getRecordChecksum());
 
             try {

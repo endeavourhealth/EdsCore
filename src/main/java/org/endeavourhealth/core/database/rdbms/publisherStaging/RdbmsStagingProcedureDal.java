@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -26,13 +28,46 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     }
 
     @Override
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingProcedure stagingProcedure) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        try {
+            String sql = "select c"
+                    + " from "
+                    + " RdbmsStagingProcedure c"
+                    + " where c.recordChecksum = :record_checksum";
+
+            Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
+                    .setParameter("record_checksum", stagingProcedure.getCheckSum());
+
+            try {
+                RdbmsStagingProcedure result = (RdbmsStagingProcedure)query.getSingleResult();
+                return true;
+            }
+            catch (NoResultException e) {
+                return false;
+            }
+        } finally {
+            if (entityManager.isOpen()) {
+                entityManager.close();
+            }
+        }
+    }
+
+    @Override
     public void save(StagingProcedure stagingProcedure,  UUID serviceId) throws Exception {
 
         if (stagingProcedure == null) {
-            throw new IllegalArgumentException("mapping is null");
+            throw new IllegalArgumentException("stagingProcedure is null");
         }
 
         RdbmsStagingProcedure dbObj = new RdbmsStagingProcedure(stagingProcedure);
+
+        //check if record already filed to avoid duplicates
+        if (getRecordChecksumFiled(serviceId, stagingProcedure)) {
+            LOG.error("stagingProcedure data already filed with record_checksum: "+stagingProcedure.getCheckSum());
+            return;
+        }
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
