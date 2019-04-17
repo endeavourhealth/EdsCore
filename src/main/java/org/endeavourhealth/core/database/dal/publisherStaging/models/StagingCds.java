@@ -1,5 +1,7 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
+import com.google.common.base.Strings;
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCds;
 
 import java.util.Date;
@@ -21,6 +23,7 @@ public class StagingCds {
     private String consultantCode;
     private String location;
     private int personId;
+    private ResourceFieldMappingAudit audit = null;
 
     public StagingCds() {}
 
@@ -41,6 +44,9 @@ public class StagingCds {
         this.consultantCode = proxy.getConsultantCode();
         this.location = proxy.getLocation();
         this.personId = proxy.getPersonId();
+        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+        }
     }
 
 //    public StagingCds(long rowId,
@@ -165,5 +171,13 @@ public class StagingCds {
     }
     public void setPersonId (int personId ) {
         this.personId = personId;
+    }
+
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
+
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 }

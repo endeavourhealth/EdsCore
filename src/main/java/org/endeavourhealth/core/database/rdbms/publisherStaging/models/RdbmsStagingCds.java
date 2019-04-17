@@ -26,6 +26,7 @@ public class RdbmsStagingCds {
     private String consultantCode;
     private String location;
     private int personId;
+    private String auditJson;
 
     public RdbmsStagingCds() {}
 
@@ -47,6 +48,9 @@ public class RdbmsStagingCds {
         this.consultantCode = proxy.getConsultantCode();
         this.location = proxy.getLocation();
         this.personId = proxy.getPersonId();
+        if (proxy.getAudit()!= null) {
+            this.auditJson = proxy.getAudit().writeToJson();
+        }
     }
 
     @Id
@@ -192,6 +196,9 @@ public class RdbmsStagingCds {
     public void setPersonId (int personId ) {
         this.personId = personId;
     }
+
+    @Column(name = "audit_json", nullable = true)
+    public String getAuditJson() { return auditJson; }
 
 
 //    @Override
