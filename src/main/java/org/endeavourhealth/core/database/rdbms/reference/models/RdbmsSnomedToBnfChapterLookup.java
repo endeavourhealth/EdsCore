@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @Entity
 @Table(name = "snomed_to_bnf_chapter_lookup")
-public class RdbmsSnomedToBnfChapterLookup {
+public class RdbmsSnomedToBnfChapterLookup implements Serializable {
 
     private String snomedCode;
     private String bnfChapterCode;
