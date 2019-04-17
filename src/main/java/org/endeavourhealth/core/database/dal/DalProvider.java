@@ -10,10 +10,7 @@ import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
-import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsTailDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.StagingPROCEDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.StagingProcedureDalI;
+import org.endeavourhealth.core.database.dal.publisherStaging.*;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
@@ -26,10 +23,7 @@ import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.*;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsDal;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingCdsTailDal;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingPROCEDal;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.RdbmsStagingProcedureDal;
+import org.endeavourhealth.core.database.rdbms.publisherStaging.*;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.*;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
@@ -355,12 +349,6 @@ public class DalProvider {
         return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
     }
 
-    public static StagingProcedureDalI factoryBartsStagingProcedureDalI() {return new RdbmsStagingProcedureDal() {};
-    }
-
-    public static StagingPROCEDalI factoryBartsStagingPROCEDalI() {return new RdbmsStagingPROCEDal() {};
-    }
-
     public static PostcodeDalI factoryPostcodeDal() {
         return new RdbmsPostcodeDal();
     }
@@ -420,6 +408,12 @@ public class DalProvider {
     public static StagingCdsDalI factoryStagingCdsDalI () { return new RdbmsStagingCdsDal(); }
 
     public static StagingCdsTailDalI factoryStagingCdsTailDalI () { return new RdbmsStagingCdsTailDal(); }
+
+    public static StagingProcedureDalI factoryBartsStagingProcedureDalI() {return new RdbmsStagingProcedureDal() {}; }
+
+    public static StagingPROCEDalI factoryBartsStagingPROCEDalI() {return new RdbmsStagingPROCEDal() {}; }
+
+    public static StagingSURCCDalI factoryStagingSURCCDalI () { return new RdbmsStagingSURCCDal(); }
 
     /*private static boolean useCassandra() {
 
