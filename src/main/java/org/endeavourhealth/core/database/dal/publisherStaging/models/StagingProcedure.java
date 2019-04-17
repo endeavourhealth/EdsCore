@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 
 import java.util.Date;
@@ -23,10 +24,10 @@ public class StagingProcedure {
     private String procedureCodeType;
     private String procedureCode;
     private String procedureTerm;
-    private int personId;
+    private String personId;
     private String ward;
     private String site;
-    private int lookupPersonId;
+    private String lookupPersonId;
     private int lookupConsultantPersonnelId;
     private int lookuprecordedByPersonnelId;
 
@@ -75,11 +76,11 @@ public class StagingProcedure {
         this.procedureTerm = procedureTerm;
     }
 
-    public int getLookupPersonId() {
+    public String getLookupPersonId() {
         return lookupPersonId;
     }
 
-    public void setLookupPersonId(int lookupPersonId) {
+    public void setLookupPersonId(String lookupPersonId) {
         this.lookupPersonId = lookupPersonId;
     }
 
@@ -123,11 +124,11 @@ public class StagingProcedure {
         this.encounterId = encounterId;
     }
 
-    public int getPersonId() {
+    public String getPersonId() {
         return personId;
     }
 
-    public void setPersonId(int personId) {
+    public void setPersonId(String personId) {
         this.personId = personId;
     }
 
@@ -207,8 +208,8 @@ public class StagingProcedure {
         return checkSum;
     }
 
-    public void setCheckSum(int checkSum) {
-        this.checkSum = checkSum;
+    public void setCheckSum() {
+        this.checkSum = hashCode();
     }
 
 
@@ -218,6 +219,36 @@ public class StagingProcedure {
 
     public void setExchangeId(String exchangeId) {
         this.exchangeId = exchangeId;
+    }
+
+
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder()
+                .append(serviceId)
+                .append(exchangeId)
+                .append(dateReceived)
+                .append(checkSum)
+                .append(mrn)
+                .append(nhsNumber)
+                .append(dob)
+                .append(encounterId)
+                .append(consultant)
+                .append(proc_dt_tm)
+                .append(updatedBy)
+                .append(comments)
+                .append(create_dt_tm)
+                .append(procedureCodeType)
+                .append(procedureCode)
+                .append(procedureTerm)
+                .append(personId)
+                .append(ward)
+                .append(site)
+                .append(lookupPersonId)
+                .append(lookupConsultantPersonnelId)
+                .append(lookuprecordedByPersonnelId)
+                .toHashCode();
     }
 
 

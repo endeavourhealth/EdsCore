@@ -28,10 +28,10 @@ public class RdbmsStagingProcedure implements Serializable {
     private String procedureCodeType;
     private String procedureCode;
     private String procedureTerm;
-    private int personId;
+    private String personId;
     private String ward;
     private String site;
-    private int lookupPersonId;
+    private String lookupPersonId;
     private int lookupConsultantPersonnelId;
     private int lookuprecordedByPersonnelId;
     private String auditJson;
@@ -84,11 +84,11 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name = "person_id")
-    public int getPersonId() {
+    public String getPersonId() {
         return personId;
     }
 
-    public void setPersonId(int personId) {
+    public void setPersonId(String personId) {
         this.personId = personId;
     }
 
@@ -229,11 +229,11 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="lookup_person_id")
-    public int getLookupPersonId() {
+    public String getLookupPersonId() {
         return lookupPersonId;
     }
 
-    public void setLookupPersonId(int lookupPersonId) {
+    public void setLookupPersonId(String lookupPersonId) {
         this.lookupPersonId = lookupPersonId;
     }
 

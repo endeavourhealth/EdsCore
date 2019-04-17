@@ -135,10 +135,10 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setString(13,dbObj.getProcedureCodeType());
             ps.setString(14,dbObj.getProcedureCode());
             ps.setString(15,dbObj.getProcedureTerm());
-            ps.setInt(16,dbObj.getPersonId());
+            ps.setString(16,dbObj.getPersonId());
             ps.setString(17,dbObj.getWard());
             ps.setString(18,dbObj.getSite());
-            ps.setInt(19,dbObj.getLookupPersonId());
+            ps.setString(19,dbObj.getLookupPersonId());
             ps.setInt(20,dbObj.getLookupConsultantPersonnelId());
             ps.setInt(21,dbObj.getLookuprecordedByPersonnelId());
 
