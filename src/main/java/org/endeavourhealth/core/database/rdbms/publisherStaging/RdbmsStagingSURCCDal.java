@@ -30,7 +30,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " where c.recordChecksum = :record_checksum";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingSURCC.class)
-                    .setParameter("record_checksum", surcc.getRecordChecksum());
+                    .setParameter("record_checksum", surcc.hashCode());
 
             try {
                 RdbmsStagingSURCC result = (RdbmsStagingSURCC)query.getSingleResult();
@@ -55,7 +55,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcc)) {
-            LOG.error("staging_SURCC data already filed with record_checksum: "+surcc.getRecordChecksum());
+            LOG.error("staging_SURCC data already filed with record_checksum: "+surcc.hashCode());
             return;
         }
 

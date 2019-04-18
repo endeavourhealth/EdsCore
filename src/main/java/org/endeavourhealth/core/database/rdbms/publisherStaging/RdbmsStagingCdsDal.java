@@ -30,7 +30,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " where c.recordChecksum = :record_checksum";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingCds.class)
-                    .setParameter("record_checksum", cds.getRecordChecksum());
+                    .setParameter("record_checksum", cds.hashCode());
 
             try {
                 RdbmsStagingCds result = (RdbmsStagingCds)query.getSingleResult();
@@ -55,7 +55,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
-            LOG.error("staging_cds data already filed with record_checksum: "+cds.getRecordChecksum());
+            LOG.error("staging_cds data already filed with record_checksum: "+cds.hashCode());
             return;
         }
 
