@@ -114,7 +114,7 @@ public class RdbmsStagingSURCP {
     public int getProcedureCode  () {
         return procedureCode ;
     }
-    public void setProcedureCoded (int personId ) {
+    public void setProcedureCode (int procedureCode ) {
         this.procedureCode = procedureCode;
     }
 
