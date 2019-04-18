@@ -142,7 +142,7 @@ public class RdbmsStagingPROCE implements Serializable {
         this.procedureTerm = procedureTerm;
     }
 
-    @Column(name="procedure_seq")
+    @Column(name="procedure_seq_nbr")
     public int getProcedureSeqNo() {
         return procedureSeqNo;
     }
