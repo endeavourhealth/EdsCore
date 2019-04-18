@@ -72,7 +72,6 @@ public class DalProvider {
         return new RdbmsExchangeProtocolErrorDal();
     }
 
-
     public static ExchangeDalI factoryExchangeDal() {
         return new RdbmsExchangeDal();
     }
@@ -344,7 +343,6 @@ public class DalProvider {
         return new RdbmsPcrIdDal(subscriberConfigName);
     }
 
-
     public static PcrAgeUpdaterlDalI factoryPcrAgeUpdaterlDal(String subscriberConfigName) {
         return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
     }
@@ -397,6 +395,22 @@ public class DalProvider {
         return new RdbmsSnomedToBnfChapterDal();
     }
 
+    public static Lsoa2001DalI factoryLsoa2001 () {
+        return new RdbmsLsoa2001Dal();
+    }
+
+    public static Lsoa2011DalI factoryLsoa2011 () {
+        return new RdbmsLsoa2011Dal();
+    }
+
+    public static Msoa2001DalI factoryMsoa2001 () {
+        return new RdbmsMsoa2001Dal();
+    }
+
+    public static Msoa2011DalI factoryMsoa2011 () {
+        return new RdbmsMsoa2011Dal();
+    }
+
     public static Icd10DalI factoryIcd10Dal() {
         return new RdbmsIcd10Dal();
     }
@@ -416,6 +430,5 @@ public class DalProvider {
     public static StagingSURCCDalI factoryStagingSURCCDalI () { return new RdbmsStagingSURCCDal(); }
 
     public static StagingSURCPDalI factoryStagingSURCPDalI () { return new RdbmsStagingSURCPDal(); }
-
 
 }

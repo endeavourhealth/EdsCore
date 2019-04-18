@@ -296,6 +296,11 @@
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedDescriptionLink</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsOpcs4Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsIcd10Lookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedToBnfChapterLookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoa2001Lookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoa2011Lookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoa2001Lookup</class>
+        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoa2011Lookup</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
