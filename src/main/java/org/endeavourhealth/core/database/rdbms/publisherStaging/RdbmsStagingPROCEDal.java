@@ -115,7 +115,9 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps.setInt(4,dbObj.getProcedureId());
             ps.setBoolean(5,dbObj.isActiveInd());
             ps.setInt(6,dbObj.getEncounterId());
-            sqlDate = new java.sql.Date(dbObj.getProcedureDtTm().getTime());
+            if (dbObj.getProcedureDtTm() != null) {
+                sqlDate = new java.sql.Date(dbObj.getProcedureDtTm().getTime());
+            }
             ps.setDate(7,sqlDate);
             ps.setString(8,dbObj.getProcedureType());
             ps.setString(9,dbObj.getProcedureCode());
@@ -124,7 +126,9 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps.setInt(12,dbObj.getLookupPersonId());
             ps.setString(13,dbObj.getLookupMrn());
             ps.setString(14,dbObj.getLookupNhsNumber());
-            sqlDate = new java.sql.Date(dbObj.getLookupDateOfBirth().getTime());
+            if (dbObj.getLookupDateOfBirth() != null) {
+                sqlDate = new java.sql.Date(dbObj.getLookupDateOfBirth().getTime());
+            }
             ps.setDate(15,sqlDate);
             ps.setString(16,dbObj.getAuditJson());
 
