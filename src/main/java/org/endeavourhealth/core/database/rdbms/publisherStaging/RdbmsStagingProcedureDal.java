@@ -35,7 +35,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingProcedure c"
-                    + " where c.recordChecksum = :record_checksum";
+                    + " where c.checkSum = :record_checksum";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
                     .setParameter("record_checksum", stagingProcedure.hashCode());
