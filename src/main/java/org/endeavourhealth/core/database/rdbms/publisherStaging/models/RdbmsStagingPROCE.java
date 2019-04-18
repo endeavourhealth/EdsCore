@@ -79,7 +79,7 @@ public class RdbmsStagingPROCE implements Serializable {
         this.checkSum = checkSum;
     }
 
-    @Column(name="proceedure_id")
+    @Column(name="procedure_id")
     public int getProcedureId() {
         return procedureId;
     }
@@ -169,7 +169,7 @@ public class RdbmsStagingPROCE implements Serializable {
         this.lookupMrn = lookupMrn;
     }
 
-    @Column(name="lookup_nhs")
+    @Column(name="lookup_nhs_number")
     public String getLookupNhsNumber() {
         return lookupNhsNumber;
     }
