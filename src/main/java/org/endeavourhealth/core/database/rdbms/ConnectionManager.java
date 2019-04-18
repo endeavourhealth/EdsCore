@@ -255,6 +255,8 @@ public class ConnectionManager {
                 configName = "publisher_common";
             } else if (dbName == Db.FhirAudit) {
                 configName = "fhir_audit";
+            } else if (dbName == Db.PublisherStaging) {
+                configName="staging";
             } else {
                 throw new RuntimeException("Unknown database " + dbName);
             }
