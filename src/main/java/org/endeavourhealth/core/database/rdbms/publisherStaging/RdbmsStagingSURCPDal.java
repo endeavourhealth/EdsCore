@@ -55,7 +55,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcp)) {
-            LOG.error("staging_SURCC data already filed with record_checksum: "+surcp.hashCode());
+            LOG.error("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
             return;
         }
 
@@ -70,7 +70,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO staging_SURCP  "
+            String sql = "INSERT INTO procedure_SURCP  "
                     + " (exchange_id, dt_received, record_checksum, surgical_case_procedure_id, surgical_case_id, dt_extract, " +
                     " active_ind, procedure_code, procedure_text, modifier_text, primary_procedure_indicator, surgeon_personnel_id," +
                     " dt_start, dt_stop, wound_class_code, audit_json)"

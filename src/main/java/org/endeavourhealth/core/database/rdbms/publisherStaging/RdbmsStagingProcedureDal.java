@@ -82,14 +82,14 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             Connection connection = session.connection();
 
 
-            String sql = "INSERT INTO staging_procedure "
+            String sql = "INSERT INTO procedure_procedure "
                     + " (exchange_id, dt_received, record_checksum, mrn, "
                     + " nhs_number, date_of_birth, encounter_id, consultant, "
                     + " proc_dt_tm, updated_by, freetext_comment, create_dt_tm, "
                     + " proc_cd_type, proc_cd, proc_term, person_id, ward, site, "
                     + " lookup_person_id, lookup_consultant_personnel_id, "
-                    + " lookup_recorded_by_personnel_id)"
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " lookup_recorded_by_personnel_id, audit_json)"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -111,8 +111,8 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " site = VALUES(site), "
                     + " lookup_person_id = VALUES(lookup_person), "
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id), "
-                    + " lookup_recorded_by_personnel_id = VALUES(lookup_recorded_by_personnel_id)";
-
+                    + " lookup_recorded_by_personnel_id = VALUES(lookup_recorded_by_personnel_id), "
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
@@ -141,13 +141,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setString(19,dbObj.getLookupPersonId());
             ps.setInt(20,dbObj.getLookupConsultantPersonnelId());
             ps.setInt(21,dbObj.getLookuprecordedByPersonnelId());
-
-
-//            if (dbObj.getAuditJson() == null) {
-//                ps.setNull(11, Types.VARCHAR);
-//            } else {
-//                ps.setString(11, dbObj.getAuditJson());
-//            }
+            ps.setString(22,dbObj.getAuditJson());
 
             ps.executeUpdate();
 

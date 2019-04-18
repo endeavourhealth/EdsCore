@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "staging_SURCP")
+@Table(name = "procedure_SURCP")
 public class RdbmsStagingSURCP {
 
     private String exchangeId;

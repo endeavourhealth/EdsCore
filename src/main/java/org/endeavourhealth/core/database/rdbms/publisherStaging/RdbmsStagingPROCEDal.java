@@ -63,7 +63,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingPROCE)) {
-            LOG.error("staging_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
+            LOG.error("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
             return;
         }
 
@@ -82,12 +82,12 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             Connection connection = session.connection();
 
 
-            String sql = "INSERT INTO staging_PROCE "
+            String sql = "INSERT INTO procedure_PROCE "
                     + " (exchange_id, dt_received, record_checksum, procedure_id, "
                     + " active_ind, encounter_id, procedure_dt_tm, procedure_type, "
                     + " procedure_code, procedure_term, procedure_seq_nbr, lookup_person_id, "
-                    + " lookup_mrn, lookup_nhs_number, lookup_date_of_birth)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " lookup_mrn, lookup_nhs_number, lookup_date_of_birth, audit_json)  "
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -103,7 +103,9 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " lookup_person_id = VALUES(lookup_person_id), "
                     + " lookup_mrn = VALUES(lookup_mrn), "
                     + " lookup_nhs_number = VALUES(lookup_nhs_number), "
-                    + " lookup_date_of_birth = VALUES(lookup_date_of_birth) ";
+                    + " lookup_date_of_birth = VALUES(lookup_date_of_birth), "
+                    + " audit_json = VALUES(audit_json)";
+
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
@@ -124,14 +126,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps.setString(14,dbObj.getLookupNhsNumber());
             sqlDate = new java.sql.Date(dbObj.getLookupDateOfBirth().getTime());
             ps.setDate(15,sqlDate);
-
-
-
-//            if (dbObj.getAuditJson() == null) {
-//                ps.setNull(11, Types.VARCHAR);
-//            } else {
-//                ps.setString(11, dbObj.getAuditJson());
-//            }
+            ps.setString(16,dbObj.getAuditJson());
 
             ps.executeUpdate();
 

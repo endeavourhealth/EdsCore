@@ -55,7 +55,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
-            LOG.error("staging_cds data already filed with record_checksum: "+cds.hashCode());
+            LOG.error("procedure_cds data already filed with record_checksum: "+cds.hashCode());
             return;
         }
 
@@ -70,11 +70,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO staging_cds  "
+            String sql = "INSERT INTO procedure_cds  "
                     + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, " +
-                    " cds_update_type, mrn, nhs_number, date_of_birth, procedure_date, procedure_opcs_code, " +
-                    " procedure_opcs_term, procedure_seq_nbr, consultant_code, location, person_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " cds_update_type, mrn, nhs_number, date_of_birth, consultant_code, procedure_date, " +
+                    " procedure_opcs_code, procedure_seq_nbr, primary_procedure_opcs_code, lookup_procedure_opcs_term, " +
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -85,13 +86,14 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " mrn = VALUES(mrn),"
                     + " nhs_number = VALUES(nhs_number),"
                     + " date_of_birth = VALUES(date_of_birth),"
+                    + " consultant_code = VALUES(consultant_code),"
                     + " procedure_date = VALUES(procedure_date),"
                     + " procedure_opcs_code = VALUES(procedure_opcs_code),"
-                    + " procedure_opcs_term = VALUES(procedure_opcs_term),"
                     + " procedure_seq_nbr = VALUES(procedure_seq_nbr),"
-                    + " consultant_code = VALUES(consultant_code),"
-                    + " location = VALUES(location),"
-                    + " person_id = VALUES(person_id),"
+                    + " primary_procedure_opcs_code = VALUES(primary_procedure_opcs_code),"
+                    + " lookup_procedure_opcs_term = VALUES(lookup_procedure_opcs_term),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
@@ -105,14 +107,15 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(7,stagingCds.getMrn());
             ps.setString(8,stagingCds.getNhsNumber());
             ps.setDate(9, new java.sql.Date(stagingCds.getDateOfBirth().getTime()));
-            ps.setDate(10, new java.sql.Date(stagingCds.getProcedureDate().getTime()));
-            ps.setString(11,stagingCds.getProcedureOpcsCode());
-            ps.setString(12,stagingCds.getProcedureOpcsTerm());
+            ps.setString(10,stagingCds.getConsultantCode());
+            ps.setDate(11, new java.sql.Date(stagingCds.getProcedureDate().getTime()));
+            ps.setString(12,stagingCds.getProcedureOpcsCode());
             ps.setInt(13,stagingCds.getProcedureSeqNbr());
-            ps.setString(14,stagingCds.getConsultantCode());
-            ps.setString(15,stagingCds.getLocation());
-            ps.setInt(16,stagingCds.getPersonId());
-            ps.setString(17,stagingCds.getAuditJson());
+            ps.setString(14,stagingCds.getPrimaryProcedureOpcsCode());
+            ps.setString(15,stagingCds.getLookupProcedureOpcsTerm());
+            ps.setInt(16,stagingCds.getLookupPersonId());
+            ps.setInt(17,stagingCds.getLookupConsultantPersonnelId());
+            ps.setString(18,stagingCds.getAuditJson());
 
             ps.executeUpdate();
 

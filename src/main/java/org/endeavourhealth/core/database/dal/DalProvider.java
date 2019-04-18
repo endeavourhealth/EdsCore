@@ -415,24 +415,7 @@ public class DalProvider {
 
     public static StagingSURCCDalI factoryStagingSURCCDalI () { return new RdbmsStagingSURCCDal(); }
 
-    /*private static boolean useCassandra() {
+    public static StagingSURCPDalI factoryStagingSURCPDalI () { return new RdbmsStagingSURCPDal(); }
 
-        if (cachedUseCassandra == null) {
-            synchronized (sync) {
-                boolean b;
-                try {
-                    JsonNode json = ConfigManager.getConfigurationAsJson("core_db");
-                    b = json.get("cassandra").asBoolean();
-                } catch (Exception ex) {
-                    //if the config record isn't there use Cassandra
-                    b = true;
-                }
 
-                cachedUseCassandra = new Boolean(b);
-                LOG.info("Using Cassandra = " + cachedUseCassandra);
-            }
-        }
-
-        return cachedUseCassandra.booleanValue();
-    }*/
 }

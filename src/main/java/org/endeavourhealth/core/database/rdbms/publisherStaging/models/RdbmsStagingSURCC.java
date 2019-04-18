@@ -7,7 +7,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "staging_SURCC")
+@Table(name = "procedure_SURCC")
 public class RdbmsStagingSURCC {
 
     private String exchangeId;
@@ -178,7 +178,6 @@ public class RdbmsStagingSURCC {
                             institutionCode,
                             departmentCode,
                             surgicalAreaCode,
-                            theatreNumberCode,
-                            personId);
+                            theatreNumberCode);
     }
 }

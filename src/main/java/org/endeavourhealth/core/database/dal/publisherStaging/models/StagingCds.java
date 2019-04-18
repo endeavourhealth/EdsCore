@@ -17,13 +17,15 @@ public class StagingCds {
     private String mrn;
     private String nhsNumber;
     private Date dateOfBirth;
+    private String consultantCode;
     private Date procedureDate;
     private String procedureOpcsCode;
-    private String procedureOpcsTerm;
     private int procedureSeqNbr;
-    private String consultantCode;
-    private String location;
-    private int personId;
+    private String primaryProcedureOpcsCode;
+    private String lookupProcedureOpcsTerm;
+    private int lookupPersonId ;
+    private int lookupConsultantPersonnelId;
+
     private ResourceFieldMappingAudit audit = null;
 
     public StagingCds() {}
@@ -38,13 +40,15 @@ public class StagingCds {
         this.mrn = proxy.getMrn();
         this.nhsNumber = proxy.getNhsNumber();
         this.dateOfBirth = proxy.getDateOfBirth();
+        this.consultantCode = proxy.getConsultantCode();
         this.procedureDate = proxy.getProcedureDate();
         this.procedureOpcsCode = proxy.getProcedureOpcsCode();
-        this.procedureOpcsTerm = proxy.getProcedureOpcsTerm();
         this.procedureSeqNbr = proxy.getProcedureSeqNbr();
-        this.consultantCode = proxy.getConsultantCode();
-        this.location = proxy.getLocation();
-        this.personId = proxy.getPersonId();
+        this.primaryProcedureOpcsCode = proxy.getPrimaryProcedureOpcsCode();
+        this.lookupProcedureOpcsTerm = proxy.getLookupProcedureOpcsTerm();
+        this.lookupPersonId = proxy.getLookupPersonId();
+        this.lookupConsultantPersonnelId = proxy.getLookupConsultantPersonnelId();
+
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
@@ -113,6 +117,13 @@ public class StagingCds {
         this.dateOfBirth  = dateOfBirth;
     }
 
+    public String getConsultantCode  () {
+        return consultantCode ;
+    }
+    public void setConsultantCode (String consultantCode ) {
+        this.consultantCode = consultantCode;
+    }
+
     public Date getProcedureDate () {
         return procedureDate;
     }
@@ -127,13 +138,6 @@ public class StagingCds {
         this.procedureOpcsCode = procedureOpcsCode;
     }
 
-    public String getProcedureOpcsTerm  () {
-        return procedureOpcsTerm ;
-    }
-    public void setProcedureOpcsTerm (String procedureOpcsTerm ) {
-        this.procedureOpcsTerm = procedureOpcsTerm;
-    }
-
     public int getProcedureSeqNbr  () {
         return procedureSeqNbr ;
     }
@@ -141,26 +145,26 @@ public class StagingCds {
         this.procedureSeqNbr = procedureSeqNbr;
     }
 
-    public String getConsultantCode  () {
-        return consultantCode ;
+    public String getPrimaryProcedureOpcsCode () {
+        return primaryProcedureOpcsCode ;
     }
-    public void setConsultantCode (String consultantCode ) {
-        this.consultantCode = consultantCode;
-    }
+    public void setPrimaryProcedureOpcsCode (String primaryProcedureOpcsCode ) {this.primaryProcedureOpcsCode = primaryProcedureOpcsCode; }
 
-    public String getLocation  () {
-        return location ;
+    public String getLookupProcedureOpcsTerm () {
+        return lookupProcedureOpcsTerm ;
     }
-    public void setLocation (String location ) {
-        this.location = location;
-    }
+    public void setLookupProcedureOpcsTerm (String lookupProcedureOpcsTerm ) {this.lookupProcedureOpcsTerm = lookupProcedureOpcsTerm; }
 
-    public int getPersonId  () {
-        return personId ;
+    public int getLookupPersonId () {
+        return lookupPersonId ;
     }
-    public void setPersonId (int personId ) {
-        this.personId = personId;
+    public void setLookupPersonId (int lookupPersonId ) {this.lookupPersonId = lookupPersonId; }
+
+    public int getLookupConsultantPersonnelId () {
+        return lookupConsultantPersonnelId ;
     }
+    public void setLookupConsultantPersonnelId (int lookupConsultantPersonnelId ) {
+        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;}
 
     public ResourceFieldMappingAudit getAudit() {
         return audit;
@@ -173,17 +177,18 @@ public class StagingCds {
     public int hashCode() {
 
         return Objects.hash(susRecordType,
-                            cdsUniqueIdentifier,
-                            cdsUpdateType,
-                            mrn,
-                            nhsNumber,
-                            dateOfBirth,
-                            procedureDate,
-                            procedureOpcsCode,
-                            procedureOpcsTerm,
-                            procedureSeqNbr,
-                            consultantCode,
-                            location,
-                            personId);
+                cdsUniqueIdentifier,
+                cdsUpdateType,
+                mrn,
+                nhsNumber,
+                dateOfBirth,
+                consultantCode,
+                procedureDate,
+                procedureOpcsCode,
+                procedureSeqNbr,
+                primaryProcedureOpcsCode,
+                lookupProcedureOpcsTerm,
+                lookupPersonId,
+                lookupConsultantPersonnelId);
     }
 }

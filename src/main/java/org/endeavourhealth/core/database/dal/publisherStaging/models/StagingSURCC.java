@@ -149,7 +149,6 @@ public class StagingSURCC {
                             institutionCode,
                             departmentCode,
                             surgicalAreaCode,
-                            theatreNumberCode,
-                            personId);
+                            theatreNumberCode);
     }
 }

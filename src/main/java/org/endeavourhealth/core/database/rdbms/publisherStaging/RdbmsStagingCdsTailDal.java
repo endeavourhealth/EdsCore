@@ -55,7 +55,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cdsTail)) {
-            LOG.error("staging_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
+            LOG.error("procedure_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
             return;
         }
 
@@ -70,7 +70,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO staging_cds_tail  "
+            String sql = "INSERT INTO procedure_cds_tail  "
                     + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, person_id, encounter_id, responsible_hcp_personnel_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"

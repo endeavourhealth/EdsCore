@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "staging_procedure")
+@Table(name = "procedure_PROCE")
 public class RdbmsStagingPROCE implements Serializable {
     private String exchangeId;
     private Date dateReceived;

@@ -19,13 +19,15 @@ public class RdbmsStagingCds {
     private String mrn;
     private String nhsNumber;
     private Date dateOfBirth;
+    private String consultantCode;
     private Date procedureDate;
     private String procedureOpcsCode;
-    private String procedureOpcsTerm;
     private int procedureSeqNbr;
-    private String consultantCode;
-    private String location;
-    private int personId;
+    private String primaryProcedureOpcsCode;
+    private String lookupProcedureOpcsTerm;
+    private int lookupPersonId ;
+    private int lookupConsultantPersonnelId;
+
     private String auditJson;
 
     public RdbmsStagingCds() {}
@@ -41,13 +43,15 @@ public class RdbmsStagingCds {
         this.mrn = proxy.getMrn();
         this.nhsNumber = proxy.getNhsNumber();
         this.dateOfBirth = proxy.getDateOfBirth();
+        this.consultantCode = proxy.getConsultantCode();
         this.procedureDate = proxy.getProcedureDate();
         this.procedureOpcsCode = proxy.getProcedureOpcsCode();
-        this.procedureOpcsTerm = proxy.getProcedureOpcsTerm();
         this.procedureSeqNbr = proxy.getProcedureSeqNbr();
-        this.consultantCode = proxy.getConsultantCode();
-        this.location = proxy.getLocation();
-        this.personId = proxy.getPersonId();
+        this.primaryProcedureOpcsCode = proxy.getPrimaryProcedureOpcsCode();
+        this.lookupProcedureOpcsTerm = proxy.getLookupProcedureOpcsTerm();
+        this.lookupPersonId = proxy.getLookupPersonId();
+        this.lookupConsultantPersonnelId = proxy.getLookupConsultantPersonnelId();
+
         if (proxy.getAudit()!= null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -134,6 +138,14 @@ public class RdbmsStagingCds {
         this.dateOfBirth  = dateOfBirth;
     }
 
+    @Column(name = "consultant_code")
+    public String getConsultantCode  () {
+        return consultantCode ;
+    }
+    public void setConsultantCode (String consultantCode ) {
+        this.consultantCode = consultantCode;
+    }
+
     @Basic
     @Column(name = "procedure_date")
     public Date getProcedureDate () {
@@ -153,15 +165,6 @@ public class RdbmsStagingCds {
     }
 
     @Basic
-    @Column(name = "procedure_opcs_term")
-    public String getProcedureOpcsTerm  () {
-        return procedureOpcsTerm ;
-    }
-    public void setProcedureOpcsTerm (String procedureOpcsTerm ) {
-        this.procedureOpcsTerm = procedureOpcsTerm;
-    }
-
-    @Basic
     @Column(name = "procedure_seq_nbr")
     public int getProcedureSeqNbr  () {
         return procedureSeqNbr ;
@@ -171,30 +174,33 @@ public class RdbmsStagingCds {
     }
 
     @Basic
-    @Column(name = "consultant_code")
-    public String getConsultantCode  () {
-        return consultantCode ;
+    @Column(name = "primary_procedure_opcs_code")
+    public String getPrimaryProcedureOpcsCode () {
+        return primaryProcedureOpcsCode ;
     }
-    public void setConsultantCode (String consultantCode ) {
-        this.consultantCode = consultantCode;
-    }
+    public void setPrimaryProcedureOpcsCode (String primaryProcedureOpcsCode ) {this.primaryProcedureOpcsCode = primaryProcedureOpcsCode; }
 
     @Basic
-    @Column(name = "location")
-    public String getLocation  () {
-        return location ;
+    @Column(name = "lookup_procedure_opcs_term")
+    public String getLookupProcedureOpcsTerm () {
+        return lookupProcedureOpcsTerm ;
     }
-    public void setLocation (String location ) {
-        this.location = location;
-    }
+    public void setLookupProcedureOpcsTerm (String lookupProcedureOpcsTerm ) {this.lookupProcedureOpcsTerm = lookupProcedureOpcsTerm; }
 
     @Basic
-    @Column(name = "person_id")
-    public int getPersonId  () {
-        return personId ;
+    @Column(name = "lookup_person_id")
+    public int getLookupPersonId () {
+        return lookupPersonId ;
     }
-    public void setPersonId (int personId ) {
-        this.personId = personId;
+    public void setLookupPersonId (int lookupPersonId ) {this.lookupPersonId = lookupPersonId; }
+
+    @Basic
+    @Column(name = "lookup_consultant_personnel_id")
+    public int getLookupConsultantPersonnelId () {
+        return lookupConsultantPersonnelId ;
+    }
+    public void setLookupConsultantPersonnelId (int lookupConsultantPersonnelId ) {
+        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
     }
 
     @Basic
@@ -212,12 +218,13 @@ public class RdbmsStagingCds {
                             mrn,
                             nhsNumber,
                             dateOfBirth,
+                            consultantCode,
                             procedureDate,
                             procedureOpcsCode,
-                            procedureOpcsTerm,
                             procedureSeqNbr,
-                            consultantCode,
-                            location,
-                            personId);
+                            primaryProcedureOpcsCode,
+                            lookupProcedureOpcsTerm,
+                            lookupPersonId,
+                            lookupConsultantPersonnelId);
     }
 }
