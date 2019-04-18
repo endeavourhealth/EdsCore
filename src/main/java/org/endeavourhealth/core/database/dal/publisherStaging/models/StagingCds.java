@@ -85,7 +85,7 @@ public class StagingCds {
     public String getCdsUniqueIdentifier() {
         return cdsUniqueIdentifier;
     }
-    public void setCdsUniqueIdentifierm(String cdsUniqueIdentifier) {
+    public void setCdsUniqueIdentifier(String cdsUniqueIdentifier) {
         this.cdsUniqueIdentifier = cdsUniqueIdentifier;
     }
 
