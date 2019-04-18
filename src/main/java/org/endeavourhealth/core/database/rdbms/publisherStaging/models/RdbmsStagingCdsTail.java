@@ -85,7 +85,7 @@ public class RdbmsStagingCdsTail {
     public String getCdsUniqueIdentifier() {
         return cdsUniqueIdentifier;
     }
-    public void setCdsUniqueIdentifierm(String cdsUniqueIdentifier) {
+    public void setCdsUniqueIdentifier(String cdsUniqueIdentifier) {
         this.cdsUniqueIdentifier = cdsUniqueIdentifier;
     }
 

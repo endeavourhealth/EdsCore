@@ -72,7 +72,7 @@ public class StagingCdsTail {
     public String getCdsUniqueIdentifier() {
         return cdsUniqueIdentifier;
     }
-    public void setCdsUniqueIdentifierm(String cdsUniqueIdentifier) {
+    public void setCdsUniqueIdentifier(String cdsUniqueIdentifier) {
         this.cdsUniqueIdentifier = cdsUniqueIdentifier;
     }
 
