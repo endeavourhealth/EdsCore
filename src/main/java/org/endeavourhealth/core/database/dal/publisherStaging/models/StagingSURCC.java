@@ -35,7 +35,7 @@ public class StagingSURCC {
         this.personId = proxy.getPersonId();
         this.encounterId = proxy.getEncounterId();
         this.dtCancelled = proxy.getDTCancelled();
-        this.institutionCode = proxy.getInstituteCode();
+        this.institutionCode = proxy.getInstitutionCode();
         this.departmentCode = proxy.getDepartmentCode();
         this.surgicalAreaCode = proxy.getSurgicalAreaCode();
         this.theatreNumberCode = proxy.getTheatreNumberCode();
@@ -106,7 +106,7 @@ public class StagingSURCC {
         this.dtCancelled = dtCancelled;
     }
 
-    public String getInstituteCode () {
+    public String getInstitutionCode () {
         return institutionCode;
     }
     public void setInstitutionCode (String institutionCode) {

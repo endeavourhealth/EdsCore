@@ -39,7 +39,7 @@ public class RdbmsStagingSURCC {
         this.personId = proxy.getPersonId();
         this.encounterId = proxy.getEncounterId();
         this.dtCancelled = proxy.getDTCancelled();
-        this.institutionCode = proxy.getInstituteCode();
+        this.institutionCode = proxy.getInstitutionCode();
         this.departmentCode = proxy.getDepartmentCode();
         this.surgicalAreaCode = proxy.getSurgicalAreaCode();
         this.theatreNumberCode = proxy.getTheatreNumberCode();
@@ -130,7 +130,7 @@ public class RdbmsStagingSURCC {
 
     @Basic
     @Column(name = "institution_code")
-    public String getInstituteCode () {
+    public String getInstitutionCode () {
         return institutionCode;
     }
     public void setInstitutionCode (String institutionCode) {

@@ -102,7 +102,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             ps.setInt(7,stagingSurcc.getPersonId());
             ps.setInt(8,stagingSurcc.getEncounterId());
             ps.setDate(9,new java.sql.Date(stagingSurcc.getDTCancelled().getTime()));
-            ps.setString(10,stagingSurcc.getInstituteCode());
+            ps.setString(10,stagingSurcc.getInstitutionCode());
             ps.setString(11,stagingSurcc.getDepartmentCode());
             ps.setString(12,stagingSurcc.getSurgicalAreaCode());
             ps.setString(13,stagingSurcc.getTheatreNumberCode());
