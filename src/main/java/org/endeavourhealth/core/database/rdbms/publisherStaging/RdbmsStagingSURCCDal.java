@@ -14,7 +14,6 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLIntegrityConstraintViolationException;
-import java.util.Date;
 import java.util.UUID;
 
 public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
@@ -106,8 +105,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             if (stagingSurcc.getDTCancelled()!=null) {
                 ps.setDate(9, new java.sql.Date(stagingSurcc.getDTCancelled().getTime()));
             } else {
-                Date d = null;
-                java.sql.Date sqldate = new java.sql.Date(d.getTime());
+                java.sql.Date sqldate = null;
                 ps.setDate(9,sqldate);
             }
             ps.setString(10,stagingSurcc.getInstitutionCode());
