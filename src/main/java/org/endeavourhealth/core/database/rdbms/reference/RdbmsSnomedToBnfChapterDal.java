@@ -19,7 +19,7 @@ public class RdbmsSnomedToBnfChapterDal implements SnomedToBnfChapterDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsSnomedToBnfChapterLookup c"
-                    + " where c.snomedCode = :snomedCode";
+                    + " where c.snomedCode = :snomed_code";
 
             Query query = entityManager
                     .createQuery(sql, RdbmsSnomedToBnfChapterLookup.class)
