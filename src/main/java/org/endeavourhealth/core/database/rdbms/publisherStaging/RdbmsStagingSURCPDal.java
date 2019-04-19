@@ -97,7 +97,8 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingSurcp.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingSurcp.getDTReceived().getTime()));
+            java.sql.Date sqlDate = new java.sql.Date(stagingSurcp.getDTReceived().getTime());
+            ps.setDate(2, sqlDate);
             ps.setInt(3,stagingSurcp.getRecordChecksum());
             ps.setInt(4,stagingSurcp.getSurgicalCaseProcedureId());
             ps.setInt(5,stagingSurcp.getSurgicalCaseId());
@@ -108,8 +109,18 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             ps.setString(10,stagingSurcp.getModifierText());
             ps.setInt(11,stagingSurcp.getPrimaryProcedureIndicator());
             ps.setInt(12,stagingSurcp.getSurgeonPersonnelId());
-            ps.setDate(13,new java.sql.Date(stagingSurcp.getDTStart().getTime()));
-            ps.setDate(14,new java.sql.Date(stagingSurcp.getDTStop().getTime()));
+            if (stagingSurcp.getDTStart()!=null) {
+                ps.setDate(13, new java.sql.Date(stagingSurcp.getDTStart().getTime()));
+            } else {
+                sqlDate = null;
+                ps.setDate(13,sqlDate);
+            }
+            if (stagingSurcp.getDTStop()!=null) {
+                ps.setDate(14, new java.sql.Date(stagingSurcp.getDTStop().getTime()));
+            } else {
+                sqlDate=null;
+                ps.setDate(14,sqlDate);
+            }
             ps.setString(15,stagingSurcp.getWoundClassCode());
             ps.setString(16,stagingSurcp.getAuditJson());
 
