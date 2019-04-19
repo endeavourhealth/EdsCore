@@ -14,6 +14,7 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.Date;
 import java.util.UUID;
 
 public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
@@ -102,7 +103,13 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             ps.setBoolean(6,stagingSurcc.getActiveInd());
             ps.setInt(7,stagingSurcc.getPersonId());
             ps.setInt(8,stagingSurcc.getEncounterId());
-            ps.setDate(9,new java.sql.Date(stagingSurcc.getDTCancelled().getTime()));
+            if (stagingSurcc.getDTCancelled()!=null) {
+                ps.setDate(9, new java.sql.Date(stagingSurcc.getDTCancelled().getTime()));
+            } else {
+                Date d = null;
+                java.sql.Date sqldate = new java.sql.Date(d.getTime());
+                ps.setDate(9,sqldate);
+            }
             ps.setString(10,stagingSurcc.getInstitutionCode());
             ps.setString(11,stagingSurcc.getDepartmentCode());
             ps.setString(12,stagingSurcc.getSurgicalAreaCode());
