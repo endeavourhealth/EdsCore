@@ -13,6 +13,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.UUID;
 
 public class RdbmsStagingCdsDal implements StagingCdsDalI {
@@ -100,27 +101,29 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps.setString(1, stagingCds.getExchangeId());
             ps.setDate(2, new java.sql.Date(stagingCds.getDTReceived().getTime()));
-            ps.setInt(3,stagingCds.getRecordChecksum());
-            ps.setString(4,stagingCds.getSusRecordType());
-            ps.setString(5,stagingCds.getCdsUniqueIdentifier());
-            ps.setInt(6,stagingCds.getCdsUpdateType());
-            ps.setString(7,stagingCds.getMrn());
-            ps.setString(8,stagingCds.getNhsNumber());
+            ps.setInt(3, stagingCds.getRecordChecksum());
+            ps.setString(4, stagingCds.getSusRecordType());
+            ps.setString(5, stagingCds.getCdsUniqueIdentifier());
+            ps.setInt(6, stagingCds.getCdsUpdateType());
+            ps.setString(7, stagingCds.getMrn());
+            ps.setString(8, stagingCds.getNhsNumber());
             ps.setDate(9, new java.sql.Date(stagingCds.getDateOfBirth().getTime()));
-            ps.setString(10,stagingCds.getConsultantCode());
+            ps.setString(10, stagingCds.getConsultantCode());
             ps.setDate(11, new java.sql.Date(stagingCds.getProcedureDate().getTime()));
-            ps.setString(12,stagingCds.getProcedureOpcsCode());
-            ps.setInt(13,stagingCds.getProcedureSeqNbr());
-            ps.setString(14,stagingCds.getPrimaryProcedureOpcsCode());
-            ps.setString(15,stagingCds.getLookupProcedureOpcsTerm());
-            ps.setInt(16,stagingCds.getLookupPersonId());
-            ps.setInt(17,stagingCds.getLookupConsultantPersonnelId());
-            ps.setString(18,stagingCds.getAuditJson());
+            ps.setString(12, stagingCds.getProcedureOpcsCode());
+            ps.setInt(13, stagingCds.getProcedureSeqNbr());
+            ps.setString(14, stagingCds.getPrimaryProcedureOpcsCode());
+            ps.setString(15, stagingCds.getLookupProcedureOpcsTerm());
+            ps.setInt(16, stagingCds.getLookupPersonId());
+            ps.setInt(17, stagingCds.getLookupConsultantPersonnelId());
+            ps.setString(18, stagingCds.getAuditJson());
 
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-
+        } catch (SQLIntegrityConstraintViolationException sqlE) {
+          LOG.warn("SQLIntegrityConstraintViolationException hadled for " + cds.toString());
+            entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

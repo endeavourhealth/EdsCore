@@ -361,9 +361,7 @@ public class ConnectionManager {
     }
 
     public static EntityManager getPublisherStagingEntityMananger(UUID serviceId) throws Exception {
-        //String configName = findConfigNameForPublisherService(serviceId);
-        String configName = "staging";
-        //TODO Ugly hack to get this working
+        String configName = findConfigNameForPublisherService(serviceId);
         return getEntityManager(Db.PublisherStaging, configName);
     }
 

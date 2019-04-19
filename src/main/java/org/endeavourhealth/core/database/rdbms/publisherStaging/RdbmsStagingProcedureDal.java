@@ -14,6 +14,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.UUID;
 
@@ -147,7 +148,9 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             //transaction.commit();
             entityManager.getTransaction().commit();
-
+        } catch (SQLIntegrityConstraintViolationException sqlE) {
+            LOG.warn("SQLIntegrityConstraintViolationException hadled for " + stagingProcedure.toString());
+            entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;
