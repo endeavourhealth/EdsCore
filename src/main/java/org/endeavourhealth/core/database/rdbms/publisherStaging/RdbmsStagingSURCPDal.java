@@ -117,7 +117,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
             entityManager.getTransaction().commit();
         } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException hadled for " + surcp.toString());
+            LOG.warn("SQLIntegrityConstraintViolationException handled for " + surcp.toString());
             entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
