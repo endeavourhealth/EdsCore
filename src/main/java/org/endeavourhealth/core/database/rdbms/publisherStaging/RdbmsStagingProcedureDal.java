@@ -148,8 +148,9 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             //transaction.commit();
             entityManager.getTransaction().commit();
+            //TODO horrid hack
         } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException hadled for " + stagingProcedure.toString());
+            LOG.warn("SQLIntegrityConstraintViolationException handled for " + stagingProcedure.toString());
             entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();

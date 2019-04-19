@@ -107,8 +107,9 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
+            //TODO remove horrid hack
         } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException hadled for " + cdsTail.toString());
+            LOG.warn("SQLIntegrityConstraintViolationException handled for " + cdsTail.toString());
             entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
