@@ -37,7 +37,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " from "
                     + " RdbmsStagingProcedure c"
                     + " where c.checkSum = :record_checksum"
-                    + " order by c.dateReceived desc";
+                    + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
                     .setParameter("record_checksum", stagingProcedure.hashCode())
@@ -120,7 +120,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDateReceived().getTime());
+            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDTReceived().getTime());
             ps.setDate(2,sqlDate);
             ps.setInt(3,dbObj.getRecordChecksum());
             ps.setString(4,dbObj.getMrn());

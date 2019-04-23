@@ -29,7 +29,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " from "
                     + " RdbmsStagingSURCP c"
                     + " where c.recordChecksum = :record_checksum"
-                    + " order by c.dateReceived desc";
+                    + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingSURCP.class)
                     .setParameter("record_checksum", surcp.hashCode())

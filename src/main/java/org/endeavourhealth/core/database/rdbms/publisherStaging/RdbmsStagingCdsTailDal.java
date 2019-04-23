@@ -29,7 +29,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
                     + " from "
                     + " RdbmsStagingCdsTail c"
                     + " where c.recordChecksum = :record_checksum"
-                    + " order by c.dateReceived desc";
+                    + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingCdsTail.class)
                     .setParameter("record_checksum", cdsTail.hashCode())

@@ -166,11 +166,11 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="dt_received")
-    public Date getDateReceived() {
+    public Date getDTReceived() {
         return dateReceived;
     }
 
-    public void setDateReceived(Date dateReceived) {
+    public void setDTReceived(Date dateReceived) {
         this.dateReceived = dateReceived;
     }
 
