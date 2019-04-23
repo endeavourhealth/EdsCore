@@ -14,7 +14,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.UUID;
 
@@ -146,10 +145,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             //transaction.commit();
             entityManager.getTransaction().commit();
             //TODO Not proud of this hack. Need to rewrite the transformers for all notnulls.
-        } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException handled for " + stagingPROCE.toString());
-            LOG.warn("Exception" + sqlE.getMessage());
-            entityManager.getTransaction().rollback();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;
