@@ -200,4 +200,26 @@ public class RdbmsStagingPROCE implements Serializable {
                 lookupNhsNumber,
                 lookupDateOfBirth);
     }
+
+    @Override
+    public String toString() {
+        return "RdbmsStagingPROCE{" +
+                "exchangeId='" + exchangeId + '\'' +
+                ", dtReceived=" + dtReceived +
+                ", checkSum=" + checkSum +
+                ", procedureId=" + procedureId +
+                ", activeInd=" + activeInd +
+                ", encounterId=" + encounterId +
+                ", procedureDtTm=" + procedureDtTm +
+                ", procedureType='" + procedureType + '\'' +
+                ", procedureCode='" + procedureCode + '\'' +
+                ", procedureTerm='" + procedureTerm + '\'' +
+                ", procedureSeqNo=" + procedureSeqNo +
+                ", lookupPersonId=" + lookupPersonId +
+                ", lookupMrn='" + lookupMrn + '\'' +
+                ", lookupNhsNumber='" + lookupNhsNumber + '\'' +
+                ", lookupDateOfBirth=" + lookupDateOfBirth +
+                ", auditJson='" + auditJson + '\'' +
+                '}';
+    }
 }
