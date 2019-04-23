@@ -73,7 +73,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
         RdbmsStagingPROCE dbObj = new RdbmsStagingPROCE(stagingPROCE);
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
 
         try {
