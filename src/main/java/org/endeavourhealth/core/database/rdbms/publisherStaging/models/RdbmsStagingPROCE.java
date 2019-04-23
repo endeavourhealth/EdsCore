@@ -62,20 +62,20 @@ public class RdbmsStagingPROCE implements Serializable {
     }
 
     @Column(name="dt_received")
-    public Date getDateReceived() {
+    public Date getDTReceived() {
         return dateReceived;
     }
 
-    public void setDateReceived(Date dateReceived) {
+    public void setDTReceived(Date dateReceived) {
         this.dateReceived = dateReceived;
     }
 
     @Column(name="record_checksum")
-    public int getCheckSum() {
+    public int getRecordChecksum() {
         return checkSum;
     }
 
-    public void setCheckSum(int checkSum) {
+    public void setRecordChecksum(int checkSum) {
         this.checkSum = checkSum;
     }
 

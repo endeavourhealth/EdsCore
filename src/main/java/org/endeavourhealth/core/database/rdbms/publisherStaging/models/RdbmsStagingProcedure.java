@@ -175,11 +175,11 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="record_checksum")
-    public int getCheckSum() {
+    public int getRecordChecksum() {
         return checkSum;
     }
 
-    public void setCheckSum(int checkSum) {
+    public void setRecordChecksum(int checkSum) {
         this.checkSum = checkSum;
     }
 

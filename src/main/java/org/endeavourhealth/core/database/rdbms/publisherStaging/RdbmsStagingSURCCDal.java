@@ -28,14 +28,16 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingSURCC c"
-                    + " where c.recordChecksum = :record_checksum";
+                    + " where c.recordChecksum = :record_checksum"
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingSURCC.class)
-                    .setParameter("record_checksum", surcc.hashCode());
+                    .setParameter("record_checksum", surcc.hashCode())
+                    .setMaxResults(1);
 
             try {
                 RdbmsStagingSURCC result = (RdbmsStagingSURCC)query.getSingleResult();
-                return true;
+                return result.getRecordChecksum() == surcc.getRecordChecksum();
             }
             catch (NoResultException e) {
                 return false;

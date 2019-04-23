@@ -36,14 +36,16 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingProcedure c"
-                    + " where c.checkSum = :record_checksum";
+                    + " where c.checkSum = :record_checksum"
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
-                    .setParameter("record_checksum", stagingProcedure.hashCode());
+                    .setParameter("record_checksum", stagingProcedure.hashCode())
+                    .setMaxResults(1);
 
             try {
                 RdbmsStagingProcedure result = (RdbmsStagingProcedure)query.getSingleResult();
-                return true;
+                return result.getRecordChecksum() == stagingProcedure.getCheckSum();
             }
             catch (NoResultException e) {
                 return false;
@@ -120,7 +122,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setString(1, dbObj.getExchangeId());
             java.sql.Date sqlDate = new java.sql.Date(dbObj.getDateReceived().getTime());
             ps.setDate(2,sqlDate);
-            ps.setInt(3,dbObj.getCheckSum());
+            ps.setInt(3,dbObj.getRecordChecksum());
             ps.setString(4,dbObj.getMrn());
             ps.setString(5,dbObj.getNhsNumber());
             sqlDate = new java.sql.Date(dbObj.getDob().getTime());

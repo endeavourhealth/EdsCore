@@ -28,14 +28,16 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingCdsTail c"
-                    + " where c.recordChecksum = :record_checksum";
+                    + " where c.recordChecksum = :record_checksum"
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingCdsTail.class)
-                    .setParameter("record_checksum", cdsTail.hashCode());
+                    .setParameter("record_checksum", cdsTail.hashCode())
+                    .setMaxResults(1);
 
             try {
                 RdbmsStagingCdsTail result = (RdbmsStagingCdsTail) query.getSingleResult();
-                return true;
+                return result.getRecordChecksum() == cdsTail.getRecordChecksum();
             }
             catch (NoResultException e) {
                 return false;

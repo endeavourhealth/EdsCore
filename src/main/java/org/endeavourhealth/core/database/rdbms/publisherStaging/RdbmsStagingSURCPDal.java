@@ -28,14 +28,16 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingSURCP c"
-                    + " where c.recordChecksum = :record_checksum";
+                    + " where c.recordChecksum = :record_checksum"
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingSURCP.class)
-                    .setParameter("record_checksum", surcp.hashCode());
+                    .setParameter("record_checksum", surcp.hashCode())
+                    .setMaxResults(1);
 
             try {
                 RdbmsStagingSURCP result = (RdbmsStagingSURCP)query.getSingleResult();
-                return true;
+                return result.getRecordChecksum() == surcp.getRecordChecksum();
             }
             catch (NoResultException e) {
                 return false;

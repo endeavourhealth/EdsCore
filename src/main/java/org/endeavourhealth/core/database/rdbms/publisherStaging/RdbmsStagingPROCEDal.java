@@ -45,7 +45,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
             try {
                 RdbmsStagingPROCE result = (RdbmsStagingPROCE)query.getSingleResult();
-                return (result.getCheckSum() == stagingPROCE.getCheckSum());
+                return (result.getRecordChecksum() == stagingPROCE.getCheckSum());
             }
             catch (NoResultException e) {
                 return false;
@@ -112,9 +112,9 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDateReceived().getTime());
+            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDTReceived().getTime());
             ps.setDate(2,sqlDate);
-            ps.setInt(3,dbObj.getCheckSum());
+            ps.setInt(3,dbObj.getRecordChecksum());
             ps.setInt(4,dbObj.getProcedureId());
             ps.setBoolean(5,dbObj.isActiveInd());
             ps.setInt(6,dbObj.getEncounterId());
