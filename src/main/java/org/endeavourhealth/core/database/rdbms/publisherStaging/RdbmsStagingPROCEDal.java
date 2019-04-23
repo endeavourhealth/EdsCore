@@ -37,7 +37,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " from "
                     + " RdbmsStagingPROCE c"
                     + " where c.procedureId = :procedure_id"
-                    + " order by c.dtReceived desc";
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingPROCE.class)
                     .setParameter("procedure_id", stagingPROCE.getProcedureId())
