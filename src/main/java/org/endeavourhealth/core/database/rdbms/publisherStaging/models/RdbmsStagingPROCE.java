@@ -14,7 +14,7 @@ import java.util.Objects;
 @Table(name = "procedure_PROCE")
 public class RdbmsStagingPROCE implements Serializable {
     private String exchangeId;
-    private Date dateReceived;
+    private Date dtReceived;
     private int checkSum;
     private int procedureId;
     private boolean activeInd;
@@ -32,7 +32,7 @@ public class RdbmsStagingPROCE implements Serializable {
 
     public RdbmsStagingPROCE(StagingPROCE in) throws Exception {
         this.exchangeId = in.getExchangeId();
-        this.dateReceived = in.getDateReceived();
+        this.dtReceived = in.getDTReceived();
         this.checkSum=in.getCheckSum();
         this.procedureId=in.getProcedureId();
         this.activeInd=in.isActiveInd();
@@ -63,11 +63,11 @@ public class RdbmsStagingPROCE implements Serializable {
 
     @Column(name="dt_received")
     public Date getDTReceived() {
-        return dateReceived;
+        return dtReceived;
     }
 
-    public void setDTReceived(Date dateReceived) {
-        this.dateReceived = dateReceived;
+    public void setDTReceived(Date dtReceived) {
+        this.dtReceived = dtReceived;
     }
 
     @Column(name="record_checksum")

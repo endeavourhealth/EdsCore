@@ -8,7 +8,7 @@ import java.util.Objects;
 public class StagingPROCE {
 
     private String exchangeId;
-    private Date dateReceived;
+    private Date dtReceived;
     private int checkSum;
     private int procedureId;
     private boolean activeInd;
@@ -35,12 +35,12 @@ public class StagingPROCE {
         this.exchangeId = exchangeId;
     }
 
-    public Date getDateReceived() {
-        return dateReceived;
+    public Date getDTReceived() {
+        return dtReceived;
     }
 
-    public void setDateReceived(Date dateReceived) {
-        this.dateReceived = dateReceived;
+    public void setDTReceived(Date dtReceived) {
+        this.dtReceived = dtReceived;
     }
 
     public int getCheckSum() {
