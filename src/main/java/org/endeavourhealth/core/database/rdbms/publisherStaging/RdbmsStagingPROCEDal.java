@@ -37,10 +37,12 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " from "
                     + " RdbmsStagingPROCE c"
                     + " where c.procedureId = :procedure_id"
+                    + " and c.activeInd =:active_ind "
                     + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingPROCE.class)
                     .setParameter("procedure_id", stagingPROCE.getProcedureId())
+                    .setParameter("active_ind", stagingPROCE.isActiveInd())
                     .setMaxResults(1);
 
             try {
