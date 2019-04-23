@@ -7,7 +7,7 @@ import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStag
 import java.util.Date;
 import java.util.Objects;
 
-public class StagingCds {
+public class StagingCds implements Cloneable {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
@@ -171,6 +171,10 @@ public class StagingCds {
     }
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
+    }
+
+    public StagingCds clone() throws CloneNotSupportedException {
+        return (StagingCds) super.clone();
     }
 
     @Override
