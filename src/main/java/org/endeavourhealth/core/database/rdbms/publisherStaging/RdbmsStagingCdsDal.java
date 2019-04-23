@@ -28,11 +28,11 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingCds c"
-                    + " where c.recordChecksum = :record_checksum"
+                    + " where c.cdsUniqueIdentifier = :cds_unique_identifier"
                     + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingCds.class)
-                    .setParameter("record_checksum", cds.hashCode())
+                    .setParameter("cds_unique_identifier", cds.getCdsUniqueIdentifier())
                     .setMaxResults(1);
 
             try {

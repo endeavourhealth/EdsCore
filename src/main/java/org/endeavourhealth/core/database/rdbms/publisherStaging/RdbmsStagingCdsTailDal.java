@@ -28,11 +28,11 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingCdsTail c"
-                    + " where c.recordChecksum = :record_checksum"
+                    + " where c.cdsUniqueIdentifier = :cds_unique_identifier"
                     + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingCdsTail.class)
-                    .setParameter("record_checksum", cdsTail.hashCode())
+                    .setParameter("cds_unique_identifier", cdsTail.getCdsUniqueIdentifier())
                     .setMaxResults(1);
 
             try {

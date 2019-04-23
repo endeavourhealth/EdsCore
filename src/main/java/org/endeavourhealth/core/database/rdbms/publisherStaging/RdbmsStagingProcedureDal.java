@@ -36,11 +36,15 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingProcedure c"
-                    + " where c.checkSum = :record_checksum"
-                    + " order by c.dtReceived desc";
+                    + " where c.encounterIid = :encounter_id"
+                    + " and c.procDtTm =  :proc_dt_tm"
+                    + " and c.procCd = :proc_cd"
+                    + " order by c.encounterId desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
                     .setParameter("record_checksum", stagingProcedure.hashCode())
+                    .setParameter("proc_dt_tm", stagingProcedure.getProc_dt_tm())
+                    .setParameter("proc_cd",stagingProcedure.getProcedureCode() )
                     .setMaxResults(1);
 
             try {
@@ -96,7 +100,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
-                    + " record_checksum = VALUES(dt_received), "
+                    + " record_checksum = VALUES(record_checksum), "
                     + " mrn = VALUES(mrn), "
                     + " nhs_number = VALUES(nhs_number), "
                     + " date_of_birth = VALUES(date_of_birth), "

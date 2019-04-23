@@ -94,7 +94,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
-                    + " record_checksum = VALUES(dt_received), "
+                    + " record_checksum = VALUES(record_checksum), "
                     + " procedure_id = VALUES(procedure_id), "
                     + " active_ind = VALUES(active_ind), "
                     + " encounter_id = VALUES(encounter_id), "

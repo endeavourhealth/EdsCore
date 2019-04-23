@@ -28,11 +28,11 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingSURCP c"
-                    + " where c.recordChecksum = :record_checksum"
+                    + " where c.surgicalCaseProcedureId = :surgical_case_procedure_id"
                     + " order by c.dtReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingSURCP.class)
-                    .setParameter("record_checksum", surcp.hashCode())
+                    .setParameter("surgical_case_procedure_id", surcp.getSurgicalCaseProcedureId())
                     .setMaxResults(1);
 
             try {
