@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
-import com.mysql.cj.jdbc.exceptions.MysqlDataTruncation;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingPROCEDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingPROCE;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
@@ -97,7 +96,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " procedure_id = VALUES(procedure_id), "
                     + " active_ind = VALUES(active_ind), "
                     + " encounter_id = VALUES(encounter_id), "
-                    + " procedure_dt_tm = VALUES(procedure_id), "
+                    + " procedure_dt_tm = VALUES(procedure_dt_tm), "
                     + " procedure_type = VALUES(procedure_type), "
                     + " procedure_code = VALUES(procedure_code), "
                     + " procedure_term = VALUES(procedure_term), "
@@ -145,10 +144,6 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             //TODO Not proud of this hack. Need to rewrite the transformers for all notnulls.
         } catch (SQLIntegrityConstraintViolationException sqlE) {
             LOG.warn("SQLIntegrityConstraintViolationException handled for " + stagingPROCE.toString());
-            entityManager.getTransaction().rollback();
-            //TODO another cheap hack. ProcId is getting in the procDateTime for 1 record.
-        } catch (MysqlDataTruncation tEx) {
-            LOG.warn("MysqlDataTruncation handled for " + stagingPROCE.toString());
             entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
