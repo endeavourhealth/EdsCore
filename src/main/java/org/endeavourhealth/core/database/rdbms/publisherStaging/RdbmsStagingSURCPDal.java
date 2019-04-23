@@ -104,7 +104,14 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             ps.setInt(3,stagingSurcp.getRecordChecksum());
             ps.setInt(4,stagingSurcp.getSurgicalCaseProcedureId());
             ps.setInt(5,stagingSurcp.getSurgicalCaseId());
-            ps.setDate(6,new java.sql.Date(stagingSurcp.getDTExtract().getTime()));
+
+            if (stagingSurcp.getDTExtract() != null) {
+                ps.setDate(6, new java.sql.Date(stagingSurcp.getDTExtract().getTime()));
+            } else {
+                sqlDate = null;
+                ps.setDate(6,sqlDate);
+            }
+
             ps.setBoolean(7,stagingSurcp.getActiveInd());
             ps.setInt(8,stagingSurcp.getProcedureCode());
             ps.setString(9,stagingSurcp.getProcedureText());

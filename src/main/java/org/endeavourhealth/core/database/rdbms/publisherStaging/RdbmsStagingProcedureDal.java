@@ -135,7 +135,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setString(8,dbObj.getConsultant());
             sqlDate = new java.sql.Date(dbObj.getProc_dt_tm().getTime());
             ps.setDate(9,sqlDate);
-            ps.setInt(10,dbObj.getUpdatedBy());
+            ps.setString(10,dbObj.getUpdatedBy());
             ps.setString(11,dbObj.getComments());
             sqlDate = new java.sql.Date(dbObj.getCreate_dt_tm().getTime());
             ps.setDate(12,sqlDate);

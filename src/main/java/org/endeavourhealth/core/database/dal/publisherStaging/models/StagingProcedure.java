@@ -18,7 +18,7 @@ public class StagingProcedure {
     private int encounterId;
     private String consultant;
     private Date proc_dt_tm;
-    private int updatedBy;
+    private String updatedBy;
     private String comments;
     private Date create_dt_tm;
     private String procedureCodeType;
@@ -172,11 +172,11 @@ public class StagingProcedure {
         this.create_dt_tm = create_dt_tm;
     }
 
-    public int getUpdatedBy() {
+    public String getUpdatedBy() {
         return updatedBy;
     }
 
-    public void setUpdatedBy(int updatedBy) {
+    public void setUpdatedBy(String updatedBy) {
         this.updatedBy = updatedBy;
     }
 
