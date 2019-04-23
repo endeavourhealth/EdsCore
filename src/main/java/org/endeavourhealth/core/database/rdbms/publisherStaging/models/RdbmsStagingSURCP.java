@@ -143,7 +143,7 @@ public class RdbmsStagingSURCP {
 
     @Basic
     @Column(name = "surgeon_personnel_id")
-    public int getSurgeonPersonnelId () {
+    public Integer getSurgeonPersonnelId () {
         return surgeonPersonnelId;
     }
     public void setSurgeonPersonnelId (int surgeonPersonnelId ) { this.surgeonPersonnelId = surgeonPersonnelId; }
