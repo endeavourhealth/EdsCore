@@ -36,14 +36,16 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingPROCE c"
-                    + " where c.checkSum = :record_checksum";
+                    + " where c.procedureId = :procedure_id"
+                    + " order by c.dateReceived desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingPROCE.class)
-                    .setParameter("record_checksum", stagingPROCE.hashCode());
+                    .setParameter("procedure_id", stagingPROCE.getProcedureId())
+                    .setMaxResults(1);
 
             try {
                 RdbmsStagingPROCE result = (RdbmsStagingPROCE)query.getSingleResult();
-                return true;
+                return (result.getCheckSum() == stagingPROCE.getCheckSum());
             }
             catch (NoResultException e) {
                 return false;
