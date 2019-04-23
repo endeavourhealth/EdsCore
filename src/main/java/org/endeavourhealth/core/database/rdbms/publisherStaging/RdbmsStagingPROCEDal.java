@@ -148,6 +148,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             //TODO Not proud of this hack. Need to rewrite the transformers for all notnulls.
         } catch (SQLIntegrityConstraintViolationException sqlE) {
             LOG.warn("SQLIntegrityConstraintViolationException handled for " + stagingPROCE.toString());
+            LOG.warn("Exception" + sqlE.getMessage());
             entityManager.getTransaction().rollback();
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
