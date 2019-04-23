@@ -14,7 +14,7 @@ import java.util.Objects;
 @Table(name = "procedure_procedure")
 public class RdbmsStagingProcedure implements Serializable {
     private String exchangeId;
-    private Date dateReceived;
+    private Date dtReceived;
     private int checkSum;
     private String mrn;
     private String nhsNumber;
@@ -38,7 +38,7 @@ public class RdbmsStagingProcedure implements Serializable {
 
     public RdbmsStagingProcedure(StagingProcedure in) throws Exception {
         this.exchangeId = in.getExchangeId();
-        this.dateReceived = in.getDateReceived();
+        this.dtReceived = in.getDtReceived();
         this.checkSum = in.getCheckSum();
         this.mrn = in.getMrn();
         this.nhsNumber = in.getNhsNumber();
@@ -166,12 +166,12 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="dt_received")
-    public Date getDTReceived() {
-        return dateReceived;
+    public Date getDtReceived() {
+        return dtReceived;
     }
 
-    public void setDTReceived(Date dateReceived) {
-        this.dateReceived = dateReceived;
+    public void setDtReceived(Date dtReceived) {
+        this.dtReceived = dtReceived;
     }
 
     @Column(name="record_checksum")

@@ -102,7 +102,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingCds.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingCds.getDTReceived().getTime()));
+            ps.setDate(2, new java.sql.Date(stagingCds.getDtReceived().getTime()));
             ps.setInt(3, stagingCds.getRecordChecksum());
             ps.setString(4, stagingCds.getSusRecordType());
             ps.setString(5, stagingCds.getCdsUniqueIdentifier());

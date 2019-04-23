@@ -32,7 +32,7 @@ public class RdbmsStagingPROCE implements Serializable {
 
     public RdbmsStagingPROCE(StagingPROCE in) throws Exception {
         this.exchangeId = in.getExchangeId();
-        this.dtReceived = in.getDTReceived();
+        this.dtReceived = in.getDtReceived();
         this.checkSum=in.getCheckSum();
         this.procedureId=in.getProcedureId();
         this.activeInd=in.isActiveInd();
@@ -62,11 +62,9 @@ public class RdbmsStagingPROCE implements Serializable {
     }
 
     @Column(name="dt_received")
-    public Date getDTReceived() {
-        return dtReceived;
-    }
+    public Date getDtReceived() { return dtReceived; }
 
-    public void setDTReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
     }
 

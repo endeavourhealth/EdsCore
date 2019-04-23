@@ -97,7 +97,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingSurcc.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingSurcc.getDTReceived().getTime()));
+            ps.setDate(2, new java.sql.Date(stagingSurcc.getDtReceived().getTime()));
             ps.setInt(3,stagingSurcc.getRecordChecksum());
             ps.setInt(4,stagingSurcc.getSurgicalCaseId());
             ps.setDate(5,new java.sql.Date(stagingSurcc.getDTExtract().getTime()));

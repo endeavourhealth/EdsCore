@@ -27,7 +27,7 @@ public class StagingSURCC {
 
     public StagingSURCC(RdbmsStagingSURCC proxy) throws Exception {
         this.exchangeId = proxy.getExchangeId();
-        this.dtReceived = proxy.getDTReceived();
+        this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();

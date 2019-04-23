@@ -60,10 +60,10 @@ public class RdbmsStagingSURCC {
 
     @Basic
     @Column(name = "dt_received")
-    public Date getDTReceived() {
+    public Date getDtReceived() {
         return dtReceived;
     }
-    public void setDTReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
     }
 

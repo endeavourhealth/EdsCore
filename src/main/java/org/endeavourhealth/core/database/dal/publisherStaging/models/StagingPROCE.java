@@ -35,11 +35,11 @@ public class StagingPROCE {
         this.exchangeId = exchangeId;
     }
 
-    public Date getDTReceived() {
+    public Date getDtReceived() {
         return dtReceived;
     }
 
-    public void setDTReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
     }
 

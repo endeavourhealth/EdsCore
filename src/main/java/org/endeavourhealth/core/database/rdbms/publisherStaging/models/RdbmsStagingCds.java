@@ -35,7 +35,7 @@ public class RdbmsStagingCds {
     public RdbmsStagingCds(StagingCds proxy) throws Exception {
 
         this.exchangeId = proxy.getExchangeId();
-        this.dtReceived = proxy.getDTReceived();
+        this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
         this.susRecordType = proxy.getSusRecordType();
         this.cdsUniqueIdentifier = proxy.getCdsUniqueIdentifier();
@@ -68,10 +68,10 @@ public class RdbmsStagingCds {
 
     @Basic
     @Column(name = "dt_received")
-    public Date getDTReceived() {
+    public Date getDtReceived() {
         return dtReceived;
     }
-    public void setDTReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
     }
 

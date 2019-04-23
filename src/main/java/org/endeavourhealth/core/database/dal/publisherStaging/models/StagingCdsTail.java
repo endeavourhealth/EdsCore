@@ -25,7 +25,7 @@ public class StagingCdsTail {
 
     public StagingCdsTail(RdbmsStagingCdsTail proxy) throws Exception {
         this.exchangeId = proxy.getExchangeId();
-        this.dtReceived = proxy.getDTReceived();
+        this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
         this.susRecordType = proxy.getSusRecordType();
         this.cdsUniqueIdentifier = proxy.getCdsUniqueIdentifier();
@@ -48,10 +48,10 @@ public class StagingCdsTail {
         this.exchangeId = exchangeId;
     }
 
-    public Date getDTReceived() {
+    public Date getDtReceived() {
         return dtReceived;
     }
-    public void setDTReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
     }
 

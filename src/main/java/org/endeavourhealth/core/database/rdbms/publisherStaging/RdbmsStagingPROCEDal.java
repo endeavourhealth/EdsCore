@@ -112,7 +112,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDTReceived().getTime());
+            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDtReceived().getTime());
             ps.setDate(2,sqlDate);
             ps.setInt(3,dbObj.getRecordChecksum());
             ps.setInt(4,dbObj.getProcedureId());

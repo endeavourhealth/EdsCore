@@ -10,7 +10,7 @@ public class StagingProcedure {
 
     private UUID serviceId;
     private String exchangeId;
-    private Date dateReceived;
+    private Date dtReceived;
     private int checkSum;
     private String mrn;
     private String nhsNumber;
@@ -36,12 +36,12 @@ public class StagingProcedure {
     public StagingProcedure() {
     }
 
-    public Date getDateReceived() {
-        return dateReceived;
+    public Date getDtReceived() {
+        return dtReceived;
     }
 
-    public void setDateReceived(Date dateReceived) {
-        this.dateReceived = dateReceived;
+    public void setDateReceived(Date dtReceived) {
+        this.dtReceived = dtReceived;
     }
 
     public String getMrn() {
@@ -228,7 +228,7 @@ public class StagingProcedure {
         return new HashCodeBuilder()
                 .append(serviceId)
                 .append(exchangeId)
-                .append(dateReceived)
+                .append(dtReceived)
                 .append(checkSum)
                 .append(mrn)
                 .append(nhsNumber)
