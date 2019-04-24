@@ -196,7 +196,8 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
     }
 
     @Override
-    public void updatePostcodeMap(String postcode, String lsoaCode, String msoaCode, String ward, String ccgCode, String localAuthority) throws Exception {
+    public void updatePostcodeMap(String postcode, String lsoaCode, String msoaCode, String ward, String ccgCode, String localAuthority,
+                                  String lsoa2001Code, String lsoa2011Code, String msoa2001Code, String msoa2011Code) throws Exception {
 
         //always make sure this is uppercase
         postcode = postcode.toUpperCase();
@@ -229,6 +230,10 @@ public class RdbmsReferenceUpdaterDal implements ReferenceUpdaterDalI {
             postcodeReference.setMsoaCode(msoaCode);
             postcodeReference.setWardCode(ward);
             postcodeReference.setLocalAuthorityCode(localAuthority);
+            postcodeReference.setLsoa2001Code(lsoa2001Code);
+            postcodeReference.setLsoa2011Code(lsoa2011Code);
+            postcodeReference.setMsoa2001Code(msoa2001Code);
+            postcodeReference.setMsoa2011Code(msoa2011Code);
 
             entityManager.getTransaction().begin();
             entityManager.persist(postcodeReference);

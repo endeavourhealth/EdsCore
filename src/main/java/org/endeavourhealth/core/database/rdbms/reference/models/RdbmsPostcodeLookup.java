@@ -19,6 +19,11 @@ public class RdbmsPostcodeLookup implements Serializable {
     private String wardCode = null;
     private String ccgCode = null;
     private String localAuthorityCode = null;
+    private String lsoa2001Code = null;
+    private String lsoa2011Code = null;
+    private String msoa2001Code = null;
+    private String msoa2011Code = null;
+
 
     public RdbmsPostcodeLookup() {}
 
@@ -30,6 +35,10 @@ public class RdbmsPostcodeLookup implements Serializable {
         this.wardCode = proxy.getWardCode();
         this.ccgCode = proxy.getCcgCode();
         this.localAuthorityCode = proxy.getLocalAuthorityCode();
+        this.lsoa2001Code = proxy.getLsoa2001Code();
+        this.lsoa2011Code = proxy.getLsoa2011Code();
+        this.msoa2001Code = proxy.getMsoa2001Code();
+        this.msoa2011Code = proxy.getMsoa2011Code();
     }
 
     @Id
@@ -94,6 +103,42 @@ public class RdbmsPostcodeLookup implements Serializable {
 
     public void setLocalAuthorityCode(String localAuthorityCode) {
         this.localAuthorityCode = localAuthorityCode;
+    }
+
+    @Column(name = "lsoa_2001_code")
+    public String getLsoa2001Code() {
+        return lsoa2001Code;
+    }
+
+    public void setLsoa2001Code(String lsoa2001Code) {
+        this.lsoa2001Code = lsoa2001Code;
+    }
+
+    @Column(name = "lsoa_2011_code")
+    public String getLsoa2011Code() {
+        return lsoa2011Code;
+    }
+
+    public void setLsoa2011Code(String lsoa2011Code) {
+        this.lsoa2011Code = lsoa2011Code;
+    }
+
+    @Column(name = "msoa_2001_code")
+    public String getMsoa2001Code() {
+        return msoa2001Code;
+    }
+
+    public void setMsoa2001Code(String msoa2001Code) {
+        this.msoa2001Code = msoa2001Code;
+    }
+
+    @Column(name = "msoa_2011_code")
+    public String getMsoa2011Code() {
+        return msoa2011Code;
+    }
+
+    public void setMsoa2011Code(String msoa2011Code) {
+        this.msoa2011Code = msoa2011Code;
     }
 
 }
