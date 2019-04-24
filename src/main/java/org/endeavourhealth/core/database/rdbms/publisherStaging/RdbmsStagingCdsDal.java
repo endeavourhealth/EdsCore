@@ -100,6 +100,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
+            java.sql.Date sqlDate = null;
 
             ps.setString(1, stagingCds.getExchangeId());
             ps.setDate(2, new java.sql.Date(stagingCds.getDtReceived().getTime()));
@@ -109,10 +110,14 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setInt(6, stagingCds.getCdsUpdateType());
             ps.setString(7, stagingCds.getMrn());
             ps.setString(8, stagingCds.getNhsNumber());
-            ps.setDate(9, new java.sql.Date(stagingCds.getDateOfBirth().getTime()));
+            if (stagingCds.getDateOfBirth()!=null) {
+                sqlDate = new java.sql.Date(stagingCds.getDateOfBirth().getTime());
+            } else {
+                sqlDate=null;
+            }
+            ps.setDate(9,sqlDate);
             ps.setString(10, stagingCds.getConsultantCode());
 
-            java.sql.Date sqlDate = null;
             if (stagingCds.getProcedureDate() != null) {
                 sqlDate =  new java.sql.Date(stagingCds.getProcedureDate().getTime());
             } else {
