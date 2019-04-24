@@ -42,7 +42,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " order by c.encounterId desc";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
-                    .setParameter("record_checksum", stagingProcedure.hashCode())
+                    .setParameter("encounter_id", stagingProcedure.getEncounterId())
                     .setParameter("proc_dt_tm", stagingProcedure.getProc_dt_tm())
                     .setParameter("proc_cd",stagingProcedure.getProcedureCode() )
                     .setMaxResults(1);
