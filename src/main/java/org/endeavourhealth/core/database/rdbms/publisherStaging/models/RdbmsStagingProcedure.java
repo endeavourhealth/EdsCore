@@ -64,6 +64,9 @@ public class RdbmsStagingProcedure implements Serializable {
         }
     }
 
+    public RdbmsStagingProcedure() {
+    }
+
     @Id
     @Column(name = "exchange_id", nullable = false)
     public String getExchangeId() {

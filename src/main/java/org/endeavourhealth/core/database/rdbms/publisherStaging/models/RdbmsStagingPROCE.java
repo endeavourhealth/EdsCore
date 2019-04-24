@@ -30,6 +30,9 @@ public class RdbmsStagingPROCE implements Serializable {
     private Date lookupDateOfBirth;
     private String auditJson;
 
+    public RdbmsStagingPROCE() {
+    }
+
     public RdbmsStagingPROCE(StagingPROCE in) throws Exception {
         this.exchangeId = in.getExchangeId();
         this.dtReceived = in.getDtReceived();
