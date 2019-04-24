@@ -14,7 +14,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +43,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
                     .setParameter("encounter_id", stagingProcedure.getEncounterId())
                     .setParameter("proc_dt_tm", stagingProcedure.getProcDtTm())
-                    .setParameter("proc_cd",stagingProcedure.getProcedureCode() )
+                    .setParameter("proc_cd",stagingProcedure.getProcCd() )
                     .setMaxResults(1);
 
             try {
@@ -129,7 +128,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setInt(3,dbObj.getRecordChecksum());
             ps.setString(4,dbObj.getMrn());
             ps.setString(5,dbObj.getNhsNumber());
-            sqlDate = new java.sql.Date(dbObj.getDob().getTime());
+            sqlDate = new java.sql.Date(dbObj.getDateOfBirth().getTime());
             ps.setDate(6,sqlDate);
             ps.setInt(7,dbObj.getEncounterId());
             ps.setString(8,dbObj.getConsultant());
@@ -140,12 +139,12 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             }
             ps.setDate(9,sqlDate);
             ps.setString(10,dbObj.getUpdatedBy());
-            ps.setString(11,dbObj.getComments());
+            ps.setString(11,dbObj.getFreeTextComment());
             sqlDate = new java.sql.Date(dbObj.getCreateDtTm().getTime());
             ps.setDate(12,sqlDate);
-            ps.setString(13,dbObj.getProcedureCodeType());
-            ps.setString(14,dbObj.getProcedureCode());
-            ps.setString(15,dbObj.getProcedureTerm());
+            ps.setString(13,dbObj.getProcCdType());
+            ps.setString(14,dbObj.getProcCd());
+            ps.setString(15,dbObj.getProcTerm());
             ps.setString(16,dbObj.getPersonId());
             ps.setString(17,dbObj.getWard());
             ps.setString(18,dbObj.getSite());

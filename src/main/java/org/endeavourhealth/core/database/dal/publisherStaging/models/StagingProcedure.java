@@ -14,16 +14,16 @@ public class StagingProcedure {
     private int checkSum;
     private String mrn;
     private String nhsNumber;
-    private Date dob;
+    private Date dateOfBirth;
     private int encounterId;
     private String consultant;
     private Date procDtTm;
     private String updatedBy;
     private String comments;
     private Date createDtTm;
-    private String procedureCodeType;
-    private String procedureCode;
-    private String procedureTerm;
+    private String procCdType;
+    private String procCd;
+    private String procTerm;
     private String personId;
     private String ward;
     private String site;
@@ -60,20 +60,20 @@ public class StagingProcedure {
         this.nhsNumber = nhsNumber;
     }
 
-    public Date getDob() {
-        return dob;
+    public Date getDateOfBirth() {
+        return dateOfBirth;
     }
 
-    public void setDob(Date dob) {
-        this.dob = dob;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
-    public String getProcedureTerm() {
-        return procedureTerm;
+    public String getProcTerm() {
+        return procTerm;
     }
 
-    public void setProcedureTerm(String procedureTerm) {
-        this.procedureTerm = procedureTerm;
+    public void setProcTerm(String procTerm) {
+        this.procTerm = procTerm;
     }
 
     public String getLookupPersonId() {
@@ -180,28 +180,26 @@ public class StagingProcedure {
         this.updatedBy = updatedBy;
     }
 
-    public String getComments() {
+    public String getFreeTextComment() {
         return comments;
     }
 
-    public void setComments(String comments) {
+    public void setFreeTextComment(String comments) {
         this.comments = comments;
     }
 
-    public String getProcedureCode() {
-        return procedureCode;
+    public String getProcCd() { return procCd; }
+
+    public void setProcCd(String procCd) {
+        this.procCd = procCd;
     }
 
-    public void setProcedureCode(String procedureCode) {
-        this.procedureCode = procedureCode;
+    public String getProcCdType() {
+        return procCd;
     }
 
-    public String getProcedureCodeType() {
-        return procedureCodeType;
-    }
-
-    public void setProcedureCodeType(String procedureCodeType) {
-        this.procedureCodeType = procedureCodeType;
+    public void setProcCdType(String procCdType) {
+        this.procCdType = procCdType;
     }
 
     public int getCheckSum() {
@@ -232,16 +230,16 @@ public class StagingProcedure {
                 .append(checkSum)
                 .append(mrn)
                 .append(nhsNumber)
-                .append(dob)
+                .append(dateOfBirth)
                 .append(encounterId)
                 .append(consultant)
                 .append(procDtTm)
                 .append(updatedBy)
                 .append(comments)
                 .append(createDtTm)
-                .append(procedureCodeType)
-                .append(procedureCode)
-                .append(procedureTerm)
+                .append(procCdType)
+                .append(procCd)
+                .append(procTerm)
                 .append(personId)
                 .append(ward)
                 .append(site)
@@ -251,10 +249,6 @@ public class StagingProcedure {
                 .toHashCode();
     }
 
-
-//        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
-//            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
-//        }
 }
 
 

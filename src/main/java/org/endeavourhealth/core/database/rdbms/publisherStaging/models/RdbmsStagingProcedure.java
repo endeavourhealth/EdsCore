@@ -18,16 +18,16 @@ public class RdbmsStagingProcedure implements Serializable {
     private int checkSum;
     private String mrn;
     private String nhsNumber;
-    private Date dob;
+    private Date dateOfBirth;
     private int encounterId;
     private String consultant;
     private Date procDtTm;
     private String updatedBy;
     private String comments;
     private Date createDtTm;
-    private String procedureCodeType;
-    private String procedureCode;
-    private String procedureTerm;
+    private String procCdType;
+    private String procCd;
+    private String procTerm;
     private String personId;
     private String ward;
     private String site;
@@ -42,7 +42,7 @@ public class RdbmsStagingProcedure implements Serializable {
         this.checkSum = in.getCheckSum();
         this.mrn = in.getMrn();
         this.nhsNumber = in.getNhsNumber();
-        this.dob = in.getDob();
+        this.dateOfBirth = in.getDateOfBirth();
         this.encounterId = in.getEncounterId();
         this.personId = in.getPersonId();
         this.ward = in.getWard();
@@ -51,10 +51,10 @@ public class RdbmsStagingProcedure implements Serializable {
         this.procDtTm = in.getProcDtTm();
         this.createDtTm = in.getCreateDtTm();
         this.updatedBy = in.getUpdatedBy();
-        this.comments = in.getComments();
-        this.procedureCode = in.getProcedureCode();
-        this.procedureCodeType = in.getProcedureCodeType();
-        this.procedureTerm = in.getProcedureTerm();
+        this.comments = in.getFreeTextComment();
+        this.procCd = in.getProcCd();
+        this.procCdType = in.getProcCdType();
+        this.procTerm = in.getProcTerm();
         this.lookupPersonId = in.getLookupPersonId();
         this.lookupConsultantPersonnelId = in.getLookupConsultantPersonnelId();
         this.lookuprecordedByPersonnelId = in.getLookuprecordedByPersonnelId();
@@ -149,20 +149,20 @@ public class RdbmsStagingProcedure implements Serializable {
 
     @Column(name="proc_cd")
     public String getProcCd() {
-        return procedureCode;
+        return procCd;
     }
 
-    public void setProcCd(String procedureCode) {
-        this.procedureCode = procedureCode;
+    public void setProcCd(String procCd) {
+        this.procCd = procCd;
     }
 
     @Column(name="proc_cd_type")
     public String getProcCdType() {
-        return procedureCodeType;
+        return procCdType;
     }
 
-    public void setProcCdType(String procedureCodeType) {
-        this.procedureCodeType = procedureCodeType;
+    public void setProcCdType(String procCdType) {
+        this.procCdType = procCdType;
     }
 
     @Column(name="dt_received")
@@ -203,11 +203,11 @@ public class RdbmsStagingProcedure implements Serializable {
 
     @Column(name="date_of_birth")
     public Date getDateOfBirth() {
-        return dob;
+        return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dob) {
-        this.dob = dob;
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
     }
 
     @Column(name="freetext_comment")
@@ -215,17 +215,17 @@ public class RdbmsStagingProcedure implements Serializable {
         return comments;
     }
 
-    public void setFreetextComment(String comments) {
+    public void setFreeTextComment(String comments) {
         this.comments = comments;
     }
 
     @Column(name="proc_term")
     public String getProcTerm() {
-        return procedureTerm;
+        return procTerm;
     }
 
-    public void setProcTerm(String procedureTerm) {
-        this.procedureTerm = procedureTerm;
+    public void setProcTerm(String procTerm) {
+        this.procTerm = procTerm;
     }
 
     @Column(name="lookup_person_id")
@@ -268,7 +268,7 @@ public class RdbmsStagingProcedure implements Serializable {
 
         return Objects.hash(mrn,
                             nhsNumber,
-                            dob,
+                            dateOfBirth,
                             encounterId,
                             personId,
                             ward,
@@ -278,9 +278,9 @@ public class RdbmsStagingProcedure implements Serializable {
                             createDtTm,
                             updatedBy,
                             comments,
-                            procedureCode,
-                            procedureCodeType,
-                            procedureTerm,
+                            procCd,
+                            procCdType,
+                            procTerm,
                             lookupPersonId,
                             lookupConsultantPersonnelId,
                             lookuprecordedByPersonnelId
