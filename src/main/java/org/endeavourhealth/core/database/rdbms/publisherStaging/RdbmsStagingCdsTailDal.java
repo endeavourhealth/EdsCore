@@ -73,7 +73,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_cds_tail  "
-                    + " (exchange_id, dt_received, record_checksum, cds_acvitity_type, sus_record_type, cds_unique_identifier, " +
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_type, sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, person_id, encounter_id, responsible_hcp_personnel_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
@@ -89,7 +89,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
                     + " encounter_id = VALUES(encounter_id),"
                     + " responsible_hcp_personnel_id = VALUES(responsible_hcp_personnel_id),"
                     + " audit_json = VALUES(audit_json),"
-                    + " cds_acvitity_type=VALUES(cds_acvitity_type)";
+                    + " cds_activity_type=VALUES(cds_activity_type)";
 
             ps = connection.prepareStatement(sql);
 
