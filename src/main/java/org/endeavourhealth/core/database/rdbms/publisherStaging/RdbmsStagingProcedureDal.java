@@ -75,7 +75,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
 
         try {
