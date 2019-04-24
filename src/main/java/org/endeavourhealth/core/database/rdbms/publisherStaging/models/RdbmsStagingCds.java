@@ -13,6 +13,7 @@ public class RdbmsStagingCds {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date cdsActivityDate;
     private String susRecordType;
     private String cdsUniqueIdentifier;
     private int cdsUpdateType;
@@ -37,6 +38,7 @@ public class RdbmsStagingCds {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
+        this.cdsActivityDate = proxy.getCdsActivityDate();
         this.susRecordType = proxy.getSusRecordType();
         this.cdsUniqueIdentifier = proxy.getCdsUniqueIdentifier();
         this.cdsUpdateType = proxy.getCdsUpdateType();
@@ -83,6 +85,11 @@ public class RdbmsStagingCds {
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
     }
+
+    @Basic
+    @Column(name="cds_activity_date")
+    public Date getCdsActivityDate() {return  this.cdsActivityDate;}
+    public void setCdsActivityDate(Date cdsActivityDate) {this.cdsActivityDate=cdsActivityDate;}
 
     @Basic
     @Column(name = "sus_record_type")

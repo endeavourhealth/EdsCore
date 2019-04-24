@@ -73,11 +73,11 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_cds  "
-                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, " +
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date,sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, date_of_birth, consultant_code, procedure_date, " +
                     " procedure_opcs_code, procedure_seq_nbr, primary_procedure_opcs_code, lookup_procedure_opcs_term, " +
                     " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -96,7 +96,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " lookup_procedure_opcs_term = VALUES(lookup_procedure_opcs_term),"
                     + " lookup_person_id = VALUES(lookup_person_id),"
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
-                    + " audit_json = VALUES(audit_json)";
+                    + " audit_json = VALUES(audit_json),"
+                    + " cds_activity_date=VALUES(cds_activity_date)";
 
             ps = connection.prepareStatement(sql);
             java.sql.Date sqlDate = null;
@@ -130,6 +131,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setInt(16, stagingCds.getLookupPersonId());
             ps.setInt(17, stagingCds.getLookupConsultantPersonnelId());
             ps.setString(18, stagingCds.getAuditJson());
+            ps.setDate(19,new java.sql.Date(stagingCds.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
 

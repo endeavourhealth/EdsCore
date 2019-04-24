@@ -11,6 +11,7 @@ public class StagingCdsTail {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date cdsActivityDate;
     private String susRecordType;
     private String cdsUniqueIdentifier;
     private int cdsUpdateType;
@@ -27,6 +28,7 @@ public class StagingCdsTail {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
+        this.cdsActivityDate=proxy.getCdsActivityDate();
         this.susRecordType = proxy.getSusRecordType();
         this.cdsUniqueIdentifier = proxy.getCdsUniqueIdentifier();
         this.cdsUpdateType = proxy.getCdsUpdateType();
@@ -58,6 +60,15 @@ public class StagingCdsTail {
     public int getRecordChecksum() {
         return recordChecksum;
     }
+
+    public Date getCdsActivityDate() {
+        return cdsActivityDate;
+    }
+
+    public void setCdsActivityDate(Date cdsActivityDate) {
+        this.cdsActivityDate = cdsActivityDate;
+    }
+
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
     }

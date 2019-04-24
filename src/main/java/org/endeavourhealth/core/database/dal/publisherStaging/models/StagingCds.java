@@ -11,6 +11,7 @@ public class StagingCds implements Cloneable {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date cdsActivityDate;
     private String susRecordType;
     private String cdsUniqueIdentifier;
     private int cdsUpdateType;
@@ -34,6 +35,7 @@ public class StagingCds implements Cloneable {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
+        this.cdsActivityDate = proxy.getCdsActivityDate();
         this.susRecordType = proxy.getSusRecordType();
         this.cdsUniqueIdentifier = proxy.getCdsUniqueIdentifier();
         this.cdsUpdateType = proxy.getCdsUpdateType();
@@ -73,6 +75,14 @@ public class StagingCds implements Cloneable {
     }
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
+    }
+
+    public Date getCdsActivityDate() {
+        return cdsActivityDate;
+    }
+
+    public void setCdsActivityDate(Date cdsActivityDate) {
+        this.cdsActivityDate = cdsActivityDate;
     }
 
     public String getSusRecordType() {
