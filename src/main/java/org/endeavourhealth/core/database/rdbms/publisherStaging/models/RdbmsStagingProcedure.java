@@ -148,20 +148,20 @@ public class RdbmsStagingProcedure implements Serializable {
 
 
     @Column(name="proc_cd")
-    public String getProcedureCode() {
+    public String getProcCd() {
         return procedureCode;
     }
 
-    public void setProcedureCode(String procedureCode) {
+    public void setProcCd(String procedureCode) {
         this.procedureCode = procedureCode;
     }
 
     @Column(name="proc_cd_type")
-    public String getProcedureCodeType() {
+    public String getProcCdType() {
         return procedureCodeType;
     }
 
-    public void setProcedureCodeType(String procedureCodeType) {
+    public void setProcCdType(String procedureCodeType) {
         this.procedureCodeType = procedureCodeType;
     }
 
@@ -202,29 +202,29 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="date_of_birth")
-    public Date getDob() {
+    public Date getDateOfBirth() {
         return dob;
     }
 
-    public void setDob(Date dob) {
+    public void setDateOfBirth(Date dob) {
         this.dob = dob;
     }
 
     @Column(name="freetext_comment")
-    public String getComments() {
+    public String getFreeTextComment() {
         return comments;
     }
 
-    public void setComments(String comments) {
+    public void setFreetextComment(String comments) {
         this.comments = comments;
     }
 
     @Column(name="proc_term")
-    public String getProcedureTerm() {
+    public String getProcTerm() {
         return procedureTerm;
     }
 
-    public void setProcedureTerm(String procedureTerm) {
+    public void setProcTerm(String procedureTerm) {
         this.procedureTerm = procedureTerm;
     }
 
