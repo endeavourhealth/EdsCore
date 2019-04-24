@@ -11,6 +11,7 @@ public class StagingSURCP {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date csdActivityDate;
     private int surgicalCaseProcedureId;
     private int surgicalCaseId;
     private Date dtExtract;
@@ -31,6 +32,7 @@ public class StagingSURCP {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
+        this.csdActivityDate = proxy.getCsdActivityDate();
         this.surgicalCaseProcedureId = proxy.getSurgicalCaseProcedureId();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();
@@ -63,11 +65,53 @@ public class StagingSURCP {
         this.dtReceived = dtReceived;
     }
 
-    public int getRecordChecksum() {
-        return recordChecksum;
-    }
+    public int getRecordChecksum() {return recordChecksum; }
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
+    }
+
+    public Date getDtReceived() {
+        return dtReceived;
+    }
+
+    public void setDtReceived(Date dtReceived) {
+        this.dtReceived = dtReceived;
+    }
+
+    public Date getCsdActivityDate() {
+        return csdActivityDate;
+    }
+
+    public void setCsdActivityDate(Date csdActivityDate) {
+        this.csdActivityDate = csdActivityDate;
+    }
+
+    public Date getDtExtract() {
+        return dtExtract;
+    }
+
+    public void setDtExtract(Date dtExtract) {
+        this.dtExtract = dtExtract;
+    }
+
+    public boolean isActiveInd() {
+        return activeInd;
+    }
+
+    public Date getDtStart() {
+        return dtStart;
+    }
+
+    public void setDtStart(Date dtStart) {
+        this.dtStart = dtStart;
+    }
+
+    public Date getDtStop() {
+        return dtStop;
+    }
+
+    public void setDtStop(Date dtStop) {
+        this.dtStop = dtStop;
     }
 
     public int getSurgicalCaseProcedureId() { return surgicalCaseProcedureId; }

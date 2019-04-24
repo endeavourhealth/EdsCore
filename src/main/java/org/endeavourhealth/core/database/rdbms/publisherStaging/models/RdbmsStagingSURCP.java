@@ -13,6 +13,7 @@ public class RdbmsStagingSURCP {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date csdActivityDate;
     private int surgicalCaseProcedureId;
     private int surgicalCaseId;
     private Date dtExtract;
@@ -34,6 +35,7 @@ public class RdbmsStagingSURCP {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDTReceived();
         this.recordChecksum = proxy.getRecordChecksum();
+        this.csdActivityDate=proxy.getCsdActivityDate();
         this.surgicalCaseProcedureId = proxy.getSurgicalCaseProcedureId();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();
@@ -78,6 +80,11 @@ public class RdbmsStagingSURCP {
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
     }
+
+    @Basic
+    @Column(name="csd_activity_date")
+    public Date getCsdActivityDate() { return  this.csdActivityDate;}
+    public void setCsdActivityDate(Date csdActivityDate) {this.csdActivityDate=csdActivityDate;}
 
     @Basic
     @Column(name = "surgical_case_procedure_id")
