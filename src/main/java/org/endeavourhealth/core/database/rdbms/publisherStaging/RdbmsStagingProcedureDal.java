@@ -36,7 +36,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             String sql = "select c"
                     + " from "
                     + " RdbmsStagingProcedure c"
-                    + " where c.encounterIid = :encounter_id"
+                    + " where c.encounterId = :encounter_id"
                     + " and c.procDtTm =  :proc_dt_tm"
                     + " and c.procCd = :proc_cd"
                     + " order by c.encounterId desc";
