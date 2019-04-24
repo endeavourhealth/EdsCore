@@ -67,7 +67,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingPROCE)) {
-            LOG.error("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
+            LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
             return;
         }
 

@@ -58,7 +58,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcp)) {
-            LOG.error("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
+            LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
             return;
         }
 

@@ -58,7 +58,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
-            LOG.error("procedure_cds data already filed with record_checksum: "+cds.hashCode());
+            LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
             return;
         }
 
@@ -111,7 +111,14 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(8, stagingCds.getNhsNumber());
             ps.setDate(9, new java.sql.Date(stagingCds.getDateOfBirth().getTime()));
             ps.setString(10, stagingCds.getConsultantCode());
-            ps.setDate(11, new java.sql.Date(stagingCds.getProcedureDate().getTime()));
+
+            java.sql.Date sqlDate = null;
+            if (stagingCds.getProcedureDate() != null) {
+                sqlDate =  new java.sql.Date(stagingCds.getProcedureDate().getTime());
+            } else {
+                sqlDate = null;
+            }
+            ps.setDate(11, sqlDate);
             ps.setString(12, stagingCds.getProcedureOpcsCode());
             ps.setInt(13, stagingCds.getProcedureSeqNbr());
             ps.setString(14, stagingCds.getPrimaryProcedureOpcsCode());
