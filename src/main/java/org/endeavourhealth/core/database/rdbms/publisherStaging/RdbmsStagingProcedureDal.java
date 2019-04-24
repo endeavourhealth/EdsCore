@@ -43,7 +43,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
                     .setParameter("encounter_id", stagingProcedure.getEncounterId())
-                    .setParameter("proc_dt_tm", stagingProcedure.getProc_dt_tm())
+                    .setParameter("proc_dt_tm", stagingProcedure.getProcDtTm())
                     .setParameter("proc_cd",stagingProcedure.getProcedureCode() )
                     .setMaxResults(1);
 
@@ -133,11 +133,15 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setDate(6,sqlDate);
             ps.setInt(7,dbObj.getEncounterId());
             ps.setString(8,dbObj.getConsultant());
-            sqlDate = new java.sql.Date(dbObj.getProc_dt_tm().getTime());
+            if (dbObj.getProcDtTm() != null) {
+                sqlDate = new java.sql.Date(dbObj.getProcDtTm().getTime());
+            } else {
+                sqlDate = null;
+            }
             ps.setDate(9,sqlDate);
             ps.setString(10,dbObj.getUpdatedBy());
             ps.setString(11,dbObj.getComments());
-            sqlDate = new java.sql.Date(dbObj.getCreate_dt_tm().getTime());
+            sqlDate = new java.sql.Date(dbObj.getCreateDtTm().getTime());
             ps.setDate(12,sqlDate);
             ps.setString(13,dbObj.getProcedureCodeType());
             ps.setString(14,dbObj.getProcedureCode());
@@ -154,10 +158,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             //transaction.commit();
             entityManager.getTransaction().commit();
-            //TODO horrid hack
-        } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException handled for " + stagingProcedure.toString());
-            entityManager.getTransaction().rollback();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

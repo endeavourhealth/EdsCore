@@ -126,10 +126,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-            //TODO remove horrid hack
-        } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException handled for " + surcc.toString());
-            entityManager.getTransaction().rollback();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

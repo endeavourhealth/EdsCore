@@ -13,7 +13,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.UUID;
 
 public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
@@ -138,9 +137,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-        } catch (SQLIntegrityConstraintViolationException sqlE) {
-            LOG.warn("SQLIntegrityConstraintViolationException handled for " + surcp.toString());
-            entityManager.getTransaction().rollback();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

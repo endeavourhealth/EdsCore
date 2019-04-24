@@ -17,10 +17,10 @@ public class StagingProcedure {
     private Date dob;
     private int encounterId;
     private String consultant;
-    private Date proc_dt_tm;
+    private Date procDtTm;
     private String updatedBy;
     private String comments;
-    private Date create_dt_tm;
+    private Date createDtTm;
     private String procedureCodeType;
     private String procedureCode;
     private String procedureTerm;
@@ -156,20 +156,20 @@ public class StagingProcedure {
         this.consultant = consultant;
     }
 
-    public Date getProc_dt_tm() {
-        return proc_dt_tm;
+    public Date getProcDtTm() {
+        return procDtTm;
     }
 
-    public void setProc_dt_tm(Date proc_dt_tm) {
-        this.proc_dt_tm = proc_dt_tm;
+    public void setProcDtTm(Date procDtTm) {
+        this.procDtTm = procDtTm;
     }
 
-    public Date getCreate_dt_tm() {
-        return create_dt_tm;
+    public Date getCreateDtTm() {
+        return createDtTm;
     }
 
-    public void setCreate_dt_tm(Date create_dt_tm) {
-        this.create_dt_tm = create_dt_tm;
+    public void setCreateDtTm(Date createDtTm) {
+        this.createDtTm = createDtTm;
     }
 
     public String getUpdatedBy() {
@@ -235,10 +235,10 @@ public class StagingProcedure {
                 .append(dob)
                 .append(encounterId)
                 .append(consultant)
-                .append(proc_dt_tm)
+                .append(procDtTm)
                 .append(updatedBy)
                 .append(comments)
-                .append(create_dt_tm)
+                .append(createDtTm)
                 .append(procedureCodeType)
                 .append(procedureCode)
                 .append(procedureTerm)

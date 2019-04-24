@@ -13,7 +13,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.UUID;
 
 public class RdbmsStagingCdsDal implements StagingCdsDalI {
@@ -135,10 +134,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
-            //TODO remove this hack
-        } catch (SQLIntegrityConstraintViolationException sqlE) {
-          LOG.warn("SQLIntegrityConstraintViolationException handled for " + cds.toString());
-            entityManager.getTransaction().rollback();
+
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             throw ex;

@@ -21,10 +21,10 @@ public class RdbmsStagingProcedure implements Serializable {
     private Date dob;
     private int encounterId;
     private String consultant;
-    private Date proc_dt_tm;
+    private Date procDtTm;
     private String updatedBy;
     private String comments;
-    private Date create_dt_tm;
+    private Date createDtTm;
     private String procedureCodeType;
     private String procedureCode;
     private String procedureTerm;
@@ -48,8 +48,8 @@ public class RdbmsStagingProcedure implements Serializable {
         this.ward = in.getWard();
         this.site = in.getSite();
         this.consultant = in.getConsultant();
-        this.proc_dt_tm = in.getProc_dt_tm();
-        this.create_dt_tm = in.getCreate_dt_tm();
+        this.procDtTm = in.getProcDtTm();
+        this.createDtTm = in.getCreateDtTm();
         this.updatedBy = in.getUpdatedBy();
         this.comments = in.getComments();
         this.procedureCode = in.getProcedureCode();
@@ -120,21 +120,21 @@ public class RdbmsStagingProcedure implements Serializable {
     }
 
     @Column(name="proc_dt_tm")
-    public Date getProc_dt_tm() {
-        return proc_dt_tm;
+    public Date getProcDtTm() {
+        return procDtTm;
     }
 
-    public void setProc_dt_tm(Date proc_dt_tm) {
-        this.proc_dt_tm = proc_dt_tm;
+    public void setProcDtTm(Date procDtTm) {
+        this.procDtTm = procDtTm;
     }
 
     @Column(name="create_dt_tm")
-    public Date getCreate_dt_tm() {
-        return create_dt_tm;
+    public Date getCreateDtTm() {
+        return createDtTm;
     }
 
-    public void setCreate_dt_tm(Date create_dt_tm) {
-        this.create_dt_tm = create_dt_tm;
+    public void setCreateDtTm(Date createDtTm) {
+        this.createDtTm = createDtTm;
     }
 
     @Column(name="updated_by")
@@ -274,8 +274,8 @@ public class RdbmsStagingProcedure implements Serializable {
                             ward,
                             site,
                             consultant,
-                            proc_dt_tm,
-                            create_dt_tm,
+                            procDtTm,
+                            createDtTm,
                             updatedBy,
                             comments,
                             procedureCode,
