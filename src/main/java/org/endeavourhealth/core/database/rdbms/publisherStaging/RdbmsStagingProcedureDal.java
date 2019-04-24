@@ -115,7 +115,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " person_id = VALUES(person_id), "
                     + " ward = VALUES(ward), "
                     + " site = VALUES(site), "
-                    + " lookup_person_id = VALUES(lookup_person), "
+                    + " lookup_person_id = VALUES(lookup_person_id), "
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id), "
                     + " lookup_recorded_by_personnel_id = VALUES(lookup_recorded_by_personnel_id), "
                     + " audit_json = VALUES(audit_json)";
