@@ -11,7 +11,6 @@ public class StagingSURCC {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
-    private Date cdsActivityDate;
     private int surgicalCaseId;
     private Date dtExtract;
     private boolean activeInd;
@@ -30,7 +29,6 @@ public class StagingSURCC {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
-        this.cdsActivityDate = proxy.getCdsActivityDate();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();
         this.activeInd = proxy.getActiveInd();
@@ -68,9 +66,6 @@ public class StagingSURCC {
 
     public Date getDtReceived() {return dtReceived;}
     public void setDtReceived(Date dtReceived) {this.dtReceived = dtReceived;}
-
-    public Date getCdsActivityDate() {return cdsActivityDate;}
-    public void setCdsActivityDate(Date cdsActivityDate) {this.cdsActivityDate = cdsActivityDate;}
 
     public Date getDtExtract() {return dtExtract;}
     public void setDtExtract(Date dtExtract) {this.dtExtract = dtExtract;}

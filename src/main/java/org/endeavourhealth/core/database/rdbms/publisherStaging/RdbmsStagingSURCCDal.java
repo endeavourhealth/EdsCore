@@ -35,10 +35,9 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     .setMaxResults(1);
 
             try {
-                RdbmsStagingSURCC result = (RdbmsStagingSURCC)query.getSingleResult();
+                RdbmsStagingSURCC result = (RdbmsStagingSURCC) query.getSingleResult();
                 return result.getRecordChecksum() == surcc.getRecordChecksum();
-            }
-            catch (NoResultException e) {
+            } catch (NoResultException e) {
                 return false;
             }
         } finally {
@@ -57,7 +56,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcc)) {
-            LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcc.hashCode());
+            LOG.warn("procedure_SURCC data already filed with record_checksum: " + surcc.hashCode());
             return;
         }
 
@@ -75,8 +74,8 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             String sql = "INSERT INTO procedure_SURCC  "
                     + " (exchange_id, dt_received, record_checksum, surgical_case_id, dt_extract, " +
                     " active_ind, person_id, encounter_id, dt_cancelled, institution_code, department_code, " +
-                    " surgical_area_code, theatre_number_code, audit_json, cds_activity_date)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " surgical_area_code, theatre_number_code, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -91,39 +90,36 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " department_code = VALUES(department_code),"
                     + " surgical_area_code = VALUES(surgical_area_code),"
                     + " theatre_number_code = VALUES(theatre_number_code),"
-                    + " audit_json = VALUES(audit_json),"
-                    + " cds_activity_date=VALUES(cds_activity_date)";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingSurcc.getExchangeId());
             ps.setDate(2, new java.sql.Date(stagingSurcc.getDtReceived().getTime()));
-            ps.setInt(3,stagingSurcc.getRecordChecksum());
-            ps.setInt(4,stagingSurcc.getSurgicalCaseId());
+            ps.setInt(3, stagingSurcc.getRecordChecksum());
+            ps.setInt(4, stagingSurcc.getSurgicalCaseId());
 
             if (stagingSurcc.getDTExtract() != null) {
                 ps.setDate(5, new java.sql.Date(stagingSurcc.getDTExtract().getTime()));
             } else {
                 java.sql.Date sqldate = null;
-                ps.setDate(5,sqldate);
+                ps.setDate(5, sqldate);
             }
 
-            ps.setBoolean(6,stagingSurcc.getActiveInd());
-            ps.setInt(7,stagingSurcc.getPersonId());
-            ps.setInt(8,stagingSurcc.getEncounterId());
-            if (stagingSurcc.getDTCancelled()!=null) {
+            ps.setBoolean(6, stagingSurcc.getActiveInd());
+            ps.setInt(7, stagingSurcc.getPersonId());
+            ps.setInt(8, stagingSurcc.getEncounterId());
+            if (stagingSurcc.getDTCancelled() != null) {
                 ps.setDate(9, new java.sql.Date(stagingSurcc.getDTCancelled().getTime()));
             } else {
                 java.sql.Date sqldate = null;
-                ps.setDate(9,sqldate);
+                ps.setDate(9, sqldate);
             }
-            ps.setString(10,stagingSurcc.getInstitutionCode());
-            ps.setString(11,stagingSurcc.getDepartmentCode());
-            ps.setString(12,stagingSurcc.getSurgicalAreaCode());
-            ps.setString(13,stagingSurcc.getTheatreNumberCode());
-            ps.setString(14,stagingSurcc.getAuditJson());
-            ps.setDate(15,new java.sql.Date(stagingSurcc.getCdsActivityDate().getTime()));
-
+            ps.setString(10, stagingSurcc.getInstitutionCode());
+            ps.setString(11, stagingSurcc.getDepartmentCode());
+            ps.setString(12, stagingSurcc.getSurgicalAreaCode());
+            ps.setString(13, stagingSurcc.getTheatreNumberCode());
+            ps.setString(14, stagingSurcc.getAuditJson());
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();
