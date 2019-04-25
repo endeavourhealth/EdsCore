@@ -581,7 +581,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 if (system.equals(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER)) {
                     //the main table only includes the CURRENT NHS number, so allow this table to store any past ones (or just any others)
                     String value = fhirIdentifier.getValue();
-                    if (value.equals(currentNhsNumber)) {
+                    if (value == null  //got some old patient records with no NHS number in the identifier
+                            || value.equals(currentNhsNumber)) {
                         continue;
                     }
                 }
