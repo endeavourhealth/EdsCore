@@ -13,7 +13,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.UUID;
 
 public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
@@ -74,10 +73,10 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_SURCC  "
-                    + " (exchange_id, dt_received, record_checksum, surgical_case_id, dt_extract, " +
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, surgical_case_id, dt_extract, " +
                     " active_ind, person_id, encounter_id, dt_cancelled, institution_code, department_code, " +
                     " surgical_area_code, theatre_number_code, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -92,7 +91,8 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " department_code = VALUES(department_code),"
                     + " surgical_area_code = VALUES(surgical_area_code),"
                     + " theatre_number_code = VALUES(theatre_number_code),"
-                    + " audit_json = VALUES(audit_json)";
+                    + " audit_json = VALUES(audit_json),"
+                    + " cds_activity_date=VALUES(cds_activity_date)";
 
             ps = connection.prepareStatement(sql);
 
@@ -122,6 +122,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             ps.setString(12,stagingSurcc.getSurgicalAreaCode());
             ps.setString(13,stagingSurcc.getTheatreNumberCode());
             ps.setString(14,stagingSurcc.getAuditJson());
+            ps.setDate(15,new java.sql.Date(stagingSurcc.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
 
