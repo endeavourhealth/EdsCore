@@ -77,7 +77,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " surgical_case_procedure_id, surgical_case_id, dt_extract, " +
                     " active_ind, procedure_code, procedure_text, modifier_text, primary_procedure_indicator, surgeon_personnel_id," +
                     " dt_start, dt_stop, wound_class_code, lookup_procedure_code_term, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -136,7 +136,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             }
             ps.setString(15,stagingSurcp.getWoundClassCode());
             ps.setString(16, stagingSurcp.getLookupProcedureCodeTerm());
-            ps.setString(16,stagingSurcp.getAuditJson());
+            ps.setString(17,stagingSurcp.getAuditJson());
 //            ps.setDate(17,new java.sql.Date(stagingSurcp.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
