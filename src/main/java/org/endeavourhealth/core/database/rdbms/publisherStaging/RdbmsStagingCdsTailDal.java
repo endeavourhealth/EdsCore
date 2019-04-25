@@ -73,9 +73,9 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_cds_tail  "
-                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, sus_record_type, cds_unique_identifier, " +
+                    + " (exchange_id, dt_received, record_checksum,  sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, person_id, encounter_id, responsible_hcp_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -88,8 +88,8 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
                     + " person_id = VALUES(person_id),"
                     + " encounter_id = VALUES(encounter_id),"
                     + " responsible_hcp_personnel_id = VALUES(responsible_hcp_personnel_id),"
-                    + " audit_json = VALUES(audit_json),"
-                    + " cds_activity_date=VALUES(cds_activity_date)";
+                    + " audit_json = VALUES(audit_json)";
+            //        + " cds_activity_date=VALUES(cds_activity_date)";
 
             ps = connection.prepareStatement(sql);
 
@@ -105,7 +105,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             ps.setInt(10,stagingCdsTail.getEncounterId());
             ps.setInt(11, stagingCdsTail.getResponsibleHcpPersonnelId());
             ps.setString(12,stagingCdsTail.getAuditJson());
-            ps.setDate(13,new java.sql.Date((stagingCdsTail.getCdsActivityDate().getTime())));
+          //  ps.setDate(13,new java.sql.Date((stagingCdsTail.getCdsActivityDate().getTime())));
 
             ps.executeUpdate();
 
