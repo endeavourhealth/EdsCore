@@ -195,7 +195,7 @@ public class StagingProcedure {
     }
 
     public String getProcCdType() {
-        return procCd;
+        return procCdType;
     }
 
     public void setProcCdType(String procCdType) {
