@@ -13,6 +13,7 @@ public class RdbmsStagingSURCC {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
+    private Date cdsActivityDate;
     private int surgicalCaseId;
     private Date dtExtract;
     private boolean activeInd;
@@ -32,7 +33,7 @@ public class RdbmsStagingSURCC {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDTReceived();
         this.recordChecksum = proxy.getRecordChecksum();
-
+        this.cdsActivityDate = proxy.getCdsActivityDate();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();
         this.activeInd = proxy.getActiveInd();
@@ -75,6 +76,11 @@ public class RdbmsStagingSURCC {
     public void setRecordChecksum(int recordChecksum) {
         this.recordChecksum = recordChecksum;
     }
+
+    @Basic
+    @Column(name="cds_activity_date")
+    public Date getCdsActivityDate() {return cdsActivityDate;}
+    public void setCdsActivityDate(Date cdsActivityDate) {this.cdsActivityDate=cdsActivityDate;}
 
     @Basic
     @Column(name = "surgical_case_id")
