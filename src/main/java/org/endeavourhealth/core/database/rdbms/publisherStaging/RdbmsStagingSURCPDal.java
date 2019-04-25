@@ -76,7 +76,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " (exchange_id, dt_received, record_checksum, "
                     + " surgical_case_procedure_id, surgical_case_id, dt_extract, " +
                     " active_ind, procedure_code, procedure_text, modifier_text, primary_procedure_indicator, surgeon_personnel_id," +
-                    " dt_start, dt_stop, wound_class_code, audit_json, cds_activity_date)"
+                    " dt_start, dt_stop, wound_class_code, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
@@ -94,8 +94,8 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " dt_start = VALUES(dt_start),"
                     + " dt_stop = VALUES(dt_stop),"
                     + " wound_class_code = VALUES(wound_class_code),"
-                    + " audit_json = VALUES(audit_json),"
-                    + " cds_activity_date=VALUES(cds_activity_date)";
+                    + " audit_json = VALUES(audit_json)";
+//                    + " cds_activity_date=VALUES(cds_activity_date)";
 
             ps = connection.prepareStatement(sql);
 
@@ -135,7 +135,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             }
             ps.setString(15,stagingSurcp.getWoundClassCode());
             ps.setString(16,stagingSurcp.getAuditJson());
-            ps.setDate(17,new java.sql.Date(stagingSurcp.getCdsActivityDate().getTime()));
+//            ps.setDate(17,new java.sql.Date(stagingSurcp.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
 
