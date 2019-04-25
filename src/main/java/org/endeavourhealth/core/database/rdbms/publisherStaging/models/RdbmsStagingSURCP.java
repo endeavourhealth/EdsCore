@@ -26,6 +26,7 @@ public class RdbmsStagingSURCP {
     private Date dtStart;
     private Date dtStop;
     private String woundClassCode;
+    private String  lookupProcedureCodeTerm;
     private String auditJson;
 
     public RdbmsStagingSURCP() {}
@@ -48,7 +49,7 @@ public class RdbmsStagingSURCP {
         this.dtStart = proxy.getDTStart();
         this.dtStop = proxy.getDTStop();
         this.woundClassCode = proxy.getWoundClassCode();
-
+        this.lookupProcedureCodeTerm = proxy.getLookupProcedureCodeTerm();
         if (proxy.getAudit()!= null) {
             this.auditJson = proxy.getAudit().writeToJson();
         }
@@ -179,6 +180,11 @@ public class RdbmsStagingSURCP {
     public void setWoundClassCode (String woundClassCode) {
         this.woundClassCode = woundClassCode;
     }
+
+    @Basic
+    @Column(name=" lookup_procedure_code_term")
+    public String getLookupProcedureCodeTerm() {return this.lookupProcedureCodeTerm;}
+    public void setLookupProcedureCodeTerm(String lookupProcedureCodeTerm) {this.lookupProcedureCodeTerm=lookupProcedureCodeTerm;}
 
     @Basic
     @Column(name = "audit_json", nullable = true)

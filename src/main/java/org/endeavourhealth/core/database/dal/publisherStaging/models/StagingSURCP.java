@@ -24,7 +24,7 @@ public class StagingSURCP {
     private Date dtStart;
     private Date dtStop;
     private String woundClassCode;
-    private ResourceFieldMappingAudit audit = null;
+    private String lookupProcedureCodeTerm;    private ResourceFieldMappingAudit audit = null;
 
     public StagingSURCP() {}
 
@@ -45,7 +45,7 @@ public class StagingSURCP {
         this.dtStart = proxy.getDTStart();
         this.dtStop = proxy.getDTStop();
         this.woundClassCode = proxy.getWoundClassCode();
-
+        this.lookupProcedureCodeTerm=proxy.getLookupProcedureCodeTerm();
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
@@ -184,6 +184,14 @@ public class StagingSURCP {
         this.woundClassCode = woundClassCode;
     }
 
+    public String getLookupProcedureCodeTerm() {
+        return lookupProcedureCodeTerm;
+    }
+
+    public void setLookupProcedureCodeTerm(String lookupProcedureCodeTerm) {
+        this.lookupProcedureCodeTerm = lookupProcedureCodeTerm;
+    }
+
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -206,5 +214,28 @@ public class StagingSURCP {
                 dtStart,
                 dtStop,
                 woundClassCode);
+    }
+
+    @Override
+    public String toString() {
+        return "StagingSURCP{" +
+                "exchangeId='" + exchangeId + '\'' +
+                ", dtReceived=" + dtReceived +
+                ", recordChecksum=" + recordChecksum +
+                ", surgicalCaseProcedureId=" + surgicalCaseProcedureId +
+                ", surgicalCaseId=" + surgicalCaseId +
+                ", dtExtract=" + dtExtract +
+                ", activeInd=" + activeInd +
+                ", procedureCode=" + procedureCode +
+                ", procedureText='" + procedureText + '\'' +
+                ", modifierText='" + modifierText + '\'' +
+                ", primaryProcedureIndicator=" + primaryProcedureIndicator +
+                ", surgeonPersonnelId=" + surgeonPersonnelId +
+                ", dtStart=" + dtStart +
+                ", dtStop=" + dtStop +
+                ", woundClassCode='" + woundClassCode + '\'' +
+                ", lookupProcedureCodeTerm='" + lookupProcedureCodeTerm + '\'' +
+                ", audit=" + audit +
+                '}';
     }
 }

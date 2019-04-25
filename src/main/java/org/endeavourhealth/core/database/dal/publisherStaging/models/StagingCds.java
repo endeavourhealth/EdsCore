@@ -56,6 +56,7 @@ public class StagingCds implements Cloneable {
         }
     }
 
+
     public String getExchangeId() {
         return exchangeId;
     }
@@ -204,5 +205,30 @@ public class StagingCds implements Cloneable {
                 lookupProcedureOpcsTerm,
                 lookupPersonId,
                 lookupConsultantPersonnelId);
+    }
+
+    @Override
+    public String toString() {
+        return "StagingCds{" +
+                "exchangeId='" + exchangeId + '\'' +
+                ", dtReceived=" + dtReceived +
+                ", recordChecksum=" + recordChecksum +
+                ", cdsActivityDate=" + cdsActivityDate +
+                ", susRecordType='" + susRecordType + '\'' +
+                ", cdsUniqueIdentifier='" + cdsUniqueIdentifier + '\'' +
+                ", cdsUpdateType=" + cdsUpdateType +
+                ", mrn='" + mrn + '\'' +
+                ", nhsNumber='" + nhsNumber + '\'' +
+                ", dateOfBirth=" + dateOfBirth +
+                ", consultantCode='" + consultantCode + '\'' +
+                ", procedureDate=" + procedureDate +
+                ", procedureOpcsCode='" + procedureOpcsCode + '\'' +
+                ", procedureSeqNbr=" + procedureSeqNbr +
+                ", primaryProcedureOpcsCode='" + primaryProcedureOpcsCode + '\'' +
+                ", lookupProcedureOpcsTerm='" + lookupProcedureOpcsTerm + '\'' +
+                ", lookupPersonId=" + lookupPersonId +
+                ", lookupConsultantPersonnelId=" + lookupConsultantPersonnelId +
+                ", audit=" + audit +
+                '}';
     }
 }
