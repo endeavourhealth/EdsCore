@@ -73,9 +73,9 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_SURCC  "
-                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, surgical_case_id, dt_extract, " +
+                    + " (exchange_id, dt_received, record_checksum, surgical_case_id, dt_extract, " +
                     " active_ind, person_id, encounter_id, dt_cancelled, institution_code, department_code, " +
-                    " surgical_area_code, theatre_number_code, audit_json)"
+                    " surgical_area_code, theatre_number_code, audit_json, cds_activity_date)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"

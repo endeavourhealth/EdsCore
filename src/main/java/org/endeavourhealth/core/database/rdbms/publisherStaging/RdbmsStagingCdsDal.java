@@ -73,10 +73,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_cds  "
-                    + " (exchange_id, dt_received, record_checksum, cds_activity_date,sus_record_type, cds_unique_identifier, " +
+                    + " (exchange_id, dt_received, record_checksum,sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, date_of_birth, consultant_code, procedure_date, " +
                     " procedure_opcs_code, procedure_seq_nbr, primary_procedure_opcs_code, lookup_procedure_opcs_term, " +
-                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json, cds_activity_date)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
