@@ -1,8 +1,5 @@
 package org.endeavourhealth.core.database.dal.eds.models;
 
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearch;
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchEpisode;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -36,32 +33,6 @@ public class PatientSearch {
     public PatientSearch() {}
 
 
-
-    public PatientSearch(RdbmsPatientSearch patientProxy, RdbmsPatientSearchEpisode episodeProxy) {
-        this.serviceId = UUID.fromString(patientProxy.getServiceId());
-        this.patientId = UUID.fromString(patientProxy.getPatientId());
-        this.nhsNumber = patientProxy.getNhsNumber();
-        this.forenames = patientProxy.getForenames();
-        this.surname = patientProxy.getSurname();
-        this.dateOfBirth = patientProxy.getDateOfBirth();
-        this.dateOfDeath = patientProxy.getDateOfDeath();
-        this.addressLine1 = patientProxy.getAddressLine1();
-        this.addressLine2 = patientProxy.getAddressLine2();
-        this.addressLine3 = patientProxy.getAddressLine3();
-        this.city = patientProxy.getCity();
-        this.district = patientProxy.getDistrict();
-        this.postcode = patientProxy.getPostcode();
-        this.gender = patientProxy.getGender();
-        this.registeredPracticeOdsCode = patientProxy.getRegisteredPracticeOdsCode();
-
-        this.episodeId = UUID.fromString(episodeProxy.getEpisodeId());
-        this.registrationStart = episodeProxy.getRegistrationStart();
-        this.registrationEnd = episodeProxy.getRegistrationEnd();
-        this.careManager = episodeProxy.getCareManager();
-        this.organisationName = episodeProxy.getOrganisationName();
-        this.organisationTypeCode = episodeProxy.getOrganisationTypeCode();
-        this.registrationTypeCode = episodeProxy.getRegistrationTypeCode();
-    }
 
     public UUID getServiceId() {
         return serviceId;

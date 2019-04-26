@@ -7,7 +7,6 @@ import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientSearchLocalIdentifier;
 import org.endeavourhealth.core.fhirStorage.metadata.ReferenceHelper;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.*;
@@ -15,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -45,116 +43,121 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String registeredPracticeOdsCode = findRegisteredPracticeOdsCode(serviceId, fhirPatient);
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
-        PreparedStatement ps = null;
+        PreparedStatement psPatient = null;
+        PreparedStatement psLocalId = null;
+        PreparedStatement psDeleteLocalId = null;
+
+        Date now = new Date();
 
         try {
+            psPatient = createPatientPreparedStatement(entityManager);
+            psLocalId = createLocalIdPreparedStatement(entityManager);
+            psDeleteLocalId = createDeleteLocalIdPreparedStatement(entityManager, false);
+
             entityManager.getTransaction().begin();
-            ps = createPatientPreparedStatement(entityManager);
 
             int col = 1;
-            ps.setString(col++, serviceId.toString());
-            ps.setString(col++, patientId);
+            psPatient.setString(col++, serviceId.toString());
+            psPatient.setString(col++, patientId);
             if (!Strings.isNullOrEmpty(nhsNumber)) {
-                ps.setString(col++, nhsNumber);
+                psPatient.setString(col++, nhsNumber);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(forenames)) {
-                ps.setString(col++, forenames);
+                psPatient.setString(col++, forenames);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(surname)) {
-                ps.setString(col++, surname);
+                psPatient.setString(col++, surname);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (dob != null) {
-                ps.setDate(col++, new java.sql.Date(dob.getTime()));
+                psPatient.setDate(col++, new java.sql.Date(dob.getTime()));
             } else {
-                ps.setNull(col++, Types.DATE);
+                psPatient.setNull(col++, Types.DATE);
             }
             if (dod != null) {
-                ps.setDate(col++, new java.sql.Date(dod.getTime()));
+                psPatient.setDate(col++, new java.sql.Date(dod.getTime()));
             } else {
-                ps.setNull(col++, Types.DATE);
+                psPatient.setNull(col++, Types.DATE);
             }
             if (!Strings.isNullOrEmpty(addressLine1)) {
-                ps.setString(col++, addressLine1);
+                psPatient.setString(col++, addressLine1);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(addressLine2)) {
-                ps.setString(col++, addressLine2);
+                psPatient.setString(col++, addressLine2);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(addressLine3)) {
-                ps.setString(col++, addressLine3);
+                psPatient.setString(col++, addressLine3);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(city)) {
-                ps.setString(col++, city);
+                psPatient.setString(col++, city);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(district)) {
-                ps.setString(col++, district);
+                psPatient.setString(col++, district);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(postcode)) {
-                ps.setString(col++, postcode);
+                psPatient.setString(col++, postcode);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
             if (!Strings.isNullOrEmpty(gender)) {
-                ps.setString(col++, gender);
+                psPatient.setString(col++, gender);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
-            ps.setDate(col++, new java.sql.Date(new Date().getTime()));
+            psPatient.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
             if (!Strings.isNullOrEmpty(registeredPracticeOdsCode)) {
-                ps.setString(col++, registeredPracticeOdsCode);
+                psPatient.setString(col++, registeredPracticeOdsCode);
             } else {
-                ps.setNull(col++, Types.VARCHAR);
+                psPatient.setNull(col++, Types.VARCHAR);
             }
+            psPatient.setNull(col++, Types.TIMESTAMP);
 
-            ps.executeUpdate();
+            psPatient.executeUpdate();
 
-            List<RdbmsPatientSearchLocalIdentifier> identifiersToSave = new ArrayList<>();
-            List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete = new ArrayList<>();
+
+
+            Set<PatientSearchLocalIdentifier> identifiersToSave = new HashSet<>();
+            Set<PatientSearchLocalIdentifier> identifiersToDelete = new HashSet<>();
 
             createOrUpdateLocalIdentifiers(serviceId, fhirPatient, entityManager, identifiersToSave, identifiersToDelete, nhsNumber);
 
             //do the deletes
-            for (RdbmsPatientSearchLocalIdentifier localIdentifier: identifiersToDelete) {
-                entityManager.remove(localIdentifier);
+            for (PatientSearchLocalIdentifier id: identifiersToDelete) {
+
+                col = 1;
+                psDeleteLocalId.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+                psDeleteLocalId.setString(col++, serviceId.toString());
+                psDeleteLocalId.setString(col++, patientId);
+                psDeleteLocalId.setString(col++, id.getLocalId());
+                psDeleteLocalId.setString(col++, id.getLocalIdSystem());
+                psDeleteLocalId.executeUpdate();
             }
 
-            //do the saves
-            for (RdbmsPatientSearchLocalIdentifier localIdentifier: identifiersToSave) {
+            for (PatientSearchLocalIdentifier id: identifiersToSave) {
 
-                //adding try/catch to investigate a problem that has happened once but can't be replicated
-                //entityManager.persist(localIdentifier);
-                try {
-                    entityManager.persist(localIdentifier);
-
-                } catch (Exception ex) {
-                    String msg = ex.getMessage();
-                    if (msg.indexOf("A different object with the same identifier value was already associated with the session") > -1) {
-
-                        LOG.error("Failed to persist PatientSearchLocalIdentifier for service " + localIdentifier.getServiceId()
-                                + " patient " + localIdentifier.getPatientId()
-                                + " ID system " + localIdentifier.getLocalIdSystem()
-                                + " ID value " + localIdentifier.getLocalId()
-                                + " date " + localIdentifier.getLastUpdated().getTime());
-
-                        LOG.error("Entity being persisted is in entity cache = " + entityManager.contains(localIdentifier));
-                    }
-                    throw ex;
-                }
+                col = 1;
+                psLocalId.setString(col++, serviceId.toString());
+                psLocalId.setString(col++, patientId);
+                psLocalId.setString(col++, id.getLocalId());
+                psLocalId.setString(col++, id.getLocalIdSystem());
+                psLocalId.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+                psLocalId.setNull(col++, Types.TIMESTAMP);
+                psLocalId.executeUpdate();
             }
 
             entityManager.getTransaction().commit();
@@ -164,8 +167,11 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
-            if (ps != null) {
-                ps.close();
+            if (psPatient != null) {
+                psPatient.close();
+            }
+            if (psLocalId != null) {
+                psLocalId.close();
             }
             entityManager.close();
         }
@@ -412,12 +418,13 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             } else {
                 ps.setNull(col++, Types.VARCHAR);
             }
-            ps.setDate(col++, new java.sql.Date(new Date().getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(new Date().getTime()));
             if (!Strings.isNullOrEmpty(registrationStatus)) {
                 ps.setString(col++, registrationStatus);
             } else {
                 ps.setNull(col++, Types.VARCHAR);
             }
+            ps.setNull(col++, Types.TIMESTAMP);
 
             ps.executeUpdate();
 
@@ -473,14 +480,33 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         return CodeableConceptHelper.findCodingCode(codeableConcept, FhirValueSetUri.VALUE_SET_REGISTRATION_STATUS);
     }
 
+    private static PreparedStatement createLocalIdPreparedStatement(EntityManager entityManager) throws Exception {
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "INSERT INTO patient_search_local_identifier"
+                + " (service_id, patient_id, local_id, local_id_system, last_updated, dt_deleted)"
+                + " VALUES (?, ?, ?, ?, ?, ?)"
+                + " ON DUPLICATE KEY UPDATE"
+                + " service_id = VALUES(service_id)," //even though this is part of the primary key, the patient ID may change due to merges, so update it here
+                + " patient_id = VALUES(patient_id),"
+                + " local_id = VALUES(local_id),"
+                + " local_id_system = VALUES(local_id_system),"
+                + " last_updated = VALUES(last_updated),"
+                + " dt_deleted = VALUES(dt_deleted)";
+
+        return connection.prepareStatement(sql);
+    }
+
     private static PreparedStatement createEpisodeOfCarePreparedStatement(EntityManager entityManager) throws Exception {
 
         SessionImpl session = (SessionImpl)entityManager.getDelegate();
         Connection connection = session.connection();
 
         String sql = "INSERT INTO patient_search_episode"
-                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated, registration_status_code)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated, registration_status_code, dt_deleted)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " patient_id = VALUES(patient_id)," //even though this is part of the primary key, the patient ID may change due to merges, so update it here
                 + " registration_start = VALUES(registration_start),"
@@ -490,7 +516,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " organisation_type_code = VALUES(organisation_type_code),"
                 + " registration_type_code = VALUES(registration_type_code),"
                 + " last_updated = VALUES(last_updated),"
-                + " registration_status_code = VALUES(registration_status_code)";
+                + " registration_status_code = VALUES(registration_status_code),"
+                + " dt_deleted = VALUES(dt_deleted)";
 
         return connection.prepareStatement(sql);
     }
@@ -501,8 +528,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO patient_search"
-                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " nhs_number = VALUES(nhs_number),"
                 + " forenames = VALUES(forenames),"
@@ -517,7 +544,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " postcode = VALUES(postcode),"
                 + " gender = VALUES(gender),"
                 + " last_updated = VALUES(last_updated),"
-                + " registered_practice_ods_code = VALUES(registered_practice_ods_code)";
+                + " registered_practice_ods_code = VALUES(registered_practice_ods_code),"
+                + " dt_deleted = VALUES(dt_deleted)";
 
         return connection.prepareStatement(sql);
     }
@@ -551,23 +579,47 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
     private static void createOrUpdateLocalIdentifiers(UUID serviceId, Patient fhirPatient,
                                                        EntityManager entityManager,
-                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToSave,
-                                                       List<RdbmsPatientSearchLocalIdentifier> identifiersToDelete,
-                                                       String currentNhsNumber) {
+                                                       Set<PatientSearchLocalIdentifier> identifiersToSave,
+                                                       Set<PatientSearchLocalIdentifier> identifiersToDelete,
+                                                       String currentNhsNumber) throws Exception {
 
         String patientId = findPatientId(fhirPatient, null);
 
-        String sql = "select c"
-                + " from "
-                + " RdbmsPatientSearchLocalIdentifier c"
-                + " where c.serviceId = :service_id"
-                + " and c.patientId = :patient_id";
+        Set<PatientSearchLocalIdentifier> existingIdentifiers = new HashSet<>();
 
-        Query query = entityManager.createQuery(sql, RdbmsPatientSearchLocalIdentifier.class)
-                .setParameter("service_id", serviceId.toString())
-                .setParameter("patient_id", patientId);
+        PreparedStatement ps = null;
+        try {
+            String sql = "select local_id, local_id_system"
+                    + " from patient_search_local_identifier"
+                    + " where service_id = ?"
+                    + " and patient_id = ?"
+                    + " and dt_deleted IS NULL";
 
-        List<RdbmsPatientSearchLocalIdentifier> existingIdentifiers = query.getResultList();
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            ps.setString(col++, patientId);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                PatientSearchLocalIdentifier id = new PatientSearchLocalIdentifier();
+                id.setLocalId(rs.getString("local_id"));
+                id.setLocalIdSystem(rs.getString("local_id_system"));
+
+                existingIdentifiers.add(id);
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+
+
+        Set<PatientSearchLocalIdentifier> identifiersToLeave = new HashSet<>();
 
         if (fhirPatient.hasIdentifier()) {
             for (Identifier fhirIdentifier : fhirPatient.getIdentifier()) {
@@ -598,54 +650,31 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
                 String value = fhirIdentifier.getValue();
 
-                RdbmsPatientSearchLocalIdentifier localIdentifier = null;
-                for (RdbmsPatientSearchLocalIdentifier r: existingIdentifiers) {
-                    if (r.getLocalIdSystem().equals(system)
-                            && r.getLocalId().equals(value)) {
+                PatientSearchLocalIdentifier id = new PatientSearchLocalIdentifier();
+                id.setLocalIdSystem(system);
+                id.setLocalId(value);
 
-                        localIdentifier = r;
-                        break;
-                    }
-                }
-
-                if (localIdentifier != null) {
-                    //if the record already exists, remove it from the list so we know not to delete it
-                    existingIdentifiers.remove(localIdentifier);
+                //if it's already on the DB, we don't need to do anything
+                if (existingIdentifiers.contains(id)) {
+                    identifiersToLeave.add(id);
 
                 } else {
-                    //if there's no record for this local ID, create a new record
-                    localIdentifier = new RdbmsPatientSearchLocalIdentifier();
-                    localIdentifier.setServiceId(serviceId.toString());
-                    localIdentifier.setPatientId(patientId);
-                    localIdentifier.setLocalIdSystem(system);
-                    localIdentifier.setLocalId(value);
-                }
+                    //we have some patients with multiple instances of the same Identifier, so add to
+                    //this set too so we don't try to upsert the same one twice
+                    existingIdentifiers.add(id);
 
-                //always update the timestamp, so we know it's up to date
-                localIdentifier.setLastUpdated(new Date());
-
-                //we have some patients with multiple instances of the same Identifier, which causes Hibernate to
-                //throw an error. So simply spot this and don't add to the list
-                boolean alreadyAddedDuplicate = false;
-                for (RdbmsPatientSearchLocalIdentifier identifierAlreadyToSave: identifiersToSave) {
-                    if (identifierAlreadyToSave.getLocalIdSystem().equalsIgnoreCase(system)
-                            && identifierAlreadyToSave.getLocalId().equalsIgnoreCase(value)) {
-                        alreadyAddedDuplicate = true;
-                        break;
-                    }
+                    identifiersToSave.add(id);
                 }
-                if (alreadyAddedDuplicate) {
-                    continue;
-                }
-
-                //add to the list to be saved
-                identifiersToSave.add(localIdentifier);
             }
         }
 
         //any identifiers still in the list should now be deleted, since they're no longer in the patient
-        for (RdbmsPatientSearchLocalIdentifier localIdentifier: existingIdentifiers) {
-            identifiersToDelete.add(localIdentifier);
+        for (PatientSearchLocalIdentifier id: existingIdentifiers) {
+            if (!identifiersToLeave.contains(id)
+                    && !identifiersToSave.contains(id)) {
+
+                identifiersToDelete.add(id);
+            }
         }
 
     }
@@ -757,35 +786,33 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     public void deleteForService(UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+
+        PreparedStatement psDeletePatient = null;
+        PreparedStatement psDeleteEpisode = null;
+        PreparedStatement psDeleteLocalId = null;
         try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
             entityManager.getTransaction().begin();
 
-            String sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearchLocalIdentifier c"
-                    + " where c.serviceId = :serviceId";
+            String sql = "delete from patient_search_local_identifier"
+                    + " where service_id = ?";
+            psDeleteLocalId = connection.prepareStatement(sql);
+            psDeleteLocalId.setString(1, serviceId.toString());
+            psDeleteLocalId.executeUpdate();
 
-            Query query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString());
-            query.executeUpdate();
+            sql = "delete from patient_search_episode"
+                    + " where service_id = ?";
+            psDeleteEpisode = connection.prepareStatement(sql);
+            psDeleteEpisode.setString(1, serviceId.toString());
+            psDeleteEpisode.executeUpdate();
 
-            sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearchEpisode c"
-                    + " where c.serviceId = :serviceId";
-
-            query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString());
-            query.executeUpdate();
-
-            sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearch c"
-                    + " where c.serviceId = :serviceId";
-
-            query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString());
-            query.executeUpdate();
+            sql = "delete from patient_search"
+                    + " where service_id = ?";
+            psDeletePatient = connection.prepareStatement(sql);
+            psDeletePatient.setString(1, serviceId.toString());
+            psDeletePatient.executeUpdate();
 
             entityManager.getTransaction().commit();
 
@@ -794,6 +821,15 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
+            if (psDeletePatient != null) {
+                psDeletePatient.close();
+            }
+            if (psDeleteEpisode != null) {
+                psDeleteEpisode.close();
+            }
+            if (psDeleteLocalId != null) {
+                psDeleteLocalId.close();
+            }
             entityManager.close();
         }
     }
@@ -869,6 +905,14 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         } else {
             throw new IllegalArgumentException("Insufficient parameters passed in to search function");
+        }
+
+        //exclude deleted ones
+        sql += " AND ps.dt_deleted IS NULL";
+        sql += " AND pse.dt_deleted IS NULL";
+
+        if (!Strings.isNullOrEmpty(localId)) {
+            sql += " AND psi.dt_deleted IS NULL";
         }
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
@@ -979,43 +1023,37 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
+        PreparedStatement psDeletePatient = null;
+        PreparedStatement psDeleteEpisode = null;
+        PreparedStatement psDeleteLocalId = null;
         try {
             String patientId = findPatientId(fhirPatient, null);
 
+            psDeletePatient = createDeletePatientPreparedStatement(entityManager);
+            psDeleteEpisode = createDeleteEpisodePreparedStatement(entityManager, true);
+            psDeleteLocalId = createDeleteLocalIdPreparedStatement(entityManager, true);
+
             entityManager.getTransaction().begin();
 
-            String sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearchLocalIdentifier c"
-                    + " where c.serviceId = :serviceId"
-                    + " and c.patientId = :patientId";
+            Date d = new Date();
 
-            Query query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("patientId", patientId);
-            query.executeUpdate();
+            int col = 1;
+            psDeletePatient.setTimestamp(col++, new java.sql.Timestamp(d.getTime()));
+            psDeletePatient.setString(col++, serviceId.toString());
+            psDeletePatient.setString(col++, patientId);
+            psDeletePatient.executeUpdate();
 
-            sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearchEpisode c"
-                    + " where c.serviceId = :serviceId"
-                    + " and c.patientId = :patientId";
+            col = 1;
+            psDeleteEpisode.setTimestamp(col++, new java.sql.Timestamp(d.getTime()));
+            psDeleteEpisode.setString(col++, serviceId.toString());
+            psDeleteEpisode.setString(col++, patientId);
+            psDeleteEpisode.executeUpdate();
 
-            query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("patientId", patientId);
-            query.executeUpdate();
-
-            sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearch c"
-                    + " where c.serviceId = :serviceId"
-                    + " and c.patientId = :patientId";
-
-            query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("patientId", patientId);
-            query.executeUpdate();
+            col = 1;
+            psDeleteLocalId.setTimestamp(col++, new java.sql.Timestamp(d.getTime()));
+            psDeleteLocalId.setString(col++, serviceId.toString());
+            psDeleteLocalId.setString(col++, patientId);
+            psDeleteLocalId.executeUpdate();
 
             entityManager.getTransaction().commit();
 
@@ -1024,8 +1062,77 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
-            entityManager.close();
+            if (psDeletePatient != null) {
+                psDeletePatient.close();
+            }
+            if (psDeleteEpisode != null) {
+                psDeleteEpisode.close();
+            }
+            if (psDeleteLocalId != null) {
+                psDeleteLocalId.close();
+            }
         }
+    }
+
+    private static PreparedStatement createDeleteEpisodePreparedStatement(EntityManager entityManager, boolean deleteAllForPatient) throws Exception {
+
+        String sql = null;
+
+        if (deleteAllForPatient) {
+            sql = "UPDATE patient_search_episode"
+                    + " SET dt_deleted = ?"
+                    + " WHERE service_id = ?"
+                    + " AND patient_id = ?"
+                    + " AND dt_deleted IS NULL";
+
+        } else {
+            sql = "UPDATE patient_search_episode"
+                    + " SET dt_deleted = ?"
+                    + " WHERE service_id = ?"
+                    + " AND patient_id = ?"
+                    + " AND episode_id = ?"
+                    + " AND dt_deleted IS NULL";
+        }
+
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+        return connection.prepareStatement(sql);
+    }
+
+    private static PreparedStatement createDeletePatientPreparedStatement(EntityManager entityManager) throws Exception {
+        String sql = "UPDATE patient_search"
+                + " SET dt_deleted = ?"
+                + " WHERE service_id = ?"
+                + " AND patient_id = ?"
+                + " AND dt_deleted IS NULL";
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+        return connection.prepareStatement(sql);
+    }
+
+    private static PreparedStatement createDeleteLocalIdPreparedStatement(EntityManager entityManager, boolean deleteAllForPatient) throws Exception {
+        String sql = null;
+        if (deleteAllForPatient) {
+            sql = "UPDATE patient_search_local_identifier"
+                    + " SET dt_deleted = ?"
+                    + " WHERE service_id = ?"
+                    + " AND patient_id = ?"
+                    + " AND dt_deleted IS NULL";
+        } else {
+            sql = "UPDATE patient_search_local_identifier"
+                    + " SET dt_deleted = ?"
+                    + " WHERE service_id = ?"
+                    + " AND patient_id = ?"
+                    + " AND local_id = ?"
+                    + " AND local_id_system = ?"
+                    + " AND dt_deleted IS NULL";
+        }
+
+        SessionImpl session = (SessionImpl)entityManager.getDelegate();
+        Connection connection = session.connection();
+        return connection.prepareStatement(sql);
     }
 
     @Override
@@ -1033,24 +1140,22 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 
+        PreparedStatement ps = null;
         try {
             String patientId = findPatientId(null, episodeOfCare);
             String episodeId = episodeOfCare.getId();
 
+            ps = createDeleteEpisodePreparedStatement(entityManager, false);
+
             entityManager.getTransaction().begin();
 
-            String sql = "delete"
-                    + " from"
-                    + " RdbmsPatientSearchEpisode c"
-                    + " where c.serviceId = :serviceId"
-                    + " and c.patientId = :patientId"
-                    + " and c.episodeId = :episodeId";
+            int col = 1;
+            ps.setTimestamp(col++, new java.sql.Timestamp(new Date().getTime()));
+            ps.setString(col++, serviceId.toString());
+            ps.setString(col++, patientId);
+            ps.setString(col++, episodeId);
 
-            Query query = entityManager.createQuery(sql)
-                    .setParameter("serviceId", serviceId.toString())
-                    .setParameter("patientId", patientId)
-                    .setParameter("episodeId", episodeId);
-            query.executeUpdate();
+            ps.executeUpdate();
 
             entityManager.getTransaction().commit();
 
@@ -1059,6 +1164,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             throw ex;
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
@@ -1152,4 +1260,43 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             entityManager.close();
         }
     }*/
+}
+
+class PatientSearchLocalIdentifier {
+
+    private String localId = null;
+    private String localIdSystem = null;
+
+    public String getLocalId() {
+        return localId;
+    }
+
+    public void setLocalId(String localId) {
+        this.localId = localId;
+    }
+
+    public String getLocalIdSystem() {
+        return localIdSystem;
+    }
+
+    public void setLocalIdSystem(String localIdSystem) {
+        this.localIdSystem = localIdSystem;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(localId, localIdSystem);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof PatientSearchLocalIdentifier) {
+            PatientSearchLocalIdentifier other = (PatientSearchLocalIdentifier)o;
+            if (other.getLocalId().equalsIgnoreCase(getLocalId())
+                    && other.getLocalIdSystem().equals(getLocalIdSystem())) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
