@@ -32,8 +32,7 @@ public class StagingSURCP {
         this.exchangeId = proxy.getExchangeId();
         this.dtReceived = proxy.getDtReceived();
         this.recordChecksum = proxy.getRecordChecksum();
-//        this.cdsActivityDate = proxy.getCdsActivityDate();
-//        this.surgicalCaseProcedureId = proxy.getSurgicalCaseProcedureId();
+        this.surgicalCaseProcedureId = proxy.getSurgicalCaseProcedureId();
         this.surgicalCaseId = proxy.getSurgicalCaseId();
         this.dtExtract = proxy.getDTExtract();
         this.activeInd = proxy.getActiveInd();
@@ -78,13 +77,6 @@ public class StagingSURCP {
         this.dtReceived = dtReceived;
     }
 
-//    public Date getCdsActivityDate() {
-//        return cdsActivityDate;
-//    }
-//
-//    public void setCdsActivityDate(Date cdsActivityDate) {
-//        this.cdsActivityDate = cdsActivityDate;
-//    }
 
     public Date getDtExtract() {
         return dtExtract;
