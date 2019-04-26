@@ -431,4 +431,6 @@ public class DalProvider {
 
     public static StagingSURCPDalI factoryStagingSURCPDalI () { return new RdbmsStagingSURCPDal(); }
 
+    public static StagingTargetDalI factoryStagingTargetDalI () { return new RdbmsStagingTargetDal(); }
+
 }
