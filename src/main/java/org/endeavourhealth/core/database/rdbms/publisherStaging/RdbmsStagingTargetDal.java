@@ -30,6 +30,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             spQuery.setParameter("_exchange_id", exchangeId.toString());
             spQuery.execute();
 
+            entityManager.getTransaction().commit();
+
         } finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
