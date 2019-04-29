@@ -57,8 +57,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
-            LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
-            LOG.warn("cds:>" + cds.toString());
+         //   LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
+         //   LOG.warn("cds:>" + cds.toString());
             return;
         }
 

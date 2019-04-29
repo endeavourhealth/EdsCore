@@ -71,7 +71,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingProcedure)) {
-            LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
+         //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
             return;
         }
 
