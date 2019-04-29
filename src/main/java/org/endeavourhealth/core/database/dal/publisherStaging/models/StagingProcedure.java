@@ -1,9 +1,9 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 public class StagingProcedure {
@@ -219,35 +219,57 @@ public class StagingProcedure {
         this.exchangeId = exchangeId;
     }
 
-
-
     @Override
     public int hashCode() {
-        return new HashCodeBuilder()
-                .append(serviceId)
-                .append(exchangeId)
-                .append(dtReceived)
-                .append(checkSum)
-                .append(mrn)
-                .append(nhsNumber)
-                .append(dateOfBirth)
-                .append(encounterId)
-                .append(consultant)
-                .append(procDtTm)
-                .append(updatedBy)
-                .append(comments)
-                .append(createDtTm)
-                .append(procCdType)
-                .append(procCd)
-                .append(procTerm)
-                .append(personId)
-                .append(ward)
-                .append(site)
-                .append(lookupPersonId)
-                .append(lookupConsultantPersonnelId)
-                .append(lookuprecordedByPersonnelId)
-                .toHashCode();
+
+        return Objects.hash(mrn,
+                nhsNumber,
+                dateOfBirth,
+                encounterId,
+                personId,
+                ward,
+                site,
+                consultant,
+                procDtTm,
+                createDtTm,
+                updatedBy,
+                comments,
+                procCd,
+                procCdType,
+                procTerm,
+                lookupPersonId,
+                lookupConsultantPersonnelId,
+                lookuprecordedByPersonnelId
+        );
     }
+
+//    @Override
+//    public int hashCode() {
+//        return new HashCodeBuilder()
+//                .append(serviceId)
+//                .append(exchangeId)
+//                .append(dtReceived)
+//                .append(checkSum)
+//                .append(mrn)
+//                .append(nhsNumber)
+//                .append(dateOfBirth)
+//                .append(encounterId)
+//                .append(consultant)
+//                .append(procDtTm)
+//                .append(updatedBy)
+//                .append(comments)
+//                .append(createDtTm)
+//                .append(procCdType)
+//                .append(procCd)
+//                .append(procTerm)
+//                .append(personId)
+//                .append(ward)
+//                .append(site)
+//                .append(lookupPersonId)
+//                .append(lookupConsultantPersonnelId)
+//                .append(lookuprecordedByPersonnelId)
+//                .toHashCode();
+//    }
 
 }
 

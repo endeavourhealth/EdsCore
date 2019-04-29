@@ -8,7 +8,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Objects;
 
 @Entity
 @Table(name = "procedure_PROCE")
@@ -187,22 +186,22 @@ public class RdbmsStagingPROCE implements Serializable {
     public String getAuditJson() { return auditJson; }
     public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(procedureId,
-                activeInd,
-                encounterId,
-                procedureDtTm,
-                procedureType,
-                procedureCode,
-                procedureTerm,
-                procedureSeqNo,
-                lookupPersonId,
-                lookupMrn,
-                lookupNhsNumber,
-                lookupDateOfBirth);
-    }
+//    @Override
+//    public int hashCode() {
+//
+//        return Objects.hash(procedureId,
+//                activeInd,
+//                encounterId,
+//                procedureDtTm,
+//                procedureType,
+//                procedureCode,
+//                procedureTerm,
+//                procedureSeqNo,
+//                lookupPersonId,
+//                lookupMrn,
+//                lookupNhsNumber,
+//                lookupDateOfBirth);
+//    }
 
     @Override
     public String toString() {

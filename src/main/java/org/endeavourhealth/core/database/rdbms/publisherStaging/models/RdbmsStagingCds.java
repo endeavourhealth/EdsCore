@@ -4,7 +4,6 @@ import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCds;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Objects;
 
 @Entity
 @Table(name = "procedure_cds")
@@ -216,22 +215,22 @@ public class RdbmsStagingCds {
     public void setAuditJson(String auditJson) {this.auditJson = auditJson; }
 
 
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(susRecordType,
-                            cdsUniqueIdentifier,
-                            cdsUpdateType,
-                            mrn,
-                            nhsNumber,
-                            dateOfBirth,
-                            consultantCode,
-                            procedureDate,
-                            procedureOpcsCode,
-                            procedureSeqNbr,
-                            primaryProcedureOpcsCode,
-                            lookupProcedureOpcsTerm,
-                            lookupPersonId,
-                            lookupConsultantPersonnelId);
-    }
+//    @Override
+//    public int hashCode() {
+//
+//        return Objects.hash(susRecordType,
+//                            cdsUniqueIdentifier,
+//                            cdsUpdateType,
+//                            mrn,
+//                            nhsNumber,
+//                            dateOfBirth,
+//                            consultantCode,
+//                            procedureDate,
+//                            procedureOpcsCode,
+//                            procedureSeqNbr,
+//                            primaryProcedureOpcsCode,
+//                            lookupProcedureOpcsTerm,
+//                            lookupPersonId,
+//                            lookupConsultantPersonnelId);
+//    }
 }
