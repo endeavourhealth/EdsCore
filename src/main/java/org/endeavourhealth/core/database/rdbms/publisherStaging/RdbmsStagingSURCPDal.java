@@ -101,17 +101,17 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingSurcp.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(stagingSurcp.getDtReceived().getTime());
-            ps.setDate(2, sqlDate);
+            java.sql.Timestamp sqlDate = new java.sql.Timestamp(stagingSurcp.getDtReceived().getTime());
+            ps.setTimestamp(2, sqlDate);
             ps.setInt(3,stagingSurcp.getRecordChecksum());
             ps.setInt(4,stagingSurcp.getSurgicalCaseProcedureId());
             ps.setInt(5,stagingSurcp.getSurgicalCaseId());
 
             if (stagingSurcp.getDTExtract() != null) {
-                ps.setDate(6, new java.sql.Date(stagingSurcp.getDTExtract().getTime()));
+                ps.setTimestamp(6, new java.sql.Timestamp(stagingSurcp.getDTExtract().getTime()));
             } else {
                 sqlDate = null;
-                ps.setDate(6,sqlDate);
+                ps.setTimestamp(6,sqlDate);
             }
 
             ps.setBoolean(7,stagingSurcp.getActiveInd());
@@ -123,16 +123,16 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                 ps.setInt(12, stagingSurcp.getSurgeonPersonnelId());
             }
             if (stagingSurcp.getDTStart()!=null) {
-                ps.setDate(13, new java.sql.Date(stagingSurcp.getDTStart().getTime()));
+                ps.setTimestamp(13, new java.sql.Timestamp(stagingSurcp.getDTStart().getTime()));
             } else {
                 sqlDate = null;
-                ps.setDate(13,sqlDate);
+                ps.setTimestamp(13,sqlDate);
             }
             if (stagingSurcp.getDTStop()!=null) {
-                ps.setDate(14, new java.sql.Date(stagingSurcp.getDTStop().getTime()));
+                ps.setTimestamp(14, new java.sql.Timestamp(stagingSurcp.getDTStop().getTime()));
             } else {
                 sqlDate=null;
-                ps.setDate(14,sqlDate);
+                ps.setTimestamp(14,sqlDate);
             }
             ps.setString(15,stagingSurcp.getWoundClassCode());
             ps.setString(16, stagingSurcp.getLookupProcedureCodeTerm());

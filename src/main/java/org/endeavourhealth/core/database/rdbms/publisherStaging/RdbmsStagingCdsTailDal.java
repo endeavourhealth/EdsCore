@@ -94,7 +94,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, stagingCdsTail.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingCdsTail.getDtReceived().getTime()));
+            ps.setTimestamp(2, new java.sql.Timestamp(stagingCdsTail.getDtReceived().getTime()));
             ps.setInt(3,stagingCdsTail.getRecordChecksum());
             ps.setString(4,stagingCdsTail.getSusRecordType());
             ps.setString(5,stagingCdsTail.getCdsUniqueIdentifier());

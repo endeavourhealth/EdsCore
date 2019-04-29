@@ -123,25 +123,25 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDtReceived().getTime());
-            ps.setDate(2,sqlDate);
+            java.sql.Timestamp sqlDate = new java.sql.Timestamp(dbObj.getDtReceived().getTime());
+            ps.setTimestamp(2,sqlDate);
             ps.setInt(3,dbObj.getRecordChecksum());
             ps.setString(4,dbObj.getMrn());
             ps.setString(5,dbObj.getNhsNumber());
-            sqlDate = new java.sql.Date(dbObj.getDateOfBirth().getTime());
-            ps.setDate(6,sqlDate);
+            sqlDate = new java.sql.Timestamp(dbObj.getDateOfBirth().getTime());
+            ps.setTimestamp(6,sqlDate);
             ps.setInt(7,dbObj.getEncounterId());
             ps.setString(8,dbObj.getConsultant());
             if (dbObj.getProcDtTm() != null) {
-                sqlDate = new java.sql.Date(dbObj.getProcDtTm().getTime());
+                sqlDate = new java.sql.Timestamp(dbObj.getProcDtTm().getTime());
             } else {
                 sqlDate = null;
             }
-            ps.setDate(9,sqlDate);
+            ps.setTimestamp(9,sqlDate);
             ps.setString(10,dbObj.getUpdatedBy());
             ps.setString(11,dbObj.getFreeTextComment());
-            sqlDate = new java.sql.Date(dbObj.getCreateDtTm().getTime());
-            ps.setDate(12,sqlDate);
+            sqlDate = new java.sql.Timestamp(dbObj.getCreateDtTm().getTime());
+            ps.setTimestamp(12,sqlDate);
             ps.setString(13,dbObj.getProcCdType());
             ps.setString(14,dbObj.getProcCd());
             ps.setString(15,dbObj.getProcTerm());

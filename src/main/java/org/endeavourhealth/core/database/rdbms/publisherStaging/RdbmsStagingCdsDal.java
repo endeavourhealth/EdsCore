@@ -101,10 +101,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " cds_activity_date=VALUES(cds_activity_date)";
 
             ps = connection.prepareStatement(sql);
-            java.sql.Date sqlDate = null;
+            java.sql.Timestamp sqlDate = null;
 
             ps.setString(1, stagingCds.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingCds.getDtReceived().getTime()));
+            ps.setTimestamp(2, new java.sql.Timestamp(stagingCds.getDtReceived().getTime()));
             ps.setInt(3, stagingCds.getRecordChecksum());
             ps.setString(4, stagingCds.getSusRecordType());
             ps.setString(5, stagingCds.getCdsUniqueIdentifier());
@@ -112,19 +112,19 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(7, stagingCds.getMrn());
             ps.setString(8, stagingCds.getNhsNumber());
             if (stagingCds.getDateOfBirth()!=null) {
-                sqlDate = new java.sql.Date(stagingCds.getDateOfBirth().getTime());
+                sqlDate = new java.sql.Timestamp(stagingCds.getDateOfBirth().getTime());
             } else {
                 sqlDate=null;
             }
-            ps.setDate(9,sqlDate);
+            ps.setTimestamp(9,sqlDate);
             ps.setString(10, stagingCds.getConsultantCode());
 
             if (stagingCds.getProcedureDate() != null) {
-                sqlDate =  new java.sql.Date(stagingCds.getProcedureDate().getTime());
+                sqlDate =  new java.sql.Timestamp(stagingCds.getProcedureDate().getTime());
             } else {
                 sqlDate = null;
             }
-            ps.setDate(11, sqlDate);
+            ps.setTimestamp(11, sqlDate);
             ps.setString(12, stagingCds.getProcedureOpcsCode());
             ps.setInt(13, stagingCds.getProcedureSeqNbr());
             ps.setString(14, stagingCds.getPrimaryProcedureOpcsCode());
@@ -132,7 +132,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setInt(16, stagingCds.getLookupPersonId());
             ps.setInt(17, stagingCds.getLookupConsultantPersonnelId());
             ps.setString(18, stagingCds.getAuditJson());
-            ps.setDate(19,new java.sql.Date(stagingCds.getCdsActivityDate().getTime()));
+            ps.setTimestamp(19,new java.sql.Timestamp(stagingCds.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
 

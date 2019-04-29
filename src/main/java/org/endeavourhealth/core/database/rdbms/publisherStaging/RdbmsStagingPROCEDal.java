@@ -113,18 +113,18 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps = connection.prepareStatement(sql);
 
             ps.setString(1, dbObj.getExchangeId());
-            java.sql.Date sqlDate = new java.sql.Date(dbObj.getDtReceived().getTime());
-            ps.setDate(2,sqlDate);
+            java.sql.Timestamp sqlDate = new java.sql.Timestamp(dbObj.getDtReceived().getTime());
+            ps.setTimestamp(2,sqlDate);
             ps.setInt(3,dbObj.getRecordChecksum());
             ps.setInt(4,dbObj.getProcedureId());
             ps.setBoolean(5,dbObj.isActiveInd());
             ps.setInt(6,dbObj.getEncounterId());
             if (dbObj.getProcedureDtTm() != null) {
-                sqlDate = new java.sql.Date(dbObj.getProcedureDtTm().getTime());
+                sqlDate = new java.sql.Timestamp(dbObj.getProcedureDtTm().getTime());
             } else {
                 sqlDate = null;
             }
-            ps.setDate(7,sqlDate);
+            ps.setTimestamp(7,sqlDate);
             ps.setString(8,dbObj.getProcedureType());
             ps.setString(9,dbObj.getProcedureCode());
             ps.setString(10,dbObj.getProcedureTerm());
@@ -133,11 +133,11 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             ps.setString(13,dbObj.getLookupMrn());
             ps.setString(14,dbObj.getLookupNhsNumber());
             if (dbObj.getLookupDateOfBirth() != null) {
-                sqlDate = new java.sql.Date(dbObj.getLookupDateOfBirth().getTime());
+                sqlDate = new java.sql.Timestamp(dbObj.getLookupDateOfBirth().getTime());
             } else {
                 sqlDate = null;
             }
-            ps.setDate(15,sqlDate);
+            ps.setTimestamp(15,sqlDate);
             ps.setString(16,dbObj.getAuditJson());
 
             ps.executeUpdate();
