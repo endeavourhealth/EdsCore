@@ -27,7 +27,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             StoredProcedureQuery spQuery
                     = entityManager.createStoredProcedureQuery("process_procedure_staging_exchange");
             spQuery.registerStoredProcedureParameter("_exchange_id",String.class, ParameterMode.IN);
-            spQuery.setParameter("_exchange_id", exchangeId);
+            spQuery.setParameter("_exchange_id", exchangeId.toString());
             spQuery.execute();
 
         } finally {
