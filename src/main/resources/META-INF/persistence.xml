@@ -354,6 +354,7 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingPROCE</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCC</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCP</class>
+        <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingTarget</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
