@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
+import javax.persistence.ParameterMode;
 import javax.persistence.Query;
 import javax.persistence.StoredProcedureQuery;
 import java.util.List;
@@ -24,8 +25,9 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
         try {
 
             StoredProcedureQuery spQuery
-                    = entityManager.createStoredProcedureQuery("process_procedure_staging_exchange")
-                    .setParameter("_exchange_id", exchangeId);
+                    = entityManager.createStoredProcedureQuery("process_procedure_staging_exchange");
+            spQuery.registerStoredProcedureParameter("_exchange_id",String.class, ParameterMode.IN);
+            spQuery.setParameter("_exchange_id", exchangeId);
             spQuery.execute();
 
         } finally {
