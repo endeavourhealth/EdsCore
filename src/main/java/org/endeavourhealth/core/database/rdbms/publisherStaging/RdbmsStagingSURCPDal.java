@@ -9,10 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 
 public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
@@ -20,32 +19,36 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingSURCPDal.class);
 
     @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingSURCP surcp) throws Exception {
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingSURCP obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from "
-                    + " RdbmsStagingSURCP c"
-                    + " where c.surgicalCaseProcedureId = :surgical_case_procedure_id"
-                    + " order by c.dtReceived desc";
+            entityManager.getTransaction().begin();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql ="select record_checksum from procedure_SURCP_latest where surgical_case_procedure_id =?"
+                    +   " order by dtReceived desc";
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, obj.getSurgicalCaseProcedureId());
 
-            Query query = entityManager.createQuery(sql, RdbmsStagingSURCP.class)
-                    .setParameter("surgical_case_procedure_id", surcp.getSurgicalCaseProcedureId())
-                    .setMaxResults(1);
-
-            try {
-                RdbmsStagingSURCP result = (RdbmsStagingSURCP)query.getSingleResult();
-                return result.getRecordChecksum() == surcp.getRecordChecksum();
-            }
-            catch (NoResultException e) {
+            ResultSet rs = ps.executeQuery();
+            if (rs.wasNull()) {
                 return false;
+            } else {
+                return (rs.getInt(1) == obj.getRecordChecksum());
             }
+            //entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
+
     }
 
     @Override

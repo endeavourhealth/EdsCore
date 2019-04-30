@@ -10,10 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,34 +27,36 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
     }
 
     @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingPROCE stagingPROCE) throws Exception {
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingPROCE obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from "
-                    + " RdbmsStagingPROCE c"
-                    + " where c.procedureId = :procedure_id"
-                    + " and c.activeInd =:active_ind "
-                    + " order by c.dtReceived desc";
-
-            Query query = entityManager.createQuery(sql, RdbmsStagingPROCE.class)
-                    .setParameter("procedure_id", stagingPROCE.getProcedureId())
-                    .setParameter("active_ind", stagingPROCE.isActiveInd())
-                    .setMaxResults(1);
-
-            try {
-                RdbmsStagingPROCE result = (RdbmsStagingPROCE)query.getSingleResult();
-                return (result.getRecordChecksum() == stagingPROCE.getCheckSum());
-            }
-            catch (NoResultException e) {
+            entityManager.getTransaction().begin();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql ="select record_checksum from procedure_PROCE_latest where procedure_id = ? and active_ind= ?"
+                    +   " order by dtReceived desc";
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, obj.getProcedureId());
+            ps.setBoolean(2,obj.isActiveInd());
+            ResultSet rs = ps.executeQuery();
+            if (rs.wasNull()) {
                 return false;
+            } else {
+                return (rs.getInt(1) == obj.getCheckSum());
             }
+            //entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
+
     }
 
     @Override

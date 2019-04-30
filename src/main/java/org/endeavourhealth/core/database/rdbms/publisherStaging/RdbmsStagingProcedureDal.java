@@ -10,10 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,36 +27,38 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     }
 
     @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingProcedure stagingProcedure) throws Exception {
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingProcedure obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from "
-                    + " RdbmsStagingProcedure c"
-                    + " where c.encounterId = :encounter_id"
-                    + " and c.procDtTm =  :proc_dt_tm"
-                    + " and c.procCd = :proc_cd"
-                    + " order by c.encounterId desc";
-
-            Query query = entityManager.createQuery(sql, RdbmsStagingProcedure.class)
-                    .setParameter("encounter_id", stagingProcedure.getEncounterId())
-                    .setParameter("proc_dt_tm", stagingProcedure.getProcDtTm())
-                    .setParameter("proc_cd",stagingProcedure.getProcCd() )
-                    .setMaxResults(1);
-
-            try {
-                RdbmsStagingProcedure result = (RdbmsStagingProcedure)query.getSingleResult();
-                return result.getRecordChecksum() == stagingProcedure.getCheckSum();
-            }
-            catch (NoResultException e) {
+            entityManager.getTransaction().begin();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql ="select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm= ? and proc_cd=?"
+                    +   " order by dtReceived desc";
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, obj.getEncounterId());
+            java.sql.Timestamp sqlDate = new java.sql.Timestamp(obj.getProcDtTm().getTime());
+            ps.setTimestamp(2,sqlDate);
+            ps.setString(3,obj.getProcCd());
+            ResultSet rs = ps.executeQuery();
+            if (rs.wasNull()) {
                 return false;
+            } else {
+                return (rs.getInt(1) == obj.getCheckSum());
             }
+            //entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
+
     }
 
     @Override

@@ -9,10 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 
 public class RdbmsStagingCdsDal implements StagingCdsDalI {
@@ -23,28 +22,31 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
     public boolean getRecordChecksumFiled(UUID serviceId, StagingCds cds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+
         try {
-            String sql = "select c"
-                    + " from "
-                    + " RdbmsStagingCds c"
-                    + " where c.cdsUniqueIdentifier = :cds_unique_identifier"
-                    + " order by c.dtReceived desc";
-
-            Query query = entityManager.createQuery(sql, RdbmsStagingCds.class)
-                    .setParameter("cds_unique_identifier", cds.getCdsUniqueIdentifier())
-                    .setMaxResults(1);
-
-            try {
-                RdbmsStagingCds result = (RdbmsStagingCds)query.getSingleResult();
-                return result.getRecordChecksum() == cds.getRecordChecksum();
-            }
-            catch (NoResultException e) {
+            entityManager.getTransaction().begin();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql ="select record_checksum from procedure_cds_latest where cds_unique_identifier = ?"
+                    +   " order by dtReceived desc";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, cds.getCdsUniqueIdentifier());
+            ResultSet rs = ps.executeQuery();
+            if (rs.wasNull()) {
                 return false;
+            } else {
+                return (rs.getInt(1) == cds.getRecordChecksum());
             }
+           //entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
     }
 

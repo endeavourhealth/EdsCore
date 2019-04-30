@@ -9,10 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.UUID;
 
 public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
@@ -20,31 +19,33 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingCdsTailDal.class);
 
     @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingCdsTail cdsTail) throws Exception {
+    public boolean getRecordChecksumFiled(UUID serviceId, StagingCdsTail obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from "
-                    + " RdbmsStagingCdsTail c"
-                    + " where c.cdsUniqueIdentifier = :cds_unique_identifier"
-                    + " order by c.dtReceived desc";
-
-            Query query = entityManager.createQuery(sql, RdbmsStagingCdsTail.class)
-                    .setParameter("cds_unique_identifier", cdsTail.getCdsUniqueIdentifier())
-                    .setMaxResults(1);
-
-            try {
-                RdbmsStagingCdsTail result = (RdbmsStagingCdsTail) query.getSingleResult();
-                return result.getRecordChecksum() == cdsTail.getRecordChecksum();
-            }
-            catch (NoResultException e) {
+            entityManager.getTransaction().begin();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql ="select record_checksum from procedure_cds_tail_latest where cds_unique_identifier = ?"
+                    +   " order by dtReceived desc";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, obj.getCdsUniqueIdentifier());
+            ResultSet rs = ps.executeQuery();
+            if (rs.wasNull()) {
                 return false;
+            } else {
+                return (rs.getInt(1) == obj.getRecordChecksum());
             }
+            //entityManager.getTransaction().commit();
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
     }
 
