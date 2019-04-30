@@ -32,8 +32,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                int dbChecksum = rs.getInt(0);
-                return rs.getInt(1) == cds.getRecordChecksum();
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cds.getRecordChecksum();
             } else {
                 return false;
             }
