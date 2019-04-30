@@ -3,13 +3,14 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingTarget;
+import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
-import javax.persistence.ParameterMode;
 import javax.persistence.Query;
-import javax.persistence.StoredProcedureQuery;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,21 +22,27 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     public void processStagingForTarget(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
-
+        CallableStatement stmt = null;
         try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call process_procedure_staging_exchange(?)}";
+            stmt = connection.prepareCall(sql);
+
             entityManager.getTransaction().begin();
-            StoredProcedureQuery spQuery
-                    = entityManager.createStoredProcedureQuery("process_procedure_staging_exchange");
-            spQuery.registerStoredProcedureParameter("_exchange_id",String.class, ParameterMode.IN);
-            spQuery.setParameter("_exchange_id", exchangeId.toString());
-            spQuery.execute();
+
+            stmt.setString(1, exchangeId.toString());
+
+            stmt.execute();
 
             entityManager.getTransaction().commit();
 
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (stmt != null) {
+                stmt.close();
             }
+            entityManager.close();
         }
     }
 
