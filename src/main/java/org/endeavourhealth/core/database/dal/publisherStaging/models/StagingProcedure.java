@@ -4,11 +4,9 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 
 import java.util.Date;
 import java.util.Objects;
-import java.util.UUID;
 
 public class StagingProcedure {
 
-    private UUID serviceId;
     private String exchangeId;
     private Date dtReceived;
     private int checkSum;
@@ -28,20 +26,35 @@ public class StagingProcedure {
     private String ward;
     private String site;
     private String lookupPersonId;
-    private int lookupConsultantPersonnelId;
-    private int lookuprecordedByPersonnelId;
-
+    private Integer lookupConsultantPersonnelId;
+    private Integer lookupRecordedByPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingProcedure() {
+    }
+
+    public String getExchangeId() {
+        return exchangeId;
+    }
+
+    public void setExchangeId(String exchangeId) {
+        this.exchangeId = exchangeId;
     }
 
     public Date getDtReceived() {
         return dtReceived;
     }
 
-    public void setDateReceived(Date dtReceived) {
+    public void setDtReceived(Date dtReceived) {
         this.dtReceived = dtReceived;
+    }
+
+    public int getCheckSum() {
+        return checkSum;
+    }
+
+    public void setCheckSum(int checkSum) {
+        this.checkSum = checkSum;
     }
 
     public String getMrn() {
@@ -68,60 +81,76 @@ public class StagingProcedure {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getProcTerm() {
-        return procTerm;
-    }
-
-    public void setProcTerm(String procTerm) {
-        this.procTerm = procTerm;
-    }
-
-    public String getLookupPersonId() {
-        return lookupPersonId;
-    }
-
-    public void setLookupPersonId(String lookupPersonId) {
-        this.lookupPersonId = lookupPersonId;
-    }
-
-    public int getLookupConsultantPersonnelId() {
-        return lookupConsultantPersonnelId;
-    }
-
-    public void setLookupConsultantPersonnelId(int lookupConsultantPersonnelId) {
-        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
-    }
-
-    public int getLookuprecordedByPersonnelId() {
-        return lookuprecordedByPersonnelId;
-    }
-
-    public void setLookuprecordedByPersonnelId(int lookuprecordedByPersonnelId) {
-        this.lookuprecordedByPersonnelId = lookuprecordedByPersonnelId;
-    }
-
-    public ResourceFieldMappingAudit getAudit() {
-        return audit;
-    }
-
-    public void setAudit(ResourceFieldMappingAudit audit) {
-        this.audit = audit;
-    }
-
-    public UUID getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(UUID serviceId) {
-        this.serviceId = serviceId;
-    }
-
     public int getEncounterId() {
         return encounterId;
     }
 
     public void setEncounterId(int encounterId) {
         this.encounterId = encounterId;
+    }
+
+    public String getConsultant() {
+        return consultant;
+    }
+
+    public void setConsultant(String consultant) {
+        this.consultant = consultant;
+    }
+
+    public Date getProcDtTm() {
+        return procDtTm;
+    }
+
+    public void setProcDtTm(Date procDtTm) {
+        this.procDtTm = procDtTm;
+    }
+
+    public String getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(String updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public String getComments() {
+        return comments;
+    }
+
+    public void setComments(String comments) {
+        this.comments = comments;
+    }
+
+    public Date getCreateDtTm() {
+        return createDtTm;
+    }
+
+    public void setCreateDtTm(Date createDtTm) {
+        this.createDtTm = createDtTm;
+    }
+
+    public String getProcCdType() {
+        return procCdType;
+    }
+
+    public void setProcCdType(String procCdType) {
+        this.procCdType = procCdType;
+    }
+
+    public String getProcCd() {
+        return procCd;
+    }
+
+    public void setProcCd(String procCd) {
+        this.procCd = procCd;
+    }
+
+    public String getProcTerm() {
+        return procTerm;
+    }
+
+    public void setProcTerm(String procTerm) {
+        this.procTerm = procTerm;
     }
 
     public String getPersonId() {
@@ -148,75 +177,36 @@ public class StagingProcedure {
         this.site = site;
     }
 
-    public String getConsultant() {
-        return consultant;
+    public String getLookupPersonId() {
+        return lookupPersonId;
     }
 
-    public void setConsultant(String consultant) {
-        this.consultant = consultant;
+    public void setLookupPersonId(String lookupPersonId) {
+        this.lookupPersonId = lookupPersonId;
     }
 
-    public Date getProcDtTm() {
-        return procDtTm;
+    public Integer getLookupConsultantPersonnelId() {
+        return lookupConsultantPersonnelId;
     }
 
-    public void setProcDtTm(Date procDtTm) {
-        this.procDtTm = procDtTm;
+    public void setLookupConsultantPersonnelId(Integer lookupConsultantPersonnelId) {
+        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
     }
 
-    public Date getCreateDtTm() {
-        return createDtTm;
+    public Integer getLookupRecordedByPersonnelId() {
+        return lookupRecordedByPersonnelId;
     }
 
-    public void setCreateDtTm(Date createDtTm) {
-        this.createDtTm = createDtTm;
+    public void setLookupRecordedByPersonnelId(Integer lookupRecordedByPersonnelId) {
+        this.lookupRecordedByPersonnelId = lookupRecordedByPersonnelId;
     }
 
-    public String getUpdatedBy() {
-        return updatedBy;
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
     }
 
-    public void setUpdatedBy(String updatedBy) {
-        this.updatedBy = updatedBy;
-    }
-
-    public String getFreeTextComment() {
-        return comments;
-    }
-
-    public void setFreeTextComment(String comments) {
-        this.comments = comments;
-    }
-
-    public String getProcCd() { return procCd; }
-
-    public void setProcCd(String procCd) {
-        this.procCd = procCd;
-    }
-
-    public String getProcCdType() {
-        return procCdType;
-    }
-
-    public void setProcCdType(String procCdType) {
-        this.procCdType = procCdType;
-    }
-
-    public int getCheckSum() {
-        return checkSum;
-    }
-
-    public void setCheckSum() {
-        this.checkSum = hashCode();
-    }
-
-
-    public String getExchangeId() {
-        return exchangeId;
-    }
-
-    public void setExchangeId(String exchangeId) {
-        this.exchangeId = exchangeId;
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
     }
 
     @Override
@@ -239,7 +229,7 @@ public class StagingProcedure {
                 procTerm,
                 lookupPersonId,
                 lookupConsultantPersonnelId,
-                lookuprecordedByPersonnelId
+                lookupRecordedByPersonnelId
         );
     }
 

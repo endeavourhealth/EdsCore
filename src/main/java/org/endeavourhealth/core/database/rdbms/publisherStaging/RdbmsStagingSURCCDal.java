@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingSURCCDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingSURCC;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCC;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.UUID;
 
 public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
@@ -59,8 +59,6 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             return;
         }
 
-        RdbmsStagingSURCC stagingSurcc = new RdbmsStagingSURCC(surcc);
-
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
 
@@ -93,32 +91,64 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, stagingSurcc.getExchangeId());
-            ps.setDate(2, new java.sql.Date(stagingSurcc.getDtReceived().getTime()));
-            ps.setInt(3, stagingSurcc.getRecordChecksum());
-            ps.setInt(4, stagingSurcc.getSurgicalCaseId());
+            int col = 1;
 
-            if (stagingSurcc.getDTExtract() != null) {
-                ps.setTimestamp(5, new java.sql.Timestamp(stagingSurcc.getDTExtract().getTime()));
+            //only the first six columns are non-null
+            ps.setString(col++, surcc.getExchangeId());
+            ps.setDate(col++, new java.sql.Date(surcc.getDtReceived().getTime()));
+            ps.setInt(col++, surcc.getRecordChecksum());
+            ps.setInt(col++, surcc.getSurgicalCaseId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtExtract().getTime()));
+            ps.setBoolean(col++, surcc.isActiveInd());
+
+            if (surcc.getPersonId() == null) {
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                java.sql.Timestamp sqldate = null;
-                ps.setTimestamp(5, sqldate);
+                ps.setInt(col++, surcc.getPersonId());
             }
 
-            ps.setBoolean(6, stagingSurcc.getActiveInd());
-            ps.setInt(7, stagingSurcc.getPersonId());
-            ps.setInt(8, stagingSurcc.getEncounterId());
-            if (stagingSurcc.getDTCancelled() != null) {
-                ps.setTimestamp(9, new java.sql.Timestamp(stagingSurcc.getDTCancelled().getTime()));
+            if (surcc.getEncounterId() == null) {
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                java.sql.Timestamp sqldate = null;
-                ps.setTimestamp(9, sqldate);
+                ps.setInt(col++, surcc.getEncounterId());
             }
-            ps.setString(10, stagingSurcc.getInstitutionCode());
-            ps.setString(11, stagingSurcc.getDepartmentCode());
-            ps.setString(12, stagingSurcc.getSurgicalAreaCode());
-            ps.setString(13, stagingSurcc.getTheatreNumberCode());
-            ps.setString(14, stagingSurcc.getAuditJson());
+
+            if (surcc.getDtCancelled() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtCancelled().getTime()));
+            }
+
+            if (surcc.getInstitutionCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getInstitutionCode());
+            }
+
+            if (surcc.getDepartmentCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getDepartmentCode());
+            }
+
+            if (surcc.getSurgicalAreaCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getSurgicalAreaCode());
+            }
+
+            if (surcc.getTheatreNumberCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getTheatreNumberCode());
+            }
+
+            if (surcc.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getAudit().writeToJson());
+            }
+
             ps.executeUpdate();
 
             entityManager.getTransaction().commit();

@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsTailDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCdsTail;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCdsTail;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.UUID;
 
 public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
@@ -55,11 +55,9 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cdsTail)) {
-           // LOG.warn("procedure_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
+            // LOG.warn("procedure_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
             return;
         }
-
-        RdbmsStagingCdsTail stagingCdsTail = new RdbmsStagingCdsTail(cdsTail);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -91,19 +89,27 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, stagingCdsTail.getExchangeId());
-            ps.setTimestamp(2, new java.sql.Timestamp(stagingCdsTail.getDtReceived().getTime()));
-            ps.setInt(3,stagingCdsTail.getRecordChecksum());
-            ps.setString(4,stagingCdsTail.getSusRecordType());
-            ps.setString(5,stagingCdsTail.getCdsUniqueIdentifier());
-            ps.setInt(6,stagingCdsTail.getCdsUpdateType());
-            ps.setString(7,stagingCdsTail.getMrn());
-            ps.setString(8,stagingCdsTail.getNhsNumber());
-            ps.setInt(9,stagingCdsTail.getPersonId());
-            ps.setInt(10,stagingCdsTail.getEncounterId());
-            ps.setInt(11, stagingCdsTail.getResponsibleHcpPersonnelId());
-            ps.setString(12,stagingCdsTail.getAuditJson());
-          //  ps.setDate(13,new java.sql.Date((stagingCdsTail.getCdsActivityDate().getTime())));
+            int col = 1;
+
+            //all columns except the last one are non-null
+            ps.setString(col++, cdsTail.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsTail.getDtReceived().getTime()));
+            ps.setInt(col++, cdsTail.getRecordChecksum());
+            ps.setString(col++, cdsTail.getSusRecordType());
+            ps.setString(col++, cdsTail.getCdsUniqueIdentifier());
+            ps.setInt(col++, cdsTail.getCdsUpdateType());
+            ps.setString(col++, cdsTail.getMrn());
+            ps.setString(col++, cdsTail.getNhsNumber());
+            ps.setInt(col++, cdsTail.getPersonId());
+            ps.setInt(col++, cdsTail.getEncounterId());
+            ps.setInt(col++, cdsTail.getResponsibleHcpPersonnelId());
+
+            if (cdsTail.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, cdsTail.getAudit().writeToJson());
+            }
+            //  ps.setDate(13,new java.sql.Date((stagingCdsTail.getCdsActivityDate().getTime())));
 
             ps.executeUpdate();
 

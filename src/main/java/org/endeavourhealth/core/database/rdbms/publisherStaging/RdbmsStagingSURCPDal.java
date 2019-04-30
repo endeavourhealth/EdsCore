@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingSURCPDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingSURCP;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingSURCP;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.UUID;
 
 public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
@@ -56,11 +56,9 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, surcp)) {
-          //  LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
+            //  LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
             return;
         }
-
-        RdbmsStagingSURCP stagingSurcp = new RdbmsStagingSURCP(surcp);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -99,44 +97,81 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, stagingSurcp.getExchangeId());
-            java.sql.Timestamp sqlDate = new java.sql.Timestamp(stagingSurcp.getDtReceived().getTime());
-            ps.setTimestamp(2, sqlDate);
-            ps.setInt(3,stagingSurcp.getRecordChecksum());
-            ps.setInt(4,stagingSurcp.getSurgicalCaseProcedureId());
-            ps.setInt(5,stagingSurcp.getSurgicalCaseId());
+            int col = 1;
+            //first four, then cols six and seven are non-null
+            ps.setString(col++, surcp.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtReceived().getTime()));
+            ps.setInt(col++, surcp.getRecordChecksum());
+            ps.setInt(col++, surcp.getSurgicalCaseProcedureId());
+            if (surcp.getSurgicalCaseId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, surcp.getSurgicalCaseId());
+            }
+            ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtExtract().getTime()));
+            ps.setBoolean(col++, surcp.isActiveInd());
 
-            if (stagingSurcp.getDTExtract() != null) {
-                ps.setTimestamp(6, new java.sql.Timestamp(stagingSurcp.getDTExtract().getTime()));
+            if (surcp.getProcedureCode() == null) {
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                sqlDate = null;
-                ps.setTimestamp(6,sqlDate);
+                ps.setInt(col++, surcp.getProcedureCode());
             }
 
-            ps.setBoolean(7,stagingSurcp.getActiveInd());
-            ps.setInt(8,stagingSurcp.getProcedureCode());
-            ps.setString(9,stagingSurcp.getProcedureText());
-            ps.setString(10,stagingSurcp.getModifierText());
-            ps.setInt(11,stagingSurcp.getPrimaryProcedureIndicator());
-            if (stagingSurcp.getSurgeonPersonnelId()!=null) {
-                ps.setInt(12, stagingSurcp.getSurgeonPersonnelId());
-            }
-            if (stagingSurcp.getDTStart()!=null) {
-                ps.setTimestamp(13, new java.sql.Timestamp(stagingSurcp.getDTStart().getTime()));
+            if (surcp.getProcedureText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
             } else {
-                sqlDate = null;
-                ps.setTimestamp(13,sqlDate);
+                ps.setString(col++, surcp.getProcedureText());
             }
-            if (stagingSurcp.getDTStop()!=null) {
-                ps.setTimestamp(14, new java.sql.Timestamp(stagingSurcp.getDTStop().getTime()));
+
+            if (surcp.getModifierText() == null) {
+                ps.setNull(col++, Types.VARCHAR);
             } else {
-                sqlDate=null;
-                ps.setTimestamp(14,sqlDate);
+                ps.setString(col++, surcp.getModifierText());
             }
-            ps.setString(15,stagingSurcp.getWoundClassCode());
-            ps.setString(16, stagingSurcp.getLookupProcedureCodeTerm());
-            ps.setString(17,stagingSurcp.getAuditJson());
-//            ps.setDate(17,new java.sql.Date(stagingSurcp.getCdsActivityDate().getTime()));
+
+            if (surcp.getPrimaryProcedureIndicator() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, surcp.getPrimaryProcedureIndicator());
+            }
+
+            if (surcp.getSurgeonPersonnelId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, surcp.getSurgeonPersonnelId());
+            }
+
+            if (surcp.getDtStart() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStart().getTime()));
+            }
+
+            if (surcp.getDtStop() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStop().getTime()));
+            }
+
+            if (surcp.getWoundClassCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcp.getWoundClassCode());
+            }
+
+            if (surcp.getLookupProcedureCodeTerm() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcp.getLookupProcedureCodeTerm());
+            }
+
+            if (surcp.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcp.getAudit().writeToJson());
+            }
+
+//            ps.setDate(17,new java.sql.Date(surcp.getCdsActivityDate().getTime()));
 
             ps.executeUpdate();
 

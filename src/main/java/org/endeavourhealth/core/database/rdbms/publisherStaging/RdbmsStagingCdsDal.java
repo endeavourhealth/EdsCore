@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCds;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingCds;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.UUID;
 
 public class RdbmsStagingCdsDal implements StagingCdsDalI {
@@ -55,12 +55,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, cds)) {
-         //   LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
-         //   LOG.warn("cds:>" + cds.toString());
+            //   LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
+            //   LOG.warn("cds:>" + cds.toString());
             return;
         }
-
-        RdbmsStagingCds stagingCds = new RdbmsStagingCds(cds);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -72,15 +70,16 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO procedure_cds  "
-                    + " (exchange_id, dt_received, record_checksum,sus_record_type, cds_unique_identifier, " +
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, sus_record_type, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, date_of_birth, consultant_code, procedure_date, " +
                     " procedure_opcs_code, procedure_seq_nbr, primary_procedure_opcs_code, lookup_procedure_opcs_term, " +
-                    " lookup_person_id, lookup_consultant_personnel_id, audit_json, cds_activity_date)"
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
                     + " record_checksum = VALUES(record_checksum),"
+                    + " cds_activity_date=VALUES(cds_activity_date),"
                     + " sus_record_type = VALUES(sus_record_type),"
                     + " cds_unique_identifier = VALUES(cds_unique_identifier),"
                     + " cds_update_type = VALUES(cds_update_type),"
@@ -95,42 +94,47 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " lookup_procedure_opcs_term = VALUES(lookup_procedure_opcs_term),"
                     + " lookup_person_id = VALUES(lookup_person_id),"
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
-                    + " audit_json = VALUES(audit_json),"
-                    + " cds_activity_date=VALUES(cds_activity_date)";
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
-            java.sql.Timestamp sqlDate = null;
 
-            ps.setString(1, stagingCds.getExchangeId());
-            ps.setTimestamp(2, new java.sql.Timestamp(stagingCds.getDtReceived().getTime()));
-            ps.setInt(3, stagingCds.getRecordChecksum());
-            ps.setString(4, stagingCds.getSusRecordType());
-            ps.setString(5, stagingCds.getCdsUniqueIdentifier());
-            ps.setInt(6, stagingCds.getCdsUpdateType());
-            ps.setString(7, stagingCds.getMrn());
-            ps.setString(8, stagingCds.getNhsNumber());
-            if (stagingCds.getDateOfBirth()!=null) {
-                sqlDate = new java.sql.Timestamp(stagingCds.getDateOfBirth().getTime());
-            } else {
-                sqlDate=null;
-            }
-            ps.setTimestamp(9,sqlDate);
-            ps.setString(10, stagingCds.getConsultantCode());
+            int col = 1;
 
-            if (stagingCds.getProcedureDate() != null) {
-                sqlDate =  new java.sql.Timestamp(stagingCds.getProcedureDate().getTime());
+            //all columns except the last three are non-null
+            ps.setString(col++, cds.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getDtReceived().getTime()));
+            ps.setInt(col++, cds.getRecordChecksum());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getCdsActivityDate().getTime()));
+            ps.setString(col++, cds.getSusRecordType());
+            ps.setString(col++, cds.getCdsUniqueIdentifier());
+            ps.setInt(col++, cds.getCdsUpdateType());
+            ps.setString(col++, cds.getMrn());
+            ps.setString(col++, cds.getNhsNumber());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getDateOfBirth().getTime()));
+            ps.setString(col++, cds.getConsultantCode());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getProcedureDate().getTime()));
+            ps.setString(col++, cds.getProcedureOpcsCode());
+            ps.setInt(col++, cds.getProcedureSeqNbr());
+            ps.setString(col++, cds.getPrimaryProcedureOpcsCode());
+            ps.setString(col++, cds.getLookupProcedureOpcsTerm());
+
+            if (cds.getLookupPersonId() == null) {
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                sqlDate = null;
+                ps.setInt(col++, cds.getLookupPersonId());
             }
-            ps.setTimestamp(11, sqlDate);
-            ps.setString(12, stagingCds.getProcedureOpcsCode());
-            ps.setInt(13, stagingCds.getProcedureSeqNbr());
-            ps.setString(14, stagingCds.getPrimaryProcedureOpcsCode());
-            ps.setString(15, stagingCds.getLookupProcedureOpcsTerm());
-            ps.setInt(16, stagingCds.getLookupPersonId());
-            ps.setInt(17, stagingCds.getLookupConsultantPersonnelId());
-            ps.setString(18, stagingCds.getAuditJson());
-            ps.setTimestamp(19,new java.sql.Timestamp(stagingCds.getCdsActivityDate().getTime()));
+
+            if (cds.getLookupConsultantPersonnelId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, cds.getLookupConsultantPersonnelId());
+            }
+
+            if (cds.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, cds.getAudit().writeToJson());
+            }
 
             ps.executeUpdate();
 

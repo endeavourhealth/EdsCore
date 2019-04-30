@@ -12,13 +12,13 @@ public class StagingPROCE {
     private int checkSum;
     private int procedureId;
     private boolean activeInd;
-    private int encounterId;
+    private Integer encounterId;
     private Date procedureDtTm;
     private String procedureType;
     private String procedureCode;
     private String procedureTerm;
-    private int procedureSeqNo;
-    private int lookupPersonId;
+    private Integer procedureSeqNo;
+    private Integer lookupPersonId;
     private String lookupMrn;
     private String lookupNhsNumber;
     private Date lookupDateOfBirth;
@@ -67,11 +67,11 @@ public class StagingPROCE {
         this.activeInd = activeInd;
     }
 
-    public int getEncounterId() {
+    public Integer getEncounterId() {
         return encounterId;
     }
 
-    public void setEncounterId(int encounterId) {
+    public void setEncounterId(Integer encounterId) {
         this.encounterId = encounterId;
     }
 
@@ -107,19 +107,19 @@ public class StagingPROCE {
         this.procedureTerm = procedureTerm;
     }
 
-    public int getProcedureSeqNo() {
+    public Integer getProcedureSeqNo() {
         return procedureSeqNo;
     }
 
-    public void setProcedureSeqNo(int procedureSeqNo) {
+    public void setProcedureSeqNo(Integer procedureSeqNo) {
         this.procedureSeqNo = procedureSeqNo;
     }
 
-    public int getLookupPersonId() {
+    public Integer getLookupPersonId() {
         return lookupPersonId;
     }
 
-    public void setLookupPersonId(int lookupPersonId) {
+    public void setLookupPersonId(Integer lookupPersonId) {
         this.lookupPersonId = lookupPersonId;
     }
 

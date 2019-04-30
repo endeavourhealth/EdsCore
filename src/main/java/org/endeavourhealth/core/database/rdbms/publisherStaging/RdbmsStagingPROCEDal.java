@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingPROCEDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingPROCE;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingPROCE;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +11,7 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.UUID;
 
 public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
@@ -30,7 +30,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
-            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
             String sql = "select record_checksum from procedure_PROCE_latest where procedure_id = ?";
             ps = connection.prepareStatement(sql);
@@ -62,11 +62,9 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingPROCE)) {
-           // LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
+            // LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
             return;
         }
-
-        RdbmsStagingPROCE dbObj = new RdbmsStagingPROCE(stagingPROCE);
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -107,33 +105,81 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, dbObj.getExchangeId());
-            java.sql.Timestamp sqlDate = new java.sql.Timestamp(dbObj.getDtReceived().getTime());
-            ps.setTimestamp(2,sqlDate);
-            ps.setInt(3,dbObj.getRecordChecksum());
-            ps.setInt(4,dbObj.getProcedureId());
-            ps.setBoolean(5,dbObj.isActiveInd());
-            ps.setInt(6,dbObj.getEncounterId());
-            if (dbObj.getProcedureDtTm() != null) {
-                sqlDate = new java.sql.Timestamp(dbObj.getProcedureDtTm().getTime());
+            int col = 1;
+
+            //first five columns are non-null
+            ps.setString(col++, stagingPROCE.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(stagingPROCE.getDtReceived().getTime()));
+            ps.setInt(col++, stagingPROCE.getCheckSum());
+            ps.setInt(col++, stagingPROCE.getProcedureId());
+            ps.setBoolean(col++, stagingPROCE.isActiveInd());
+
+            if (stagingPROCE.getEncounterId() == null) {
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                sqlDate = null;
+                ps.setInt(col++, stagingPROCE.getEncounterId());
             }
-            ps.setTimestamp(7,sqlDate);
-            ps.setString(8,dbObj.getProcedureType());
-            ps.setString(9,dbObj.getProcedureCode());
-            ps.setString(10,dbObj.getProcedureTerm());
-            ps.setInt(11,dbObj.getProcedureSeqNo());
-            ps.setInt(12,dbObj.getLookupPersonId());
-            ps.setString(13,dbObj.getLookupMrn());
-            ps.setString(14,dbObj.getLookupNhsNumber());
-            if (dbObj.getLookupDateOfBirth() != null) {
-                sqlDate = new java.sql.Timestamp(dbObj.getLookupDateOfBirth().getTime());
+
+            if (stagingPROCE.getProcedureDtTm() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
             } else {
-                sqlDate = null;
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingPROCE.getProcedureDtTm().getTime()));
             }
-            ps.setTimestamp(15,sqlDate);
-            ps.setString(16,dbObj.getAuditJson());
+
+            if (stagingPROCE.getProcedureType() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingPROCE.getProcedureType());
+            }
+
+            if (stagingPROCE.getProcedureCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingPROCE.getProcedureCode());
+            }
+
+            if (stagingPROCE.getProcedureTerm() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else{
+                ps.setString(col++, stagingPROCE.getProcedureTerm());
+            }
+
+            if (stagingPROCE.getProcedureSeqNo() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingPROCE.getProcedureSeqNo());
+            }
+
+            if (stagingPROCE.getLookupPersonId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingPROCE.getLookupPersonId());
+            }
+
+            if (stagingPROCE.getLookupMrn() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingPROCE.getLookupMrn());
+            }
+
+            if (stagingPROCE.getLookupNhsNumber() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingPROCE.getLookupNhsNumber());
+            }
+
+            if (stagingPROCE.getLookupDateOfBirth() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingPROCE.getLookupDateOfBirth().getTime()));
+            }
+
+            if (stagingPROCE.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingPROCE.getAudit().writeToJson());
+            }
+
 
             ps.executeUpdate();
 

@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingProcedureDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedure;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingProcedure;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.Enumerations;
 import org.slf4j.Logger;
@@ -13,12 +12,12 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingProcedureDal.class);
-
 
 
     @Override
@@ -58,17 +57,15 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     }
 
     @Override
-    public void save(StagingProcedure stagingProcedure,  UUID serviceId) throws Exception {
+    public void save(StagingProcedure stagingProcedure, UUID serviceId) throws Exception {
 
         if (stagingProcedure == null) {
             throw new IllegalArgumentException("stagingProcedure is null");
         }
 
-        RdbmsStagingProcedure dbObj = new RdbmsStagingProcedure(stagingProcedure);
-
         //check if record already filed to avoid duplicates
         if (getRecordChecksumFiled(serviceId, stagingProcedure)) {
-         //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
+            //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
             return;
         }
 
@@ -92,7 +89,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " proc_cd_type, proc_cd, proc_term, person_id, ward, site, "
                     + " lookup_person_id, lookup_consultant_personnel_id, "
                     + " lookup_recorded_by_personnel_id, audit_json)"
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -119,36 +116,52 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, dbObj.getExchangeId());
-            java.sql.Timestamp sqlDate = new java.sql.Timestamp(dbObj.getDtReceived().getTime());
-            ps.setTimestamp(2,sqlDate);
-            ps.setInt(3,dbObj.getRecordChecksum());
-            ps.setString(4,dbObj.getMrn());
-            ps.setString(5,dbObj.getNhsNumber());
-            sqlDate = new java.sql.Timestamp(dbObj.getDateOfBirth().getTime());
-            ps.setTimestamp(6,sqlDate);
-            ps.setInt(7,dbObj.getEncounterId());
-            ps.setString(8,dbObj.getConsultant());
-            if (dbObj.getProcDtTm() != null) {
-                sqlDate = new java.sql.Timestamp(dbObj.getProcDtTm().getTime());
+            int col = 1;
+
+            //all but the last four columns are non-null
+            ps.setString(col++, stagingProcedure.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDtReceived().getTime()));
+            ps.setInt(col++, stagingProcedure.getCheckSum());
+            ps.setString(col++, stagingProcedure.getMrn());
+            ps.setString(col++, stagingProcedure.getNhsNumber());
+            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDateOfBirth().getTime()));
+            ps.setInt(col++, stagingProcedure.getEncounterId());
+            ps.setString(col++, stagingProcedure.getConsultant());
+            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getProcDtTm().getTime()));
+            ps.setString(col++, stagingProcedure.getUpdatedBy());
+            ps.setString(col++, stagingProcedure.getComments());
+            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getCreateDtTm().getTime()));
+            ps.setString(col++, stagingProcedure.getProcCdType());
+            ps.setString(col++, stagingProcedure.getProcCd());
+            ps.setString(col++, stagingProcedure.getProcTerm());
+            ps.setString(col++, stagingProcedure.getPersonId());
+            ps.setString(col++, stagingProcedure.getWard());
+            ps.setString(col++, stagingProcedure.getSite());
+
+
+            if (stagingProcedure.getLookupPersonId() == null) {
+                ps.setNull(col++, Types.VARCHAR);
             } else {
-                sqlDate = null;
+                ps.setString(col++, stagingProcedure.getLookupPersonId());
             }
-            ps.setTimestamp(9,sqlDate);
-            ps.setString(10,dbObj.getUpdatedBy());
-            ps.setString(11,dbObj.getFreeTextComment());
-            sqlDate = new java.sql.Timestamp(dbObj.getCreateDtTm().getTime());
-            ps.setTimestamp(12,sqlDate);
-            ps.setString(13,dbObj.getProcCdType());
-            ps.setString(14,dbObj.getProcCd());
-            ps.setString(15,dbObj.getProcTerm());
-            ps.setString(16,dbObj.getPersonId());
-            ps.setString(17,dbObj.getWard());
-            ps.setString(18,dbObj.getSite());
-            ps.setString(19,dbObj.getLookupPersonId());
-            ps.setInt(20,dbObj.getLookupConsultantPersonnelId());
-            ps.setInt(21,dbObj.getLookuprecordedByPersonnelId());
-            ps.setString(22,dbObj.getAuditJson());
+
+            if (stagingProcedure.getLookupConsultantPersonnelId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingProcedure.getLookupConsultantPersonnelId());
+            }
+
+            if (stagingProcedure.getLookupRecordedByPersonnelId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingProcedure.getLookupRecordedByPersonnelId());
+            }
+
+            if (stagingProcedure.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingProcedure.getAudit().writeToJson());
+            }
 
             ps.executeUpdate();
 
