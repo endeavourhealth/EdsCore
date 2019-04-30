@@ -35,8 +35,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_PROCE_latest where procedure_id = ? and active_ind= ?"
-                    +   " order by dtReceived desc";
+            String sql ="select record_checksum from procedure_PROCE_latest where procedure_id ";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getProcedureId());
             ps.setBoolean(2,obj.isActiveInd());

@@ -27,8 +27,7 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_SURCP_latest where surgical_case_procedure_id =?"
-                    +   " order by dtReceived desc";
+            String sql ="select record_checksum from procedure_SURCP_latest where surgical_case_procedure_id =?";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getSurgicalCaseProcedureId());
 

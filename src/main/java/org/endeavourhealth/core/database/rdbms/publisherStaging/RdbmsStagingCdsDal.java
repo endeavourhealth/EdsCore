@@ -28,8 +28,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_cds_latest where cds_unique_identifier = ?"
-                    +   " order by dtReceived desc";
+            String sql ="select record_checksum from procedure_cds_latest where cds_unique_identifier = ?";
             ps = connection.prepareStatement(sql);
             ps.setString(1, cds.getCdsUniqueIdentifier());
             ResultSet rs = ps.executeQuery();

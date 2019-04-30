@@ -35,8 +35,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm= ? and proc_cd=?"
-                    +   " order by dtReceived desc";
+            String sql ="select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm= ? and proc_cd=?";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getEncounterId());
             java.sql.Timestamp sqlDate = new java.sql.Timestamp(obj.getProcDtTm().getTime());
