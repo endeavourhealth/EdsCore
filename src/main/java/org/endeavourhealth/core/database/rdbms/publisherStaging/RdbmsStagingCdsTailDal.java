@@ -24,22 +24,20 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_cds_tail_latest where cds_unique_identifier = ?";
+            String sql = "select record_checksum from procedure_cds_tail_latest where cds_unique_identifier = ?";
             ps = connection.prepareStatement(sql);
             ps.setString(1, obj.getCdsUniqueIdentifier());
+
             ResultSet rs = ps.executeQuery();
-            if (rs.wasNull()) {
-                return false;
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == obj.getRecordChecksum();
             } else {
-                return (rs.getInt(1) == obj.getRecordChecksum());
+                return false;
             }
-            //entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
+
         } finally {
             if (ps != null) {
                 ps.close();

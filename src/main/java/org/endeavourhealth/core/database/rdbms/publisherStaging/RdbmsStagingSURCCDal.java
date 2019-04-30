@@ -24,23 +24,19 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_SURCC_latest where surgical_case_id =?";
+            String sql = "select record_checksum from procedure_SURCC_latest where surgical_case_id = ?";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getSurgicalCaseId());
 
             ResultSet rs = ps.executeQuery();
-            if (rs.wasNull()) {
-                return false;
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == obj.getRecordChecksum();
             } else {
-                return (rs.getInt(1) == obj.getRecordChecksum());
+                return false;
             }
-            //entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
         } finally {
             if (ps != null) {
                 ps.close();

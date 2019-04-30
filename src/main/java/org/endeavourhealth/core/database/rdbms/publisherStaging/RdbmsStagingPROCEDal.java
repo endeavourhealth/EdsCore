@@ -5,7 +5,6 @@ import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingPROC
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingPROCE;
 import org.hibernate.internal.SessionImpl;
-import org.hl7.fhir.instance.model.Enumerations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +12,6 @@ import javax.persistence.EntityManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
@@ -21,10 +19,10 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
 
 
-    @Override
+    /*@Override
     public List<UUID> getSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType) throws Exception {
         return null;
-    }
+    }*/
 
     @Override
     public boolean getRecordChecksumFiled(UUID serviceId, StagingPROCE obj) throws Exception {
@@ -32,23 +30,20 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_PROCE_latest where procedure_id ";
+            String sql = "select record_checksum from procedure_PROCE_latest where procedure_id = ?";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getProcedureId());
-            ps.setBoolean(2,obj.isActiveInd());
+
             ResultSet rs = ps.executeQuery();
-            if (rs.wasNull()) {
-                return false;
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == obj.getCheckSum();
             } else {
-                return (rs.getInt(1) == obj.getCheckSum());
+                return false;
             }
-            //entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
+
         } finally {
             if (ps != null) {
                 ps.close();

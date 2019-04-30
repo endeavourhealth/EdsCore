@@ -23,24 +23,21 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
-
         try {
-            entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_cds_latest where cds_unique_identifier = ?";
+            String sql = "select record_checksum from procedure_cds_latest where cds_unique_identifier = ?";
             ps = connection.prepareStatement(sql);
             ps.setString(1, cds.getCdsUniqueIdentifier());
+
             ResultSet rs = ps.executeQuery();
-            if (rs.wasNull()) {
-                return false;
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(0);
+                return rs.getInt(1) == cds.getRecordChecksum();
             } else {
-                return (rs.getInt(1) == cds.getRecordChecksum());
+                return false;
             }
-           //entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
+
         } finally {
             if (ps != null) {
                 ps.close();

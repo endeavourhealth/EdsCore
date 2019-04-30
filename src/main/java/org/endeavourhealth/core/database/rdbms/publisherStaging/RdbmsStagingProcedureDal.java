@@ -32,25 +32,22 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql ="select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm= ? and proc_cd=?";
+            String sql = "select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm = ? and proc_cd = ?";
             ps = connection.prepareStatement(sql);
             ps.setInt(1, obj.getEncounterId());
-            java.sql.Timestamp sqlDate = new java.sql.Timestamp(obj.getProcDtTm().getTime());
-            ps.setTimestamp(2,sqlDate);
-            ps.setString(3,obj.getProcCd());
+            ps.setTimestamp(2, new java.sql.Timestamp(obj.getProcDtTm().getTime()));
+            ps.setString(3, obj.getProcCd());
+
             ResultSet rs = ps.executeQuery();
-            if (rs.wasNull()) {
-                return false;
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == obj.getCheckSum();
             } else {
-                return (rs.getInt(1) == obj.getCheckSum());
+                return false;
             }
-            //entityManager.getTransaction().commit();
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
+
         } finally {
             if (ps != null) {
                 ps.close();
