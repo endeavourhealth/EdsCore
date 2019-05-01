@@ -142,6 +142,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
+            LOG.error("Error saving " + cds);
             throw ex;
 
         } finally {
