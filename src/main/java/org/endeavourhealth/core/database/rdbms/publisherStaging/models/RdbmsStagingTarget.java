@@ -27,7 +27,7 @@ public class RdbmsStagingTarget {
     private String parentProcedureUniqueId;
     private String qualifier;
     private String location;
-    private String speciality;
+    private String specialty;
     private String auditJson;
 
     public RdbmsStagingTarget() {}
@@ -51,7 +51,7 @@ public class RdbmsStagingTarget {
         this.parentProcedureUniqueId = proxy.getParentProcedureUniqueId();
         this.qualifier = proxy.getQualifier();
         this.location = proxy.getLocation();
-        this.speciality = proxy.getSpeciality();
+        this.specialty = proxy.getSpecialty();
 
         if (proxy.getAudit()!= null) {
             this.auditJson = proxy.getAudit().writeToJson();
@@ -188,9 +188,9 @@ public class RdbmsStagingTarget {
     public void setLocation(String location) {this.location = location;}
 
     @Basic
-    @Column(name="speciality")
-    public String getSpeciality() {return this.speciality;}
-    public void setSpeciality(String speciality) {this.speciality = speciality;}
+    @Column(name="specialty")
+    public String getSpecialty() {return this.specialty;}
+    public void setSpecialty(String specialty) {this.specialty = specialty;}
 
     @Basic
     @Column(name = "audit_json", nullable = true)
@@ -216,6 +216,6 @@ public class RdbmsStagingTarget {
                             parentProcedureUniqueId,
                             qualifier,
                             location,
-                            speciality);
+                            specialty);
     }
 }

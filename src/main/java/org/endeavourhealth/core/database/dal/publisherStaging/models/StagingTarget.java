@@ -26,7 +26,7 @@ public class StagingTarget {
     private String parentProcedureUniqueId;
     private String qualifier;
     private String location;
-    private String speciality;
+    private String specialty;
 
     private ResourceFieldMappingAudit audit = null;
 
@@ -51,7 +51,7 @@ public class StagingTarget {
         this.parentProcedureUniqueId = proxy.getParentProcedureUniqueId();
         this.qualifier = proxy.getQualifier();
         this.location = proxy.getLocation();
-        this.speciality = proxy.getSpeciality();
+        this.specialty = proxy.getSpecialty();
 
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
@@ -153,8 +153,8 @@ public class StagingTarget {
     public String getLocation() {return this.location;}
     public void setLocation(String location) {this.location = location;}
 
-    public String getSpeciality() {return this.speciality;}
-    public void setSpeciality(String speciality) {this.speciality = speciality;}
+    public String getSpecialty() {return this.specialty;}
+    public void setSpecialty(String specialty) {this.specialty = specialty;}
 
     public ResourceFieldMappingAudit getAudit() {
         return audit;
@@ -182,7 +182,7 @@ public class StagingTarget {
                 parentProcedureUniqueId,
                 qualifier,
                 location,
-                speciality);
+                specialty);
     }
 
     @Override
@@ -205,7 +205,7 @@ public class StagingTarget {
                 ", parentProcedureUniqueId='" + parentProcedureUniqueId + '\'' +
                 ", qualifier='" + qualifier + '\'' +
                 ", location=" + location +
-                ", speciality=" + speciality +
+                ", speciality=" + specialty +
                 ", audit=" + audit +
                 '}';
     }
