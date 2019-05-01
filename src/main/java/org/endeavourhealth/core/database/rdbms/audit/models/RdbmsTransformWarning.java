@@ -92,9 +92,6 @@ public class RdbmsTransformWarning {
     }
 
     public void setParam1(String param1) {
-        if (param1.length() > 255) {
-            param1 = param1.substring(0, 254);
-        }
         this.param1 = param1;
     }
 
@@ -104,9 +101,7 @@ public class RdbmsTransformWarning {
     }
 
     public void setParam2(String param2) {
-        if (param2.length() > 255) {
-            param2 = param2.substring(0, 254);
-        }
+
         this.param2 = param2;
     }
 
@@ -116,9 +111,6 @@ public class RdbmsTransformWarning {
     }
 
     public void setParam3(String param3) {
-        if (param3.length() > 255) {
-            param3 = param3.substring(0, 254);
-        }
         this.param3 = param3;
     }
 
@@ -128,9 +120,6 @@ public class RdbmsTransformWarning {
     }
 
     public void setParam4(String param4) {
-        if (param4.length() > 255) {
-            param4 = param4.substring(0, 254);
-        }
         this.param4 = param4;
     }
 

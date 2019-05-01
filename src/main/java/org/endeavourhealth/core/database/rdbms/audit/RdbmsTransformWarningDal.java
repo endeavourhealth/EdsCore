@@ -127,9 +127,12 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
     private static String findParam(String[] warningParams, int index) {
         if (index >= warningParams.length) {
             return null;
-
         } else {
-            return warningParams[index];
+            String ret = warningParams[index];
+            if (ret!=null && ret.length()>255) {
+                ret=ret.substring(0,254);
+            }
+            return ret;
         }
     }
 
