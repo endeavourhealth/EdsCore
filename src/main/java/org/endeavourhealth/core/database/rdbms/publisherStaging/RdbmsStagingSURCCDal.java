@@ -71,8 +71,8 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             String sql = "INSERT INTO procedure_SURCC  "
                     + " (exchange_id, dt_received, record_checksum, surgical_case_id, dt_extract, " +
                     " active_ind, person_id, encounter_id, dt_cancelled, institution_code, department_code, " +
-                    " surgical_area_code, theatre_number_code, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " surgical_area_code, theatre_number_code, specialty_code, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -87,6 +87,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " department_code = VALUES(department_code),"
                     + " surgical_area_code = VALUES(surgical_area_code),"
                     + " theatre_number_code = VALUES(theatre_number_code),"
+                    + " specialty_code = VALUES(specialty_code),"
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
@@ -141,6 +142,12 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, surcc.getTheatreNumberCode());
+            }
+
+            if (surcc.getSpecialtyCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcc.getSpecialtyCode());
             }
 
             if (surcc.getAudit() == null) {

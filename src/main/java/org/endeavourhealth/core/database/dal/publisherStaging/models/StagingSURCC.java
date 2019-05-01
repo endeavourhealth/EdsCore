@@ -19,6 +19,7 @@ public class StagingSURCC {
     private String departmentCode;
     private String surgicalAreaCode;
     private String theatreNumberCode;
+    private String specialtyCode;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingSURCC() {}
@@ -127,6 +128,14 @@ public class StagingSURCC {
         this.theatreNumberCode = theatreNumberCode;
     }
 
+    public String getSpecialtyCode() {
+        return specialtyCode;
+    }
+
+    public void setSpecialtyCode(String specialtyCode) {
+        this.specialtyCode = specialtyCode;
+    }
+
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -147,6 +156,7 @@ public class StagingSURCC {
                             institutionCode,
                             departmentCode,
                             surgicalAreaCode,
-                            theatreNumberCode);
+                            theatreNumberCode,
+                            specialtyCode);
     }
 }
