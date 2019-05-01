@@ -58,7 +58,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     + " where c.exchangeId = :exchange_id";
 
             Query query = entityManager.createQuery(sql, RdbmsStagingTarget.class)
-                    .setParameter("exchange_id", exchangeId);
+                    .setParameter("exchange_id", exchangeId.toString());
 
             List<RdbmsStagingTarget> resultList = query.getResultList();
             return resultList;
