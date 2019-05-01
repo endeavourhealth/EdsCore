@@ -13,6 +13,7 @@ public class StagingPROCE {
     private int procedureId;
     private boolean activeInd;
     private Integer encounterId;
+    private Integer encounterSliceId;
     private Date procedureDtTm;
     private String procedureType;
     private String procedureCode;
@@ -73,6 +74,14 @@ public class StagingPROCE {
 
     public void setEncounterId(Integer encounterId) {
         this.encounterId = encounterId;
+    }
+
+    public Integer getEncounterSliceId() {
+        return encounterSliceId;
+    }
+
+    public void setEncounterSliceId(Integer encounterSliceId) {
+        this.encounterSliceId = encounterSliceId;
     }
 
     public Date getProcedureDtTm() {

@@ -81,7 +81,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
             String sql = "INSERT INTO procedure_PROCE "
                     + " (exchange_id, dt_received, record_checksum, procedure_id, "
-                    + " active_ind, encounter_id, procedure_dt_tm, procedure_type, "
+                    + " active_ind, encounter_id, encounter_slice_id, procedure_dt_tm, procedure_type, "
                     + " procedure_code, procedure_term, procedure_seq_nbr, lookup_person_id, "
                     + " lookup_mrn, lookup_nhs_number, lookup_date_of_birth, audit_json)  "
                     + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
@@ -92,6 +92,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " procedure_id = VALUES(procedure_id), "
                     + " active_ind = VALUES(active_ind), "
                     + " encounter_id = VALUES(encounter_id), "
+                    + " encounter_slice_id = VALUES(encounter_slice_id), "
                     + " procedure_dt_tm = VALUES(procedure_dt_tm), "
                     + " procedure_type = VALUES(procedure_type), "
                     + " procedure_code = VALUES(procedure_code), "
@@ -118,6 +119,12 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                 ps.setNull(col++, Types.INTEGER);
             } else {
                 ps.setInt(col++, stagingPROCE.getEncounterId());
+            }
+
+            if (stagingPROCE.getEncounterSliceId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingPROCE.getEncounterSliceId());
             }
 
             if (stagingPROCE.getProcedureDtTm() == null) {
