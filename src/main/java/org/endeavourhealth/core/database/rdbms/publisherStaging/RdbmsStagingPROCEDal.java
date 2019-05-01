@@ -84,7 +84,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " active_ind, encounter_id, encounter_slice_id, procedure_dt_tm, procedure_type, "
                     + " procedure_code, procedure_term, procedure_seq_nbr, lookup_person_id, "
                     + " lookup_mrn, lookup_nhs_number, lookup_date_of_birth, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
