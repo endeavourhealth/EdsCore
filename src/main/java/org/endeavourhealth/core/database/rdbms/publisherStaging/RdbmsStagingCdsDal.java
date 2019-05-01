@@ -112,7 +112,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(col++, cds.getNhsNumber());
             ps.setTimestamp(col++, new java.sql.Timestamp(cds.getDateOfBirth().getTime()));
             ps.setString(col++, cds.getConsultantCode());
-            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getProcedureDate().getTime()));
+
+            if (cds.getProcedureDate() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(cds.getProcedureDate().getTime()));
+            }
+
             ps.setString(col++, cds.getProcedureOpcsCode());
             ps.setInt(col++, cds.getProcedureSeqNbr());
             ps.setString(col++, cds.getPrimaryProcedureOpcsCode());
