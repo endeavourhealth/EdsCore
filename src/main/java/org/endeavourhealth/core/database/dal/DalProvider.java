@@ -319,17 +319,10 @@ public class DalProvider {
         return new RdbmsPseudoIdDal(subscriberConfigName);
     }
 
-    public static HouseholdIdDalI factoryHouseholdIdDal(String subscriberConfigName) {
-        return new RdbmsHouseholdIdDal(subscriberConfigName);
-    }
-
     public static EnterprisePersonUpdaterHistoryDalI factoryEnterprisePersonUpdateHistoryDal(String subscriberConfigName) {
         return new RdbmsEnterprisePersonUpdaterHistoryDal(subscriberConfigName);
     }
 
-    public static EnterpriseIdDalI factoryEnterpriseIdDal(String subscriberConfigName) {
-        return new RdbmsEnterpriseIdDal(subscriberConfigName);
-    }
 
     public static EnterpriseAgeUpdaterlDalI factoryEnterpriseAgeUpdaterlDal(String subscriberConfigName) {
         return new RdbmsEnterpriseAgeUpdaterDal(subscriberConfigName);
@@ -391,23 +384,23 @@ public class DalProvider {
         return new RdbmsOpcs4Dal();
     }
 
-    public static SnomedToBnfChapterDalI factorySnomedToBnfChapter (){
+    public static SnomedToBnfChapterDalI factorySnomedToBnfChapter() {
         return new RdbmsSnomedToBnfChapterDal();
     }
 
-    public static Lsoa2001DalI factoryLsoa2001 () {
+    public static Lsoa2001DalI factoryLsoa2001() {
         return new RdbmsLsoa2001Dal();
     }
 
-    public static Lsoa2011DalI factoryLsoa2011 () {
+    public static Lsoa2011DalI factoryLsoa2011() {
         return new RdbmsLsoa2011Dal();
     }
 
-    public static Msoa2001DalI factoryMsoa2001 () {
+    public static Msoa2001DalI factoryMsoa2001() {
         return new RdbmsMsoa2001Dal();
     }
 
-    public static Msoa2011DalI factoryMsoa2011 () {
+    public static Msoa2011DalI factoryMsoa2011() {
         return new RdbmsMsoa2011Dal();
     }
 
@@ -419,18 +412,47 @@ public class DalProvider {
         return new RdbmsPublishedFileDal();
     }
 
-    public static StagingCdsDalI factoryStagingCdsDalI () { return new RdbmsStagingCdsDal(); }
+    public static StagingCdsDalI factoryStagingCdsDalI() {
+        return new RdbmsStagingCdsDal();
+    }
 
-    public static StagingCdsTailDalI factoryStagingCdsTailDalI () { return new RdbmsStagingCdsTailDal(); }
+    public static StagingCdsTailDalI factoryStagingCdsTailDalI() {
+        return new RdbmsStagingCdsTailDal();
+    }
 
-    public static StagingProcedureDalI factoryBartsStagingProcedureDalI() {return new RdbmsStagingProcedureDal() {}; }
+    public static StagingProcedureDalI factoryBartsStagingProcedureDalI() {
+        return new RdbmsStagingProcedureDal();
+    }
 
-    public static StagingPROCEDalI factoryBartsStagingPROCEDalI() {return new RdbmsStagingPROCEDal() {}; }
+    public static StagingPROCEDalI factoryBartsStagingPROCEDalI() {
+        return new RdbmsStagingPROCEDal();
+    }
 
-    public static StagingSURCCDalI factoryStagingSURCCDalI () { return new RdbmsStagingSURCCDal(); }
+    public static StagingSURCCDalI factoryStagingSURCCDalI() {
+        return new RdbmsStagingSURCCDal();
+    }
 
-    public static StagingSURCPDalI factoryStagingSURCPDalI () { return new RdbmsStagingSURCPDal(); }
+    public static StagingSURCPDalI factoryStagingSURCPDalI() {
+        return new RdbmsStagingSURCPDal();
+    }
 
-    public static StagingTargetDalI factoryStagingTargetDalI () { return new RdbmsStagingTargetDal(); }
+    public static StagingTargetDalI factoryStagingTargetDalI() {
+        return new RdbmsStagingTargetDal();
+    }
 
+    public static SubscriberInstanceMappingDalI factorySubscriberInstanceMappingDal(String subscriberConfigName) {
+        return new RdbmsSubscriberInstanceMappingDalI(subscriberConfigName);
+    }
+
+    public static SubscriberOrgMappingDalI factorySubscriberOrgMappingDal(String subscriberConfigName) {
+        return new RdbmsSubscriberOrgMappingDalI(subscriberConfigName);
+    }
+
+    public static SubscriberPersonMappingDalI factorySubscriberPersonMappingDal(String subscriberConfigName) {
+        return new RdbmsSubscriberPersonMappingDal(subscriberConfigName);
+    }
+
+    public static SubscriberResourceMappingDalI factorySubscriberResourceMappingDal(String subscriberConfigName) {
+        return new RdbmsSubscriberResourceMappingDal(subscriberConfigName);
+    }
 }

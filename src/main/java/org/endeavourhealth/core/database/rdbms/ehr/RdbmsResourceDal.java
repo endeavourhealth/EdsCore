@@ -23,6 +23,7 @@ import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import java.sql.*;
 import java.util.*;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 public class RdbmsResourceDal implements ResourceDalI {
@@ -897,7 +898,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             //changed the order of columns so that we never get a null string in the last column,
             //which exposed a bug in the MySQL driver (https://bugs.mysql.com/bug.php?id=84084)
             String sql = "select h.service_id, h.system_id, h.patient_id, "
-                    + " c.system_id, c.patient_id, c.resource_data, h.resource_type, h.resource_id"
+                    + " c.system_id, c.updated_at, c.patient_id, c.resource_data, h.resource_type, h.resource_id"
                     + " from resource_history h"
                     + " left outer join resource_current c"
                     + " on h.resource_id = c.resource_id"
@@ -929,6 +930,11 @@ public class RdbmsResourceDal implements ResourceDalI {
                 //since we're not dealing with any primitive types, we can just use getString(..)
                 //and check that the result is null or not, without needing to use wasNull(..)
                 String currentSystemId = rs.getString(col++);
+                Date currentUpdatedAt = null;
+                java.sql.Timestamp ts = rs.getTimestamp(col++);
+                if (ts != null) {
+                    currentUpdatedAt = new Date(ts.getTime());
+                }
                 String currentPatientId = rs.getString(col++);
                 String currentResourceData = rs.getString(col++);
 
@@ -969,6 +975,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     //if we have resource data, then populate with what we've got from resource_current
                     wrapper.setSystemId(UUID.fromString(currentSystemId));
                     wrapper.setResourceData(currentResourceData);
+                    wrapper.setCreatedAt(currentUpdatedAt);
                     if (!Strings.isNullOrEmpty(currentPatientId)) {
                         wrapper.setPatientId(UUID.fromString(currentPatientId));
                     }
