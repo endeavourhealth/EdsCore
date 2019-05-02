@@ -175,7 +175,8 @@ public class StagingSURCP {
                 surgeonPersonnelId,
                 dtStart,
                 dtStop,
-                woundClassCode);
+                woundClassCode,
+                lookupProcedureCodeTerm);
     }
 
     @Override
