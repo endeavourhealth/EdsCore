@@ -178,6 +178,11 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
+            //keep getting an error "java.sql.SQLException: Statement parameter 1 not set", which makes no sense
+            //since exchange ID is mandatory. So adding this logging
+            LOG.error("Error executing prepared statement " + ps);
+            LOG.error(surcp.toString());
+
             entityManager.getTransaction().rollback();
             throw ex;
 
