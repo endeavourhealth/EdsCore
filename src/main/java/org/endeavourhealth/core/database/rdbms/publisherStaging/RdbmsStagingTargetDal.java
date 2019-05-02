@@ -66,6 +66,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
             if (resultList.size() > 0) {
 
+                LOG.debug("Target Procedures: "+resultList.size()+" from resultList for exchangeId: "+exchangeId);
                 List<StagingTarget> list = new ArrayList<>();
                 for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
                     StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
