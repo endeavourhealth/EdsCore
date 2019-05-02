@@ -96,7 +96,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
             //only the first six columns are non-null
             ps.setString(col++, surcc.getExchangeId());
-            ps.setDate(col++, new java.sql.Date(surcc.getDtReceived().getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtReceived().getTime()));
             ps.setInt(col++, surcc.getRecordChecksum());
             ps.setInt(col++, surcc.getSurgicalCaseId());
             ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtExtract().getTime()));
