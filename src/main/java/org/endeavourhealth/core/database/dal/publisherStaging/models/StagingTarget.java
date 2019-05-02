@@ -12,17 +12,17 @@ public class StagingTarget {
     private String exchangeId;
     private String uniqueId;
     private boolean isDeleted;
-    private int personId;
-    private int encounterId;
-    private int performerPersonnelId;
+    private Integer personId;
+    private Integer encounterId;
+    private Integer performerPersonnelId;
     private Date dtPerformed;
     private String freeText;
-    private int recordeByPersonnelId;
+    private Integer recordeByPersonnelId;
     private Date dtRecorded;
     private String procedureType;
     private String procedureCode;
     private String procedureTerm;
-    private int procedureSeqNbr;
+    private Integer procedureSeqNbr;
     private String parentProcedureUniqueId;
     private String qualifier;
     private String location;
@@ -79,16 +79,16 @@ public class StagingTarget {
         this.isDeleted = isDeleted;
     }
 
-    public int getPersonId() { return personId; }
-    public void setPersonId(int personId) {this.personId = personId; }
+    public Integer getPersonId() { return personId; }
+    public void setPersonId(Integer personId) {this.personId = personId; }
 
-    public int getEncounterId() { return encounterId; }
-    public void setEncounterId(int encounterId) {this.encounterId = encounterId; }
+    public Integer getEncounterId() { return encounterId; }
+    public void setEncounterId(Integer encounterId) {this.encounterId = encounterId; }
 
-    public int getPerformerPersonnelId() {
+    public Integer getPerformerPersonnelId() {
         return performerPersonnelId;
     }
-    public void setPerformerPersonnelId(int performerPersonnelId) {
+    public void setPerformerPersonnelId(Integer performerPersonnelId) {
         this.performerPersonnelId = performerPersonnelId;
     }
 
@@ -104,10 +104,10 @@ public class StagingTarget {
         this.freeText = freeText;
     }
 
-    public int getRecordByPersonnelId() {
+    public Integer getRecordByPersonnelId() {
         return recordeByPersonnelId;
     }
-    public void setRecordByPersonnelId (int recordeByPersonnelId) {
+    public void setRecordByPersonnelId (Integer recordeByPersonnelId) {
         this.recordeByPersonnelId = recordeByPersonnelId;
     }
 
@@ -133,10 +133,10 @@ public class StagingTarget {
     }
     public void setProcedureTerm (String procedureTerm) { this.procedureTerm = procedureTerm; }
 
-    public int getProcedureSeqNbr () {
+    public Integer getProcedureSeqNbr () {
         return procedureSeqNbr;
     }
-    public void setProcedureSeqNbr (int procedureSeqNbr) {
+    public void setProcedureSeqNbr (Integer procedureSeqNbr) {
         this.procedureSeqNbr = procedureSeqNbr;
     }
 
