@@ -148,7 +148,6 @@ public class StagingSURCC {
     public int hashCode() {
 
         return Objects.hash(surgicalCaseId,
-                            dtExtract,
                             activeInd,
                             personId,
                             encounterId,

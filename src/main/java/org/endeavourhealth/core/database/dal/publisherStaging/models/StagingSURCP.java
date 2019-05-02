@@ -167,7 +167,6 @@ public class StagingSURCP {
 
         return Objects.hash(surgicalCaseProcedureId,
                 surgicalCaseId,
-                dtExtract,
                 activeInd,
                 procedureCode,
                 procedureText,
