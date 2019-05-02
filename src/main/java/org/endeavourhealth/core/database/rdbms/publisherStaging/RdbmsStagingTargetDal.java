@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingTarget;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingTarget;
 import org.hibernate.internal.SessionImpl;
@@ -11,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -47,7 +49,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     }
 
     @Override
-    public List<RdbmsStagingTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
+    public List<StagingTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
 
@@ -61,9 +63,20 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     .setParameter("exchange_id", exchangeId.toString());
 
             List<RdbmsStagingTarget> resultList = query.getResultList();
-            return resultList;
 
-        } finally {
+            if (resultList.size() > 0) {
+
+                List<StagingTarget> list = new ArrayList<>();
+                for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
+                    StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
+                    list.add(stagingTarget);
+                }
+                return list;
+            } else {
+                return null;
+            }
+        }
+        finally {
             if (entityManager.isOpen()) {
                 entityManager.close();
             }
