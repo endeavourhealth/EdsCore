@@ -71,6 +71,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
                     StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
                     list.add(stagingTarget);
+                    LOG.debug("Core:  Added uniqueId:"+stagingTarget.getUniqueId()+" as hashCode: "+stagingTarget.hashCode()+" from rdbms uniqueId: "+rdbmsStagingTarget.getUniqueId());
                 }
                 return list;
             } else {
