@@ -67,7 +67,6 @@ public class RdbmsStagingTarget {
         this.exchangeId = exchangeId;
     }
 
-    @Basic
     @Column(name = "unique_id")
     public String getUniqueId() {
         return uniqueId;
@@ -77,7 +76,6 @@ public class RdbmsStagingTarget {
         this.uniqueId = uniqueId;
     }
 
-    @Basic
     @Column(name = "is_delete")
     public Boolean getIsDeleted() {
         return isDeleted;
@@ -87,7 +85,6 @@ public class RdbmsStagingTarget {
         this.isDeleted = isDeleted;
     }
 
-    @Basic
     @Column(name = "person_id")
     public Integer getPersonId() {
         return personId;
@@ -97,7 +94,6 @@ public class RdbmsStagingTarget {
         this.personId = personId;
     }
 
-    @Basic
     @Column(name = "encounter_id")
     public Integer getEncounterId() {
         return encounterId;
@@ -107,7 +103,6 @@ public class RdbmsStagingTarget {
         this.encounterId = encounterId;
     }
 
-    @Basic
     @Column(name = "performer_personnel_id")
     public Integer getPerformerPersonnelId() {
         return performerPersonnelId;
@@ -117,7 +112,6 @@ public class RdbmsStagingTarget {
         this.performerPersonnelId = performerPersonnelId;
     }
 
-    @Basic
     @Column(name = "dt_performed")
     public Date getDtPerformed() {
         return dtPerformed;
@@ -127,7 +121,6 @@ public class RdbmsStagingTarget {
         this.dtPerformed = dtPerformed;
     }
 
-    @Basic
     @Column(name = "free_text")
     public String getFreeText() {
         return freeText;
@@ -137,7 +130,6 @@ public class RdbmsStagingTarget {
         this.freeText = freeText;
     }
 
-    @Basic
     @Column(name = "recorded_by_personnel_id")
     public Integer getRecordByPersonnelId() {
         return recordByPersonnelId;
@@ -147,7 +139,6 @@ public class RdbmsStagingTarget {
         this.recordByPersonnelId = recordByPersonnelId;
     }
 
-    @Basic
     @Column(name = "dt_recorded")
     public Date getDtRecorded() {
         return dtRecorded;
@@ -157,7 +148,6 @@ public class RdbmsStagingTarget {
         this.dtRecorded = dtRecorded;
     }
 
-    @Basic
     @Column(name = "procedure_type")
     public String getProcedureType() {
         return procedureType;
@@ -167,7 +157,6 @@ public class RdbmsStagingTarget {
         this.procedureType = procedureType;
     }
 
-    @Basic
     @Column(name = "procedure_code")
     public String getProcedureCode() {
         return procedureCode;
@@ -177,7 +166,6 @@ public class RdbmsStagingTarget {
         this.procedureCode = procedureCode;
     }
 
-    @Basic
     @Column(name = "procedure_term")
     public String getProcedureTerm() {
         return procedureTerm;
@@ -187,7 +175,6 @@ public class RdbmsStagingTarget {
         this.procedureTerm = procedureTerm;
     }
 
-    @Basic
     @Column(name = "sequence_number")
     public Integer getProcedureSeqNbr() {
         return procedureSeqNbr;
@@ -197,7 +184,6 @@ public class RdbmsStagingTarget {
         this.procedureSeqNbr = procedureSeqNbr;
     }
 
-    @Basic
     @Column(name = "parent_procedure_unique_id")
     public String getParentProcedureUniqueId() {
         return parentProcedureUniqueId;
@@ -207,7 +193,6 @@ public class RdbmsStagingTarget {
         this.parentProcedureUniqueId = parentProcedureUniqueId;
     }
 
-    @Basic
     @Column(name = "qualifier")
     public String getQualifier() {
         return this.qualifier;
@@ -217,7 +202,6 @@ public class RdbmsStagingTarget {
         this.qualifier = qualifier;
     }
 
-    @Basic
     @Column(name = "location")
     public String getLocation() {
         return this.location;
@@ -227,7 +211,6 @@ public class RdbmsStagingTarget {
         this.location = location;
     }
 
-    @Basic
     @Column(name = "specialty")
     public String getSpecialty() {
         return this.specialty;
@@ -237,7 +220,6 @@ public class RdbmsStagingTarget {
         this.specialty = specialty;
     }
 
-    @Basic
     @Column(name = "audit_json", nullable = true)
     public String getAuditJson() {
         return auditJson;
