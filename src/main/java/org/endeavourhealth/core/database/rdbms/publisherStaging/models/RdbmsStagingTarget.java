@@ -67,6 +67,7 @@ public class RdbmsStagingTarget {
         this.exchangeId = exchangeId;
     }
 
+    @Id
     @Column(name = "unique_id")
     public String getUniqueId() {
         return uniqueId;
