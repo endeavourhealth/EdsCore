@@ -12,9 +12,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
@@ -64,19 +64,30 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
             List<RdbmsStagingTarget> resultList = query.getResultList();
 
-            if (resultList.size() > 0) {
+            return resultList
+                    .stream()
+                    .map(T -> {
+                        try {
+                            return new StagingTarget(T);
+                        } catch (Exception e) {
+                            return null;
+                        }
+                    })
+                    .collect(Collectors.toList());
 
-                LOG.debug("Target Procedures: "+resultList.size()+" from resultList for exchangeId: "+exchangeId);
-                List<StagingTarget> list = new ArrayList<>();
-                for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
-                    StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
-                    list.add(stagingTarget);
-                    LOG.debug("EdsCore:  Added uniqueId:"+stagingTarget.getUniqueId()+" as hashCode: "+stagingTarget.hashCode()+" from rdbms uniqueId: "+rdbmsStagingTarget.getUniqueId());
-                }
-                return list;
-            } else {
-                return null;
-            }
+//            if (resultList.size() > 0) {
+//
+//                LOG.debug("Target Procedures: "+resultList.size()+" from resultList for exchangeId: "+exchangeId);
+//                List<StagingTarget> list = new ArrayList<>();
+//                for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
+//                    StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
+//                    list.add(stagingTarget);
+//                    LOG.debug("EdsCore:  Added uniqueId:"+stagingTarget.getUniqueId()+" as hashCode: "+stagingTarget.hashCode()+" from rdbms uniqueId: "+rdbmsStagingTarget.getUniqueId());
+//                }
+//                return list;
+//            } else {
+//                return null;
+//            }
         }
         finally {
             if (entityManager.isOpen()) {
