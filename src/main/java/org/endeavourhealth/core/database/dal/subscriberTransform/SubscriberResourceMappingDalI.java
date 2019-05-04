@@ -15,10 +15,10 @@ public interface SubscriberResourceMappingDalI {
     void findOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception;
 
     //new-style functions for new subscriber DB
-    SubscriberId findSubscriberId(String resourceType, String resourceId) throws Exception;
-    Map<ResourceWrapper, SubscriberId> findSubscriberIds(List<ResourceWrapper> resources) throws Exception;
-    SubscriberId findOrCreateSubscriberId(String resourceType, String resourceId) throws Exception;
-    Map<ResourceWrapper, SubscriberId> findOrCreateSubscriberIds(List<ResourceWrapper> resources) throws Exception;
+    SubscriberId findSubscriberId(byte subscriberTable, String sourceId) throws Exception;
+    Map<String, SubscriberId> findSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception;
+    SubscriberId findOrCreateSubscriberId(byte subscriberTable, String sourceId) throws Exception;
+    Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception;
 
-    void updateDtUpdatedForSubscriber(Map<String, SubscriberId> hmResourceReferences) throws Exception;
+    void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception;
 }

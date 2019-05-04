@@ -1,14 +1,11 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
-import org.endeavourhealth.common.fhir.ReferenceComponents;
-import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.dal.subscriberTransform.SubscriberResourceMappingDalI;
 import org.endeavourhealth.core.database.dal.subscriberTransform.models.SubscriberId;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseIdMap;
 import org.hibernate.internal.SessionImpl;
-import org.hl7.fhir.instance.model.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,19 +134,28 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
     @Override
-    public SubscriberId findSubscriberId(String resourceType, String resourceId) throws Exception {
+    public SubscriberId findSubscriberId(byte subscriberTable, String sourceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            return findSubscriberIdImpl(resourceType, resourceId, entityManager);
+            return findSubscriberIdImpl(subscriberTable, sourceId, entityManager);
 
         } finally {
             entityManager.close();
         }
     }
 
-    private SubscriberId findSubscriberIdImpl(String resourceType, String resourceId, EntityManager entityManager) throws Exception {
+
+
+    /*
+    subscriber_table tinyint NOT NULL COMMENT 'ID of the target table this ID is for',
+  subscriber_id bigint NOT NULL COMMENT 'unique ID allocated for the subscriber DB',
+  source_id varchar(250) NOT NULL COMMENT 'Source ID (e.g. FHIR reference) that this ID is mapped from',
+  dt_previously_sent datetime NOT NULL COMMENT 'the date time of the previously sent version of this resource (or null if deleted)',
+     */
+
+    private SubscriberId findSubscriberIdImpl(byte subscriberTable, String sourceId, EntityManager entityManager) throws Exception {
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -157,20 +163,20 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
             String sql = "SELECT subscriber_id, dt_updated_previously_sent "
                     + "FROM subscriber_id_map "
-                    + "WHERE resource_type = ? "
-                    + "AND resource_id = ?";
+                    + "WHERE source_id = ? "
+                    + "AND subscriber_table = ?";
             ps = connection.prepareStatement(sql);
 
             int col = 1;
-            ps.setString(col++, resourceType);
-            ps.setString(col++, resourceId);
+            ps.setString(col++, sourceId);
+            ps.setInt(col++, subscriberTable);
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 col = 1;
                 long id = rs.getLong(col++);
                 Date dt = rs.getDate(col++);
-                return new SubscriberId(id, dt);
+                return new SubscriberId(subscriberTable, id, sourceId, dt);
 
             } else {
                 return null;
@@ -183,12 +189,12 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
     @Override
-    public Map<ResourceWrapper, SubscriberId> findSubscriberIds(List<ResourceWrapper> resources) throws Exception {
+    public Map<String, SubscriberId> findSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         try {
-            Map<ResourceWrapper, SubscriberId> ret = new HashMap<>();
-            findSubscriberIdsImpl(resources, ret, entityManager);
+            Map<String, SubscriberId> ret = new HashMap<>();
+            findSubscriberIdsImpl(subscriberTable, sourceIds, ret, entityManager);
             return ret;
 
         } finally {
@@ -196,36 +202,18 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
         }
     }
 
-    private void findSubscriberIdsImpl(List<ResourceWrapper> resources, Map<ResourceWrapper, SubscriberId> map, EntityManager entityManager) throws Exception {
-
-        //hash our resources by ID and validate they're all of the same type
-        String resourceType = null;
-        List<String> resourceIds = new ArrayList<>();
-        Map<String, ResourceWrapper> hmResourcesById = new HashMap<>();
-
-        for (ResourceWrapper resource: resources) {
-
-            if (resourceType == null) {
-                resourceType = resource.getResourceType();
-            } else if (!resourceType.equals(resource.getResourceType())) {
-                throw new Exception("Can't find subscriber IDs for different resource types");
-            }
-
-            String id = resource.getResourceId().toString();
-            resourceIds.add(id);
-            hmResourcesById.put(id, resource);
-        }
+    private void findSubscriberIdsImpl(byte subscriberTable, List<String> sourceIds, Map<String, SubscriberId> map, EntityManager entityManager) throws Exception {
 
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "SELECT resource_id, subscriber_id, dt_updated_previously_sent "
+            String sql = "SELECT source_id, subscriber_id, dt_updated_previously_sent "
                     + "FROM subscriber_id_map "
-                    + "HHERE resource_type = ? "
-                    + "AND resource_id IN (";
-            for (int i=0; i<resourceIds.size(); i++) {
+                    + "HHERE subscriber_table = ? "
+                    + "AND source_id IN (";
+            for (int i=0; i<sourceIds.size(); i++) {
                 if (i>0) {
                     sql += ", ";
                 }
@@ -236,23 +224,21 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
             ps = connection.prepareStatement(sql);
 
             int col = 1;
-            ps.setString(col++, resourceType);
-            for (String resourceId: resourceIds) {
-                ps.setString(col++, resourceId);
+            ps.setInt(col++, subscriberTable);
+            for (String sourceId: sourceIds) {
+                ps.setString(col++, sourceId);
             }
 
             ResultSet rs = ps.executeQuery();
 
             while (rs.next()) {
                 col = 1;
-                String resourceId = rs.getString(col++);
+                String sourceId = rs.getString(col++);
                 long subscriberId = rs.getLong(col++);
                 Date dtUpdated = new Date(rs.getTimestamp(col++).getTime());
 
-                SubscriberId o = new SubscriberId(subscriberId, dtUpdated);
-                ResourceWrapper wrapper = hmResourcesById.get(resourceId);
-
-                map.put(wrapper, o);
+                SubscriberId o = new SubscriberId(subscriberTable, subscriberId, sourceId, dtUpdated);
+                map.put(sourceId, o);
             }
 
             rs.close();
@@ -265,20 +251,20 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
     @Override
-    public SubscriberId findOrCreateSubscriberId(String resourceType, String resourceId) throws Exception {
+    public SubscriberId findOrCreateSubscriberId(byte subscriberTable, String sourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            SubscriberId ret = findSubscriberIdImpl(resourceType, resourceId, entityManager);
+            SubscriberId ret = findSubscriberIdImpl(subscriberTable, sourceId, entityManager);
             if (ret != null) {
                 return ret;
             }
 
-            return createSubscriberIdImpl(resourceType, resourceId, entityManager);
+            return createSubscriberIdImpl(subscriberTable, sourceId, entityManager);
 
         } catch (Exception ex) {
             //if another thread has beat us to it, we'll get an exception, so try the find again
-            SubscriberId ret = findSubscriberIdImpl(resourceType, resourceId, entityManager);
+            SubscriberId ret = findSubscriberIdImpl(subscriberTable, sourceId, entityManager);
             if (ret != null) {
                 return ret;
             }
@@ -289,14 +275,14 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
         }
     }
 
-    private SubscriberId createSubscriberIdImpl(String resourceType, String resourceId, EntityManager entityManager) throws Exception {
+    private SubscriberId createSubscriberIdImpl(byte subscriberTable, String sourceId, EntityManager entityManager) throws Exception {
         PreparedStatement psInsert = null;
         PreparedStatement psLastId = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO subscriber_id_map (resource_type, resource_id)"
+            String sql = "INSERT INTO subscriber_id_map (subscriber_table, source_id)"
                     + " VALUES (?, ?)";
             psInsert = connection.prepareStatement(sql);
 
@@ -306,8 +292,8 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
             entityManager.getTransaction().begin();
 
             int col = 1;
-            psInsert.setString(col++, resourceType);
-            psInsert.setString(col++, resourceId);
+            psInsert.setInt(col++, subscriberTable);
+            psInsert.setString(col++, sourceId);
 
             psInsert.executeUpdate();
 
@@ -319,7 +305,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
             long lastId = rs.getLong(1);
             rs.close();
 
-            return new SubscriberId(lastId, null);
+            return new SubscriberId(subscriberTable, lastId, sourceId, null);
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
@@ -336,11 +322,11 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
     @Override
-    public Map<ResourceWrapper, SubscriberId> findOrCreateSubscriberIds(List<ResourceWrapper> resources) throws Exception {
+    public Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
 
-        Map<ResourceWrapper, SubscriberId> ret = new HashMap<>();
+        Map<String, SubscriberId> ret = new HashMap<>();
 
-        List<ResourceWrapper> resourcesToCreate = null;
+        List<String> sourceIdsToCreate = null;
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         PreparedStatement psInsert = null;
@@ -348,21 +334,20 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
         try {
             //check the DB for existing IDs
-            findSubscriberIdsImpl(resources, ret, entityManager);
+            findSubscriberIdsImpl(subscriberTable, sourceIds, ret, entityManager);
 
             //find the resources that didn't have an ID found above
-            resourcesToCreate = new ArrayList<>();
-            for (ResourceWrapper resource: resources) {
-                if (!ret.containsKey(resource)) {
-                    resourcesToCreate.add(resource);
+            sourceIdsToCreate = new ArrayList<>();
+            for (String sourceId: sourceIds) {
+                if (!ret.containsKey(sourceId)) {
+                    sourceIdsToCreate.add(sourceId);
                 }
             }
-
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO subscriber_id_map (resource_type, resource_id)"
+            String sql = "INSERT INTO subscriber_id_map (subscriber_table, source_id)"
                     + " VALUES (?, ?)";
             psInsert = connection.prepareStatement(sql);
 
@@ -371,11 +356,11 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
             entityManager.getTransaction().begin();
 
-            for (ResourceWrapper resource: resourcesToCreate) {
+            for (String sourceId: sourceIdsToCreate) {
 
                 int col = 1;
-                psInsert.setString(col++, resource.getResourceType());
-                psInsert.setString(col++, resource.getResourceId().toString());
+                psInsert.setInt(col++, subscriberTable);
+                psInsert.setString(col++, sourceId);
 
                 psInsert.addBatch();
             }
@@ -390,24 +375,22 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
             long lastId = rs.getLong(1);
             rs.close();
 
-            //TODO - work out if batched inserts is ON or OFF
-
             //if the connection property "rewriteBatchedStatements=true" is specified then SELECT LAST_INSERT_ID()
             //will return the FIRST auto assigned ID for the batch. If that property is false or absent, then
             //SELECT LAST_INSERT_ID() will return the ID of the LAST assigned ID (because it sends the transactions one by one)
             String connectionUrl = connection.getMetaData().getURL().toLowerCase();
             boolean rewriteBatchedInsertedEnabled = connectionUrl.contains("rewriteBatchedStatements=true");
             if (rewriteBatchedInsertedEnabled) {
-                for (ResourceWrapper resource: resourcesToCreate) {
-                    SubscriberId o = new SubscriberId(lastId++, null);
-                    ret.put(resource, o);
+                for (String sourceId: sourceIdsToCreate) {
+                    SubscriberId o = new SubscriberId(subscriberTable, lastId++, sourceId, null);
+                    ret.put(sourceId, o);
                 }
 
             } else {
-                for (int i=resourcesToCreate.size()-1; i>=0; i--) {
-                    ResourceWrapper resource = resourcesToCreate.get(i);
-                    SubscriberId o = new SubscriberId(lastId--, null);
-                    ret.put(resource, o);
+                for (int i=sourceIdsToCreate.size()-1; i>=0; i--) {
+                    String sourceId = sourceIdsToCreate.get(i);
+                    SubscriberId o = new SubscriberId(subscriberTable, lastId--, sourceId, null);
+                    ret.put(sourceId, o);
                 }
             }
 
@@ -417,11 +400,11 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
             //if another thread has beat us to it and created an ID for one of our records and we'll get an exception, so try the find again
             //but for each one individually
-            LOG.warn("Failed to create " + resourcesToCreate.size() + " IDs in one go, so doing one by one");
+            LOG.warn("Failed to create " + sourceIdsToCreate.size() + " IDs in one go, so doing one by one");
 
-            for (ResourceWrapper resource: resourcesToCreate) {
-                SubscriberId subscriberId = findOrCreateSubscriberId(resource.getResourceType(), resource.getResourceId().toString());
-                ret.put(resource, subscriberId);
+            for (String sourceId: sourceIdsToCreate) {
+                SubscriberId subscriberId = findOrCreateSubscriberId(subscriberTable, sourceId);
+                ret.put(sourceId, subscriberId);
             }
 
         } finally {
@@ -432,7 +415,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
     @Override
-    public void updateDtUpdatedForSubscriber(Map<String, SubscriberId> hmResourceReferences) throws Exception {
+    public void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         PreparedStatement ps = null;
@@ -442,15 +425,12 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
             String sql = "UPDATE subscriber_id_map "
                     + "SET dt_updated_previously_sent = ? "
-                    + "WHERE resource_type = ? "
-                    + "AND resource_id = ?";
+                    + "WHERE subscriber_id = ?";
             ps = connection.prepareStatement(sql);
 
             entityManager.getTransaction().begin();
 
-            for (String referenceStr: hmResourceReferences.keySet()) {
-                SubscriberId subscriberId = hmResourceReferences.get(referenceStr);
-
+            for (SubscriberId subscriberId: subscriberIds) {
 
                 int col = 1;
                 if (subscriberId.getDtUpdatedPreviouslySent() == null) {
@@ -459,11 +439,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
                     ps.setTimestamp(col++, new java.sql.Timestamp(subscriberId.getDtUpdatedPreviouslySent().getTime()));
                 }
 
-                Reference reference = ReferenceHelper.createReference(referenceStr);
-                ReferenceComponents comps = ReferenceHelper.getReferenceComponents(reference);
-
-                ps.setString(col++, comps.getResourceType().toString());
-                ps.setString(col++, comps.getId());
+                ps.setLong(col++, subscriberId.getSubscriberId());
 
                 ps.addBatch();
             }
