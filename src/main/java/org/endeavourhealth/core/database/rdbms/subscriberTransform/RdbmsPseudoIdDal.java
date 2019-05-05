@@ -3,17 +3,12 @@ package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 import org.endeavourhealth.core.database.dal.subscriberTransform.PseudoIdDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPseudoIdMap;
+import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsSubscriberPseudoId;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
@@ -23,12 +18,14 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
         this.subscriberConfigName = subscriberConfigName;
     }
 
-    public void storePseudoId(String patientId, String pseudoId) throws Exception {
+    @Override
+    public void storePseudoIdOldWay(String patientId, String pseudoId) throws Exception {
+
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPseudoIdMap map = findIdMap(patientId, entityManager);
+            RdbmsPseudoIdMap map = findIdMapOldWay(patientId, entityManager);
             if (map == null) {
                 map = new RdbmsPseudoIdMap();
                 map.setPatientId(patientId);
@@ -49,12 +46,12 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
     }
 
     @Override
-    public String findPseudoId(String patientId) throws Exception {
+    public String findPseudoIdOldWay(String patientId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
-            RdbmsPseudoIdMap result = findIdMap(patientId, entityManager);
+            RdbmsPseudoIdMap result = findIdMapOldWay(patientId, entityManager);
 
             if (result != null) {
                 return result.getPseudoId();
@@ -67,7 +64,7 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
         }
     }
 
-    public List<String> findPatientIdsFromPseudoIds(List<String> pseudoIds) throws Exception {
+    /*public List<String> findPatientIdsFromPseudoIds(List<String> pseudoIds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
@@ -97,9 +94,9 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
-    private RdbmsPseudoIdMap findIdMap(String patientId, EntityManager entityManager) throws Exception {
+    private RdbmsPseudoIdMap findIdMapOldWay(String patientId, EntityManager entityManager) throws Exception {
 
         String sql = "select c"
                 + " from"
@@ -112,6 +109,73 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
         try {
             return (RdbmsPseudoIdMap)query.getSingleResult();
+
+        } catch (NoResultException ex) {
+            return null;
+        }
+    }
+
+
+    @Override
+    public void saveSubscriberPseudoId(UUID patientId, long subscriberPatientId, String saltKeyName, String pseudoId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        try {
+            RdbmsSubscriberPseudoId map = findSubscriberPseudoId(patientId, saltKeyName, entityManager);
+            if (map == null) {
+                map = new RdbmsSubscriberPseudoId();
+                map.setPatientId(patientId.toString());
+                map.setSubscriberPatientId(subscriberPatientId);
+                map.setSaltKeyName(saltKeyName);
+            }
+            map.setPseudoId(pseudoId);
+
+            entityManager.getTransaction().begin();
+            entityManager.persist(map);
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public String findSubscriberPseudoId(UUID patientId, String saltKeyName) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        try {
+            RdbmsSubscriberPseudoId result = findSubscriberPseudoId(patientId, saltKeyName, entityManager);
+
+            if (result != null) {
+                return result.getPseudoId();
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
+    private RdbmsSubscriberPseudoId findSubscriberPseudoId(UUID patientId, String saltKeyName, EntityManager entityManager) throws Exception {
+
+        String sql = "select c"
+                + " from"
+                + " RdbmsSubscriberPseudoId c"
+                + " where c.patientId = :patientId"
+                + " and c.saltKeyName = :saltKeyName";
+
+
+        Query query = entityManager.createQuery(sql, RdbmsSubscriberPseudoId.class)
+                .setParameter("patientId", patientId.toString())
+                .setParameter("saltKeyName", saltKeyName);
+
+        try {
+            return (RdbmsSubscriberPseudoId)query.getSingleResult();
 
         } catch (NoResultException ex) {
             return null;
