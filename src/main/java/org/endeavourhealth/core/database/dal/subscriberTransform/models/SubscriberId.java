@@ -35,4 +35,9 @@ public class SubscriberId {
     public void setDtUpdatedPreviouslySent(Date dtUpdatedPreviouslySent) {
         this.dtUpdatedPreviouslySent = dtUpdatedPreviouslySent;
     }
+
+    @Override
+    public String toString() {
+        return "SubscriberID " + subscriberId + ", SubscriberTable " + subscriberTable + ", SourceId " + sourceId + ", DtUpdated " + dtUpdatedPreviouslySent;
+    }
 }
