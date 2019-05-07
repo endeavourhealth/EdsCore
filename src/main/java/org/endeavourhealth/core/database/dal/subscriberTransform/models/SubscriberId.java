@@ -1,8 +1,9 @@
 package org.endeavourhealth.core.database.dal.subscriberTransform.models;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class SubscriberId {
+public class SubscriberId implements Serializable {
 
     private byte subscriberTable;
     private long subscriberId;
