@@ -70,9 +70,10 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
             String sql = "INSERT INTO procedure_SURCC  "
                     + " (exchange_id, dt_received, record_checksum, surgical_case_id, dt_extract, " +
-                    " active_ind, person_id, encounter_id, dt_cancelled, institution_code, department_code, " +
+                    " active_ind, person_id, encounter_id, dt_start, dt_stop, " +
+                    " dt_cancelled, institution_code, department_code, " +
                     " surgical_area_code, theatre_number_code, specialty_code, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -82,6 +83,8 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                     + " active_ind = VALUES(active_ind),"
                     + " person_id = VALUES(person_id),"
                     + " encounter_id = VALUES(encounter_id),"
+                    + " dt_start = VALUES(dt_start),"
+                    + " dt_stop = VALUES(dt_stop),"
                     + " dt_cancelled = VALUES(dt_cancelled),"
                     + " institution_code = VALUES(institution_code),"
                     + " department_code = VALUES(department_code),"
@@ -114,6 +117,16 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
                 ps.setInt(col++, surcc.getEncounterId());
             }
 
+            if (surcc.getDtStart() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStart().getTime()));
+            }
+            if (surcc.getDtStop() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStop().getTime()));
+            }
             if (surcc.getDtCancelled() == null) {
                 ps.setNull(col++, Types.TIMESTAMP);
             } else {

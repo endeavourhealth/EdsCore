@@ -14,6 +14,8 @@ public class StagingSURCC {
     private boolean activeInd;
     private Integer personId;
     private Integer encounterId;
+    private Date dtStart;
+    private Date dtStop;
     private Date dtCancelled;
     private String institutionCode;
     private String departmentCode;
@@ -23,6 +25,14 @@ public class StagingSURCC {
     private ResourceFieldMappingAudit audit = null;
 
     public StagingSURCC() {}
+
+    public Date getDtStart() {return dtStart;}
+
+    public void setDtStart(Date dtStart) {this.dtStart = dtStart;}
+
+    public Date getDtStop() {return dtStop;}
+
+    public void setDtStop(Date dtStop) {this.dtStop = dtStop;}
 
     public String getExchangeId() {
         return exchangeId;
@@ -151,6 +161,8 @@ public class StagingSURCC {
                             activeInd,
                             personId,
                             encounterId,
+                            dtStart,
+                            dtStop,
                             dtCancelled,
                             institutionCode,
                             departmentCode,
