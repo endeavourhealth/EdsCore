@@ -27,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
 
+
+
     public static enum Db {
         Eds,
         Reference,
@@ -492,5 +494,15 @@ public class ConnectionManager {
             factory.close();
         }
         LOG.debug("Core connection factory shutdown complete");
+    }
+
+    /**
+     * MySQL "SELECT LAST_INSERT_ID()" works differently depending on whether the rewriteBatchedStatements
+     * option is on or not. By default it's off but things are faster with it on.
+     */
+    public static boolean isMysqlRewriteBatchedStatementsEnabled(Connection connection) throws SQLException {
+        String connectionUrl = connection.getMetaData().getURL().toLowerCase();
+        String checkFor = "rewritebatchedstatements=true";
+        return connectionUrl.indexOf(checkFor) > -1;
     }
 }

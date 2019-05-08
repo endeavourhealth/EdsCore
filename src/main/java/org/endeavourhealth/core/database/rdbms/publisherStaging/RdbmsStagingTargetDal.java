@@ -77,7 +77,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 int col = 1;
                 StagingTarget stagingTarget = new StagingTarget();
                 stagingTarget.setUniqueId(rs.getString(col++));
-                stagingTarget.setIsDeleted(rs.getBoolean(col++));
+                stagingTarget.setDeleted(rs.getBoolean(col++));
                 stagingTarget.setPersonId(rs.getInt(col++));
                 stagingTarget.setEncounterId(rs.getInt(col++));
                 stagingTarget.setPerformerPersonnelId(rs.getInt(col++));
@@ -91,7 +91,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingTarget.setDtEnded(new Date(ts.getTime()));
                 }
                 stagingTarget.setFreeText(rs.getString(col++));
-                stagingTarget.setRecordByPersonnelId(rs.getInt(col++));
+                stagingTarget.setRecordeByPersonnelId(rs.getInt(col++));
 
                 ts = rs.getTimestamp(col++);
                 if (ts != null) {

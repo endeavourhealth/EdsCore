@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.dal.publisherStaging.models;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 
 import java.util.Date;
-import java.util.Objects;
 
 public class StagingTarget {
 
@@ -58,15 +57,9 @@ public class StagingTarget {
 //        }
 //    }
 
+
     public String getExchangeId() {
         return exchangeId;
-    }
-
-    public boolean isDeleted() {return isDeleted;}
-
-    public StagingTarget setDeleted(boolean deleted) {
-        isDeleted = deleted;
-        return this;
     }
 
     public void setExchangeId(String exchangeId) {
@@ -81,41 +74,53 @@ public class StagingTarget {
         this.uniqueId = uniqueId;
     }
 
-    public Boolean getIsDeleted() {
+    public boolean isDeleted() {
         return isDeleted;
     }
 
-    public void setIsDeleted(Boolean isDeleted) {
-        this.isDeleted = isDeleted;
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
     }
 
-    public Integer getPersonId() { return personId; }
+    public Integer getPersonId() {
+        return personId;
+    }
 
-    public void setPersonId(Integer personId) {this.personId = personId; }
+    public void setPersonId(Integer personId) {
+        this.personId = personId;
+    }
 
-    public Integer getEncounterId() { return encounterId; }
+    public Integer getEncounterId() {
+        return encounterId;
+    }
 
-    public void setEncounterId(Integer encounterId) {this.encounterId = encounterId; }
+    public void setEncounterId(Integer encounterId) {
+        this.encounterId = encounterId;
+    }
 
     public Integer getPerformerPersonnelId() {
         return performerPersonnelId;
     }
 
-    public void setPerformerPersonnelId(Integer performerPersonnelId) {this.performerPersonnelId = performerPersonnelId;}
+    public void setPerformerPersonnelId(Integer performerPersonnelId) {
+        this.performerPersonnelId = performerPersonnelId;
+    }
 
     public Date getDtPerformed() {
         return dtPerformed;
     }
 
-    public void setDtPerformed(Date dtPerformed) { this.dtPerformed = dtPerformed; }
+    public void setDtPerformed(Date dtPerformed) {
+        this.dtPerformed = dtPerformed;
+    }
 
-    public Date getDtEnded() {return dtEnded;}
+    public Date getDtEnded() {
+        return dtEnded;
+    }
 
-    public void setDtEnded(Date dtEnded) {this.dtEnded = dtEnded;}
-
-    public Integer getRecordeByPersonnelId() {return recordeByPersonnelId;}
-
-    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {this.recordeByPersonnelId = recordeByPersonnelId;}
+    public void setDtEnded(Date dtEnded) {
+        this.dtEnded = dtEnded;
+    }
 
     public String getFreeText() {
         return freeText;
@@ -125,11 +130,13 @@ public class StagingTarget {
         this.freeText = freeText;
     }
 
-    public Integer getRecordByPersonnelId() {
+    public Integer getRecordeByPersonnelId() {
         return recordeByPersonnelId;
     }
 
-    public void setRecordByPersonnelId(Integer recordeByPersonnelId) {this.recordeByPersonnelId = recordeByPersonnelId;}
+    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {
+        this.recordeByPersonnelId = recordeByPersonnelId;
+    }
 
     public Date getDtRecorded() {
         return dtRecorded;
@@ -143,19 +150,25 @@ public class StagingTarget {
         return procedureType;
     }
 
-    public void setProcedureType(String procedureType) { this.procedureType = procedureType; }
+    public void setProcedureType(String procedureType) {
+        this.procedureType = procedureType;
+    }
 
     public String getProcedureCode() {
         return procedureCode;
     }
 
-    public void setProcedureCode(String procedureCode) { this.procedureCode = procedureCode; }
+    public void setProcedureCode(String procedureCode) {
+        this.procedureCode = procedureCode;
+    }
 
     public String getProcedureTerm() {
         return procedureTerm;
     }
 
-    public void setProcedureTerm(String procedureTerm) { this.procedureTerm = procedureTerm; }
+    public void setProcedureTerm(String procedureTerm) {
+        this.procedureTerm = procedureTerm;
+    }
 
     public Integer getProcedureSeqNbr() {
         return procedureSeqNbr;
@@ -169,19 +182,33 @@ public class StagingTarget {
         return parentProcedureUniqueId;
     }
 
-    public void setParentProcedureUniqueId(String parentProcedureUniqueId) {this.parentProcedureUniqueId = parentProcedureUniqueId;}
+    public void setParentProcedureUniqueId(String parentProcedureUniqueId) {
+        this.parentProcedureUniqueId = parentProcedureUniqueId;
+    }
 
-    public String getQualifier() {return this.qualifier;}
+    public String getQualifier() {
+        return qualifier;
+    }
 
-    public void setQualifier(String qualifier) {this.qualifier = qualifier;}
+    public void setQualifier(String qualifier) {
+        this.qualifier = qualifier;
+    }
 
-    public String getLocation() {return this.location;}
+    public String getLocation() {
+        return location;
+    }
 
-    public void setLocation(String location) {this.location = location;}
+    public void setLocation(String location) {
+        this.location = location;
+    }
 
-    public String getSpecialty() {return this.specialty;}
+    public String getSpecialty() {
+        return specialty;
+    }
 
-    public void setSpecialty(String specialty) {this.specialty = specialty;}
+    public void setSpecialty(String specialty) {
+        this.specialty = specialty;
+    }
 
     public ResourceFieldMappingAudit getAudit() {
         return audit;
@@ -189,28 +216,6 @@ public class StagingTarget {
 
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
-    }
-
-    @Override
-    public int hashCode() {
-
-        return Objects.hash(uniqueId,
-                isDeleted,
-                personId,
-                encounterId,
-                performerPersonnelId,
-                dtPerformed,
-                freeText,
-                recordeByPersonnelId,
-                dtRecorded,
-                procedureType,
-                procedureCode,
-                procedureTerm,
-                procedureSeqNbr,
-                parentProcedureUniqueId,
-                qualifier,
-                location,
-                specialty);
     }
 
     @Override
@@ -223,6 +228,7 @@ public class StagingTarget {
                 ", encounterId='" + encounterId + '\'' +
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
                 ", dtPerformed=" + dtPerformed +
+                ", dtEnded=" + dtEnded +
                 ", freeText='" + freeText + '\'' +
                 ", recordeByPersonnelId='" + recordeByPersonnelId + '\'' +
                 ", dtRecorded=" + dtRecorded +

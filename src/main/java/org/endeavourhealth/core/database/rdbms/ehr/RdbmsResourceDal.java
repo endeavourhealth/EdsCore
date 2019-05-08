@@ -7,6 +7,7 @@ import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 import org.endeavourhealth.core.exceptions.TransformException;
@@ -31,30 +32,20 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     private static final ParserPool PARSER_POOL = new ParserPool();
 
-    private static final String DEADLOCK_ERR = "Deadlock found when trying to get lock; try restarting transaction";
+
 
     @Override
     public void save(List<ResourceWrapper> wrappers) throws Exception {
         //allow several attempts if it fails due to a deadlock
-        int attempts = 5;
-        while (attempts > 0) {
+        DeadlockHandler h = new DeadlockHandler();
+
+        while (true) {
             try {
                 trySave(wrappers);
                 break;
 
             } catch (Exception ex) {
-                String msg = ex.getMessage();
-                if (msg != null
-                        && msg.equalsIgnoreCase(DEADLOCK_ERR)) {
-
-                    LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
-                    Thread.sleep(1000);
-                    attempts--;
-                    continue;
-                } else {
-                    LOG.error("Error saving batch of " + wrappers.size() + " resource wrappers");
-                    throw ex;
-                }
+                h.handleError(ex);
             }
         }
     }
@@ -120,25 +111,14 @@ public class RdbmsResourceDal implements ResourceDalI {
     @Override
     public void delete(List<ResourceWrapper> wrappers) throws Exception {
         //allow several attempts if it fails due to a deadlock
-        int attempts = 5;
-        while (attempts > 0) {
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
             try {
                 tryDelete(wrappers);
                 break;
 
             } catch (Exception ex) {
-                String msg = ex.getMessage();
-                if (msg != null
-                        && msg.equalsIgnoreCase(DEADLOCK_ERR)) {
-
-                    LOG.error("Deadlock when writing to ehr database - will try again (" + attempts + " remaining)");
-                    Thread.sleep(1000);
-                    attempts--;
-                    continue;
-                } else {
-                    LOG.error("Error saving batch of " + wrappers.size() + " resource wrappers");
-                    throw ex;
-                }
+                h.handleError(ex);
             }
         }
 
@@ -199,16 +179,14 @@ public class RdbmsResourceDal implements ResourceDalI {
     public void save(ResourceWrapper resourceEntry) throws Exception {
 
         //attempts the save, and if the save fails because of a deadlock, it will have a second attempt
-        try {
-            trySave(resourceEntry);
-
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            if (msg.equalsIgnoreCase(DEADLOCK_ERR)
-                    || msg.equals("Nullpointer in ServerPreparedQueryBindValue. MySql bug?")) {
-                LOG.error(msg + " - will try again");
-                Thread.sleep(1000);
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
                 trySave(resourceEntry);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
             }
         }
     }
@@ -440,16 +418,14 @@ public class RdbmsResourceDal implements ResourceDalI {
     public void delete(ResourceWrapper resourceEntry) throws Exception {
 
         //attempts the save, and if the save fails because of a deadlock, it will have a second attempt
-        try {
-            tryDelete(resourceEntry);
-
-        } catch (Exception ex) {
-            String msg = ex.getMessage();
-            if (msg.equalsIgnoreCase(DEADLOCK_ERR)
-                    || msg.equals("Nullpointer in ServerPreparedQueryBindValue. MySql bug?")) {
-                LOG.error(msg + " - will try again");
-                Thread.sleep(1000);
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
                 tryDelete(resourceEntry);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
             }
         }
     }
