@@ -4,6 +4,7 @@ import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.dal.subscriberTransform.SubscriberResourceMappingDalI;
 import org.endeavourhealth.core.database.dal.subscriberTransform.models.SubscriberId;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseIdMap;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -80,6 +81,66 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
     @Override
     public void findOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
+        //allow several attempts if it fails due to a deadlock
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                tryFindOrCreateEnterpriseIdsOldWay(resources, ids);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+
+    }
+
+    private void tryFindOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        PreparedStatement psInsert = null;
+        try {
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT IGNORE INTO enterprise_id_map (resource_id, resource_type) "
+                    + "VALUES (?, ?)";
+
+            psInsert = connection.prepareStatement(sql);
+
+            //for any resource without an ID, we want to create one
+            entityManager.getTransaction().begin();
+
+            for (ResourceWrapper resource : resources) {
+
+                int col = 1;
+                psInsert.setString(col++, resource.getResourceId().toString());
+                psInsert.setString(col++, resource.getResourceType());
+
+                psInsert.addBatch();
+            }
+
+            psInsert.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+            findEnterpriseIdsOldWay(resources, ids, entityManager);
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    /*@Override
+    public void findOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         List<ResourceWrapper> resourcesToCreate = null;
@@ -134,7 +195,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     @Override
     public SubscriberId findSubscriberId(byte subscriberTable, String sourceId) throws Exception {
@@ -329,40 +390,49 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
     @Override
     public Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
+        //allow several attempts if it fails due to a deadlock
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                return tryFindOrCreateSubscriberIds(subscriberTable, sourceIds);
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    /**
+     * with MySQL rewrite batched inserts turned on, there's seemingly no way to insert (using ON DUPLICATE KEY UPDATE or INSERT IGNORE) and get the
+     * the auto-generated keys back properly. We can get the keys back (using either SELECT LAST_INSERT_ID() or Statement.RETURN_GENERATED_KEYS,
+     * but there's no actually marry them up to which inserts actually generated those keys. The problem is that the int[]
+     * returned from executeBatch() contains "-2" for each insert which means "executed OK but no row count available". So we
+     * don't know which ones were successful inserts and which were not.
+     *
+     * It's possible to get them working if rewrite batched inserts is turned off, but that kills performance.
+     *
+     * So the quickest solution, given that most calls into this function will result in new keys being assigned
+     * rather than existing ones being found, is to simply INSERT IGNORE all them and then just call into the function to find them.
+     */
+    private Map<String, SubscriberId> tryFindOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
 
         Map<String, SubscriberId> ret = new HashMap<>();
 
-        List<String> sourceIdsToCreate = null;
-
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
         PreparedStatement psInsert = null;
-        PreparedStatement psLastId = null;
 
         try {
-            //check the DB for existing IDs
-            findSubscriberIdsImpl(subscriberTable, sourceIds, ret, entityManager);
-
-            //find the resources that didn't have an ID found above
-            sourceIdsToCreate = new ArrayList<>();
-            for (String sourceId: sourceIds) {
-                if (!ret.containsKey(sourceId)) {
-                    sourceIdsToCreate.add(sourceId);
-                }
-            }
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO subscriber_id_map (subscriber_table, source_id)"
-                    + " VALUES (?, ?)";
-            psInsert = connection.prepareStatement(sql);
+            String sql = "INSERT IGNORE INTO subscriber_id_map (subscriber_table, source_id) "
+                    + "VALUES (?, ?)";
 
-            sql = "SELECT LAST_INSERT_ID()";
-            psLastId = connection.prepareStatement(sql);
+            psInsert = connection.prepareStatement(sql);
 
             entityManager.getTransaction().begin();
 
-            for (String sourceId: sourceIdsToCreate) {
+            for (String sourceId : sourceIds) {
 
                 int col = 1;
                 psInsert.setInt(col++, subscriberTable);
@@ -373,58 +443,143 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
             psInsert.executeBatch();
 
-            //if the above worked, we can call another query to return us the ID just generated by the auto increment column
-            ResultSet rs = psLastId.executeQuery();
-            rs.next();
-            long lastId = rs.getLong(1);
-            rs.close();
-
-            //if the connection property "rewriteBatchedStatements=true" is specified then SELECT LAST_INSERT_ID()
-            //will return the FIRST auto assigned ID for the batch. If that property is false or absent, then
-            //SELECT LAST_INSERT_ID() will return the ID of the LAST assigned ID (because it sends the transactions one by one)
-            String connectionUrl = connection.getMetaData().getURL().toLowerCase();
-            String checkFor = "rewritebatchedstatements=true";
-            boolean rewriteBatchedInsertedEnabled = connectionUrl.indexOf(checkFor) > -1;
-            //LOG.debug("URL = " + connectionUrl);
-            //LOG.debug(checkFor + " = " + rewriteBatchedInsertedEnabled);
-            if (rewriteBatchedInsertedEnabled) {
-                //LOG.debug("Batched inserts true");
-                for (String sourceId: sourceIdsToCreate) {
-                    //LOG.debug("" + sourceId + " ID = " + lastId);
-                    SubscriberId o = new SubscriberId(subscriberTable, lastId++, sourceId, null);
-                    ret.put(sourceId, o);
-                }
-
-            } else {
-                //LOG.debug("Batched inserts false");
-                for (int i=sourceIdsToCreate.size()-1; i>=0; i--) {
-                    String sourceId = sourceIdsToCreate.get(i);
-                    //LOG.debug("" + sourceId + " ID = " + lastId);
-                    SubscriberId o = new SubscriberId(subscriberTable, lastId--, sourceId, null);
-                    ret.put(sourceId, o);
-                }
-            }
-
             entityManager.getTransaction().commit();
+
+            findSubscriberIdsImpl(subscriberTable, sourceIds, ret, entityManager);
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
-
-            //if another thread has beat us to it and created an ID for one of our records and we'll get an exception, so try the find again
-            //but for each one individually
-            LOG.warn("Failed to create " + sourceIdsToCreate.size() + " IDs in one go, so doing one by one");
-
-            for (String sourceId: sourceIdsToCreate) {
-                SubscriberId subscriberId = findOrCreateSubscriberId(subscriberTable, sourceId);
-                ret.put(sourceId, subscriberId);
-            }
+            throw ex;
 
         } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
             entityManager.close();
         }
 
         return ret;
     }
+
+    /*private Map<String, SubscriberId> tryFindOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
+
+        Map<String, SubscriberId> ret = new HashMap<>();
+
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        PreparedStatement psInsert = null;
+        PreparedStatement psLastId = null;
+
+        try {
+            //check the DB for existing IDs
+            //don't do this, as it makes it slightly slower and the below code handles failed inserts anyway
+            //findSubscriberIdsImpl(subscriberTable, sourceIds, ret, entityManager);
+
+            //find the resources that didn't have an ID found above
+            List<String> sourceIdsToCreate = new ArrayList<>();
+            for (String sourceId: sourceIds) {
+                if (!ret.containsKey(sourceId)) {
+                    sourceIdsToCreate.add(sourceId);
+                }
+            }
+
+            if (!sourceIdsToCreate.isEmpty()) {
+
+                SessionImpl session = (SessionImpl) entityManager.getDelegate();
+                Connection connection = session.connection();
+
+                String sql = "INSERT INTO subscriber_id_map (subscriber_table, source_id) "
+                        + "VALUES (?, ?) "
+                        + "ON DUPLICATE KEY UPDATE "
+                        + "subscriber_table = subscriber_table"; //just a pointless update to make the syntax valid
+
+                psInsert = connection.prepareStatement(sql);
+
+                sql = "SELECT LAST_INSERT_ID()";
+                psLastId = connection.prepareStatement(sql);
+
+                entityManager.getTransaction().begin();
+
+                for (String sourceId : sourceIdsToCreate) {
+
+                    int col = 1;
+                    psInsert.setInt(col++, subscriberTable);
+                    psInsert.setString(col++, sourceId);
+
+                    psInsert.addBatch();
+                }
+
+                psInsert.executeBatch()
+                int[] done = psInsert.executeBatch();
+
+                //if the above worked, we can call another query to return us the ID just generated by the auto increment column
+                ResultSet rs = psLastId.executeQuery();
+                rs.next();
+                long lastId = rs.getLong(1);
+                rs.close();
+
+                List<String> sourceIdsToFindAgain = new ArrayList<>();
+
+                //if the connection property "rewriteBatchedStatements=true" is specified then SELECT LAST_INSERT_ID()
+                //will return the FIRST auto assigned ID for the batch. If that property is false or absent, then
+                //SELECT LAST_INSERT_ID() will return the ID of the LAST assigned ID (because it sends the transactions one by one)
+                if (ConnectionManager.isMysqlRewriteBatchedStatementsEnabled(connection)) {
+LOG.debug("Getting last ids batched way from last ID " + lastId);
+                    for (int i = 0; i < sourceIdsToCreate.size(); i++) {
+                        String sourceId = sourceIdsToCreate.get(i);
+                        int rowsInserted = done[i];
+LOG.debug("source " + sourceId + " rows = " + rowsInserted);
+                        if (rowsInserted > 0) {
+                            SubscriberId o = new SubscriberId(subscriberTable, lastId, sourceId, null);
+                            ret.put(sourceId, o);
+                            lastId++;
+
+                        } else {
+                            //if this insert failed, then we need to manually get the ID from the table
+                            sourceIdsToFindAgain.add(sourceId);
+                        }
+                    }
+
+                } else {
+LOG.debug("Getting last ids NON-batched way from last ID " + lastId);
+                    for (int i = sourceIdsToCreate.size() - 1; i >= 0; i--) {
+                        String sourceId = sourceIdsToCreate.get(i);
+                        int rowsInserted = done[i];
+LOG.debug("source " + sourceId + " rows = " + rowsInserted);
+                        if (rowsInserted > 0) {
+                            SubscriberId o = new SubscriberId(subscriberTable, lastId, sourceId, null);
+                            ret.put(sourceId, o);
+                            lastId--;
+
+                        } else {
+                            //if this insert failed, then we need to manually get the ID from the table
+                            sourceIdsToFindAgain.add(sourceId);
+                        }
+                    }
+                }
+
+                entityManager.getTransaction().commit();
+
+                if (!sourceIdsToFindAgain.isEmpty()) {
+                    findSubscriberIdsImpl(subscriberTable, sourceIdsToFindAgain, ret, entityManager);
+                }
+            }
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
+            if (psLastId != null) {
+                psLastId.close();
+            }
+            entityManager.close();
+        }
+
+        return ret;
+    }*/
 
     @Override
     public void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception {
