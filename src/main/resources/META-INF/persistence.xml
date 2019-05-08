@@ -349,7 +349,6 @@
 
     <persistence-unit name="PublisherStagingDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingTarget</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>

@@ -1,8 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
-import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
-import org.endeavourhealth.core.database.rdbms.publisherStaging.models.RdbmsStagingTarget;
 
 import java.util.Date;
 import java.util.Objects;
@@ -33,36 +31,44 @@ public class StagingTarget {
 
     public StagingTarget() {}
 
-    public StagingTarget(RdbmsStagingTarget proxy) throws Exception {
-
-        this.exchangeId = proxy.getExchangeId();
-        this.uniqueId = proxy.getUniqueId();
-        this.isDeleted = proxy.getIsDeleted();
-        this.personId = proxy.getPersonId();
-        this.encounterId = proxy.getEncounterId();
-        this.performerPersonnelId = proxy.getPerformerPersonnelId();
-        this.dtPerformed = proxy.getDtPerformed();
-        this.dtEnded = proxy.getDtEnded();
-        this.freeText = proxy.getFreeText();
-        this.recordeByPersonnelId = proxy.getRecordByPersonnelId();
-        this.dtRecorded = proxy.getDtRecorded();
-        this.procedureType = proxy.getProcedureType();
-        this.procedureCode = proxy.getProcedureCode();
-        this.procedureTerm = proxy.getProcedureTerm();
-        this.procedureSeqNbr = proxy.getProcedureSeqNbr();
-        this.parentProcedureUniqueId = proxy.getParentProcedureUniqueId();
-        this.qualifier = proxy.getQualifier();
-        this.location = proxy.getLocation();
-        this.specialty = proxy.getSpecialty();
-
-        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
-            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
-        }
-    }
+//    public StagingTarget(RdbmsStagingTarget proxy) throws Exception {
+//
+//        this.exchangeId = proxy.getExchangeId();
+//        this.uniqueId = proxy.getUniqueId();
+//        this.isDeleted = proxy.getIsDeleted();
+//        this.personId = proxy.getPersonId();
+//        this.encounterId = proxy.getEncounterId();
+//        this.performerPersonnelId = proxy.getPerformerPersonnelId();
+//        this.dtPerformed = proxy.getDtPerformed();
+//        this.dtEnded = proxy.getDtEnded();
+//        this.freeText = proxy.getFreeText();
+//        this.recordeByPersonnelId = proxy.getRecordByPersonnelId();
+//        this.dtRecorded = proxy.getDtRecorded();
+//        this.procedureType = proxy.getProcedureType();
+//        this.procedureCode = proxy.getProcedureCode();
+//        this.procedureTerm = proxy.getProcedureTerm();
+//        this.procedureSeqNbr = proxy.getProcedureSeqNbr();
+//        this.parentProcedureUniqueId = proxy.getParentProcedureUniqueId();
+//        this.qualifier = proxy.getQualifier();
+//        this.location = proxy.getLocation();
+//        this.specialty = proxy.getSpecialty();
+//
+//        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
+//            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
+//        }
+//    }
 
     public String getExchangeId() {
         return exchangeId;
     }
+
+    public boolean isDeleted() {return isDeleted;}
+
+    public StagingTarget setDeleted(boolean deleted) {
+        isDeleted = deleted;
+        return this;
+    }
+
     public void setExchangeId(String exchangeId) {
         this.exchangeId = exchangeId;
     }
@@ -70,6 +76,7 @@ public class StagingTarget {
     public String getUniqueId() {
         return uniqueId;
     }
+
     public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
@@ -77,39 +84,43 @@ public class StagingTarget {
     public Boolean getIsDeleted() {
         return isDeleted;
     }
+
     public void setIsDeleted(Boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
 
     public Integer getPersonId() { return personId; }
+
     public void setPersonId(Integer personId) {this.personId = personId; }
 
     public Integer getEncounterId() { return encounterId; }
+
     public void setEncounterId(Integer encounterId) {this.encounterId = encounterId; }
 
     public Integer getPerformerPersonnelId() {
         return performerPersonnelId;
     }
-    public void setPerformerPersonnelId(Integer performerPersonnelId) {
-        this.performerPersonnelId = performerPersonnelId;
-    }
+
+    public void setPerformerPersonnelId(Integer performerPersonnelId) {this.performerPersonnelId = performerPersonnelId;}
 
     public Date getDtPerformed() {
         return dtPerformed;
     }
+
     public void setDtPerformed(Date dtPerformed) { this.dtPerformed = dtPerformed; }
 
     public Date getDtEnded() {return dtEnded;}
+
     public void setDtEnded(Date dtEnded) {this.dtEnded = dtEnded;}
 
     public Integer getRecordeByPersonnelId() {return recordeByPersonnelId;}
-    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {
-        this.recordeByPersonnelId = recordeByPersonnelId;
-    }
+
+    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {this.recordeByPersonnelId = recordeByPersonnelId;}
 
     public String getFreeText() {
         return freeText;
     }
+
     public void setFreeText(String freeText) {
         this.freeText = freeText;
     }
@@ -117,58 +128,65 @@ public class StagingTarget {
     public Integer getRecordByPersonnelId() {
         return recordeByPersonnelId;
     }
-    public void setRecordByPersonnelId (Integer recordeByPersonnelId) {
-        this.recordeByPersonnelId = recordeByPersonnelId;
-    }
 
-    public Date getDtRecorded () {
+    public void setRecordByPersonnelId(Integer recordeByPersonnelId) {this.recordeByPersonnelId = recordeByPersonnelId;}
+
+    public Date getDtRecorded() {
         return dtRecorded;
     }
-    public void setDtRecorded (Date dtRecorded) {
+
+    public void setDtRecorded(Date dtRecorded) {
         this.dtRecorded = dtRecorded;
     }
 
     public String getProcedureType() {
         return procedureType;
     }
+
     public void setProcedureType(String procedureType) { this.procedureType = procedureType; }
 
     public String getProcedureCode() {
         return procedureCode;
     }
-    public void setProcedureCode (String procedureCode) { this.procedureCode = procedureCode; }
 
-    public String getProcedureTerm () {
+    public void setProcedureCode(String procedureCode) { this.procedureCode = procedureCode; }
+
+    public String getProcedureTerm() {
         return procedureTerm;
     }
-    public void setProcedureTerm (String procedureTerm) { this.procedureTerm = procedureTerm; }
 
-    public Integer getProcedureSeqNbr () {
+    public void setProcedureTerm(String procedureTerm) { this.procedureTerm = procedureTerm; }
+
+    public Integer getProcedureSeqNbr() {
         return procedureSeqNbr;
     }
-    public void setProcedureSeqNbr (Integer procedureSeqNbr) {
+
+    public void setProcedureSeqNbr(Integer procedureSeqNbr) {
         this.procedureSeqNbr = procedureSeqNbr;
     }
 
     public String getParentProcedureUniqueId() {
         return parentProcedureUniqueId;
     }
-    public void setParentProcedureUniqueId(String parentProcedureUniqueId) {
-        this.parentProcedureUniqueId = parentProcedureUniqueId;
-    }
+
+    public void setParentProcedureUniqueId(String parentProcedureUniqueId) {this.parentProcedureUniqueId = parentProcedureUniqueId;}
 
     public String getQualifier() {return this.qualifier;}
+
     public void setQualifier(String qualifier) {this.qualifier = qualifier;}
 
     public String getLocation() {return this.location;}
+
     public void setLocation(String location) {this.location = location;}
 
     public String getSpecialty() {return this.specialty;}
+
     public void setSpecialty(String specialty) {this.specialty = specialty;}
 
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
+
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
     }
