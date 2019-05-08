@@ -60,7 +60,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, dt_performed, " +
+            String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, " +
+                    " dt_performed, dt_ended, " +
                     " free_text, recorded_by_personnel_id, dt_recorded, procedure_type, procedure_term, procedure_code, "+
                     " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json "+
                     " from "+
@@ -85,21 +86,25 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (ts != null) {
                     stagingTarget.setDtPerformed(new Date(ts.getTime()));
                 }
-                stagingTarget.setFreeText(rs.getString(7));
-                stagingTarget.setRecordByPersonnelId(rs.getInt(8));
+                ts = rs.getTimestamp(7);
+                if (ts != null) {
+                    stagingTarget.setDtEnded(new Date(ts.getTime()));
+                }
+                stagingTarget.setFreeText(rs.getString(8));
+                stagingTarget.setRecordByPersonnelId(rs.getInt(9));
 
-                ts = rs.getTimestamp(9);
+                ts = rs.getTimestamp(10);
                 if (ts != null) {
                     stagingTarget.setDtRecorded(new Date(ts.getTime()));
                 }
-                stagingTarget.setProcedureType(rs.getString(10));
-                stagingTarget.setProcedureTerm(rs.getString(11));
-                stagingTarget.setProcedureCode(rs.getString(12));
-                stagingTarget.setProcedureSeqNbr(rs.getInt(13));
-                stagingTarget.setParentProcedureUniqueId(rs.getString(14));
-                stagingTarget.setQualifier(rs.getString(15));
-                stagingTarget.setLocation(rs.getString(16));
-                stagingTarget.setSpecialty(rs.getString(17));
+                stagingTarget.setProcedureType(rs.getString(11));
+                stagingTarget.setProcedureTerm(rs.getString(12));
+                stagingTarget.setProcedureCode(rs.getString(13));
+                stagingTarget.setProcedureSeqNbr(rs.getInt(14));
+                stagingTarget.setParentProcedureUniqueId(rs.getString(15));
+                stagingTarget.setQualifier(rs.getString(16));
+                stagingTarget.setLocation(rs.getString(17));
+                stagingTarget.setSpecialty(rs.getString(18));
 
                 String auditJson = rs.getString(18);
                 if (!Strings.isNullOrEmpty(auditJson)) {

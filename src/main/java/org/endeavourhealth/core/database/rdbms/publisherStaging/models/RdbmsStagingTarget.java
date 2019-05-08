@@ -1,6 +1,9 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging.models;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
 import java.util.Objects;
 
@@ -15,6 +18,7 @@ public class RdbmsStagingTarget {
     private Integer encounterId;
     private Integer performerPersonnelId;
     private Date dtPerformed;
+    private Date dtEnded;
     private String freeText;
     private Integer recordByPersonnelId;
     private Date dtRecorded;
@@ -120,6 +124,10 @@ public class RdbmsStagingTarget {
     public void setDtPerformed(Date dtPerformed) {
         this.dtPerformed = dtPerformed;
     }
+
+    public Date getDtEnded() {return dtEnded;}
+
+    public void setDtEnded(Date dtEnded) {this.dtEnded = dtEnded;    }
 
     @Column(name = "free_text")
     public String getFreeText() {
@@ -238,6 +246,7 @@ public class RdbmsStagingTarget {
                 encounterId,
                 performerPersonnelId,
                 dtPerformed,
+                dtEnded,
                 freeText,
                 recordByPersonnelId,
                 dtRecorded,

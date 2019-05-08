@@ -16,6 +16,7 @@ public class StagingTarget {
     private Integer encounterId;
     private Integer performerPersonnelId;
     private Date dtPerformed;
+    private Date dtEnded;
     private String freeText;
     private Integer recordeByPersonnelId;
     private Date dtRecorded;
@@ -41,6 +42,7 @@ public class StagingTarget {
         this.encounterId = proxy.getEncounterId();
         this.performerPersonnelId = proxy.getPerformerPersonnelId();
         this.dtPerformed = proxy.getDtPerformed();
+        this.dtEnded = proxy.getDtEnded();
         this.freeText = proxy.getFreeText();
         this.recordeByPersonnelId = proxy.getRecordByPersonnelId();
         this.dtRecorded = proxy.getDtRecorded();
@@ -96,6 +98,14 @@ public class StagingTarget {
         return dtPerformed;
     }
     public void setDtPerformed(Date dtPerformed) { this.dtPerformed = dtPerformed; }
+
+    public Date getDtEnded() {return dtEnded;}
+    public void setDtEnded(Date dtEnded) {this.dtEnded = dtEnded;}
+
+    public Integer getRecordeByPersonnelId() {return recordeByPersonnelId;}
+    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {
+        this.recordeByPersonnelId = recordeByPersonnelId;
+    }
 
     public String getFreeText() {
         return freeText;
