@@ -29,14 +29,14 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
         String patientId = fhirPatient.getId();
         String nhsNumber = IdentifierHelper.findNhsNumber(fhirPatient);
-        String forenames = findForenames(fhirPatient);
-        String surname = findSurname(fhirPatient);
-        String addressLine1 = findAddressLine(fhirPatient, 0);
-        String addressLine2 = findAddressLine(fhirPatient, 1);
-        String addressLine3 = findAddressLine(fhirPatient, 2);
-        String city = findCity(fhirPatient);
-        String district = findDistrict(fhirPatient);
-        String postcode = findPostcode(fhirPatient);
+        String forenames = NameHelper.findForenames(fhirPatient);
+        String surname = NameHelper.findSurname(fhirPatient);
+        String addressLine1 = AddressHelper.findAddressLine(fhirPatient, 0);
+        String addressLine2 = AddressHelper.findAddressLine(fhirPatient, 1);
+        String addressLine3 = AddressHelper.findAddressLine(fhirPatient, 2);
+        String city = AddressHelper.findCity(fhirPatient);
+        String district = AddressHelper.findDistrict(fhirPatient);
+        String postcode = AddressHelper.findPostcode(fhirPatient);
         String gender = findGender(fhirPatient);
         Date dob = fhirPatient.getBirthDate();
         Date dod = findDateOfDeath(fhirPatient);
@@ -271,41 +271,6 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 }
             }
 
-        }
-
-        return null;
-    }
-
-
-    private static String findCity(Patient fhirPatient) {
-        Address address = AddressHelper.findHomeAddress(fhirPatient);
-        if (address != null
-                && address.hasCity()) {
-            return address.getCity();
-        }
-
-        return null;
-    }
-
-    private static String findDistrict(Patient fhirPatient) {
-        Address address = AddressHelper.findHomeAddress(fhirPatient);
-        if (address != null
-                && address.hasDistrict()) {
-            return address.getDistrict();
-        }
-
-        return null;
-    }
-
-    private static String findAddressLine(Patient fhirPatient, int index) {
-        Address address = AddressHelper.findHomeAddress(fhirPatient);
-        if (address != null
-                && address.hasLine()) {
-            List<StringType> lines = address.getLine();
-            if (index < lines.size()) {
-                StringType stringType = lines.get(index);
-                return stringType.getValue();
-            }
         }
 
         return null;
@@ -694,81 +659,6 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         } else {
             return null;
         }
-    }
-
-    /**
-     * returns the HumanName to use from a Patient resource
-     */
-    private static HumanName findName(Patient fhirPatient) {
-
-        List<HumanName> officialNames = new ArrayList<>();
-        if (fhirPatient.hasName()) {
-            for (HumanName fhirName : fhirPatient.getName()) {
-                if (fhirName.getUse() == HumanName.NameUse.OFFICIAL) {
-                    officialNames.add(fhirName);
-                }
-            }
-        }
-
-        //return first non-ended one
-        for (HumanName name: officialNames) {
-            if (!name.hasPeriod()
-                    || PeriodHelper.isActive(name.getPeriod())) {
-                return name;
-            }
-        }
-
-        //if no non-ended one, then return the last one, as it was added most recently
-        if (!officialNames.isEmpty()) {
-            int size = officialNames.size();
-            return officialNames.get(size-1);
-        }
-
-        return null;
-    }
-
-    private static String findForenames(Patient fhirPatient) {
-
-        List<String> forenames = new ArrayList<>();
-
-        HumanName fhirName = findName(fhirPatient);
-        if (fhirName != null) {
-            for (StringType given: fhirName.getGiven()) {
-                forenames.add(given.getValue());
-            }
-        }
-        return String.join(" ", forenames);
-    }
-
-    private static String findSurname(Patient fhirPatient) {
-        List<String> surnames = new ArrayList<>();
-
-        HumanName fhirName = findName(fhirPatient);
-        if (fhirName != null) {
-            for (StringType family: fhirName.getFamily()) {
-                surnames.add(family.getValue());
-            }
-        }
-        return String.join(" ", surnames);
-    }
-
-    private static String findPostcode(Patient fhirPatient) {
-
-        Address fhirAddress = AddressHelper.findHomeAddress(fhirPatient);
-        if (fhirAddress != null) {
-
-            //Homerton seem to sometimes enter extra information in the postcode
-            //field, making it longer than the 8 chars the field allows. So
-            //simply truncate down
-            String s = fhirAddress.getPostalCode();
-            if (!Strings.isNullOrEmpty(s)
-                    && s.length() > 8) {
-                s = s.substring(0, 8);
-            }
-            return s;
-            //return fhirAddress.getPostalCode();
-        }
-        return null;
     }
 
     private static String findPatientId(Patient fhirPatient, EpisodeOfCare fhirEpisode) {
