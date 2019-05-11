@@ -79,10 +79,8 @@ public class FhirStorageService {
         //we must save any exchange batches for the resources themselves
         saveExchangeBatches(exchangeBatchesToSave);
 
-        //then save the resources
-        resourceRepository.save(wrappersToSave);
-
         //call out to our patient search and person matching services
+        //moved this to happen BEFORE we commit the resource to the DB, so killing the app at the wrong time won't leave patient_search behind
         for (Resource resource: resourcesAndBatches.keySet()) {
             if (resource instanceof Patient) {
                 //LOG.info("Updating PATIENT_LINK with PATIENT resource " + resource.getId());
@@ -111,6 +109,9 @@ public class FhirStorageService {
                 }
             }
         }
+
+        //then save the resources
+        resourceRepository.save(wrappersToSave);
 
         return wrappersToSave;
     }
@@ -255,11 +256,9 @@ public class FhirStorageService {
         //we must save any exchange batches for the resources themselves
         saveExchangeBatches(exchangeBatchesToSave);
 
-        //now delete the resources
-        resourceRepository.delete(wrappers);
-
         //if we're deleting the patient, then delete the row from the patient_search table
         //only doing this for Patient deletes, not Episodes, since a deleted Episode shoudn't remove the patient from the search
+        //moved this to happen BEFORE we commit the resource to the DB, so killing the app at the wrong time won't leave patient_search behind
         for (Resource resource: resourcesAndBatches.keySet()) {
             if (resource instanceof Patient) {
                 patientSearchDal.deletePatient(serviceId, (Patient) resource);
@@ -268,6 +267,9 @@ public class FhirStorageService {
                 patientSearchDal.deleteEpisode(serviceId, (EpisodeOfCare) resource);
             }
         }
+
+        //now delete the resources
+        resourceRepository.delete(wrappers);
 
         return wrappers;
     }
