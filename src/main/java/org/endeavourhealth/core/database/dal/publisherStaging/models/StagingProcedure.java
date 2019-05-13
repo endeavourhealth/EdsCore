@@ -22,7 +22,6 @@ public class StagingProcedure {
     private String procCdType;
     private String procCd;
     private String procTerm;
-    private String personId;
     private String ward;
     private String site;
     private String lookupPersonId;
@@ -153,14 +152,6 @@ public class StagingProcedure {
         this.procTerm = procTerm;
     }
 
-    public String getPersonId() {
-        return personId;
-    }
-
-    public void setPersonId(String personId) {
-        this.personId = personId;
-    }
-
     public String getWard() {
         return ward;
     }
@@ -216,7 +207,6 @@ public class StagingProcedure {
                 nhsNumber,
                 dateOfBirth,
                 encounterId,
-                personId,
                 ward,
                 site,
                 consultant,

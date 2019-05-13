@@ -86,10 +86,10 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " (exchange_id, dt_received, record_checksum, mrn, "
                     + " nhs_number, date_of_birth, encounter_id, consultant, "
                     + " proc_dt_tm, updated_by, freetext_comment, create_dt_tm, "
-                    + " proc_cd_type, proc_cd, proc_term, person_id, ward, site, "
+                    + " proc_cd_type, proc_cd, proc_term, ward, site, "
                     + " lookup_person_id, lookup_consultant_personnel_id, "
                     + " lookup_recorded_by_personnel_id, audit_json)"
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -106,7 +106,6 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
                     + " proc_cd_type = VALUES(proc_cd_type), "
                     + " proc_cd = VALUES(proc_cd), "
                     + " proc_term = VALUES(proc_term), "
-                    + " person_id = VALUES(person_id), "
                     + " ward = VALUES(ward), "
                     + " site = VALUES(site), "
                     + " lookup_person_id = VALUES(lookup_person_id), "
@@ -134,7 +133,6 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             ps.setString(col++, stagingProcedure.getProcCdType());
             ps.setString(col++, stagingProcedure.getProcCd());
             ps.setString(col++, stagingProcedure.getProcTerm());
-            ps.setString(col++, stagingProcedure.getPersonId());
             ps.setString(col++, stagingProcedure.getWard());
             ps.setString(col++, stagingProcedure.getSite());
 
