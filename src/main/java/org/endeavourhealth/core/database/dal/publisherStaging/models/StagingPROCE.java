@@ -170,6 +170,7 @@ public class StagingPROCE {
         return Objects.hash(procedureId,
                             activeInd,
                             encounterId,
+                            encounterSliceId,
                             procedureDtTm,
                             procedureType,
                             procedureCode,
@@ -190,6 +191,7 @@ public class StagingPROCE {
                 ", procedureId=" + procedureId +
                 ", activeInd=" + activeInd +
                 ", encounterId=" + encounterId +
+                ", encounterSliceId=" + encounterSliceId +
                 ", procedureDtTm=" + procedureDtTm +
                 ", procedureType='" + procedureType + '\'' +
                 ", procedureCode='" + procedureCode + '\'' +

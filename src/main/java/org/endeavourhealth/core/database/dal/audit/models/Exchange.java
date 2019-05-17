@@ -1,13 +1,12 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchange;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class Exchange {
 
@@ -134,8 +133,67 @@ public class Exchange {
         }
     }
 
+    public void setHeaderAsUuid(String key, UUID uuid) {
+        if (uuid == null) {
+            setHeader(key, null);
+        } else {
+            setHeader(key, uuid.toString());
+        }
+    }
+
     public String[] getHeaderAsStringArray(String headerKey) throws Exception {
         String json = getHeader(headerKey);
-        return ObjectMapperPool.getInstance().readValue(json, String[].class);
+        if (Strings.isNullOrEmpty(json)) {
+            return null;
+        } else {
+            return ObjectMapperPool.getInstance().readValue(json, String[].class);
+        }
     }
+
+    public void setHeaderAsStringArray(String key, String[] arr) throws Exception {
+        if (arr == null) {
+            setHeader(key, null);
+        } else {
+            String json = ObjectMapperPool.getInstance().writeValueAsString(arr);
+            setHeader(key, json);
+        }
+    }
+
+    public Date getHeaderAsDate(String key) throws Exception {
+        String s = getHeader(key);
+        if (Strings.isNullOrEmpty(s)) {
+            return null;
+        } else {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(HeaderKeys.DATE_FORMAT);
+            return simpleDateFormat.parse(s);
+        }
+    }
+
+    public void setHeaderAsDate(String key, Date d) throws Exception {
+        if (d == null) {
+            setHeader(key, null);
+        } else {
+            SimpleDateFormat simpleDateFormat = new SimpleDateFormat(HeaderKeys.DATE_FORMAT);
+            setHeader(key, simpleDateFormat.format(d));
+        }
+    }
+
+    public List<String> getHeaderAsStringList(String headerKey) throws Exception {
+        String[] arr = getHeaderAsStringArray(headerKey);
+        if (arr == null) {
+            return null;
+        } else {
+            return Lists.newArrayList(arr);
+        }
+    }
+
+    public void setHeaderAsStringList(String key, List<String> list) throws Exception {
+        if (list == null) {
+            setHeader(key, null);
+        } else {
+            setHeaderAsStringArray(key, list.toArray(new String[]{}));
+        }
+    }
+
+
 }

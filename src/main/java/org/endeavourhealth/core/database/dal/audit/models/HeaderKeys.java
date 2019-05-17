@@ -2,6 +2,8 @@ package org.endeavourhealth.core.database.dal.audit.models;
 
 public abstract class HeaderKeys {
 
+    public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
+
     // General
     public static final String ContentType = "content-type";
 
