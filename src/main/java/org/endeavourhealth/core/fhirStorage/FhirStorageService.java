@@ -15,6 +15,7 @@ import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Patient;
 import org.hl7.fhir.instance.model.Resource;
+import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,17 +58,32 @@ public class FhirStorageService {
 
             ExchangeBatch exchangeBatch = resourcesAndBatches.get(resource);
             UUID batchId = exchangeBatch.getBatchId();
-            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+            ResourceWrapper resourceWrapper = createResourceEntry(resource, exchangeId, batchId);
 
             //if we're updating a resource but there's no change, don't commit the save
             //this is because Emis send us up to thousands of duplicated resources each day
             boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
-            if (shouldSaveResource(entry, isDefinitelyNewResource)) {
-                wrappersToSave.add(entry);
+
+            if (resource.getResourceType() == ResourceType.Patient) {
+                LOG.trace("Saving " + resourceWrapper + " definitely new = " + isDefinitelyNewResource);
+            }
+
+            if (shouldSaveResource(resourceWrapper, isDefinitelyNewResource)) {
+                wrappersToSave.add(resourceWrapper);
 
                 //save the batch if necessary
                 if (exchangeBatch.isNeedsSaving()) {
                     exchangeBatchesToSave.add(exchangeBatch);
+                }
+
+                if (resource.getResourceType() == ResourceType.Patient) {
+                    LOG.trace("Will save resource, batch needs saving = " + exchangeBatch.isNeedsSaving());
+                }
+
+            } else {
+
+                if (resource.getResourceType() == ResourceType.Patient) {
+                    LOG.trace("Will not save resource");
                 }
             }
         }
@@ -111,6 +127,7 @@ public class FhirStorageService {
         }
 
         //then save the resources
+        LOG.trace("Saving " + wrappersToSave.size() + " resources");
         resourceRepository.save(wrappersToSave);
 
         return wrappersToSave;
@@ -226,7 +243,7 @@ public class FhirStorageService {
 
     public List<ResourceWrapper> deleteResources(UUID exchangeId, Map<Resource, ExchangeBatch> resourcesAndBatches, Set<Resource> definitelyNewResources) throws Exception {
 
-        List<ResourceWrapper> wrappers = new ArrayList<>();
+        List<ResourceWrapper> wrappersToDelete = new ArrayList<>();
         List<ExchangeBatch> exchangeBatchesToSave = new ArrayList<>();
 
         for (Resource resource: resourcesAndBatches.keySet()) {
@@ -234,23 +251,37 @@ public class FhirStorageService {
 
             ExchangeBatch exchangeBatch = resourcesAndBatches.get(resource);
             UUID batchId = exchangeBatch.getBatchId();
-            ResourceWrapper entry = createResourceEntry(resource, exchangeId, batchId);
+            ResourceWrapper resourceWrapper = createResourceEntry(resource, exchangeId, batchId);
 
             //if we're updating a resource but there's no change, don't commit the save
             //this is because Emis send us up to thousands of duplicated resources each day
             boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
-            if (shouldDeleteResource(entry, isDefinitelyNewResource)) {
-                wrappers.add(entry);
+
+            if (resource.getResourceType() == ResourceType.Patient) {
+                LOG.trace("Deleting " + resourceWrapper + " definitely new = " + isDefinitelyNewResource);
+            }
+
+            if (shouldDeleteResource(resourceWrapper, isDefinitelyNewResource)) {
+                wrappersToDelete.add(resourceWrapper);
 
                 //save the batch if necessary
                 if (exchangeBatch.isNeedsSaving()) {
                     exchangeBatchesToSave.add(exchangeBatch);
                 }
+
+                if (resource.getResourceType() == ResourceType.Patient) {
+                    LOG.trace("Will delete resource, batch needs saving = " + exchangeBatch.isNeedsSaving());
+                }
+
+            } else {
+                if (resource.getResourceType() == ResourceType.Patient) {
+                    LOG.trace("Will not delete resource");
+                }
             }
         }
 
-        if (wrappers.isEmpty()) {
-            return wrappers;
+        if (wrappersToDelete.isEmpty()) {
+            return wrappersToDelete;
         }
 
         //we must save any exchange batches for the resources themselves
@@ -269,9 +300,10 @@ public class FhirStorageService {
         }
 
         //now delete the resources
-        resourceRepository.delete(wrappers);
+        LOG.trace("Deleting " + wrappersToDelete.size() + " resources");
+        resourceRepository.delete(wrappersToDelete);
 
-        return wrappers;
+        return wrappersToDelete;
     }
 
 

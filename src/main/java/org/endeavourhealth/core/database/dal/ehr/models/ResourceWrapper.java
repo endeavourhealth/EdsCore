@@ -26,6 +26,33 @@ public class ResourceWrapper {
 
     public ResourceWrapper() {}
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(resourceType);
+        sb.append("/");
+        sb.append(resourceId.toString());
+
+        if (patientId != null) {
+            sb.append(" for patient ");
+            sb.append(patientId.toString());
+        }
+
+        sb.append(" checksum ");
+        sb.append(resourceChecksum);
+        sb.append(" batch ID ");
+        sb.append(exchangeBatchId.toString());
+        sb.append("\r\n");
+        if (isDeleted) {
+            sb.append("DELETED");
+        } else {
+            sb.append(resourceData);
+        }
+
+        return sb.toString();
+    }
+
 
     public ResourceWrapper(RdbmsResourceCurrent proxy) {
         this.serviceId = UUID.fromString(proxy.getServiceId());
