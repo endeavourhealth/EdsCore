@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCds;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCdsCount;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -18,17 +19,20 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingCdsDal.class);
 
-    @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingCds cds) throws Exception {
+    private boolean wasCdsAlreadyFiled(UUID serviceId, StagingCds cds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_cds_latest where cds_unique_identifier = ?";
+            String sql = "select record_checksum from procedure_cds_latest where cds_unique_identifier = ? and sus_record_type = ? and procedure_seq_nbr = ?";
             ps = connection.prepareStatement(sql);
-            ps.setString(1, cds.getCdsUniqueIdentifier());
+
+            int col = 1;
+            ps.setString(col++, cds.getCdsUniqueIdentifier());
+            ps.setString(col++, cds.getSusRecordType());
+            ps.setInt(col++, cds.getProcedureSeqNbr());
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -54,7 +58,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         }
 
         //check if record already filed to avoid duplicates
-        if (getRecordChecksumFiled(serviceId, cds)) {
+        if (wasCdsAlreadyFiled(serviceId, cds)) {
             //   LOG.warn("procedure_cds data already filed with record_checksum: "+cds.hashCode());
             //   LOG.warn("cds:>" + cds.toString());
             return;
@@ -153,6 +157,109 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
             LOG.error("Error saving " + cds);
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    private boolean wasCdsCountAlreadyFiled(UUID serviceId, StagingCdsCount cdsCount) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum from procedure_cds_count_latest where cds_unique_identifier = ? and sus_record_type = ?";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsCount.getCdsUniqueIdentifier());
+            ps.setString(col++, cdsCount.getSusRecordType());
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsCount.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(StagingCdsCount cdsCount, UUID serviceId) throws Exception {
+        if (cdsCount == null) {
+            throw new IllegalArgumentException("cdsCount object is null");
+        }
+
+        //check if record already filed to avoid duplicates
+        if (wasCdsCountAlreadyFiled(serviceId, cdsCount)) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            /**
+             create table procedure_cds_count (
+
+             exchange_id                    char(36)     NOT NULL COMMENT 'links to audit.exchange table (but on a different server)',
+             dt_received                    datetime     NOT NULL COMMENT 'date time this record was received into Discovery',
+             record_checksum                bigint       NOT NULL COMMENT 'checksum of the columns below to easily spot duplicates',
+             sus_record_type                varchar(10)  NOT NULL COMMENT 'one of inpatient, outpatient, emergency',
+             cds_unique_identifier          varchar(50)  NOT NULL COMMENT 'from CDSUniqueIdentifier',
+             procedure_count             int NOT NULL COMMENT 'number of procedures in this CDS record',
+             CONSTRAINT pk_procedure_cds_count PRIMARY KEY (exchange_id, cds_unique_identifier, sus_record_type)
+             );
+             */
+
+            String sql = "INSERT INTO procedure_cds_count  "
+                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, procedure_count)"
+                    + " VALUES (?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " sus_record_type = VALUES(sus_record_type),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " procedure_count = VALUES(procedure_count)";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+
+            //NONE of the columns allow nulls
+            ps.setString(col++, cdsCount.getExchangeId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsCount.getDtReceived().getTime()));
+            ps.setInt(col++, cdsCount.getRecordChecksum());
+            ps.setString(col++, cdsCount.getSusRecordType());
+            ps.setString(col++, cdsCount.getCdsUniqueIdentifier());
+            ps.setInt(col++, cdsCount.getProcedureCount());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            LOG.error("Error saving " + cdsCount);
             throw ex;
 
         } finally {

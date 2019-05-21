@@ -83,8 +83,8 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " (exchange_id, dt_received, record_checksum, procedure_id, "
                     + " active_ind, encounter_id, encounter_slice_id, procedure_dt_tm, procedure_type, "
                     + " procedure_code, procedure_term, procedure_seq_nbr, lookup_person_id, "
-                    + " lookup_mrn, lookup_nhs_number, lookup_date_of_birth, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " lookup_mrn, audit_json)  "
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -100,8 +100,6 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " procedure_seq_nbr = VALUES(procedure_seq_nbr), "
                     + " lookup_person_id = VALUES(lookup_person_id), "
                     + " lookup_mrn = VALUES(lookup_mrn), "
-                    + " lookup_nhs_number = VALUES(lookup_nhs_number), "
-                    + " lookup_date_of_birth = VALUES(lookup_date_of_birth), "
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
@@ -169,30 +167,16 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                 ps.setString(col++, stagingPROCE.getLookupMrn());
             }
 
-            if (stagingPROCE.getLookupNhsNumber() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingPROCE.getLookupNhsNumber());
-            }
-
-            if (stagingPROCE.getLookupDateOfBirth() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingPROCE.getLookupDateOfBirth().getTime()));
-            }
-
             if (stagingPROCE.getAudit() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, stagingPROCE.getAudit().writeToJson());
             }
 
-
             ps.executeUpdate();
 
             //transaction.commit();
             entityManager.getTransaction().commit();
-            //TODO Not proud of this hack. Need to rewrite the transformers for all notnulls.
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();

@@ -21,8 +21,6 @@ public class StagingPROCE {
     private Integer procedureSeqNo;
     private Integer lookupPersonId;
     private String lookupMrn;
-    private String lookupNhsNumber;
-    private Date lookupDateOfBirth;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingPROCE() {
@@ -140,22 +138,6 @@ public class StagingPROCE {
         this.lookupMrn = lookupMrn;
     }
 
-    public String getLookupNhsNumber() {
-        return lookupNhsNumber;
-    }
-
-    public void setLookupNhsNumber(String lookupNhsNumber) {
-        this.lookupNhsNumber = lookupNhsNumber;
-    }
-
-    public Date getLookupDateOfBirth() {
-        return lookupDateOfBirth;
-    }
-
-    public void setLookupDateOfBirth(Date lookupDateOfBirth) {
-        this.lookupDateOfBirth = lookupDateOfBirth;
-    }
-
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -177,9 +159,7 @@ public class StagingPROCE {
                             procedureTerm,
                             procedureSeqNo,
                             lookupPersonId,
-                            lookupMrn,
-                            lookupNhsNumber,
-                            lookupDateOfBirth);
+                            lookupMrn);
     }
 
     @Override
@@ -199,8 +179,6 @@ public class StagingPROCE {
                 ", procedureSeqNo=" + procedureSeqNo +
                 ", lookupPersonId=" + lookupPersonId +
                 ", lookupMrn='" + lookupMrn + '\'' +
-                ", lookupNhsNumber='" + lookupNhsNumber + '\'' +
-                ", lookupDateOfBirth=" + lookupDateOfBirth +
                 ", audit=" + audit +
                 '}';
     }
