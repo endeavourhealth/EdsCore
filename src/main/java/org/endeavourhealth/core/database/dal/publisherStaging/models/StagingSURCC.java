@@ -157,8 +157,9 @@ public class StagingSURCC {
     @Override
     public int hashCode() {
 
-        return Objects.hash(surgicalCaseId,
-                            activeInd,
+        //only hash non-primary key fields
+        //note DtExtract is not a primary key field, but is explicitly excluded (and really shouldn't be on this table anyway)
+        return Objects.hash(activeInd,
                             personId,
                             encounterId,
                             dtStart,
@@ -170,4 +171,5 @@ public class StagingSURCC {
                             theatreNumberCode,
                             specialtyCode);
     }
+
 }

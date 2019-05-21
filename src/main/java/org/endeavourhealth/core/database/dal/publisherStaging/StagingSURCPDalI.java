@@ -6,6 +6,5 @@ import java.util.UUID;
 
 public interface StagingSURCPDalI {
 
-    boolean getRecordChecksumFiled(UUID serviceId, StagingSURCP surcp) throws Exception;
     void save(StagingSURCP surcp, UUID serviceId) throws Exception;
 }

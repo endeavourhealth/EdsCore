@@ -18,17 +18,26 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingCdsTailDal.class);
 
-    @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingCdsTail obj) throws Exception {
+    private boolean wasAlreadySaved(UUID serviceId, StagingCdsTail obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_cds_tail_latest where cds_unique_identifier = ?";
+            String sql = "select record_checksum "
+                        + "from procedure_cds_tail "
+                        + "where cds_unique_identifier = ? "
+                        + "and sus_record_type = ? "
+                        + "and dt_received <= ? "
+                        + "order by dt_received desc "
+                        + "limit 1";
             ps = connection.prepareStatement(sql);
-            ps.setString(1, obj.getCdsUniqueIdentifier());
+
+            int col = 1;
+            ps.setString(col++, obj.getCdsUniqueIdentifier());
+            ps.setString(col++, obj.getSusRecordType());
+            ps.setTimestamp(col++, new java.sql.Timestamp(obj.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -53,8 +62,10 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             throw new IllegalArgumentException("cds tail object is null");
         }
 
+        cdsTail.setRecordChecksum(cdsTail.hashCode());
+
         //check if record already filed to avoid duplicates
-        if (getRecordChecksumFiled(serviceId, cdsTail)) {
+        if (wasAlreadySaved(serviceId, cdsTail)) {
             // LOG.warn("procedure_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
             return;
         }

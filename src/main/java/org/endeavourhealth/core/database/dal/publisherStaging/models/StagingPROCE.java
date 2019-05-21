@@ -9,7 +9,7 @@ public class StagingPROCE {
 
     private String exchangeId;
     private Date dtReceived;
-    private int checkSum;
+    private int recordChecksum;
     private int procedureId;
     private boolean activeInd;
     private Integer encounterId;
@@ -42,12 +42,12 @@ public class StagingPROCE {
         this.dtReceived = dtReceived;
     }
 
-    public int getCheckSum() {
-        return checkSum;
+    public int getRecordChecksum() {
+        return recordChecksum;
     }
 
-    public void setCheckSum(int checkSum) {
-        this.checkSum = checkSum;
+    public void setRecordChecksum(int recordChecksum) {
+        this.recordChecksum = recordChecksum;
     }
 
     public int getProcedureId() {
@@ -149,7 +149,8 @@ public class StagingPROCE {
     @Override
     public int hashCode() {
 
-        return Objects.hash(procedureId,
+        //only hash non primary-key fields
+        return Objects.hash(
                             activeInd,
                             encounterId,
                             encounterSliceId,
@@ -162,12 +163,13 @@ public class StagingPROCE {
                             lookupMrn);
     }
 
+
     @Override
     public String toString() {
         return "StagingPROCE{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", dtReceived=" + dtReceived +
-                ", checkSum=" + checkSum +
+                ", recordChecksum=" + recordChecksum +
                 ", procedureId=" + procedureId +
                 ", activeInd=" + activeInd +
                 ", encounterId=" + encounterId +

@@ -165,7 +165,9 @@ public class StagingSURCP {
     @Override
     public int hashCode() {
 
-        return Objects.hash(surgicalCaseProcedureId,
+        //only hash non-primary key fields
+        //note DtExtract is not a primary key field, but is explicitly excluded (and really shouldn't be on this table anyway)
+        return Objects.hash(
                 surgicalCaseId,
                 activeInd,
                 procedureCode,

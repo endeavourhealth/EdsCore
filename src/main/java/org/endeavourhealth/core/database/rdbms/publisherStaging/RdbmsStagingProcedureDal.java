@@ -4,7 +4,6 @@ import org.endeavourhealth.core.database.dal.publisherStaging.StagingProcedureDa
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedure;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
-import org.hl7.fhir.instance.model.Enumerations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,36 +12,39 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingProcedureDal.class);
 
 
-    @Override
-    public List<UUID> getSusResourceMappings(UUID serviceId, String sourceRowId, Enumerations.ResourceType resourceType) throws Exception {
-        return null;
-    }
-
-    @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingProcedure obj) throws Exception {
+    private boolean wasSavedAlready(UUID serviceId, StagingProcedure obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_procedure_latest where encounter_id = ? and proc_dt_tm = ? and proc_cd = ?";
+            String sql = "select record_checksum "
+                    + "from procedure_procedure "
+                    + "where encounter_id = ? "
+                    + "and proc_dt_tm = ? "
+                    + "and proc_cd = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
             ps = connection.prepareStatement(sql);
-            ps.setInt(1, obj.getEncounterId());
-            ps.setTimestamp(2, new java.sql.Timestamp(obj.getProcDtTm().getTime()));
-            ps.setString(3, obj.getProcCd());
+
+            int col = 1;
+            ps.setInt(col++, obj.getEncounterId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(obj.getProcDtTm().getTime()));
+            ps.setString(col++, obj.getProcCd());
+            ps.setTimestamp(col++, new java.sql.Timestamp(obj.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int dbChecksum = rs.getInt(1);
-                return dbChecksum == obj.getCheckSum();
+                return dbChecksum == obj.getRecordChecksum();
             } else {
                 return false;
             }
@@ -63,8 +65,10 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             throw new IllegalArgumentException("stagingProcedure is null");
         }
 
+        stagingProcedure.setRecordChecksum(stagingProcedure.hashCode());
+
         //check if record already filed to avoid duplicates
-        if (getRecordChecksumFiled(serviceId, stagingProcedure)) {
+        if (wasSavedAlready(serviceId, stagingProcedure)) {
             //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
             return;
         }
@@ -120,7 +124,7 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             //all but the last four columns are non-null
             ps.setString(col++, stagingProcedure.getExchangeId());
             ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDtReceived().getTime()));
-            ps.setInt(col++, stagingProcedure.getCheckSum());
+            ps.setInt(col++, stagingProcedure.getRecordChecksum());
             ps.setString(col++, stagingProcedure.getMrn());
             ps.setString(col++, stagingProcedure.getNhsNumber());
             ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDateOfBirth().getTime()));
@@ -138,9 +142,9 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
 
             if (stagingProcedure.getLookupPersonId() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                ps.setString(col++, stagingProcedure.getLookupPersonId());
+                ps.setInt(col++, stagingProcedure.getLookupPersonId());
             }
 
             if (stagingProcedure.getLookupConsultantPersonnelId() == null) {

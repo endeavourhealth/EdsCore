@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.Objects;
 
 public class StagingCds implements Cloneable {
+
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
@@ -22,7 +23,7 @@ public class StagingCds implements Cloneable {
     private int procedureSeqNbr;
     private String primaryProcedureOpcsCode;
     private String lookupProcedureOpcsTerm;
-    private Integer lookupPersonId ;
+    private Integer lookupPersonId;
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
@@ -187,8 +188,9 @@ public class StagingCds implements Cloneable {
     @Override
     public int hashCode() {
 
-        return Objects.hash(susRecordType,
-                cdsUniqueIdentifier,
+        //only calculate the hash from the non-primary key fields
+        return Objects.hash(
+                cdsActivityDate,
                 cdsUpdateType,
                 mrn,
                 nhsNumber,
@@ -196,12 +198,12 @@ public class StagingCds implements Cloneable {
                 consultantCode,
                 procedureDate,
                 procedureOpcsCode,
-                procedureSeqNbr,
                 primaryProcedureOpcsCode,
                 lookupProcedureOpcsTerm,
                 lookupPersonId,
                 lookupConsultantPersonnelId);
     }
+
 
     @Override
     public String toString() {

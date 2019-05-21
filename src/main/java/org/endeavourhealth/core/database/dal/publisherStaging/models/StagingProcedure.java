@@ -9,7 +9,7 @@ public class StagingProcedure {
 
     private String exchangeId;
     private Date dtReceived;
-    private int checkSum;
+    private int recordChecksum;
     private String mrn;
     private String nhsNumber;
     private Date dateOfBirth;
@@ -24,7 +24,7 @@ public class StagingProcedure {
     private String procTerm;
     private String ward;
     private String site;
-    private String lookupPersonId;
+    private Integer lookupPersonId;
     private Integer lookupConsultantPersonnelId;
     private Integer lookupRecordedByPersonnelId;
     private ResourceFieldMappingAudit audit = null;
@@ -48,12 +48,12 @@ public class StagingProcedure {
         this.dtReceived = dtReceived;
     }
 
-    public int getCheckSum() {
-        return checkSum;
+    public int getRecordChecksum() {
+        return recordChecksum;
     }
 
-    public void setCheckSum(int checkSum) {
-        this.checkSum = checkSum;
+    public void setRecordChecksum(int recordChecksum) {
+        this.recordChecksum = recordChecksum;
     }
 
     public String getMrn() {
@@ -168,11 +168,11 @@ public class StagingProcedure {
         this.site = site;
     }
 
-    public String getLookupPersonId() {
+    public Integer getLookupPersonId() {
         return lookupPersonId;
     }
 
-    public void setLookupPersonId(String lookupPersonId) {
+    public void setLookupPersonId(Integer lookupPersonId) {
         this.lookupPersonId = lookupPersonId;
     }
 
@@ -203,54 +203,24 @@ public class StagingProcedure {
     @Override
     public int hashCode() {
 
-        return Objects.hash(mrn,
+        //only hash non-primary key fields
+        return Objects.hash(
+                mrn,
                 nhsNumber,
                 dateOfBirth,
-                encounterId,
-                ward,
-                site,
                 consultant,
-                procDtTm,
-                createDtTm,
                 updatedBy,
                 comments,
-                procCd,
+                createDtTm,
                 procCdType,
                 procTerm,
+                ward,
+                site,
                 lookupPersonId,
                 lookupConsultantPersonnelId,
                 lookupRecordedByPersonnelId
         );
     }
-
-//    @Override
-//    public int hashCode() {
-//        return new HashCodeBuilder()
-//                .append(serviceId)
-//                .append(exchangeId)
-//                .append(dtReceived)
-//                .append(checkSum)
-//                .append(mrn)
-//                .append(nhsNumber)
-//                .append(dateOfBirth)
-//                .append(encounterId)
-//                .append(consultant)
-//                .append(procDtTm)
-//                .append(updatedBy)
-//                .append(comments)
-//                .append(createDtTm)
-//                .append(procCdType)
-//                .append(procCd)
-//                .append(procTerm)
-//                .append(personId)
-//                .append(ward)
-//                .append(site)
-//                .append(lookupPersonId)
-//                .append(lookupConsultantPersonnelId)
-//                .append(lookuprecordedByPersonnelId)
-//                .toHashCode();
-//    }
-
 }
 
 

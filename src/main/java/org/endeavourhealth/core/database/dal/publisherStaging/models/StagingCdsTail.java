@@ -122,8 +122,8 @@ public class StagingCdsTail {
     @Override
     public int hashCode() {
 
-        return Objects.hash(susRecordType,
-                cdsUniqueIdentifier,
+        //only hash fields that aren't part of the primary key
+        return Objects.hash(
                 cdsUpdateType,
                 mrn,
                 nhsNumber,

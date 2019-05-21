@@ -18,17 +18,24 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingSURCPDal.class);
 
-    @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingSURCP obj) throws Exception {
+    private boolean wasAlreadySaved(UUID serviceId, StagingSURCP obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_SURCP_latest where surgical_case_procedure_id = ?";
+            String sql = "select record_checksum "
+                    + "from procedure_SURCP "
+                    + "where surgical_case_procedure_id = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
             ps = connection.prepareStatement(sql);
-            ps.setInt(1, obj.getSurgicalCaseProcedureId());
+
+            int col = 1;
+            ps.setInt(col++, obj.getSurgicalCaseProcedureId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(obj.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -54,8 +61,10 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             throw new IllegalArgumentException("surcp object is null");
         }
 
+        surcp.setRecordChecksum(surcp.hashCode());
+
         //check if record already filed to avoid duplicates
-        if (getRecordChecksumFiled(serviceId, surcp)) {
+        if (wasAlreadySaved(serviceId, surcp)) {
             //  LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
             return;
         }

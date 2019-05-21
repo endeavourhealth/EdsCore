@@ -26,13 +26,21 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_cds_latest where cds_unique_identifier = ? and sus_record_type = ? and procedure_seq_nbr = ?";
+            String sql = "select record_checksum "
+                        + "from procedure_cds "
+                        + "where cds_unique_identifier = ? "
+                        + "and sus_record_type = ? "
+                        + "and procedure_seq_nbr = ? "
+                        + "and dt_received <= ? "
+                        + "order by dt_received desc "
+                        + "limit 1";
             ps = connection.prepareStatement(sql);
 
             int col = 1;
             ps.setString(col++, cds.getCdsUniqueIdentifier());
             ps.setString(col++, cds.getSusRecordType());
             ps.setInt(col++, cds.getProcedureSeqNbr());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cds.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -56,6 +64,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         if (cds == null) {
             throw new IllegalArgumentException("cds object is null");
         }
+
+        cds.setRecordChecksum(cds.hashCode());
 
         //check if record already filed to avoid duplicates
         if (wasCdsAlreadyFiled(serviceId, cds)) {
@@ -174,12 +184,19 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_cds_count_latest where cds_unique_identifier = ? and sus_record_type = ?";
+            String sql = "select record_checksum "
+                    + "from procedure_cds_count "
+                    + "where cds_unique_identifier = ? "
+                    + "and sus_record_type = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
             ps = connection.prepareStatement(sql);
 
             int col = 1;
             ps.setString(col++, cdsCount.getCdsUniqueIdentifier());
             ps.setString(col++, cdsCount.getSusRecordType());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsCount.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
@@ -202,6 +219,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         if (cdsCount == null) {
             throw new IllegalArgumentException("cdsCount object is null");
         }
+
+        cdsCount.setRecordChecksum(cdsCount.hashCode());
 
         //check if record already filed to avoid duplicates
         if (wasCdsCountAlreadyFiled(serviceId, cdsCount)) {

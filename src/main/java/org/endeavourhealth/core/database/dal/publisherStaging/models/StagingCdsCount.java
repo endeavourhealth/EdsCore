@@ -15,9 +15,8 @@ public class StagingCdsCount {
     @Override
     public int hashCode() {
 
-        return Objects.hash(susRecordType,
-                cdsUniqueIdentifier,
-                procedureCount);
+        //only calculate the hash from non-primary key fields
+        return Objects.hash(procedureCount);
     }
 
     @Override

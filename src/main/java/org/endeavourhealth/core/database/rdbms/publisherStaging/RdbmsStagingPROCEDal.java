@@ -24,22 +24,29 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
         return null;
     }*/
 
-    @Override
-    public boolean getRecordChecksumFiled(UUID serviceId, StagingPROCE obj) throws Exception {
+    private boolean wasAlreadySaved(UUID serviceId, StagingPROCE obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
-            String sql = "select record_checksum from procedure_PROCE_latest where procedure_id = ?";
+            String sql = "select record_checksum "
+                    + "from procedure_PROCE "
+                    + "where procedure_id = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
             ps = connection.prepareStatement(sql);
-            ps.setInt(1, obj.getProcedureId());
+
+            int col = 1;
+            ps.setInt(col++, obj.getProcedureId());
+            ps.setTimestamp(col++, new java.sql.Timestamp(obj.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int dbChecksum = rs.getInt(1);
-                return dbChecksum == obj.getCheckSum();
+                return dbChecksum == obj.getRecordChecksum();
             } else {
                 return false;
             }
@@ -60,8 +67,10 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             throw new IllegalArgumentException("stagingPROCE is null");
         }
 
+        stagingPROCE.setRecordChecksum(stagingPROCE.hashCode());
+
         //check if record already filed to avoid duplicates
-        if (getRecordChecksumFiled(serviceId, stagingPROCE)) {
+        if (wasAlreadySaved(serviceId, stagingPROCE)) {
             // LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
             return;
         }
@@ -109,7 +118,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             //first five columns are non-null
             ps.setString(col++, stagingPROCE.getExchangeId());
             ps.setTimestamp(col++, new java.sql.Timestamp(stagingPROCE.getDtReceived().getTime()));
-            ps.setInt(col++, stagingPROCE.getCheckSum());
+            ps.setInt(col++, stagingPROCE.getRecordChecksum());
             ps.setInt(col++, stagingPROCE.getProcedureId());
             ps.setBoolean(col++, stagingPROCE.isActiveInd());
 
