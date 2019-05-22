@@ -15,7 +15,6 @@ import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
 import org.hl7.fhir.instance.model.EpisodeOfCare;
 import org.hl7.fhir.instance.model.Patient;
 import org.hl7.fhir.instance.model.Resource;
-import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,9 +63,9 @@ public class FhirStorageService {
             //this is because Emis send us up to thousands of duplicated resources each day
             boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
 
-            if (resource.getResourceType() == ResourceType.Patient) {
+            /*if (resource.getResourceType() == ResourceType.Patient) {
                 LOG.trace("Saving " + resourceWrapper + " definitely new = " + isDefinitelyNewResource);
-            }
+            }*/
 
             if (shouldSaveResource(resourceWrapper, isDefinitelyNewResource)) {
                 wrappersToSave.add(resourceWrapper);
@@ -76,15 +75,15 @@ public class FhirStorageService {
                     exchangeBatchesToSave.add(exchangeBatch);
                 }
 
-                if (resource.getResourceType() == ResourceType.Patient) {
+                /*if (resource.getResourceType() == ResourceType.Patient) {
                     LOG.trace("Will save resource, batch needs saving = " + exchangeBatch.isNeedsSaving());
-                }
+                }*/
 
             } else {
 
-                if (resource.getResourceType() == ResourceType.Patient) {
+                /*if (resource.getResourceType() == ResourceType.Patient) {
                     LOG.trace("Will not save resource");
-                }
+                }*/
             }
         }
 
@@ -127,7 +126,7 @@ public class FhirStorageService {
         }
 
         //then save the resources
-        LOG.trace("Saving " + wrappersToSave.size() + " resources");
+        //LOG.trace("Saving " + wrappersToSave.size() + " resources");
         resourceRepository.save(wrappersToSave);
 
         return wrappersToSave;
@@ -257,9 +256,9 @@ public class FhirStorageService {
             //this is because Emis send us up to thousands of duplicated resources each day
             boolean isDefinitelyNewResource = definitelyNewResources != null && definitelyNewResources.contains(resource);
 
-            if (resource.getResourceType() == ResourceType.Patient) {
+            /*if (resource.getResourceType() == ResourceType.Patient) {
                 LOG.trace("Deleting " + resourceWrapper + " definitely new = " + isDefinitelyNewResource);
-            }
+            }*/
 
             if (shouldDeleteResource(resourceWrapper, isDefinitelyNewResource)) {
                 wrappersToDelete.add(resourceWrapper);
@@ -269,14 +268,14 @@ public class FhirStorageService {
                     exchangeBatchesToSave.add(exchangeBatch);
                 }
 
-                if (resource.getResourceType() == ResourceType.Patient) {
+                /*if (resource.getResourceType() == ResourceType.Patient) {
                     LOG.trace("Will delete resource, batch needs saving = " + exchangeBatch.isNeedsSaving());
-                }
+                }*/
 
             } else {
-                if (resource.getResourceType() == ResourceType.Patient) {
+                /*if (resource.getResourceType() == ResourceType.Patient) {
                     LOG.trace("Will not delete resource");
-                }
+                }*/
             }
         }
 
@@ -300,7 +299,7 @@ public class FhirStorageService {
         }
 
         //now delete the resources
-        LOG.trace("Deleting " + wrappersToDelete.size() + " resources");
+        //LOG.trace("Deleting " + wrappersToDelete.size() + " resources");
         resourceRepository.delete(wrappersToDelete);
 
         return wrappersToDelete;
