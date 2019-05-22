@@ -87,13 +87,12 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-
             String sql = "INSERT INTO procedure_PROCE "
                     + " (exchange_id, dt_received, record_checksum, procedure_id, "
                     + " active_ind, encounter_id, encounter_slice_id, procedure_dt_tm, procedure_type, "
                     + " procedure_code, procedure_term, procedure_seq_nbr, lookup_person_id, "
-                    + " lookup_mrn, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " lookup_mrn, lookup_responsible_personnel_id, audit_json)  "
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -109,6 +108,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                     + " procedure_seq_nbr = VALUES(procedure_seq_nbr), "
                     + " lookup_person_id = VALUES(lookup_person_id), "
                     + " lookup_mrn = VALUES(lookup_mrn), "
+                    + " lookup_responsible_personnel_id = VALUES(lookup_responsible_personnel_id), "
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
@@ -174,6 +174,12 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, stagingPROCE.getLookupMrn());
+            }
+
+            if (stagingPROCE.getLookupResponsiblePersonnelId() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, stagingPROCE.getLookupResponsiblePersonnelId());
             }
 
             if (stagingPROCE.getAudit() == null) {

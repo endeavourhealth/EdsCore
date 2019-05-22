@@ -21,6 +21,7 @@ public class StagingPROCE {
     private Integer procedureSeqNo;
     private Integer lookupPersonId;
     private String lookupMrn;
+    private Integer lookupResponsiblePersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingPROCE() {
@@ -138,6 +139,14 @@ public class StagingPROCE {
         this.lookupMrn = lookupMrn;
     }
 
+    public Integer getLookupResponsiblePersonnelId() {
+        return lookupResponsiblePersonnelId;
+    }
+
+    public void setLookupResponsiblePersonnelId(Integer lookupResponsiblePersonnelId) {
+        this.lookupResponsiblePersonnelId = lookupResponsiblePersonnelId;
+    }
+
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -160,7 +169,8 @@ public class StagingPROCE {
                             procedureTerm,
                             procedureSeqNo,
                             lookupPersonId,
-                            lookupMrn);
+                            lookupMrn,
+                            lookupResponsiblePersonnelId);
     }
 
 
@@ -181,6 +191,7 @@ public class StagingPROCE {
                 ", procedureSeqNo=" + procedureSeqNo +
                 ", lookupPersonId=" + lookupPersonId +
                 ", lookupMrn='" + lookupMrn + '\'' +
+                ", lookupResponsiblePersonnelId='" + lookupResponsiblePersonnelId + '\'' +
                 ", audit=" + audit +
                 '}';
     }
