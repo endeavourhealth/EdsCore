@@ -85,10 +85,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             String sql = "INSERT INTO procedure_cds  "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, sus_record_type, cds_unique_identifier, " +
-                    " cds_update_type, mrn, nhs_number, date_of_birth, consultant_code, procedure_date, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, procedure_date, " +
                     " procedure_opcs_code, procedure_seq_nbr, primary_procedure_opcs_code, lookup_procedure_opcs_term, " +
                     " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ? , ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -99,6 +99,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " cds_update_type = VALUES(cds_update_type),"
                     + " mrn = VALUES(mrn),"
                     + " nhs_number = VALUES(nhs_number),"
+                    + " withheld = VALUES(withheld),"
                     + " date_of_birth = VALUES(date_of_birth),"
                     + " consultant_code = VALUES(consultant_code),"
                     + " procedure_date = VALUES(procedure_date),"
@@ -129,6 +130,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             } else {
                 ps.setTimestamp(col++, new java.sql.Timestamp(cds.getDateOfBirth().getTime()));
             }
+            ps.setBoolean(col++, cds.getWithheld());
             ps.setString(col++, cds.getConsultantCode());
 
             if (cds.getProcedureDate() == null) {

@@ -16,6 +16,7 @@ public class StagingCds implements Cloneable {
     private int cdsUpdateType;
     private String mrn;
     private String nhsNumber;
+    private Boolean withheld;
     private Date dateOfBirth;
     private String consultantCode;
     private Date procedureDate;
@@ -100,6 +101,10 @@ public class StagingCds implements Cloneable {
     public void setNhsNumber(String nhsNumber) {
         this.nhsNumber = nhsNumber;
     }
+
+    public Boolean getWithheld() {return withheld;}
+
+    public void setWithheld(Boolean withheld) {this.withheld = withheld;}
 
     public Date getDateOfBirth() {
         return dateOfBirth;
@@ -194,6 +199,7 @@ public class StagingCds implements Cloneable {
                 cdsUpdateType,
                 mrn,
                 nhsNumber,
+                withheld,
                 dateOfBirth,
                 consultantCode,
                 procedureDate,
@@ -217,6 +223,7 @@ public class StagingCds implements Cloneable {
                 ", cdsUpdateType=" + cdsUpdateType +
                 ", mrn='" + mrn + '\'' +
                 ", nhsNumber='" + nhsNumber + '\'' +
+                ", withheld='" + withheld + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
                 ", consultantCode='" + consultantCode + '\'' +
                 ", procedureDate=" + procedureDate +
