@@ -152,6 +152,8 @@ public class DalProvider {
         return new RdbmsSubscriberApiAuditDal();
     }
 
+    public static CernerProcedureMapDalI factoryCernerProcedureMapDal() { return new CernerProcedureMapDal();}
+
 
     /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {
