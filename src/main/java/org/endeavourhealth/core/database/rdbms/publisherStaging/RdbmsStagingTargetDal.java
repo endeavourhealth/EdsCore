@@ -2,7 +2,8 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingTarget;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingDiagnosisTarget;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
@@ -24,7 +25,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingTargetDal.class);
 
     @Override
-    public void processStagingForTarget(UUID exchangeId, UUID serviceId) throws Exception {
+    public void processStagingForTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         CallableStatement stmt = null;
@@ -51,8 +52,35 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
         }
     }
 
+    public void processStagingForTargetDiagnosis(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        CallableStatement stmt = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call process_diagnosis_staging_exchange(?)}";   //TODO - confirm final SP name
+            stmt = connection.prepareCall(sql);
+
+            entityManager.getTransaction().begin();
+
+            stmt.setString(1, exchangeId.toString());
+
+            stmt.execute();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            entityManager.close();
+        }
+    }
+
     @Override
-    public List<StagingTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
+    public List<StagingProcedureTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -72,46 +100,46 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             ps.setString(1, exchangeId.toString());
 
             ResultSet rs = ps.executeQuery();
-            List<StagingTarget> resultList = new ArrayList<>();
+            List<StagingProcedureTarget> resultList = new ArrayList<>();
             while (rs.next()) {
                 int col = 1;
-                StagingTarget stagingTarget = new StagingTarget();
-                stagingTarget.setUniqueId(rs.getString(col++));
-                stagingTarget.setDeleted(rs.getBoolean(col++));
-                stagingTarget.setPersonId(rs.getInt(col++));
-                stagingTarget.setEncounterId(rs.getInt(col++));
-                stagingTarget.setPerformerPersonnelId(rs.getInt(col++));
+                StagingProcedureTarget stagingProcedureTarget = new StagingProcedureTarget();
+                stagingProcedureTarget.setUniqueId(rs.getString(col++));
+                stagingProcedureTarget.setDeleted(rs.getBoolean(col++));
+                stagingProcedureTarget.setPersonId(rs.getInt(col++));
+                stagingProcedureTarget.setEncounterId(rs.getInt(col++));
+                stagingProcedureTarget.setPerformerPersonnelId(rs.getInt(col++));
 
                 java.sql.Timestamp ts = rs.getTimestamp(col++);
                 if (ts != null) {
-                    stagingTarget.setDtPerformed(new Date(ts.getTime()));
+                    stagingProcedureTarget.setDtPerformed(new Date(ts.getTime()));
                 }
                 ts = rs.getTimestamp(col++);
                 if (ts != null) {
-                    stagingTarget.setDtEnded(new Date(ts.getTime()));
+                    stagingProcedureTarget.setDtEnded(new Date(ts.getTime()));
                 }
-                stagingTarget.setFreeText(rs.getString(col++));
-                stagingTarget.setRecordeByPersonnelId(rs.getInt(col++));
+                stagingProcedureTarget.setFreeText(rs.getString(col++));
+                stagingProcedureTarget.setRecordedByPersonnelId(rs.getInt(col++));
 
                 ts = rs.getTimestamp(col++);
                 if (ts != null) {
-                    stagingTarget.setDtRecorded(new Date(ts.getTime()));
+                    stagingProcedureTarget.setDtRecorded(new Date(ts.getTime()));
                 }
-                stagingTarget.setProcedureType(rs.getString(col++));
-                stagingTarget.setProcedureTerm(rs.getString(col++));
-                stagingTarget.setProcedureCode(rs.getString(col++));
-                stagingTarget.setProcedureSeqNbr(rs.getInt(col++));
-                stagingTarget.setParentProcedureUniqueId(rs.getString(col++));
-                stagingTarget.setQualifier(rs.getString(col++));
-                stagingTarget.setLocation(rs.getString(col++));
-                stagingTarget.setSpecialty(rs.getString(col++));
+                stagingProcedureTarget.setProcedureType(rs.getString(col++));
+                stagingProcedureTarget.setProcedureTerm(rs.getString(col++));
+                stagingProcedureTarget.setProcedureCode(rs.getString(col++));
+                stagingProcedureTarget.setProcedureSeqNbr(rs.getInt(col++));
+                stagingProcedureTarget.setParentProcedureUniqueId(rs.getString(col++));
+                stagingProcedureTarget.setQualifier(rs.getString(col++));
+                stagingProcedureTarget.setLocation(rs.getString(col++));
+                stagingProcedureTarget.setSpecialty(rs.getString(col++));
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
-                    stagingTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                    stagingProcedureTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
                 }
 
-                resultList.add(stagingTarget);
+                resultList.add(stagingProcedureTarget);
             }
 
             return resultList;
@@ -122,51 +150,83 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             }
             entityManager.close();
         }
+    }
+
+    @Override
+    public List<StagingDiagnosisTarget> getTargetDiagnosis(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            //TODO - set final Diagnosis Target DB table structure here
+            String sql = "";
+//            String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, " +
+//                    " dt_performed, dt_ended, " +
+//                    " free_text, recorded_by_personnel_id, dt_recorded, procedure_type, procedure_term, procedure_code, "+
+//                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json "+
+//                    " from "+
+//                    " procedure_target "+
+//                    " where exchange_id = ?";
+
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, exchangeId.toString());
+
+            ResultSet rs = ps.executeQuery();
+            List<StagingDiagnosisTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+                StagingDiagnosisTarget stagingDiagnosisTarget = new StagingDiagnosisTarget();
+                stagingDiagnosisTarget.setUniqueId(rs.getString(col++));
+                stagingDiagnosisTarget.setDeleted(rs.getBoolean(col++));
+                stagingDiagnosisTarget.setPersonId(rs.getInt(col++));
+                stagingDiagnosisTarget.setEncounterId(rs.getInt(col++));
+                stagingDiagnosisTarget.setPerformerPersonnelId(rs.getInt(col++));
+
+                java.sql.Timestamp ts = rs.getTimestamp(col++);
+                if (ts != null) {
+                    stagingDiagnosisTarget.setDtPerformed(new Date(ts.getTime()));
+                }
+
+                //TODO - set remaining Diagnosis Target values
+//                ts = rs.getTimestamp(col++);
+//                if (ts != null) {
+//                    stagingProcedureTarget.setDtEnded(new Date(ts.getTime()));
+//                }
+//                stagingProcedureTarget.setFreeText(rs.getString(col++));
+//                stagingProcedureTarget.setRecordedByPersonnelId(rs.getInt(col++));
+//
+//                ts = rs.getTimestamp(col++);
+//                if (ts != null) {
+//                    stagingProcedureTarget.setDtRecorded(new Date(ts.getTime()));
+//                }
+//                stagingProcedureTarget.setProcedureType(rs.getString(col++));
+//                stagingProcedureTarget.setProcedureTerm(rs.getString(col++));
+//                stagingProcedureTarget.setProcedureCode(rs.getString(col++));
+//                stagingProcedureTarget.setProcedureSeqNbr(rs.getInt(col++));
+//                stagingProcedureTarget.setParentProcedureUniqueId(rs.getString(col++));
+//                stagingProcedureTarget.setQualifier(rs.getString(col++));
+//                stagingProcedureTarget.setLocation(rs.getString(col++));
+//                stagingProcedureTarget.setSpecialty(rs.getString(col++));
 
 
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    stagingDiagnosisTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                }
 
+                resultList.add(stagingDiagnosisTarget);
+            }
 
-//
-//        try {
-//            String sql = "select c"
-//                    + " from "
-//                    + " RdbmsStagingTarget c"
-//                    + " where c.exchangeId = :exchange_id";
-//
-//            Query query = entityManager.createQuery(sql, RdbmsStagingTarget.class)
-//                    .setParameter("exchange_id", exchangeId.toString());
-//
-//            List<RdbmsStagingTarget> resultList = query.getResultList();
-//
-//            return resultList
-//                    .stream()
-//                    .map(T -> {
-//                        try {
-//                            return new StagingTarget(T);
-//                        } catch (Exception e) {
-//                            return null;
-//                        }
-//                    })
-//                    .collect(Collectors.toList());
-//
-////            if (resultList.size() > 0) {
-////
-////                LOG.debug("Target Procedures: "+resultList.size()+" from resultList for exchangeId: "+exchangeId);
-////                List<StagingTarget> list = new ArrayList<>();
-////                for (RdbmsStagingTarget rdbmsStagingTarget : resultList) {
-////                    StagingTarget stagingTarget = new StagingTarget(rdbmsStagingTarget);
-////                    list.add(stagingTarget);
-////                    LOG.debug("EdsCore:  Added uniqueId:"+stagingTarget.getUniqueId()+" as hashCode: "+stagingTarget.hashCode()+" from rdbms uniqueId: "+rdbmsStagingTarget.getUniqueId());
-////                }
-////                return list;
-////            } else {
-////                return null;
-////            }
-//        }
-//        finally {
-//            if (entityManager.isOpen()) {
-//                entityManager.close();
-//            }
-//        }
+            return resultList;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
     }
 }

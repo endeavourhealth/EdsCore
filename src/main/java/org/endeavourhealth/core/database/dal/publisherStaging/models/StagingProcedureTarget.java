@@ -4,7 +4,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 
 import java.util.Date;
 
-public class StagingTarget {
+public class StagingProcedureTarget {
 
     private String exchangeId;
     private String uniqueId;
@@ -15,7 +15,7 @@ public class StagingTarget {
     private Date dtPerformed;
     private Date dtEnded;
     private String freeText;
-    private Integer recordeByPersonnelId;
+    private Integer recordedByPersonnelId;
     private Date dtRecorded;
     private String procedureType;
     private String procedureCode;
@@ -28,34 +28,7 @@ public class StagingTarget {
 
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingTarget() {}
-
-//    public StagingTarget(RdbmsStagingTarget proxy) throws Exception {
-//
-//        this.exchangeId = proxy.getExchangeId();
-//        this.uniqueId = proxy.getUniqueId();
-//        this.isDeleted = proxy.getIsDeleted();
-//        this.personId = proxy.getPersonId();
-//        this.encounterId = proxy.getEncounterId();
-//        this.performerPersonnelId = proxy.getPerformerPersonnelId();
-//        this.dtPerformed = proxy.getDtPerformed();
-//        this.dtEnded = proxy.getDtEnded();
-//        this.freeText = proxy.getFreeText();
-//        this.recordeByPersonnelId = proxy.getRecordByPersonnelId();
-//        this.dtRecorded = proxy.getDtRecorded();
-//        this.procedureType = proxy.getProcedureType();
-//        this.procedureCode = proxy.getProcedureCode();
-//        this.procedureTerm = proxy.getProcedureTerm();
-//        this.procedureSeqNbr = proxy.getProcedureSeqNbr();
-//        this.parentProcedureUniqueId = proxy.getParentProcedureUniqueId();
-//        this.qualifier = proxy.getQualifier();
-//        this.location = proxy.getLocation();
-//        this.specialty = proxy.getSpecialty();
-//
-//        if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
-//            this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
-//        }
-//    }
+    public StagingProcedureTarget() {}
 
 
     public String getExchangeId() {
@@ -130,12 +103,12 @@ public class StagingTarget {
         this.freeText = freeText;
     }
 
-    public Integer getRecordeByPersonnelId() {
-        return recordeByPersonnelId;
+    public Integer getRecordedByPersonnelId() {
+        return recordedByPersonnelId;
     }
 
-    public void setRecordeByPersonnelId(Integer recordeByPersonnelId) {
-        this.recordeByPersonnelId = recordeByPersonnelId;
+    public void setRecordedByPersonnelId(Integer recordeByPersonnelId) {
+        this.recordedByPersonnelId = recordeByPersonnelId;
     }
 
     public Date getDtRecorded() {
@@ -220,7 +193,7 @@ public class StagingTarget {
 
     @Override
     public String toString() {
-        return "StagingTarget{" +
+        return "StagingProcedureTarget{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", uniqueId=" + uniqueId +
                 ", isDeleted=" + isDeleted +
@@ -230,7 +203,7 @@ public class StagingTarget {
                 ", dtPerformed=" + dtPerformed +
                 ", dtEnded=" + dtEnded +
                 ", freeText='" + freeText + '\'' +
-                ", recordeByPersonnelId='" + recordeByPersonnelId + '\'' +
+                ", recordedByPersonnelId='" + recordedByPersonnelId + '\'' +
                 ", dtRecorded=" + dtRecorded +
                 ", procedureType='" + procedureType + '\'' +
                 ", procedureCode=" + procedureCode +
