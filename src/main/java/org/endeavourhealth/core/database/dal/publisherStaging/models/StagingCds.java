@@ -28,7 +28,8 @@ public class StagingCds implements Cloneable {
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingCds() {}
+    public StagingCds() {
+    }
 
     public String getExchangeId() {
         return exchangeId;
@@ -102,9 +103,13 @@ public class StagingCds implements Cloneable {
         this.nhsNumber = nhsNumber;
     }
 
-    public Boolean getWithheld() {return withheld;}
+    public Boolean getWithheld() {
+        return withheld;
+    }
 
-    public void setWithheld(Boolean withheld) {this.withheld = withheld;}
+    public void setWithheld(Boolean withheld) {
+        this.withheld = withheld;
+    }
 
     public Date getDateOfBirth() {
         return dateOfBirth;
