@@ -4,7 +4,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 
 import java.util.Date;
 
-public class StagingDiagnosisTarget {
+public class StagingConditionTarget {
 
     private String exchangeId;
     private String uniqueId;
@@ -14,11 +14,11 @@ public class StagingDiagnosisTarget {
     private Integer performerPersonnelId;
     private Date dtPerformed;
 
-    //TODO - add in remaining Diagnosis Target attributes
-
+    //TODO - add in remaining Condition/Diagnosis Target attributes
+    private Boolean isConfidential;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingDiagnosisTarget() {}
+    public StagingConditionTarget() {}
 
 
     public String getExchangeId() {
@@ -87,9 +87,17 @@ public class StagingDiagnosisTarget {
         this.audit = audit;
     }
 
+    public Boolean isConfidential() {
+        return isConfidential;
+    }
+
+    public void setConfidential(Boolean confidential) {
+        isConfidential = confidential;
+    }
+
     @Override
     public String toString() {
-        return "StagingProcedureTarget{" +
+        return "StagingConditionProcedureTarget{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", uniqueId=" + uniqueId +
                 ", isDeleted=" + isDeleted +
@@ -101,6 +109,7 @@ public class StagingDiagnosisTarget {
                 //TODO - add in remaining Diagnosis Target attribute refs
 
                 ", audit=" + audit +
+                ", is_confidential=" + isConfidential +
                 '}';
     }
 }

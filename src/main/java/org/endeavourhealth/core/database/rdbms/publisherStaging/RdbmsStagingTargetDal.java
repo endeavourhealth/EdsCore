@@ -2,7 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingDiagnosisTarget;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionTarget;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
@@ -52,7 +52,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
         }
     }
 
-    public void processStagingForTargetDiagnosis(UUID exchangeId, UUID serviceId) throws Exception {
+    public void processStagingForTargetConditions(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         CallableStatement stmt = null;
@@ -60,7 +60,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "{call process_diagnosis_staging_exchange(?)}";   //TODO - confirm final SP name
+            String sql = "{call process_condition_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
 
             entityManager.getTransaction().begin();
@@ -155,7 +155,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     }
 
     @Override
-    public List<StagingDiagnosisTarget> getTargetDiagnosis(UUID exchangeId, UUID serviceId) throws Exception {
+    public List<StagingConditionTarget> getTargetConditions(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -168,7 +168,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 //            String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, " +
 //                    " dt_performed, dt_ended, " +
 //                    " free_text, recorded_by_personnel_id, dt_recorded, procedure_type, procedure_term, procedure_code, "+
-//                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json "+
+//                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json, is_confidential "+
 //                    " from "+
 //                    " procedure_target "+
 //                    " where exchange_id = ?";
@@ -177,19 +177,19 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             ps.setString(1, exchangeId.toString());
 
             ResultSet rs = ps.executeQuery();
-            List<StagingDiagnosisTarget> resultList = new ArrayList<>();
+            List<StagingConditionTarget> resultList = new ArrayList<>();
             while (rs.next()) {
                 int col = 1;
-                StagingDiagnosisTarget stagingDiagnosisTarget = new StagingDiagnosisTarget();
-                stagingDiagnosisTarget.setUniqueId(rs.getString(col++));
-                stagingDiagnosisTarget.setDeleted(rs.getBoolean(col++));
-                stagingDiagnosisTarget.setPersonId(rs.getInt(col++));
-                stagingDiagnosisTarget.setEncounterId(rs.getInt(col++));
-                stagingDiagnosisTarget.setPerformerPersonnelId(rs.getInt(col++));
+                StagingConditionTarget stagingConditionTarget = new StagingConditionTarget();
+                stagingConditionTarget.setUniqueId(rs.getString(col++));
+                stagingConditionTarget.setDeleted(rs.getBoolean(col++));
+                stagingConditionTarget.setPersonId(rs.getInt(col++));
+                stagingConditionTarget.setEncounterId(rs.getInt(col++));
+                stagingConditionTarget.setPerformerPersonnelId(rs.getInt(col++));
 
                 java.sql.Timestamp ts = rs.getTimestamp(col++);
                 if (ts != null) {
-                    stagingDiagnosisTarget.setDtPerformed(new Date(ts.getTime()));
+                    stagingConditionTarget.setDtPerformed(new Date(ts.getTime()));
                 }
 
                 //TODO - set remaining Diagnosis Target values
@@ -216,10 +216,10 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
-                    stagingDiagnosisTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                    stagingConditionTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
                 }
 
-                resultList.add(stagingDiagnosisTarget);
+                resultList.add(stagingConditionTarget);
             }
 
             return resultList;

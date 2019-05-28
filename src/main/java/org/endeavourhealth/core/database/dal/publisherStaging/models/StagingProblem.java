@@ -24,8 +24,8 @@ public class StagingProblem {
     private String persistence;
     private String prognosis;
     private String vocab;
-    private String status;
-    private Date statusDtTm;
+    private String problemStatus;
+    private Date problemStatusDtTm;
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
@@ -146,13 +146,13 @@ public class StagingProblem {
 
     public void setPrognosis(String prognosis) { this.prognosis = prognosis; }
 
-    public String getStatus() { return status;}
+    public String getProblemStatus() { return problemStatus;}
 
-    public void setStatus( String status) { this.status = status; }
+    public void setProblemStatus( String problemStatus) { this.problemStatus = problemStatus; }
 
-    public Date getStatusDtTm() { return statusDtTm;}
+    public Date getProblemStatusDtTm() { return problemStatusDtTm;}
 
-    public void setStatusDtTm(Date statusDtTm) { this.statusDtTm = statusDtTm; }
+    public void setProblemStatusDtTm(Date problemStatusDtTm) { this.problemStatusDtTm = problemStatusDtTm; }
 
     public Integer getLookupConsultantPersonnelId() {
         return lookupConsultantPersonnelId;
@@ -188,8 +188,8 @@ public class StagingProblem {
                 persistence,
                 prognosis,
                 vocab,
-                status,
-                statusDtTm,
+                problemStatus,
+                problemStatusDtTm,
                 lookupConsultantPersonnelId
         );
     }

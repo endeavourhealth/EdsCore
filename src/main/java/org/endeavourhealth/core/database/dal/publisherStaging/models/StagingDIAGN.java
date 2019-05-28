@@ -21,9 +21,9 @@ public class StagingDIAGN {
     private String diagnosisNotes;
     private String diagnosisType;
     private Integer diagnosisSeqNo;
+    private Integer diagnosisPersonnelId;
     private Integer lookupPersonId;
     private String lookupMrn;
-    private Integer lookupResponsiblePersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingDIAGN() {
@@ -157,12 +157,12 @@ public class StagingDIAGN {
         this.lookupMrn = lookupMrn;
     }
 
-    public Integer getLookupResponsiblePersonnelId() {
-        return lookupResponsiblePersonnelId;
+    public Integer getDiagnosisPersonnelId() {
+        return diagnosisPersonnelId;
     }
 
-    public void setLookupResponsiblePersonnelId(Integer lookupResponsiblePersonnelId) {
-        this.lookupResponsiblePersonnelId = lookupResponsiblePersonnelId;
+    public void setDiagnosisPersonnelId(Integer diagnosisPersonnelId) {
+        this.diagnosisPersonnelId = diagnosisPersonnelId;
     }
 
     public ResourceFieldMappingAudit getAudit() {
@@ -188,9 +188,9 @@ public class StagingDIAGN {
                             diagnosisNotes,
                             diagnosisType,
                             diagnosisSeqNo,
+                            diagnosisPersonnelId,
                             lookupPersonId,
-                            lookupMrn,
-                            lookupResponsiblePersonnelId);
+                            lookupMrn);
     }
 
 
@@ -211,12 +211,10 @@ public class StagingDIAGN {
                 ", diagnosisNotes='" + diagnosisNotes + '\'' +
                 ", diagnosisType='" + diagnosisType + '\'' +
                 ", diagnosisSeqNo=" + diagnosisSeqNo +
+                ", diagnosisPersonnelId='" + diagnosisPersonnelId + '\'' +
                 ", lookupPersonId=" + lookupPersonId +
                 ", lookupMrn='" + lookupMrn + '\'' +
-                ", lookupResponsiblePersonnelId='" + lookupResponsiblePersonnelId + '\'' +
                 ", audit=" + audit +
                 '}';
     }
 }
-
-
