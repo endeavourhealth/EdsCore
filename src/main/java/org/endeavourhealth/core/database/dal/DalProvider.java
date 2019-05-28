@@ -438,6 +438,12 @@ public class DalProvider {
         return new RdbmsStagingSURCPDal();
     }
 
+    public static StagingDiagnosisDalI factoryBartsStagingDiagnosisDalI() { return new RdbmsStagingDiagnosisDal(); }
+
+    public static StagingDIAGNDalI factoryBartsStagingDIAGNDalI() { return new RdbmsStagingDIAGNDal(); }
+
+    public static StagingProblemDalI factoryBartsStagingProblemDalI() { return new RdbmsStagingProblemDal(); }
+
     public static StagingTargetDalI factoryStagingTargetDalI() {
         return new RdbmsStagingTargetDal();
     }
