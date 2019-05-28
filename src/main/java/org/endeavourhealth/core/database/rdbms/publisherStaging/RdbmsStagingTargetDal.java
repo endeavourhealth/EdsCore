@@ -91,7 +91,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, " +
                     " dt_performed, dt_ended, " +
                     " free_text, recorded_by_personnel_id, dt_recorded, procedure_type, procedure_term, procedure_code, "+
-                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json "+
+                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json, is_confidential "+
                     " from "+
                     " procedure_target "+
                     " where exchange_id = ?";
@@ -138,6 +138,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (!Strings.isNullOrEmpty(auditJson)) {
                     stagingProcedureTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
                 }
+
+                stagingProcedureTarget.setConfidential(rs.getBoolean(col++));
 
                 resultList.add(stagingProcedureTarget);
             }

@@ -25,7 +25,7 @@ public class StagingProcedureTarget {
     private String qualifier;
     private String location;
     private String specialty;
-
+    private Boolean isConfidential;
     private ResourceFieldMappingAudit audit = null;
 
     public StagingProcedureTarget() {}
@@ -191,6 +191,14 @@ public class StagingProcedureTarget {
         this.audit = audit;
     }
 
+    public Boolean isConfidential() {
+        return isConfidential;
+    }
+
+    public void setConfidential(Boolean confidential) {
+        isConfidential = confidential;
+    }
+
     @Override
     public String toString() {
         return "StagingProcedureTarget{" +
@@ -214,6 +222,7 @@ public class StagingProcedureTarget {
                 ", location=" + location +
                 ", speciality=" + specialty +
                 ", audit=" + audit +
+                ", isConfidential=" + isConfidential +
                 '}';
     }
 }
