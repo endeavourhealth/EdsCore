@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.reference;
 
+import com.microsoft.sqlserver.jdbc.StringUtils;
 import org.endeavourhealth.core.database.dal.reference.CernerProcedureMapDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
@@ -12,7 +13,7 @@ import java.sql.ResultSet;
 public class CernerProcedureMapDal implements CernerProcedureMapDalI {
 //TODO Quick hack to enable us to close DAB-117 to map Barts SURCP proc codes as best we can. Needs an IM solution
     @Override
-    public String getSnomedFromCernerProc(Integer cernerProc) throws Exception {
+    public Long getSnomedFromCernerProc(Integer cernerProc) throws Exception {
 
 
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
@@ -34,7 +35,10 @@ public class CernerProcedureMapDal implements CernerProcedureMapDalI {
             if (rs.next()) {
                 String target = rs.getString(1);
                 if (target.startsWith("SN_")) {  //Check it's snomed
-                    return target.substring(3);
+                    String snomedStr = target.substring(3);
+                    if (StringUtils.isNumeric(snomedStr)) { // We need this for enterprise which expects a Long.
+                        return Long.parseLong((snomedStr));
+                    }
                 }
             }
             return null;
