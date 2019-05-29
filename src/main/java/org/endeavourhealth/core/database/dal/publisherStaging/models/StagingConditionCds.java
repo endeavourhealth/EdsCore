@@ -5,7 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import java.util.Date;
 import java.util.Objects;
 
-public class StagingCds implements Cloneable {
+public class StagingConditionCds implements Cloneable {
 
     private String exchangeId;
     private Date dtReceived;
@@ -20,17 +20,16 @@ public class StagingCds implements Cloneable {
     private Date dateOfBirth;
     private String consultantCode;
 
-    private Date procedureDate;
-    private String procedureOpcsCode;
-    private int procedureSeqNbr;
-    private String primaryProcedureOpcsCode;
-    private String lookupProcedureOpcsTerm;
+    private String diagnosisIcdCode;
+    private int diagnosisSeqNbr;
+    private String primaryDiagnosisIcdCode;
+    private String lookupDiagnosisIcdTerm;
 
     private Integer lookupPersonId;
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingCds() {
+    public StagingConditionCds() {
     }
 
     public String getExchangeId() {
@@ -129,44 +128,34 @@ public class StagingCds implements Cloneable {
         this.consultantCode = consultantCode;
     }
 
-    public Date getProcedureDate() {
-        return procedureDate;
+    public String getDiagnosisIcdCode() {
+        return diagnosisIcdCode;
     }
 
-    public void setProcedureDate(Date procedureDate) {
-        this.procedureDate = procedureDate;
+    public void setDiagnosisIcdCode(String diagnosisIcdCode) { this.diagnosisIcdCode = diagnosisIcdCode; }
+
+    public int getDiagnosisSeqNbr() {
+        return diagnosisSeqNbr;
     }
 
-    public String getProcedureOpcsCode() {
-        return procedureOpcsCode;
+    public void setDiagnosisSeqNbr(int diagnosisSeqNbr) {
+        this.diagnosisSeqNbr = diagnosisSeqNbr;
     }
 
-    public void setProcedureOpcsCode(String procedureOpcsCode) {
-        this.procedureOpcsCode = procedureOpcsCode;
+    public String getPrimaryDiagnosisIcdCode() {
+        return primaryDiagnosisIcdCode;
     }
 
-    public int getProcedureSeqNbr() {
-        return procedureSeqNbr;
+    public void setPrimaryDiagnosisIcdCodee(String primaryDiagnosisIcdCode) {
+        this.primaryDiagnosisIcdCode = primaryDiagnosisIcdCode;
     }
 
-    public void setProcedureSeqNbr(int procedureSeqNbr) {
-        this.procedureSeqNbr = procedureSeqNbr;
+    public String getLookupDiagnosisIcdTerm() {
+        return lookupDiagnosisIcdTerm;
     }
 
-    public String getPrimaryProcedureOpcsCode() {
-        return primaryProcedureOpcsCode;
-    }
-
-    public void setPrimaryProcedureOpcsCode(String primaryProcedureOpcsCode) {
-        this.primaryProcedureOpcsCode = primaryProcedureOpcsCode;
-    }
-
-    public String getLookupProcedureOpcsTerm() {
-        return lookupProcedureOpcsTerm;
-    }
-
-    public void setLookupProcedureOpcsTerm(String lookupProcedureOpcsTerm) {
-        this.lookupProcedureOpcsTerm = lookupProcedureOpcsTerm;
+    public void setLookupDiagnosisIcdTerm(String lookupDiagnosisIcdTerm) {
+        this.lookupDiagnosisIcdTerm = lookupDiagnosisIcdTerm;
     }
 
     public Integer getLookupPersonId() {
@@ -195,8 +184,8 @@ public class StagingCds implements Cloneable {
 
 
 
-    public StagingCds clone() throws CloneNotSupportedException {
-        return (StagingCds) super.clone();
+    public StagingConditionCds clone() throws CloneNotSupportedException {
+        return (StagingConditionCds) super.clone();
     }
 
     @Override
@@ -211,10 +200,9 @@ public class StagingCds implements Cloneable {
                 withheld,
                 dateOfBirth,
                 consultantCode,
-                procedureDate,
-                procedureOpcsCode,
-                primaryProcedureOpcsCode,
-                lookupProcedureOpcsTerm,
+                diagnosisIcdCode,
+                primaryDiagnosisIcdCode,
+                lookupDiagnosisIcdTerm,
                 lookupPersonId,
                 lookupConsultantPersonnelId);
     }
@@ -235,11 +223,10 @@ public class StagingCds implements Cloneable {
                 ", withheld='" + withheld + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
                 ", consultantCode='" + consultantCode + '\'' +
-                ", procedureDate=" + procedureDate +
-                ", procedureOpcsCode='" + procedureOpcsCode + '\'' +
-                ", procedureSeqNbr=" + procedureSeqNbr +
-                ", primaryProcedureOpcsCode='" + primaryProcedureOpcsCode + '\'' +
-                ", lookupProcedureOpcsTerm='" + lookupProcedureOpcsTerm + '\'' +
+                ", diagnosisIcdCode='" + diagnosisIcdCode + '\'' +
+                ", diagnosisSeqNbr=" + diagnosisSeqNbr +
+                ", primaryDiagnosisIcdCode='" + primaryDiagnosisIcdCode + '\'' +
+                ", lookupDiagnosisIcdTerm='" + lookupDiagnosisIcdTerm + '\'' +
                 ", lookupPersonId=" + lookupPersonId +
                 ", lookupConsultantPersonnelId=" + lookupConsultantPersonnelId +
                 ", audit=" + audit +
