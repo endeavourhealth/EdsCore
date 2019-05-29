@@ -24,6 +24,7 @@ public class StagingDiagnosis {
     private String notes;
     private String confirmation;
     private String qualifier;
+    private String location;
 
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
@@ -153,6 +154,10 @@ public class StagingDiagnosis {
 
     public void setQualifier( String qualifier) { this.qualifier = qualifier; }
 
+    public String getLocation() { return location;}
+
+    public void setLocation( String location) { this.location = location; }
+
     public Integer getLookupConsultantPersonnelId() {
         return lookupConsultantPersonnelId;
     }
@@ -187,6 +192,7 @@ public class StagingDiagnosis {
                 notes,
                 qualifier,
                 confirmation,
+                location,
                 lookupConsultantPersonnelId
         );
     }
