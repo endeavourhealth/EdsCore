@@ -23,7 +23,6 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="enabled" type="{}protocolEnabled"/>
  *         &lt;element name="patientConsent" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="cohort" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
- *         &lt;element name="cohortOdsCode" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded" minOccurs="0"/>
  *         &lt;element name="dataSet" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *         &lt;element name="serviceContract" type="{}serviceContract" maxOccurs="unbounded" minOccurs="0"/>
  *       &lt;/sequence>
@@ -39,7 +38,6 @@ import javax.xml.bind.annotation.XmlType;
     "enabled",
     "patientConsent",
     "cohort",
-    "cohortOdsCode",
     "dataSet",
     "serviceContract"
 })
@@ -51,7 +49,6 @@ public class Protocol {
     @XmlElement(required = true)
     protected String patientConsent;
     protected String cohort;
-    protected List<String> cohortOdsCode;
     protected String dataSet;
     protected List<ServiceContract> serviceContract;
 
@@ -125,35 +122,6 @@ public class Protocol {
      */
     public void setCohort(String value) {
         this.cohort = value;
-    }
-
-    /**
-     * Gets the value of the cohortOdsCode property.
-     * 
-     * <p>
-     * This accessor method returns a reference to the live list,
-     * not a snapshot. Therefore any modification you make to the
-     * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the cohortOdsCode property.
-     * 
-     * <p>
-     * For example, to add a new item, do as follows:
-     * <pre>
-     *    getCohortOdsCode().add(newItem);
-     * </pre>
-     * 
-     * 
-     * <p>
-     * Objects of the following type(s) are allowed in the list
-     * {@link String }
-     * 
-     * 
-     */
-    public List<String> getCohortOdsCode() {
-        if (cohortOdsCode == null) {
-            cohortOdsCode = new ArrayList<String>();
-        }
-        return this.cohortOdsCode;
     }
 
     /**
