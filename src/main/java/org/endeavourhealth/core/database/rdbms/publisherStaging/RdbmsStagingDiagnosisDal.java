@@ -80,8 +80,8 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
             String sql = "INSERT INTO condition_diagnosis "
                     + " (exchange_id, dt_received, record_checksum, diagnosis_id, person_id, active_ind, mrn, "
                     + " encounter_id, diag_dt_tm, diag_type, diag_prnsl, vocab, diag_code, diag_term, diag_notes, "
-                    + " qualifier, confirmation, lookup_consultant_personnel_id, location, audit_json) "
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " confirmation, classification, rank, axis, location, lookup_consultant_personnel_id) "
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -98,8 +98,10 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
                     + " diag_code = VALUES(diag_code), "
                     + " diag_term = VALUES(diag_term), "
                     + " diag_notes = VALUES(diag_notes), "
-                    + " qualifier = VALUES(qualifier), "
                     + " confirmation = VALUES(confirmation), "
+                    + " classification = VALUES(classification), "
+                    + " rank = VALUES(rank), "
+                    + " axis = VALUES(axis), "
                     + " location = VALUES(location), "
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id), "
                     + " audit_json = VALUES(audit_json)";
@@ -130,16 +132,28 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
                 ps.setString(col++, stagingDiagnosis.getNotes());
             }
 
-            if (stagingDiagnosis.getQualifier() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getQualifier());
-            }
-
-            if (stagingDiagnosis.getQualifier() == null) {
+            if (stagingDiagnosis.getConfirmation() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, stagingDiagnosis.getConfirmation());
+            }
+
+            if (stagingDiagnosis.getClassification() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingDiagnosis.getClassification());
+            }
+
+            if (stagingDiagnosis.getRanking() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingDiagnosis.getRanking());
+            }
+
+            if (stagingDiagnosis.getAxis() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingDiagnosis.getAxis());
             }
 
             if (stagingDiagnosis.getLocation() == null) {

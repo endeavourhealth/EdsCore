@@ -79,9 +79,9 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
 
             String sql = "INSERT INTO condition_problem "
                     + " (exchange_id, dt_received, record_checksum, problem_id, person_id, mrn, onset_dt_tm, updated_by, "
-                    + " problem_code, problem_term, problem_txt, qualifier, classification, confirmation, persistence, "
-                    + " prognosis, vocab, problem_status, problem_status_date, lookup_consultant_personnel_id, audit_json) "
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " problem_code, problem_term, problem_txt, classification, confirmation, ranking, "
+                    + " vocab, problem_status, problem_status_date, location, lookup_consultant_personnel_id, audit_json) "
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -94,14 +94,13 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                     + " problem_code = VALUES(problem_code), "
                     + " problem_term = VALUES(problem_term), "
                     + " problem_txt = VALUES(problem_txt), "
-                    + " qualifier = VALUES(qualifier), "
                     + " classification = VALUES(classification), "
                     + " confirmation = VALUES(confirmation), "
-                    + " persistence = VALUES(persistence), "
-                    + " prognosis = VALUES(prognosis), "
+                    + " ranking = VALUES(ranking), "
                     + " vocab = VALUES(vocab), "
                     + " problem_status = VALUES(problem_status), "
                     + " problem_status_date = VALUES(problem_status_date), "
+                    + " location = VALUES(location), "
                     + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id), "
                     + " audit_json = VALUES(audit_json)";
 
@@ -152,12 +151,6 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                 ps.setString(col++, stagingProblem.getProblemTxt());
             }
 
-            if (stagingProblem.getQualifier() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getQualifier());
-            }
-
             if (stagingProblem.getClassification() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
@@ -170,16 +163,10 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                 ps.setString(col++, stagingProblem.getConfirmation());
             }
 
-            if (stagingProblem.getPersistence() == null) {
+            if (stagingProblem.getRanking() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
-                ps.setString(col++, stagingProblem.getPersistence());
-            }
-
-            if (stagingProblem.getPrognosis() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getPrognosis());
+                ps.setString(col++, stagingProblem.getRanking());
             }
 
             if (stagingProblem.getVocab() == null) {
@@ -198,6 +185,12 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                 ps.setNull(col++, Types.TIMESTAMP);
             } else {
                 ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getProblemStatusDtTm().getTime()));
+            }
+
+            if (stagingProblem.getLocation() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingProblem.getLocation());
             }
 
             if (stagingProblem.getLookupConsultantPersonnelId() == null) {

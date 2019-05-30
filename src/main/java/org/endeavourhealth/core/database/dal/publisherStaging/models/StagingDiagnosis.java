@@ -23,10 +23,12 @@ public class StagingDiagnosis {
     private String diagTerm;
     private String notes;
     private String confirmation;
-    private String qualifier;
+    private String classification;
+    private String ranking;
+    private String axis;
     private String location;
-
     private Integer lookupConsultantPersonnelId;
+
     private ResourceFieldMappingAudit audit = null;
 
     public StagingDiagnosis() {
@@ -150,9 +152,17 @@ public class StagingDiagnosis {
 
     public void setConfirmation( String confirmation) { this.confirmation = confirmation; }
 
-    public String getQualifier() { return qualifier;}
+    public String getClassification() { return classification;}
 
-    public void setQualifier( String qualifier) { this.qualifier = qualifier; }
+    public void setClassification( String classification) { this.classification = classification; }
+
+    public String getRanking() { return ranking;}
+
+    public void setRanking( String rank) { this.ranking = ranking; }
+
+    public String getAxis() { return axis;}
+
+    public void setAxis( String axis) { this.axis = axis; }
 
     public String getLocation() { return location;}
 
@@ -190,7 +200,9 @@ public class StagingDiagnosis {
                 diagCd,
                 diagTerm,
                 notes,
-                qualifier,
+                classification,
+                ranking,
+                axis,
                 confirmation,
                 location,
                 lookupConsultantPersonnelId

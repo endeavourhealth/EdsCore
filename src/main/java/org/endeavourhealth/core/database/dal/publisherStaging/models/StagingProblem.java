@@ -18,15 +18,15 @@ public class StagingProblem {
     private String problemCd;
     private String problemTerm;
     private String problemTxt;
-    private String qualifier;
     private String classification;
     private String confirmation;
-    private String persistence;
-    private String prognosis;
+    private String ranking;
     private String vocab;
     private String problemStatus;
     private Date problemStatusDtTm;
+    private String location;
     private Integer lookupConsultantPersonnelId;
+
     private ResourceFieldMappingAudit audit = null;
 
     public StagingProblem() {
@@ -134,17 +134,9 @@ public class StagingProblem {
 
     public void setConfirmation(String confirmation) { this.confirmation = confirmation; }
 
-    public String getPersistence() { return persistence;}
+    public String getRanking() { return ranking;}
 
-    public void setPersistence(String persistence) { this.persistence = persistence; }
-
-    public String getQualifier() { return qualifier;}
-
-    public void setQualifier(String qualifier) { this.qualifier = qualifier; }
-
-    public String getPrognosis() { return prognosis;}
-
-    public void setPrognosis(String prognosis) { this.prognosis = prognosis; }
+    public void setRanking( String rank) { this.ranking = ranking; }
 
     public String getProblemStatus() { return problemStatus;}
 
@@ -153,6 +145,10 @@ public class StagingProblem {
     public Date getProblemStatusDtTm() { return problemStatusDtTm;}
 
     public void setProblemStatusDtTm(Date problemStatusDtTm) { this.problemStatusDtTm = problemStatusDtTm; }
+
+    public String getLocation() { return location;}
+
+    public void setLocation( String location) { this.location = location; }
 
     public Integer getLookupConsultantPersonnelId() {
         return lookupConsultantPersonnelId;
@@ -182,14 +178,13 @@ public class StagingProblem {
                 problemCd,
                 problemTerm,
                 problemTxt,
-                qualifier,
                 classification,
                 confirmation,
-                persistence,
-                prognosis,
+                ranking,
                 vocab,
                 problemStatus,
                 problemStatusDtTm,
+                location,
                 lookupConsultantPersonnelId
         );
     }
