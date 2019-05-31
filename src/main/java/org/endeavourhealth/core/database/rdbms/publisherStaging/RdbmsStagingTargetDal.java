@@ -163,15 +163,13 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            //TODO - set final Diagnosis Target DB table structure here
-            String sql = "";
-//            String sql = "select  unique_id, is_delete, person_id, encounter_id, performer_personnel_id, " +
-//                    " dt_performed, dt_ended, " +
-//                    " free_text, recorded_by_personnel_id, dt_recorded, procedure_type, procedure_term, procedure_code, "+
-//                    " sequence_number, parent_procedure_unique_id, qualifier, location, specialty, audit_json, is_confidential "+
-//                    " from "+
-//                    " procedure_target "+
-//                    " where exchange_id = ?";
+            String sql = "select unique_id, is_delete, person_id, encounter_id, performer_personnel_id, dt_performed, " +
+                    " condition_code_type, condition_code, condition_term, condition_type, free_text, sequence_number, "+
+                    " parent_condition_unique_id, classification, confirmation, problem_status, ranking, axis, location, " +
+                    " audit_json, is_confidential "+
+                    " from "+
+                    " condition_target "+
+                    " where exchange_id = ?";
 
             ps = connection.prepareStatement(sql);
             ps.setString(1, exchangeId.toString());
@@ -192,32 +190,26 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingConditionTarget.setDtPerformed(new Date(ts.getTime()));
                 }
 
-                //TODO - set remaining Diagnosis Target values
-//                ts = rs.getTimestamp(col++);
-//                if (ts != null) {
-//                    stagingProcedureTarget.setDtEnded(new Date(ts.getTime()));
-//                }
-//                stagingProcedureTarget.setFreeText(rs.getString(col++));
-//                stagingProcedureTarget.setRecordedByPersonnelId(rs.getInt(col++));
-//
-//                ts = rs.getTimestamp(col++);
-//                if (ts != null) {
-//                    stagingProcedureTarget.setDtRecorded(new Date(ts.getTime()));
-//                }
-//                stagingProcedureTarget.setProcedureType(rs.getString(col++));
-//                stagingProcedureTarget.setProcedureTerm(rs.getString(col++));
-//                stagingProcedureTarget.setProcedureCode(rs.getString(col++));
-//                stagingProcedureTarget.setProcedureSeqNbr(rs.getInt(col++));
-//                stagingProcedureTarget.setParentProcedureUniqueId(rs.getString(col++));
-//                stagingProcedureTarget.setQualifier(rs.getString(col++));
-//                stagingProcedureTarget.setLocation(rs.getString(col++));
-//                stagingProcedureTarget.setSpecialty(rs.getString(col++));
-
+                stagingConditionTarget.setConditionType(rs.getString(col++));
+                stagingConditionTarget.setConditionCode(rs.getString(col++));
+                stagingConditionTarget.setConditionTerm(rs.getString(col++));
+                stagingConditionTarget.setConditionType(rs.getString(col++));
+                stagingConditionTarget.setFreeText(rs.getString(col++));
+                stagingConditionTarget.setSequenceNumber(rs.getInt(col++));
+                stagingConditionTarget.setParentConditionUniqueId(rs.getString(col++));
+                stagingConditionTarget.setClassification(rs.getString(col++));
+                stagingConditionTarget.setConfirmation(rs.getString(col++));
+                stagingConditionTarget.setProblemStatus(rs.getString(col++));
+                stagingConditionTarget.setRanking(rs.getString(col++));
+                stagingConditionTarget.setAxis(rs.getString(col++));
+                stagingConditionTarget.setLocation(rs.getString(col++));
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
                     stagingConditionTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
                 }
+
+                stagingConditionTarget.setConfidential(rs.getBoolean(col++));
 
                 resultList.add(stagingConditionTarget);
             }

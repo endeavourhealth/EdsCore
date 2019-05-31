@@ -79,9 +79,9 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
 
             String sql = "INSERT INTO condition_problem "
                     + " (exchange_id, dt_received, record_checksum, problem_id, person_id, mrn, onset_dt_tm, updated_by, "
-                    + " problem_code, problem_term, problem_txt, classification, confirmation, ranking, "
-                    + " vocab, problem_status, problem_status_date, location, lookup_consultant_personnel_id, audit_json) "
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " vocab, problem_code, problem_term, problem_txt, classification, confirmation, ranking, axis, "
+                    + " problem_status, problem_status_date, location, lookup_consultant_personnel_id, audit_json) "
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -91,13 +91,14 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                     + " mrn = VALUES(mrn), "
                     + " onset_dt_tm = VALUES(onset_dt_tm), "
                     + " updated_by = VALUES(updated_by), "
+                    + " vocab = VALUES(vocab), "
                     + " problem_code = VALUES(problem_code), "
                     + " problem_term = VALUES(problem_term), "
                     + " problem_txt = VALUES(problem_txt), "
                     + " classification = VALUES(classification), "
                     + " confirmation = VALUES(confirmation), "
                     + " ranking = VALUES(ranking), "
-                    + " vocab = VALUES(vocab), "
+                    + " axis = VALUES(axis), "
                     + " problem_status = VALUES(problem_status), "
                     + " problem_status_date = VALUES(problem_status_date), "
                     + " location = VALUES(location), "
@@ -169,6 +170,11 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                 ps.setString(col++, stagingProblem.getRanking());
             }
 
+            if (stagingProblem.getAxis() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingProblem.getAxis());
+            }
             if (stagingProblem.getVocab() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {

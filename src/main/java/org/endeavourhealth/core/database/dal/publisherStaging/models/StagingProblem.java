@@ -15,13 +15,14 @@ public class StagingProblem {
     private String mrn;
     private Date onsetDtTm;
     private String updatedBy;
+    private String vocab;
     private String problemCd;
     private String problemTerm;
     private String problemTxt;
     private String classification;
     private String confirmation;
     private String ranking;
-    private String vocab;
+    private String axis;
     private String problemStatus;
     private Date problemStatusDtTm;
     private String location;
@@ -138,6 +139,10 @@ public class StagingProblem {
 
     public void setRanking( String rank) { this.ranking = ranking; }
 
+    public String getAxis() { return axis;}
+
+    public void setAxis( String axis) { this.axis = axis; }
+
     public String getProblemStatus() { return problemStatus;}
 
     public void setProblemStatus( String problemStatus) { this.problemStatus = problemStatus; }
@@ -175,13 +180,14 @@ public class StagingProblem {
                 mrn,
                 onsetDtTm,
                 updatedBy,
+                vocab,
                 problemCd,
                 problemTerm,
                 problemTxt,
                 classification,
                 confirmation,
                 ranking,
-                vocab,
+                axis,
                 problemStatus,
                 problemStatusDtTm,
                 location,

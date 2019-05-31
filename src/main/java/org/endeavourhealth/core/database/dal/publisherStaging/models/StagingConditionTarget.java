@@ -13,8 +13,20 @@ public class StagingConditionTarget {
     private Integer encounterId;
     private Integer performerPersonnelId;
     private Date dtPerformed;
+    private String conditionCodeType;
+    private String conditionCode;
+    private String conditionTerm;
+    private String conditionType;
+    private String freeText;
+    private Integer sequenceNumber;
+    private String parentConditionUniqueId;
+    private String classification;
+    private String confirmation;
+    private String problemStatus;
+    private String ranking;
+    private String axis;
+    private String location;
 
-    //TODO - add in remaining Condition/Diagnosis Target attributes
     private Boolean isConfidential;
     private ResourceFieldMappingAudit audit = null;
 
@@ -77,7 +89,109 @@ public class StagingConditionTarget {
         this.dtPerformed = dtPerformed;
     }
 
-    //TODO - add in remaining attribute getter and setter methods
+    public String getConditionCodeType() {
+        return conditionCodeType;
+    }
+
+    public void setConditionCodeType(String conditionCodeType) {
+        this.conditionCodeType = conditionCodeType;
+    }
+
+    public String getConditionCode() {
+        return conditionCode;
+    }
+
+    public void setConditionCode(String conditionCode) {
+        this.conditionCode = conditionCode;
+    }
+
+    public String getConditionTerm() {
+        return conditionTerm;
+    }
+
+    public void setConditionTerm(String conditionTerm) {
+        this.conditionTerm = conditionTerm;
+    }
+
+    public String getConditionType() {
+        return conditionType;
+    }
+
+    public void setConditionType(String conditionType) {
+        this.conditionType = conditionType;
+    }
+
+    public String getFreeText() {
+        return freeText;
+    }
+
+    public void setFreeText (String freeText) {
+        this.freeText = freeText;
+    }
+
+    public void setSequenceNumber(Integer sequenceNumber) {
+        this.sequenceNumber = sequenceNumber;
+    }
+
+    public Integer getSequenceNumber() {
+        return sequenceNumber;
+    }
+
+    public void setParentConditionUniqueId(String parentConditionUniqueId) {
+        this.parentConditionUniqueId = parentConditionUniqueId;
+    }
+
+    public String getParentConditionUniqueId() {
+        return parentConditionUniqueId;
+    }
+
+    public void setClassification(String classification) {
+        this.classification = classification;
+    }
+
+    public String getClassification() {
+        return classification;
+    }
+
+    public void setConfirmation(String confirmation) {
+        this.confirmation = confirmation;
+    }
+
+    public String getConfirmation() {
+        return confirmation;
+    }
+
+    public void setProblemStatus(String problemStatus) {
+        this.problemStatus = problemStatus;
+    }
+
+    public String getProblemStatus() {
+        return problemStatus;
+    }
+
+    public void setRanking(String ranking) {
+        this.ranking = ranking;
+    }
+
+    public String getRanking() {
+        return ranking;
+    }
+
+    public void setAxis(String axis) {
+        this.axis = axis;
+    }
+
+    public String getAxis() {
+        return axis;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public String getLocation() {
+        return location;
+    }
 
     public ResourceFieldMappingAudit getAudit() {
         return audit;
@@ -97,7 +211,7 @@ public class StagingConditionTarget {
 
     @Override
     public String toString() {
-        return "StagingConditionProcedureTarget{" +
+        return "StagingProcedureTarget{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", uniqueId=" + uniqueId +
                 ", isDeleted=" + isDeleted +
@@ -105,11 +219,21 @@ public class StagingConditionTarget {
                 ", encounterId='" + encounterId + '\'' +
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
                 ", dtPerformed=" + dtPerformed +
-
-                //TODO - add in remaining Diagnosis Target attribute refs
-
+                ", conditionCodeType=" + conditionCodeType +
+                ", conditionCode='" + conditionCode + '\'' +
+                ", conditionTerm='" + conditionTerm + '\'' +
+                ", conditionType='" + conditionType + '\'' +
+                ", freeText=" + freeText +
+                ", sequenceNumber='" + sequenceNumber + '\'' +
+                ", parentConditionUniqueId=" + parentConditionUniqueId +
+                ", classification='" + classification + '\'' +
+                ", confirmation='" + confirmation + '\'' +
+                ", problemStatus=" + problemStatus +
+                ", ranking='" + ranking + '\'' +
+                ", axis='" + axis + '\'' +
+                ", location=" + location +
                 ", audit=" + audit +
-                ", is_confidential=" + isConfidential +
+                ", isConfidential=" + isConfidential +
                 '}';
     }
 }
