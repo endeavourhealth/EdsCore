@@ -106,41 +106,69 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 StagingProcedureTarget stagingProcedureTarget = new StagingProcedureTarget();
                 stagingProcedureTarget.setUniqueId(rs.getString(col++));
                 stagingProcedureTarget.setDeleted(rs.getBoolean(col++));
-                stagingProcedureTarget.setPersonId(rs.getInt(col++));
-                stagingProcedureTarget.setEncounterId(rs.getInt(col++));
-                stagingProcedureTarget.setPerformerPersonnelId(rs.getInt(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setEncounterId(encounterId);
+                }
+
+                int performerId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setPerformerPersonnelId(performerId);
+                }
 
                 java.sql.Timestamp ts = rs.getTimestamp(col++);
-                if (ts != null) {
+                if (!rs.wasNull()) {
                     stagingProcedureTarget.setDtPerformed(new Date(ts.getTime()));
                 }
-                ts = rs.getTimestamp(col++);
-                if (ts != null) {
-                    stagingProcedureTarget.setDtEnded(new Date(ts.getTime()));
-                }
-                stagingProcedureTarget.setFreeText(rs.getString(col++));
-                stagingProcedureTarget.setRecordedByPersonnelId(rs.getInt(col++));
 
                 ts = rs.getTimestamp(col++);
-                if (ts != null) {
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setDtEnded(new Date(ts.getTime()));
+                }
+
+                stagingProcedureTarget.setFreeText(rs.getString(col++));
+
+                int recordedBy = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setRecordedByPersonnelId(recordedBy);
+                }
+
+                ts = rs.getTimestamp(col++);
+                if (!rs.wasNull()) {
                     stagingProcedureTarget.setDtRecorded(new Date(ts.getTime()));
                 }
+
                 stagingProcedureTarget.setProcedureType(rs.getString(col++));
                 stagingProcedureTarget.setProcedureTerm(rs.getString(col++));
                 stagingProcedureTarget.setProcedureCode(rs.getString(col++));
-                stagingProcedureTarget.setProcedureSeqNbr(rs.getInt(col++));
+
+                int seqNumber = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setProcedureSeqNbr(seqNumber);
+                }
+
                 stagingProcedureTarget.setParentProcedureUniqueId(rs.getString(col++));
                 stagingProcedureTarget.setQualifier(rs.getString(col++));
                 stagingProcedureTarget.setLocation(rs.getString(col++));
                 stagingProcedureTarget.setSpecialty(rs.getString(col++));
 
                 String auditJson = rs.getString(col++);
+
                 if (!Strings.isNullOrEmpty(auditJson)) {
                     ResourceFieldMappingAudit audit = combineJson(auditJson);
                     stagingProcedureTarget.setAudit(audit);
                 }
 
-                stagingProcedureTarget.setConfidential(rs.getBoolean(col++));
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingProcedureTarget.setConfidential(confidential);
+                }
 
                 resultList.add(stagingProcedureTarget);
             }
