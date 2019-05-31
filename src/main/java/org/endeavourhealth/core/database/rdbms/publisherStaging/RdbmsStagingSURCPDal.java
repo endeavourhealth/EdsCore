@@ -82,8 +82,8 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " (exchange_id, dt_received, record_checksum, "
                     + " surgical_case_procedure_id, surgical_case_id, dt_extract, " +
                     " active_ind, procedure_code, procedure_text, modifier_text, primary_procedure_indicator, surgeon_personnel_id," +
-                    " dt_start, dt_stop, wound_class_code, lookup_procedure_code_term, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " dt_start, dt_stop, wound_class_code, lookup_procedure_code_term, audit_json, lookup_wound_class_term)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -101,8 +101,9 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " dt_stop = VALUES(dt_stop),"
                     + " wound_class_code = VALUES(wound_class_code),"
                     + " lookup_procedure_code_term=VALUES( lookup_procedure_code_term),"
-                    + " audit_json = VALUES(audit_json)";
-//                    + " cds_activity_date=VALUES(cds_activity_date)";
+                    + " audit_json = VALUES(audit_json),"
+                    + " lookup_wound_class_term = VALUES(lookup_wound_class_term)";
+
 
             ps = connection.prepareStatement(sql);
 
@@ -163,9 +164,9 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             }
 
             if (surcp.getWoundClassCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
+                ps.setNull(col++, Types.INTEGER);
             } else {
-                ps.setString(col++, surcp.getWoundClassCode());
+                ps.setInt(col++, surcp.getWoundClassCode());
             }
 
             if (surcp.getLookupProcedureCodeTerm() == null) {
@@ -180,7 +181,11 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                 ps.setString(col++, surcp.getAudit().writeToJson());
             }
 
-//            ps.setDate(17,new java.sql.Date(surcp.getCdsActivityDate().getTime()));
+            if (surcp.getLookupWoundClassTerm() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, surcp.getLookupWoundClassTerm());
+            }
 
             ps.executeUpdate();
 

@@ -136,7 +136,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
-                    stagingProcedureTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingProcedureTarget.setAudit(audit);
                 }
 
                 stagingProcedureTarget.setConfidential(rs.getBoolean(col++));
@@ -152,6 +153,32 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             }
             entityManager.close();
         }
+    }
+
+    /**
+     * the stored procedure concatenates JSON blobs together using pipe characters,
+     * so we need to parse that and combine it all into one JSON object
+     */
+    private ResourceFieldMappingAudit combineJson(String auditJson) throws Exception {
+        String[] toks = auditJson.split("&");
+        if (toks.length == 1) {
+            String tok = toks[0];
+            return ResourceFieldMappingAudit.readFromJson(tok);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        for (int i=0; i<toks.length; i++) {
+            if (i>0) {
+                sb.append(",");
+            }
+            String tok = toks[i].trim(); //trim not necessary, but can't hurt
+            tok = tok.substring(1, tok.length()-1); //remove square brackets
+            sb.append(tok);
+        }
+        sb.append("]");
+
+        return ResourceFieldMappingAudit.readFromJson(sb.toString());
     }
 
     @Override

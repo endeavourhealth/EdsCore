@@ -31,8 +31,8 @@ public class ResourceFieldMappingAudit {
         readAudits = ObjectMapperPool.getInstance().readValue(json, readAudits.getClass());*/
 
         List<ResourceFieldMappingAuditRow> readAudits = ObjectMapperPool.getInstance().readValue(json, new TypeReference<List<ResourceFieldMappingAuditRow>>() {});
-
         for (ResourceFieldMappingAuditRow audit: readAudits) {
+
             int fileId = audit.getFileId();
             if (fileId > 0) {
                 ret.audits.add(audit);
@@ -65,32 +65,24 @@ public class ResourceFieldMappingAudit {
         return list;
     }
 
-    /*public static ResourceFieldMappingAudit readFromJson(String json) throws Exception {
-        ResourceFieldMappingAudit ret = new ResourceFieldMappingAudit();
 
-        JsonNode tree = ObjectMapperPool.getInstance().readTree(json);
-        for (int i=0; i<tree.size(); i++) {
-            JsonNode auditNode = tree.get(i);
-
-            long auditId = auditNode.get("auditId").asLong();
-            JsonNode colsNode = auditNode.get("cols");
-            for (int j=0; j<colsNode.size(); j++) {
-                JsonNode colNode = colsNode.get(j);
-                int colIndex = colNode.get("col").asInt();
-                String field = colNode.get("field").asText();
-
-                ret.auditValue(auditId, colIndex, field);
-            }
-        }
-
-        return ret;
-    }*/
-
-    /*public Map<Long, ResourceFieldMappingAuditRow> getAudits() {
-        return audits;
-    }*/
-
+    /**
+     * audits that a file/record/column was transformed to a specific FHIR field
+     */
     public void auditValue(int publishedFileId, int recordNumber, int colIndex, String jsonField) {
+        ResourceFieldMappingAuditRow audit = auditRecordImpl(publishedFileId, recordNumber);
+        audit.addColumnMapping(colIndex, jsonField);
+    }
+
+    /**
+     * sometimes we can't link a specific file/record/column to a specific FHIR field,
+     * but we can link to the file/record (e.g. staging table transform used for Barts)
+     */
+    public void auditRecord(int publishedFileId, int recordNumber) {
+        auditRecordImpl(publishedFileId, recordNumber);
+    }
+
+    private ResourceFieldMappingAuditRow auditRecordImpl(int publishedFileId, int recordNumber) {
 
         ResourceFieldMappingAuditRow audit = null;
         for (ResourceFieldMappingAuditRow r: audits) {
@@ -108,7 +100,7 @@ public class ResourceFieldMappingAudit {
             audits.add(audit);
         }
 
-        audit.addColumnMapping(colIndex, jsonField);
+        return audit;
     }
 
     public void auditValueOldStyle(Long oldStyleAuditId, int colIndex, String jsonField) {
@@ -165,7 +157,9 @@ public class ResourceFieldMappingAudit {
                 && (oldStyleAudits == null || oldStyleAudits.isEmpty());
     }
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    //use non-empty annotation so we don't write out the cols list if we've not audited any
+    //@JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
     public static class ResourceFieldMappingAuditRow {
         //variable names kept short as this object is persisted to JSON and I want to avoid using excessive storage space
         private int fileId; //published file ID
@@ -179,7 +173,7 @@ public class ResourceFieldMappingAudit {
             ResourceFieldMappingAuditCol obj = new ResourceFieldMappingAuditCol();
             obj.setCol(col);
             obj.setField(field);
-            this.cols.add(obj);
+            getCols().add(obj);
         }
 
         public int getFileId() {

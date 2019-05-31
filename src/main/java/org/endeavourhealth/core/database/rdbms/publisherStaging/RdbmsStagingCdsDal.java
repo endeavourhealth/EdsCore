@@ -401,41 +401,34 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            /**
-             create table procedure_cds_count (
-
-             exchange_id                    char(36)     NOT NULL COMMENT 'links to audit.exchange table (but on a different server)',
-             dt_received                    datetime     NOT NULL COMMENT 'date time this record was received into Discovery',
-             record_checksum                bigint       NOT NULL COMMENT 'checksum of the columns below to easily spot duplicates',
-             sus_record_type                varchar(10)  NOT NULL COMMENT 'one of inpatient, outpatient, emergency',
-             cds_unique_identifier          varchar(50)  NOT NULL COMMENT 'from CDSUniqueIdentifier',
-             procedure_count             int NOT NULL COMMENT 'number of procedures in this CDS record',
-             CONSTRAINT pk_procedure_cds_count PRIMARY KEY (exchange_id, cds_unique_identifier, sus_record_type)
-             );
-             */
-
             String sql = "INSERT INTO procedure_cds_count  "
-                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, procedure_count)"
-                    + " VALUES (?, ?, ?, ?, ?, ?)"
+                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, procedure_count, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
                     + " record_checksum = VALUES(record_checksum),"
                     + " sus_record_type = VALUES(sus_record_type),"
                     + " cds_unique_identifier = VALUES(cds_unique_identifier),"
-                    + " procedure_count = VALUES(procedure_count)";
+                    + " procedure_count = VALUES(procedure_count),"
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
             int col = 1;
 
-            //NONE of the columns allow nulls
+            //all but the last of the columns allow nulls
             ps.setString(col++, cdsCount.getExchangeId());
             ps.setTimestamp(col++, new java.sql.Timestamp(cdsCount.getDtReceived().getTime()));
             ps.setInt(col++, cdsCount.getRecordChecksum());
             ps.setString(col++, cdsCount.getSusRecordType());
             ps.setString(col++, cdsCount.getCdsUniqueIdentifier());
             ps.setInt(col++, cdsCount.getProcedureCount());
+            if (cdsCount.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, cdsCount.getAudit().writeToJson());
+            }
 
             ps.executeUpdate();
 

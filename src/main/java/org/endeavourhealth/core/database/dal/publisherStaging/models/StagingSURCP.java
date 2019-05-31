@@ -20,9 +20,10 @@ public class StagingSURCP {
     private Integer surgeonPersonnelId;
     private Date dtStart;
     private Date dtStop;
-    private String woundClassCode;
+    private Integer woundClassCode;
     private String lookupProcedureCodeTerm;
     private ResourceFieldMappingAudit audit = null;
+    private String lookupWoundClassTerm;
 
     public StagingSURCP() {}
 
@@ -138,11 +139,11 @@ public class StagingSURCP {
         this.dtStop = dtStop;
     }
 
-    public String getWoundClassCode() {
+    public Integer getWoundClassCode() {
         return woundClassCode;
     }
 
-    public void setWoundClassCode(String woundClassCode) {
+    public void setWoundClassCode(Integer woundClassCode) {
         this.woundClassCode = woundClassCode;
     }
 
@@ -162,6 +163,14 @@ public class StagingSURCP {
         this.audit = audit;
     }
 
+    public String getLookupWoundClassTerm() {
+        return lookupWoundClassTerm;
+    }
+
+    public void setLookupWoundClassTerm(String lookupWoundClassTerm) {
+        this.lookupWoundClassTerm = lookupWoundClassTerm;
+    }
+
     @Override
     public int hashCode() {
 
@@ -178,7 +187,8 @@ public class StagingSURCP {
                 dtStart,
                 dtStop,
                 woundClassCode,
-                lookupProcedureCodeTerm);
+                lookupProcedureCodeTerm,
+                lookupWoundClassTerm);
     }
 
     @Override
@@ -201,6 +211,7 @@ public class StagingSURCP {
                 ", woundClassCode='" + woundClassCode + '\'' +
                 ", lookupProcedureCodeTerm='" + lookupProcedureCodeTerm + '\'' +
                 ", audit=" + audit +
+                ", lookupWoundClassTerm='" + lookupWoundClassTerm + '\'' +
                 '}';
     }
 }

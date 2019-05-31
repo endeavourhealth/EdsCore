@@ -19,13 +19,11 @@ public class StagingCds implements Cloneable {
     private Boolean withheld;
     private Date dateOfBirth;
     private String consultantCode;
-
     private Date procedureDate;
     private String procedureOpcsCode;
     private int procedureSeqNbr;
     private String primaryProcedureOpcsCode;
     private String lookupProcedureOpcsTerm;
-
     private Integer lookupPersonId;
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
