@@ -166,16 +166,20 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             return ResourceFieldMappingAudit.readFromJson(tok);
         }
 
+        //in some of the test data, before the audit was fully implemented, we ended up with some slightly
+        //wrong audit strings, so we need to ensure that we strip out any empty tokens
+        List<String> tidiedToks = new ArrayList<>();
+        for (String tok: toks) {
+            String tidied = tok.trim(); //trim not necessary, but can't hurt
+            if (!Strings.isNullOrEmpty(tidied)) {
+                tidied = tidied.substring(1, tok.length()-1); //remove square brackets
+                tidiedToks.add(tidied);
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (int i=0; i<toks.length; i++) {
-            if (i>0) {
-                sb.append(",");
-            }
-            String tok = toks[i].trim(); //trim not necessary, but can't hurt
-            tok = tok.substring(1, tok.length()-1); //remove square brackets
-            sb.append(tok);
-        }
+        sb.append(String.join(",", tidiedToks));
         sb.append("]");
 
         return ResourceFieldMappingAudit.readFromJson(sb.toString());
