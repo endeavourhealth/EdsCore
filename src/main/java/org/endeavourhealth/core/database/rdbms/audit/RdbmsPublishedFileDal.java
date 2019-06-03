@@ -326,26 +326,22 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
     @Override
     public void auditFileRows(List<PublishedFileRecord> records) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        SessionImpl session = (SessionImpl) entityManager.getDelegate();
-        Connection connection = session.connection();
-
-        //if the connection property "rewriteBatchedStatements=true" is specified then SELECT LAST_INSERT_ID()
-        //will return the FIRST auto assigned ID for the batch. If that property is false or absent, then
-        //SELECT LAST_INSERT_ID() will return the ID of the LAST assigned ID (because it sends the transactions one by one)
-        /*String connectionUrl = connection.getMetaData().getURL();
-        boolean rewriteBatchedInsertedEnabled = connectionUrl.contains("rewriteBatchedStatements=true");*/
 
         PreparedStatement psInsert = null;
-        //PreparedStatement psLastId = null;
-
         try {
 
-            String sql = "INSERT INTO published_file_record"
+            //to increase speed when re-processing data already done, we now skip the checks to see
+            //if records have already been audited and simply audit them again. So the IGNORE
+            //keyword is used to suppress duplicate key errors
+            String sql = "INSERT IGNORE INTO published_file_record"
                     + " (published_file_id, record_number, byte_start, byte_length)"
                     + " VALUES (?, ?, ?, ?)";
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
             psInsert = connection.prepareStatement(sql);
 
-            //psLastId = connection.prepareStatement("SELECT LAST_INSERT_ID()");
+            entityManager.getTransaction().begin();
 
             for (PublishedFileRecord record : records) {
 
@@ -360,27 +356,16 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
 
             psInsert.executeBatch();
 
-            connection.commit();
+            entityManager.getTransaction().commit();
 
-            //because the LAST_INSET_ID works differently depending on whether batch inserts are enabled,
-            //we need to have separate functions that handle both states
-            /*if (rewriteBatchedInsertedEnabled) {
-                saveFileRecordsBatched(psInsert, psLastId, connection, records);
-
-            } else {
-                saveFileRecordsNotBatched(psInsert, psLastId, connection, records);
-            }*/
 
         } catch (Exception ex) {
-            connection.rollback();
+            entityManager.getTransaction().rollback();
 
         } finally {
             if (psInsert != null) {
                 psInsert.close();
             }
-            /*if (psLastId != null) {
-                psLastId.close();
-            }*/
             entityManager.close();
         }
     }
