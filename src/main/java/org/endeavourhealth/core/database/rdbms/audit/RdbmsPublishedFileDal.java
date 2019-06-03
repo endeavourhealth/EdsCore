@@ -263,6 +263,67 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
     }
 
     @Override
+    public Map<Integer, PublishedFileRecord> findRecordAuditForRows(int fileAuditId, List<Integer> rowIndexes) throws Exception {
+
+        Map<Integer, PublishedFileRecord> ret = new HashMap<>();
+        if (rowIndexes.isEmpty()) {
+            return ret;
+        }
+
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            StringBuilder sb = new StringBuilder();
+            String s = "SELECT published_file_id, record_number, byte_start, byte_length"
+                    + " FROM published_file_record"
+                    + " WHERE published_file_id = ?"
+                    + " AND record_number IN (";
+            sb.append(s);
+
+            for (int i=0; i<rowIndexes.size(); i++) {
+                if (i > 0) {
+                    sb.append(", ");
+                }
+                sb.append("?");
+            }
+            sb.append(")");
+            String sql = sb.toString();
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setInt(col++, fileAuditId);
+            for (int i=0; i<rowIndexes.size(); i++) {
+                ps.setInt(col++, rowIndexes.get(i));
+            }
+
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                col = 1;
+                PublishedFileRecord obj = new PublishedFileRecord();
+                obj.setPublishedFileId(resultSet.getInt(col++));
+                obj.setRecordNumber(resultSet.getInt(col++));
+                obj.setByteStart(resultSet.getLong(col++));
+                obj.setByteLength(resultSet.getInt(col++));
+
+                ret.put(obj.getRecordNumber(), obj);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+
+    }
+
+    @Override
     public void auditFileRows(List<PublishedFileRecord> records) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         SessionImpl session = (SessionImpl) entityManager.getDelegate();

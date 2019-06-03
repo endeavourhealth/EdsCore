@@ -4,6 +4,7 @@ import org.endeavourhealth.core.database.dal.audit.models.PublishedFileRecord;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface PublishedFileDalI {
@@ -17,5 +18,6 @@ public interface PublishedFileDalI {
 
     //file rows
     PublishedFileRecord findRecordAuditForRow(int fileAuditId, int rowIndex) throws Exception;
+    Map<Integer, PublishedFileRecord> findRecordAuditForRows(int fileAuditId, List<Integer> rowIndexes) throws Exception;
     void auditFileRows(List<PublishedFileRecord> records) throws Exception;
 }
