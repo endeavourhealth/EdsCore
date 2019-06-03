@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
 import org.endeavourhealth.core.database.dal.audit.TransformWarningDalI;
+import org.endeavourhealth.core.database.dal.audit.models.TransformWarning;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarning;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarningType;
@@ -11,9 +12,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.sql.Types;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RdbmsTransformWarningDal implements TransformWarningDalI {
@@ -47,6 +47,96 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
             }
 
         } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void recordWarnings(List<TransformWarning> warnings) throws Exception {
+
+        //only support up to four params
+        for (TransformWarning warning: warnings) {
+            validateWarning(warning.getWarningText(), warning.getWarningParams());
+        }
+
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+
+            //find the type for each one
+            Map<TransformWarning, Integer> hmTypes = new HashMap<>();
+            Set<Integer> hsTypes = new HashSet<>();
+            for (TransformWarning warning: warnings) {
+                //note this function manages its own transaction so is before the begin() call
+                int warningTypeId = findOrCreateWarningType(entityManager, warning.getWarningText(), true);
+                hmTypes.put(warning, new Integer(warningTypeId));
+                hsTypes.add(new Integer(warningTypeId));
+            }
+
+            Date now = new Date();
+
+            //save each one
+            String sql = "INSERT INTO transform_warning ("
+                    + "service_id, system_id, exchange_id, source_file_record_id, inserted_at, transform_warning_type_id, "
+                    + "param_1, param_2, param_3, param_4, published_file_id, record_number)"
+                    + " VALUES ("
+                    + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?"
+                    + ")";
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+            ps = connection.prepareStatement(sql);
+
+            //run the next two in a single transaction, rolling back if it fails
+            try {
+                entityManager.getTransaction().begin();
+
+                for (TransformWarning warning: warnings) {
+                    Integer type = (Integer)hmTypes.get(warning);
+
+                    int col = 1;
+                    ps.setString(col++, warning.getServiceId().toString());
+                    ps.setString(col++, warning.getSystemId().toString());
+                    ps.setString(col++, warning.getExchangeId().toString());
+                    ps.setNull(col++, Types.BIGINT); //field no longer used
+                    ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+                    ps.setInt(col++, type);
+                    ps.setString(col++, findParam(warning.getWarningParams(), 0));
+                    ps.setString(col++, findParam(warning.getWarningParams(), 1));
+                    ps.setString(col++, findParam(warning.getWarningParams(), 2));
+                    ps.setString(col++, findParam(warning.getWarningParams(), 3));
+                    if (warning.getPublishedFileId() == null) {
+                        ps.setNull(col++, Types.INTEGER);
+                    } else {
+                        ps.setInt(col++, warning.getPublishedFileId());
+                    }
+                    if (warning.getRecordNumber() == null) {
+                        ps.setNull(col++, Types.INTEGER);
+                    } else {
+                        ps.setInt(col++, warning.getRecordNumber());
+                    }
+
+                    ps.addBatch();
+                }
+
+                ps.executeBatch();
+
+                //update the warning types to say when they were last used
+                for (Integer type: hsTypes) {
+                    updateWarningTypeDate(entityManager, type.intValue(), now);
+                }
+
+                entityManager.getTransaction().commit();
+
+            } catch (Exception ex) {
+                entityManager.getTransaction().rollback();
+                throw ex;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
@@ -102,7 +192,10 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
             ps.executeUpdate();
 
         } finally {
-            ps.close();
+            if (ps != null) {
+                ps.close();
+            }
+
         }
     }
 
