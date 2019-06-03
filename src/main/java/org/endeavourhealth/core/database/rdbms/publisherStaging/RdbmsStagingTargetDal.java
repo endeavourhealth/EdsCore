@@ -238,11 +238,24 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             while (rs.next()) {
                 int col = 1;
                 StagingConditionTarget stagingConditionTarget = new StagingConditionTarget();
+
                 stagingConditionTarget.setUniqueId(rs.getString(col++));
                 stagingConditionTarget.setDeleted(rs.getBoolean(col++));
-                stagingConditionTarget.setPersonId(rs.getInt(col++));
-                stagingConditionTarget.setEncounterId(rs.getInt(col++));
-                stagingConditionTarget.setPerformerPersonnelId(rs.getInt(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingConditionTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingConditionTarget.setEncounterId(encounterId);
+                }
+
+                int performerId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingConditionTarget.setPerformerPersonnelId(performerId);
+                }
 
                 java.sql.Timestamp ts = rs.getTimestamp(col++);
                 if (ts != null) {
@@ -254,7 +267,12 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingConditionTarget.setConditionTerm(rs.getString(col++));
                 stagingConditionTarget.setConditionType(rs.getString(col++));
                 stagingConditionTarget.setFreeText(rs.getString(col++));
-                stagingConditionTarget.setSequenceNumber(rs.getInt(col++));
+
+                int seqNumber = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingConditionTarget.setSequenceNumber(seqNumber);
+                }
+
                 stagingConditionTarget.setParentConditionUniqueId(rs.getString(col++));
                 stagingConditionTarget.setClassification(rs.getString(col++));
                 stagingConditionTarget.setConfirmation(rs.getString(col++));
@@ -265,10 +283,14 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
-                    stagingConditionTarget.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingConditionTarget.setAudit(audit);
                 }
 
-                stagingConditionTarget.setConfidential(rs.getBoolean(col++));
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingConditionTarget.setConfidential(confidential);
+                }
 
                 resultList.add(stagingConditionTarget);
             }
