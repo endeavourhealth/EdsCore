@@ -380,7 +380,7 @@
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
             <property name="hibernate.hikari.minimumIdle" value="1" />
             <property name="hibernate.hikari.idleTimeout" value="60000" />
-            <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
             <property name="hibernate.connection.autocommit" value="false" />
             <!-- NOTE: ALL THESE PROPERTIES MAY BE OVERRIDDEN BY THE CONFIG JSON -->
         </properties>
