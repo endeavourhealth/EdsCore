@@ -8,6 +8,7 @@ import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import java.math.BigInteger;
 import java.util.List;
 
 public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDalI {
@@ -57,12 +58,13 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
 
             String sql = "select max(filing_order) from data_generator.subscriber_zip_file_uuids;";
             Query query = entityManager.createNativeQuery(sql);
-            Long result = (Long) query.getSingleResult();
+            BigInteger bigResult = (BigInteger) query.getSingleResult();
+            Long longResult = bigResult.longValue();
 
-            if (result == null) {
+            if (longResult == null) {
                 rszfu.setFilingOrder(1);
             } else {
-                rszfu.setFilingOrder(result + 1);
+                rszfu.setFilingOrder(longResult + 1);
             }
 
             entityManager.getTransaction().begin();
@@ -94,12 +96,13 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
 
             String sql = "select max(filing_order) from data_generator.subscriber_zip_file_uuids;";
             Query query = entityManager.createNativeQuery(sql);
-            Long result = (Long) query.getSingleResult();
+            BigInteger bigResult = (BigInteger) query.getSingleResult();
+            Long longResult = bigResult.longValue();
 
-            if (result == null) {
+            if (longResult == null) {
                 rszfu.setFilingOrder(1);
             } else {
-                rszfu.setFilingOrder(result + 1);
+                rszfu.setFilingOrder(longResult + 1);
             }
 
             entityManager.getTransaction().begin();
