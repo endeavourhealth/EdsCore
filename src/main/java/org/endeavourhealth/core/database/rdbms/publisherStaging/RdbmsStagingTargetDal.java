@@ -224,8 +224,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
             String sql = "select unique_id, is_delete, person_id, encounter_id, performer_personnel_id, dt_performed, " +
                     " condition_code_type, condition_code, condition_term, condition_type, free_text, sequence_number, "+
-                    " parent_condition_unique_id, classification, confirmation, problem_status, ranking, axis, location, " +
-                    " audit_json, is_confidential "+
+                    " parent_condition_unique_id, classification, confirmation, problem_status, problem_status_date, "+
+                    " ranking, axis, location, audit_json, is_confidential "+
                     " from "+
                     " condition_target "+
                     " where exchange_id = ?";
@@ -257,9 +257,9 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingConditionTarget.setPerformerPersonnelId(performerId);
                 }
 
-                java.sql.Timestamp ts = rs.getTimestamp(col++);
-                if (ts != null) {
-                    stagingConditionTarget.setDtPerformed(new Date(ts.getTime()));
+                java.sql.Timestamp tsPD = rs.getTimestamp(col++);
+                if (tsPD != null) {
+                    stagingConditionTarget.setDtPerformed(new Date(tsPD.getTime()));
                 }
 
                 stagingConditionTarget.setConditionType(rs.getString(col++));
@@ -277,6 +277,12 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingConditionTarget.setClassification(rs.getString(col++));
                 stagingConditionTarget.setConfirmation(rs.getString(col++));
                 stagingConditionTarget.setProblemStatus(rs.getString(col++));
+
+                java.sql.Timestamp tsSD = rs.getTimestamp(col++);
+                if (tsSD != null) {
+                    stagingConditionTarget.setProblemStatusDate(new Date(tsSD.getTime()));
+                }
+
                 stagingConditionTarget.setRanking(rs.getString(col++));
                 stagingConditionTarget.setAxis(rs.getString(col++));
                 stagingConditionTarget.setLocation(rs.getString(col++));

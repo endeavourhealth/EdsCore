@@ -23,6 +23,7 @@ public class StagingConditionTarget {
     private String classification;
     private String confirmation;
     private String problemStatus;
+    private Date problemStatusDate;
     private String ranking;
     private String axis;
     private String location;
@@ -169,6 +170,14 @@ public class StagingConditionTarget {
         return problemStatus;
     }
 
+    public Date getProblemStatusDate() {
+        return problemStatusDate;
+    }
+
+    public void setProblemStatusDate(Date problemStatusDate) {
+        this.problemStatusDate = problemStatusDate;
+    }
+
     public void setRanking(String ranking) {
         this.ranking = ranking;
     }
@@ -229,6 +238,7 @@ public class StagingConditionTarget {
                 ", classification='" + classification + '\'' +
                 ", confirmation='" + confirmation + '\'' +
                 ", problemStatus=" + problemStatus +
+                ", problemStatusDate=" + problemStatusDate +
                 ", ranking='" + ranking + '\'' +
                 ", axis='" + axis + '\'' +
                 ", location=" + location +
