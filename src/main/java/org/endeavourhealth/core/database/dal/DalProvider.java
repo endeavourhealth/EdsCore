@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal;
 import org.endeavourhealth.core.database.dal.admin.*;
 import org.endeavourhealth.core.database.dal.audit.*;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
+import org.endeavourhealth.core.database.dal.datagenerator.SubscriberZipFileUUIDsDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
@@ -16,6 +17,7 @@ import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.rdbms.admin.*;
 import org.endeavourhealth.core.database.rdbms.audit.*;
+import org.endeavourhealth.core.database.rdbms.datagenerator.RdbmsSubscriberZipFileUUIDsDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
@@ -325,7 +327,6 @@ public class DalProvider {
         return new RdbmsEnterprisePersonUpdaterHistoryDal(subscriberConfigName);
     }
 
-
     public static EnterpriseAgeUpdaterlDalI factoryEnterpriseAgeUpdaterlDal(String subscriberConfigName) {
         return new RdbmsEnterpriseAgeUpdaterDal(subscriberConfigName);
     }
@@ -404,6 +405,10 @@ public class DalProvider {
 
     public static Msoa2011DalI factoryMsoa2011() {
         return new RdbmsMsoa2011Dal();
+    }
+
+    public static SubscriberZipFileUUIDsDalI factorySubscriberZipFileUUIDs() {
+        return new RdbmsSubscriberZipFileUUIDsDal();
     }
 
     public static Icd10DalI factoryIcd10Dal() {

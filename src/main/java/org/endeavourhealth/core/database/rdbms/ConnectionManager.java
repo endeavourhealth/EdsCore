@@ -43,7 +43,8 @@ public class ConnectionManager {
         Coding, //once fully moved to MySQL, this can go as it will be the same as Reference
         PublisherCommon,
         FhirAudit,
-        PublisherStaging;
+        PublisherStaging,
+        DataGenerator;
     }
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
@@ -258,8 +259,11 @@ public class ConnectionManager {
             } else if (dbName == Db.FhirAudit) {
                 configName = "fhir_audit";
             } else if (dbName == Db.PublisherStaging) {
-                configName="staging";
-            } else {
+                configName = "staging";
+            } else if (dbName == Db.DataGenerator) {
+                configName = "data_generator";
+            }
+            else {
                 throw new RuntimeException("Unknown database " + dbName);
             }
 
@@ -302,11 +306,13 @@ public class ConnectionManager {
             return "FhirAuditDb";
         } else if (dbName == Db.PublisherStaging) {
             return "PublisherStagingDb";
-        } else {
+        } else if (dbName == Db.DataGenerator) {
+            return "DataGeneratorDb";
+        }
+        else {
             throw new RuntimeException("Unknown database " + dbName);
         }
     }
-
 
     public static EntityManager getEdsEntityManager() throws Exception {
         return getEntityManager(Db.Eds);
@@ -365,6 +371,10 @@ public class ConnectionManager {
     public static EntityManager getPublisherStagingEntityMananger(UUID serviceId) throws Exception {
         String configName = findConfigNameForPublisherService(serviceId);
         return getEntityManager(Db.PublisherStaging, configName);
+    }
+
+    public static EntityManager getDataGeneratorEntityManager () throws Exception {
+        return getEntityManager(Db.DataGenerator);
     }
 
     /**
