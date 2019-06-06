@@ -26,6 +26,28 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     private static Set<String> cachedSearchableIdentifiers = null;
 
     public void update(UUID serviceId, Patient fhirPatient) throws Exception {
+        int attempts = 5;
+        while (true) {
+            try {
+                tryUpdate(serviceId, fhirPatient);
+                return;
+
+            } catch (Exception ex) {
+                String msg = ex.getMessage();
+                if (attempts > 0
+                        && msg != null
+                        && msg.contains("timeout exceeded")) {
+                    attempts --;
+                    Thread.sleep(5000);
+                    continue;
+                }
+
+                throw ex;
+            }
+        }
+    }
+
+    private void tryUpdate(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
         String nhsNumber = IdentifierHelper.findNhsNumber(fhirPatient);
