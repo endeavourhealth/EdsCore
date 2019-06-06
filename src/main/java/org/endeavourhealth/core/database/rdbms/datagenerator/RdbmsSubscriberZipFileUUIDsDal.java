@@ -97,12 +97,16 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
             String sql = "select max(filing_order) from data_generator.subscriber_zip_file_uuids;";
             Query query = entityManager.createNativeQuery(sql);
             BigInteger bigResult = (BigInteger) query.getSingleResult();
-            Long longResult = bigResult.longValue();
 
-            if (longResult == null) {
+            if (bigResult == null) {
                 rszfu.setFilingOrder(1);
             } else {
-                rszfu.setFilingOrder(longResult + 1);
+                Long longResult = bigResult.longValue();
+                if (longResult == null) {
+                    rszfu.setFilingOrder(1);
+                } else {
+                    rszfu.setFilingOrder(longResult + 1);
+                }
             }
 
             entityManager.getTransaction().begin();

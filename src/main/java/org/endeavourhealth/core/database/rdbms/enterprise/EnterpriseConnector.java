@@ -26,6 +26,11 @@ public class EnterpriseConnector {
 
         ConnectionWrapper mainConnection = openSingleConnection(config, false);
 
+        if (config.has("remote_subscriber_id")) {
+            String value = config.get("remote_subscriber_id").asText();
+            mainConnection.setRemoteSubscriberId(value);
+        }
+
         List<ConnectionWrapper> ret = new ArrayList<>();
         ret.add(mainConnection);
 
@@ -118,6 +123,7 @@ public class EnterpriseConnector {
         private String keywordEscapeChar;
         private int batchSize;
         private boolean isReplica;
+        private String remoteSubscriberId;
 
         public ConnectionWrapper(String url, HikariDataSource connectionPool, String keywordEscapeChar, int batchSize, boolean isReplica) {
             this.url = url;
@@ -145,6 +151,14 @@ public class EnterpriseConnector {
 
         public Connection getConnection() throws SQLException {
             return connectionPool.getConnection();
+        }
+
+        public String getRemoteSubscriberId() {
+            return remoteSubscriberId;
+        }
+
+        public void setRemoteSubscriberId(String remoteSubscriberId) {
+            this.remoteSubscriberId = remoteSubscriberId;
         }
 
         public String toString() {
