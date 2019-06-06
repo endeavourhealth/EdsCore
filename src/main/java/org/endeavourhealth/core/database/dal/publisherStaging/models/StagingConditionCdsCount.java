@@ -1,5 +1,7 @@
 package org.endeavourhealth.core.database.dal.publisherStaging.models;
 
+import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
+
 import java.util.Date;
 import java.util.Objects;
 
@@ -11,6 +13,7 @@ public class StagingConditionCdsCount {
     private String susRecordType;
     private String cdsUniqueIdentifier;
     private int conditionCount;
+    private ResourceFieldMappingAudit audit = null;
 
     @Override
     public int hashCode() {
@@ -21,13 +24,14 @@ public class StagingConditionCdsCount {
 
     @Override
     public String toString() {
-        return "CDS Count: ["
+        return "CDS Condition Count: ["
                 + "exchangeId=" + exchangeId + ", "
                 + "dtReceived=" + dtReceived + ", "
                 + "recordChecksum=" + recordChecksum + ", "
                 + "susRecordType=" + susRecordType + ", "
                 + "cdsUniqueIdentifier=" + cdsUniqueIdentifier + ", "
-                + "conditionCount=" + conditionCount + "]";
+                + "conditionCount=" + conditionCount + ", "
+                + "audit=" + audit + "]";
     }
 
     public String getExchangeId() {
@@ -78,5 +82,11 @@ public class StagingConditionCdsCount {
         this.conditionCount = conditionCount;
     }
 
+    public ResourceFieldMappingAudit getAudit() {
+        return audit;
+    }
 
+    public void setAudit(ResourceFieldMappingAudit audit) {
+        this.audit = audit;
+    }
 }

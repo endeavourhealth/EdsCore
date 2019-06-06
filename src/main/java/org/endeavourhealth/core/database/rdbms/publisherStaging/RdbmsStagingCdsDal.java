@@ -507,29 +507,17 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            /**
-             create table condition_cds_count (
-
-             exchange_id                    char(36)     NOT NULL COMMENT 'links to audit.exchange table (but on a different server)',
-             dt_received                    datetime     NOT NULL COMMENT 'date time this record was received into Discovery',
-             record_checksum                bigint       NOT NULL COMMENT 'checksum of the columns below to easily spot duplicates',
-             sus_record_type                varchar(10)  NOT NULL COMMENT 'one of inpatient, outpatient, emergency',
-             cds_unique_identifier          varchar(50)  NOT NULL COMMENT 'from CDSUniqueIdentifier',
-             condition_count                int NOT NULL COMMENT 'number of procedures in this CDS record',
-             CONSTRAINT pk_procedure_cds_count PRIMARY KEY (exchange_id, cds_unique_identifier, sus_record_type)
-             );
-             */
-
             String sql = "INSERT INTO condition_cds_count  "
-                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, condition_count)"
-                    + " VALUES (?, ?, ?, ?, ?, ?)"
+                    + " (exchange_id, dt_received, record_checksum, sus_record_type, cds_unique_identifier, condition_count, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
                     + " record_checksum = VALUES(record_checksum),"
                     + " sus_record_type = VALUES(sus_record_type),"
                     + " cds_unique_identifier = VALUES(cds_unique_identifier),"
-                    + " condition_count = VALUES(condition_count)";
+                    + " condition_count = VALUES(condition_count),"
+                    + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
 
@@ -542,6 +530,11 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             ps.setString(col++, cdsConditionCount.getSusRecordType());
             ps.setString(col++, cdsConditionCount.getCdsUniqueIdentifier());
             ps.setInt(col++, cdsConditionCount.getConditionCount());
+            if (cdsConditionCount.getAudit() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, cdsConditionCount.getAudit().writeToJson());
+            }
 
             ps.executeUpdate();
 
