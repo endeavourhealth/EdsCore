@@ -196,7 +196,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + "from condition_cds "
                     + "where cds_unique_identifier = ? "
                     + "and sus_record_type = ? "
-                    + "and condition_seq_nbr = ? "
+                    + "and diagnosis_seq_nbr = ? "
                     + "and dt_received <= ? "
                     + "order by dt_received desc "
                     + "limit 1";
