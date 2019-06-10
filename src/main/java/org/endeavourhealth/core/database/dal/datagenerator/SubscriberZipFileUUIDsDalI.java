@@ -9,7 +9,9 @@ public interface SubscriberZipFileUUIDsDalI {
 
     RdbmsSubscriberZipFileUUIDs getSubscriberZipFileUUIDsEntity(String queuedMessageUUID) throws Exception;
 
-    List<RdbmsSubscriberZipFileUUIDs> getAllSubscriberZipFileUUIDsEntities() throws Exception;
+    List<RdbmsSubscriberZipFileUUIDs> getPagedSubscriberZipFileUUIDsEntities(Integer pageNumber, Integer pageSize) throws Exception;
+
+    Long getTotalNumberOfSubscriberFiles() throws Exception;
 
     RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(RdbmsSubscriberZipFileUUIDs rszfu) throws Exception;
 

@@ -36,7 +36,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
 
     }
 
-    public List<RdbmsSubscriberZipFileUUIDs> getAllSubscriberZipFileUUIDsEntities() throws Exception {
+    public List<RdbmsSubscriberZipFileUUIDs> getPagedSubscriberZipFileUUIDsEntities(Integer pageNumber, Integer pageSize) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
 
@@ -47,6 +47,10 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
             CriteriaQuery<RdbmsSubscriberZipFileUUIDs> all = cq.select(rootEntry);
             cq.orderBy(cb.asc(rootEntry.get("filingOrder")));
             TypedQuery<RdbmsSubscriberZipFileUUIDs> allQuery = entityManager.createQuery(all);
+
+            allQuery.setFirstResult((pageNumber - 1) * pageSize);
+            allQuery.setMaxResults(pageSize);
+
             List<RdbmsSubscriberZipFileUUIDs> ret = allQuery.getResultList();
             return ret;
 
@@ -57,6 +61,22 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
             entityManager.close();
         }
 
+    }
+
+    public Long getTotalNumberOfSubscriberFiles() throws Exception {
+        EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<RdbmsSubscriberZipFileUUIDs> rootEntry = cq.from(RdbmsSubscriberZipFileUUIDs.class);
+
+        cq.select((cb.countDistinct(rootEntry)));
+
+        Long ret = entityManager.createQuery(cq).getSingleResult();
+
+        entityManager.close();
+
+        return ret;
     }
 
     public RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(RdbmsSubscriberZipFileUUIDs rszfu) throws Exception {
