@@ -14,6 +14,7 @@ public class StagingProblem {
     private int personId;
     private String mrn;
     private Date onsetDtTm;
+    private String onsetPrecision;
     private String updatedBy;
     private String vocab;
     private String problemCd;
@@ -97,6 +98,10 @@ public class StagingProblem {
         this.onsetDtTm = onsetDtTm;
     }
 
+    public String getOnsetPrecision() { return onsetPrecision; }
+
+    public void setOnsetPrecision(String onsetPrecision) { this.onsetPrecision = onsetPrecision; }
+
     public String getProblemTxt() { return problemTxt; }
 
     public void setProblemTxt(String problemTxt) {
@@ -179,6 +184,7 @@ public class StagingProblem {
                 personId,
                 mrn,
                 onsetDtTm,
+                onsetPrecision,
                 updatedBy,
                 vocab,
                 problemCd,

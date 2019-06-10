@@ -13,6 +13,7 @@ public class StagingConditionTarget {
     private Integer encounterId;
     private Integer performerPersonnelId;
     private Date dtPerformed;
+    private String dtPrecision;
     private String conditionCodeType;
     private String conditionCode;
     private String conditionTerm;
@@ -96,6 +97,14 @@ public class StagingConditionTarget {
 
     public void setConditionCodeType(String conditionCodeType) {
         this.conditionCodeType = conditionCodeType;
+    }
+
+    public String getDtPrecision() {
+        return dtPrecision;
+    }
+
+    public void setDtPrecision(String dtPrecision) {
+        this.dtPrecision = dtPrecision;
     }
 
     public String getConditionCode() {

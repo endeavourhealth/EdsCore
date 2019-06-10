@@ -222,7 +222,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "select unique_id, is_delete, person_id, encounter_id, performer_personnel_id, dt_performed, " +
+            String sql = "select unique_id, is_delete, person_id, encounter_id, performer_personnel_id, dt_performed, dt_precision, " +
                     " condition_code_type, condition_code, condition_term, condition_type, free_text, sequence_number, "+
                     " parent_condition_unique_id, classification, confirmation, problem_status, problem_status_date, "+
                     " ranking, axis, location, audit_json, is_confidential "+
@@ -261,6 +261,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (tsPD != null) {
                     stagingConditionTarget.setDtPerformed(new Date(tsPD.getTime()));
                 }
+
+                stagingConditionTarget.setDtPrecision(rs.getString(col++));
 
                 stagingConditionTarget.setConditionCodeType(rs.getString(col++));
                 stagingConditionTarget.setConditionCode(rs.getString(col++));

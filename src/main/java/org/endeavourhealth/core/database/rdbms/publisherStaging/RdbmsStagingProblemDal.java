@@ -78,10 +78,10 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
             Connection connection = session.connection();
 
             String sql = "INSERT INTO condition_problem "
-                    + " (exchange_id, dt_received, record_checksum, problem_id, person_id, mrn, onset_dt_tm, updated_by, "
+                    + " (exchange_id, dt_received, record_checksum, problem_id, person_id, mrn, onset_dt_tm, onset_precision, updated_by, "
                     + " vocab, problem_code, problem_term, problem_txt, classification, confirmation, ranking, axis, "
                     + " problem_status, problem_status_date, location, lookup_consultant_personnel_id, audit_json) "
-                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -90,6 +90,7 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                     + " person_id = VALUES(person_id), "
                     + " mrn = VALUES(mrn), "
                     + " onset_dt_tm = VALUES(onset_dt_tm), "
+                    + " onset_precision = VALUES(onset_precision), "
                     + " updated_by = VALUES(updated_by), "
                     + " vocab = VALUES(vocab), "
                     + " problem_code = VALUES(problem_code), "
@@ -126,6 +127,12 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
                 ps.setNull(col++, Types.TIMESTAMP);
             } else {
                 ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getOnsetDtTm().getTime()));
+            }
+
+            if (stagingProblem.getOnsetPrecision() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingProblem.getOnsetPrecision());
             }
 
             if (stagingProblem.getUpdatedBy() == null) {
