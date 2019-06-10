@@ -262,7 +262,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingConditionTarget.setDtPerformed(new Date(tsPD.getTime()));
                 }
 
-                stagingConditionTarget.setConditionType(rs.getString(col++));
+                stagingConditionTarget.setConditionCodeType(rs.getString(col++));
                 stagingConditionTarget.setConditionCode(rs.getString(col++));
                 stagingConditionTarget.setConditionTerm(rs.getString(col++));
                 stagingConditionTarget.setConditionType(rs.getString(col++));
