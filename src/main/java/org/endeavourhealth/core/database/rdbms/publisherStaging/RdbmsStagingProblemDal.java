@@ -133,7 +133,11 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
             } else {
                 ps.setString(col++, stagingProblem.getUpdatedBy());
             }
-
+            if (stagingProblem.getVocab() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingProblem.getVocab());
+            }
             if (stagingProblem.getProblemCd() == null) {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
@@ -175,11 +179,7 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
             } else {
                 ps.setString(col++, stagingProblem.getAxis());
             }
-            if (stagingProblem.getVocab() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getVocab());
-            }
+
 
             if (stagingProblem.getProblemStatus() == null) {
                 ps.setNull(col++, Types.VARCHAR);
