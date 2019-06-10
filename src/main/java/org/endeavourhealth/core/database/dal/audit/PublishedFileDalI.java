@@ -20,4 +20,5 @@ public interface PublishedFileDalI {
     PublishedFileRecord findRecordAuditForRow(int fileAuditId, int rowIndex) throws Exception;
     Map<Integer, PublishedFileRecord> findRecordAuditForRows(int fileAuditId, List<Integer> rowIndexes) throws Exception;
     void auditFileRows(List<PublishedFileRecord> records) throws Exception;
+    Integer isFileFullyAuditedAndGetRecordCount(int fileAuditId, long fileLength) throws Exception;
 }

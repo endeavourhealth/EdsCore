@@ -361,6 +361,7 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
+            throw ex;
 
         } finally {
             if (psInsert != null) {
@@ -370,67 +371,54 @@ public class RdbmsPublishedFileDal implements PublishedFileDalI {
         }
     }
 
-    /*private void saveFileRecordsNotBatched(PreparedStatement psInsert, PreparedStatement psLastId, Connection connection,
-                                           List<PublishedFileRecord> records) throws Exception {
+    /**
+     * checks if the file was fully audited and if so, return the record count of the file
+     */
+    @Override
+    public Integer isFileFullyAuditedAndGetRecordCount(int fileAuditId, long fileLength) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
 
-        for (PublishedFileRecord record : records) {
+        PreparedStatement ps = null;
+        try {
+            //consider the file fully audited if we've written the published_file_record for the last line of our file
+            String sql = "SELECT byte_start + byte_length, record_number " +
+                    "FROM published_file_record " +
+                    "WHERE published_file_id = ? " +
+                    "ORDER BY record_number DESC " +
+                    "LIMIT 1;";
 
-            int col = 1;
-            psInsert.setInt(col++, record.getPublishedFileId());
-            psInsert.setInt(col++, record.getRecordNumber());
-            psInsert.setLong(col++, record.getByteStart());
-            psInsert.setInt(col++, record.getByteLength());
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            ps = connection.prepareStatement(sql);
 
-            psInsert.execute();
+            ps.setInt(1, fileAuditId);
 
-            connection.commit();
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int col = 1;
+                long auditedToBytes = rs.getLong(col++);
+                int lastRecordNum = rs.getInt(col++);
 
-            ResultSet rs = psLastId.executeQuery();
-            rs.next();
-            long lastId = rs.getLong(1);
-            rs.close();
+                if (auditedToBytes == fileLength) {
+                    return new Integer(lastRecordNum);
+                }
+            }
 
-            //and set the generated ID back on the record object
-            record.setId(lastId);
+            //if we've not audited any record, or didn't get to the end, then return null
+            return null;
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
         }
     }
 
-    private void saveFileRecordsBatched(PreparedStatement psInsert, PreparedStatement psLastId, Connection connection,
-                                        List<PublishedFileRecord> records) throws Exception {
-
-        //entityManager.getTransaction().begin();
-
-        for (PublishedFileRecord record : records) {
-
-            int col = 1;
-            psInsert.setInt(col++, record.getPublishedFileId());
-            psInsert.setInt(col++, record.getRecordNumber());
-            psInsert.setLong(col++, record.getByteStart());
-            psInsert.setInt(col++, record.getByteLength());
-
-            psInsert.addBatch();
-        }
-
-        psInsert.executeBatch();
-
-        //calling commit on the entity manager closes the connection, so do it directly
-        connection.commit();
-        //entityManager.getTransaction().commit();
-
-        //to get the auto-assigned nubmers for the new rows, we use a SQL function which returns
-        //the FIRST auto generated ID generated in the last transaction, and because innodb_autoinc_lock_mode is
-        //set to 1, the other assigned IDs are guaranteed to be contiguous
-        ResultSet rs = psLastId.executeQuery();
-        rs.next();
-        long lastId = rs.getLong(1);
-        rs.close();
-
-        //and set the generated ID back on the record object
-        for (PublishedFileRecord record : records) {
-            record.setId(lastId);
-            lastId++;
-        }
-    }*/
 
 
 }
