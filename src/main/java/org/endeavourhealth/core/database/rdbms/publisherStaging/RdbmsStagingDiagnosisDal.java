@@ -80,7 +80,7 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
             String sql = "INSERT INTO condition_diagnosis "
                     + " (exchange_id, dt_received, record_checksum, diagnosis_id, person_id, active_ind, mrn, "
                     + " encounter_id, diag_dt_tm, diag_type, diag_prnsl, vocab, diag_code, diag_term, diag_notes, "
-                    + " confirmation, classification, ranking, axis, location, lookup_consultant_personnel_id) "
+                    + " confirmation, classification, ranking, axis, location, lookup_consultant_personnel_id, audit_json) "
                     + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
