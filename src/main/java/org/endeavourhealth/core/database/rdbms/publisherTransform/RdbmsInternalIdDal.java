@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.rdbms.publisherTransform;
 import org.endeavourhealth.core.database.dal.publisherTransform.InternalIdDalI;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.InternalIdMap;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -132,6 +133,21 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
     @Override
     public void save(List<InternalIdMap> mappingsParam) throws Exception {
+        //allow several attempts if it fails due to a deadlock
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                trySave(mappingsParam);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+
+    }
+
+    public void trySave(List<InternalIdMap> mappingsParam) throws Exception {
 
         List<InternalIdMap> mappings = new ArrayList<>(mappingsParam);
         UUID serviceId = findServiceId(mappings);
