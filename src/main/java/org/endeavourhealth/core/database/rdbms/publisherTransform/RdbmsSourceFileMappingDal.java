@@ -1261,7 +1261,21 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             return;
         }
 
-        saveResourceMappingsToDatabase(audits);
+        //if configured, use the common FHIR audit DB
+        //for the time-being, attempt to distribute the load between the publisher transform DB and the global
+        //FHIR audit DB. The load is too much for the global one, as it causes a massive bottleneck, but it's there
+        //so send some traffic to it.
+        EntityManager entityManager = null;
+        int r = random.nextInt(100);
+        int percentage = getPercentageToSendToFhirAudit();
+        boolean useFhirAuditDb = r < percentage;
+
+        //call separate functions like this so we can see which route it's taking in stack dumps
+        if (useFhirAuditDb) {
+            saveResourceMappingsToFhirAudit(audits);
+        } else {
+            saveResourceMappingsToPublisherTransform(audits);
+        }
 
         /*String auditStoragePath = getAuditStoragePath();
         if (!Strings.isNullOrEmpty(auditStoragePath)) {
@@ -1272,6 +1286,14 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             //if we don't have an audit path, write the audits to the DB
             saveResourceMappingsToDatabase(audits);
         }*/
+    }
+
+    private void saveResourceMappingsToPublisherTransform(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
+        saveResourceMappingsToDatabase(audits, false);
+    }
+
+    private void saveResourceMappingsToFhirAudit(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
+        saveResourceMappingsToDatabase(audits, true);
     }
 
     /*private void saveResourceMappingsToFile(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, String topLevelAuditStoragePath) throws Exception {
@@ -1309,7 +1331,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         return baos.toByteArray();
     }*/
 
-    private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits) throws Exception {
+    private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, boolean useFhirAuditDb) throws Exception {
 
         UUID serviceId = null;
         for (ResourceWrapper wrapper : audits.keySet()) {
@@ -1320,32 +1342,12 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             }
         }
 
-        //if configured, use the common FHIR audit DB
-        //for the time-being, attempt to distribute the load between the publisher transform DB and the global
-        //FHIR audit DB. The load is too much for the global one, as it causes a massive bottleneck, but it's there
-        //so send some traffic to it.
         EntityManager entityManager = null;
-        int r = random.nextInt(100);
-        int percentage = getPercentageToSendToFhirAudit();
-        if (r < percentage) {
-            try {
-                entityManager = ConnectionManager.getFhirAuditEntityManager();
-            } catch (Exception ex) {
-                //if no global FHIR audit DB, then we'll use the publisher transform DB
-            }
-        }
-
-        if (entityManager == null) {
-            entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        }
-
-        /*EntityManager entityManager = null;
-        try {
+        if (useFhirAuditDb) {
             entityManager = ConnectionManager.getFhirAuditEntityManager();
-        } catch (Exception ex) {
-            //if no global FHIR audit DB, then use the publisher transform DB
+        } else {
             entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        }*/
+        }
 
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
