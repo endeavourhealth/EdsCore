@@ -1,8 +1,8 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsTailDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCdsTail;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCdsTail;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCdsTail;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -13,13 +13,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingCdsTailDal.class);
 
-    private boolean wasAlreadySaved(UUID serviceId, StagingCdsTail obj) throws Exception {
+    private boolean wasAlreadySaved(UUID serviceId, StagingProcedureCdsTail obj) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
@@ -57,86 +59,15 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
     }
 
     @Override
-    public void save(StagingCdsTail cdsTail, UUID serviceId) throws Exception {
+    public void saveProcedureTail(StagingProcedureCdsTail cdsTail, UUID serviceId) throws Exception {
 
         if (cdsTail == null) {
             throw new IllegalArgumentException("cds tail object is null");
         }
 
-        cdsTail.setRecordChecksum(cdsTail.hashCode());
-
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, cdsTail)) {
-            // LOG.warn("procedure_cds_tail data already filed with record_checksum: "+cdsTail.hashCode());
-            return;
-        }
-
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
-        PreparedStatement ps = null;
-
-        try {
-            entityManager.getTransaction().begin();
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "INSERT INTO procedure_cds_tail  "
-                    + " (exchange_id, dt_received, record_checksum,  sus_record_type, cds_unique_identifier, " +
-                    " cds_update_type, mrn, nhs_number, person_id, encounter_id, responsible_hcp_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " exchange_id = VALUES(exchange_id),"
-                    + " dt_received = VALUES(dt_received),"
-                    + " record_checksum = VALUES(record_checksum),"
-                    + " sus_record_type = VALUES(sus_record_type),"
-                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
-                    + " cds_update_type = VALUES(cds_update_type),"
-                    + " mrn = VALUES(mrn),"
-                    + " nhs_number = VALUES(nhs_number),"
-                    + " person_id = VALUES(person_id),"
-                    + " encounter_id = VALUES(encounter_id),"
-                    + " responsible_hcp_personnel_id = VALUES(responsible_hcp_personnel_id),"
-                    + " audit_json = VALUES(audit_json)";
-            //        + " cds_activity_date=VALUES(cds_activity_date)";
-
-            ps = connection.prepareStatement(sql);
-
-            int col = 1;
-
-            //all columns except the last one are non-null
-            ps.setString(col++, cdsTail.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(cdsTail.getDtReceived().getTime()));
-            ps.setInt(col++, cdsTail.getRecordChecksum());
-            ps.setString(col++, cdsTail.getSusRecordType());
-            ps.setString(col++, cdsTail.getCdsUniqueIdentifier());
-            ps.setInt(col++, cdsTail.getCdsUpdateType());
-            ps.setString(col++, cdsTail.getMrn());
-            ps.setString(col++, cdsTail.getNhsNumber());
-            ps.setInt(col++, cdsTail.getPersonId());
-            ps.setInt(col++, cdsTail.getEncounterId());
-            ps.setInt(col++, cdsTail.getResponsibleHcpPersonnelId());
-
-            if (cdsTail.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, cdsTail.getAudit().writeToJson());
-            }
-            //  ps.setDate(13,new java.sql.Date((stagingCdsTail.getCdsActivityDate().getTime())));
-
-            ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
+        List<StagingProcedureCdsTail> l = new ArrayList<>();
+        l.add(cdsTail);
+        saveProcedureTails(l, serviceId);
     }
 
     private boolean wasAlreadySaved(UUID serviceId, StagingConditionCdsTail obj) throws Exception {
@@ -177,17 +108,33 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
     }
 
     @Override
-    public void save(StagingConditionCdsTail cdsConditionTail, UUID serviceId) throws Exception {
+    public void saveConditionTail(StagingConditionCdsTail cdsConditionTail, UUID serviceId) throws Exception {
 
         if (cdsConditionTail == null) {
             throw new IllegalArgumentException("cds condition tail object is null");
         }
 
-        cdsConditionTail.setRecordChecksum(cdsConditionTail.hashCode());
+        List<StagingConditionCdsTail> l = new ArrayList<>();
+        l.add(cdsConditionTail);
+        saveConditionTails(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, cdsConditionTail)) {
-            // LOG.warn("condition_cds_tail data already filed with record_checksum: "+cdsConditionTail.hashCode());
+    @Override
+    public void saveProcedureTails(List<StagingProcedureCdsTail> cdsTails, UUID serviceId) throws Exception {
+
+        //work out which ones need saving
+        List<StagingProcedureCdsTail> toSave = new ArrayList<>();
+
+        for (StagingProcedureCdsTail cdsTail: cdsTails) {
+            cdsTail.setRecordChecksum(cdsTail.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, cdsTail)) {
+                toSave.add(cdsTail);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -195,8 +142,96 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
         PreparedStatement ps = null;
 
         try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO procedure_cds_tail  "
+                    + " (exchange_id, dt_received, record_checksum,  sus_record_type, cds_unique_identifier, " +
+                    " cds_update_type, mrn, nhs_number, person_id, encounter_id, responsible_hcp_personnel_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " sus_record_type = VALUES(sus_record_type),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " cds_update_type = VALUES(cds_update_type),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " person_id = VALUES(person_id),"
+                    + " encounter_id = VALUES(encounter_id),"
+                    + " responsible_hcp_personnel_id = VALUES(responsible_hcp_personnel_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
             entityManager.getTransaction().begin();
 
+            for (StagingProcedureCdsTail cdsTail: toSave) {
+
+                int col = 1;
+
+                //all columns except the last one are non-null
+                ps.setString(col++, cdsTail.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsTail.getDtReceived().getTime()));
+                ps.setInt(col++, cdsTail.getRecordChecksum());
+                ps.setString(col++, cdsTail.getSusRecordType());
+                ps.setString(col++, cdsTail.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsTail.getCdsUpdateType());
+                ps.setString(col++, cdsTail.getMrn());
+                ps.setString(col++, cdsTail.getNhsNumber());
+                ps.setInt(col++, cdsTail.getPersonId());
+                ps.setInt(col++, cdsTail.getEncounterId());
+                ps.setInt(col++, cdsTail.getResponsibleHcpPersonnelId());
+
+                if (cdsTail.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsTail.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveConditionTails(List<StagingConditionCdsTail> cdsConditionTails, UUID serviceId) throws Exception {
+
+        List<StagingConditionCdsTail> toSave = new ArrayList<>();
+
+        for (StagingConditionCdsTail cdsConditionTail: cdsConditionTails) {
+
+            cdsConditionTail.setRecordChecksum(cdsConditionTail.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, cdsConditionTail)) {
+                toSave.add(cdsConditionTail);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+
+        try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -220,28 +255,35 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //all columns except the last one are non-null
-            ps.setString(col++, cdsConditionTail.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(cdsConditionTail.getDtReceived().getTime()));
-            ps.setInt(col++, cdsConditionTail.getRecordChecksum());
-            ps.setString(col++, cdsConditionTail.getSusRecordType());
-            ps.setString(col++, cdsConditionTail.getCdsUniqueIdentifier());
-            ps.setInt(col++, cdsConditionTail.getCdsUpdateType());
-            ps.setString(col++, cdsConditionTail.getMrn());
-            ps.setString(col++, cdsConditionTail.getNhsNumber());
-            ps.setInt(col++, cdsConditionTail.getPersonId());
-            ps.setInt(col++, cdsConditionTail.getEncounterId());
-            ps.setInt(col++, cdsConditionTail.getResponsibleHcpPersonnelId());
+            for (StagingConditionCdsTail cdsConditionTail: toSave) {
 
-            if (cdsConditionTail.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, cdsConditionTail.getAudit().writeToJson());
+                int col = 1;
+
+                //all columns except the last one are non-null
+                ps.setString(col++, cdsConditionTail.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsConditionTail.getDtReceived().getTime()));
+                ps.setInt(col++, cdsConditionTail.getRecordChecksum());
+                ps.setString(col++, cdsConditionTail.getSusRecordType());
+                ps.setString(col++, cdsConditionTail.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsConditionTail.getCdsUpdateType());
+                ps.setString(col++, cdsConditionTail.getMrn());
+                ps.setString(col++, cdsConditionTail.getNhsNumber());
+                ps.setInt(col++, cdsConditionTail.getPersonId());
+                ps.setInt(col++, cdsConditionTail.getEncounterId());
+                ps.setInt(col++, cdsConditionTail.getResponsibleHcpPersonnelId());
+
+                if (cdsConditionTail.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsConditionTail.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            ps.executeUpdate();
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 

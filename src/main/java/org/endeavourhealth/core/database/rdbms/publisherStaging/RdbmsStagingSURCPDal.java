@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
@@ -55,17 +57,33 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
     }
 
     @Override
-    public void save(StagingSURCP surcp, UUID serviceId) throws Exception {
+    public void saveSURCP(StagingSURCP surcp, UUID serviceId) throws Exception {
 
         if (surcp == null) {
             throw new IllegalArgumentException("surcp object is null");
         }
 
-        surcp.setRecordChecksum(surcp.hashCode());
+        List<StagingSURCP> l = new ArrayList<>();
+        l.add(surcp);
+        saveSURCPs(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, surcp)) {
-            //  LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
+
+    @Override
+    public void saveSURCPs(List<StagingSURCP> surcps, UUID serviceId) throws Exception {
+
+        List<StagingSURCP> toSave = new ArrayList<>();
+        for (StagingSURCP surcp: surcps) {
+            surcp.setRecordChecksum(surcp.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, surcp)) {
+                //  LOG.warn("procedure_SURCC data already filed with record_checksum: "+surcp.hashCode());
+                toSave.add(surcp);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -73,8 +91,6 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -104,90 +120,96 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
                     + " audit_json = VALUES(audit_json),"
                     + " lookup_wound_class_term = VALUES(lookup_wound_class_term)";
 
-
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
-            //first four, then cols six and seven are non-null
-            ps.setString(col++, surcp.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtReceived().getTime()));
-            ps.setInt(col++, surcp.getRecordChecksum());
-            ps.setInt(col++, surcp.getSurgicalCaseProcedureId());
-            if (surcp.getSurgicalCaseId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcp.getSurgicalCaseId());
-            }
-            ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtExtract().getTime()));
-            ps.setBoolean(col++, surcp.isActiveInd());
+            entityManager.getTransaction().begin();
 
-            if (surcp.getProcedureCode() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcp.getProcedureCode());
+            for (StagingSURCP surcp: toSave) {
+
+                int col = 1;
+                //first four, then cols six and seven are non-null
+                ps.setString(col++, surcp.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtReceived().getTime()));
+                ps.setInt(col++, surcp.getRecordChecksum());
+                ps.setInt(col++, surcp.getSurgicalCaseProcedureId());
+                if (surcp.getSurgicalCaseId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcp.getSurgicalCaseId());
+                }
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtExtract().getTime()));
+                ps.setBoolean(col++, surcp.isActiveInd());
+
+                if (surcp.getProcedureCode() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcp.getProcedureCode());
+                }
+
+                if (surcp.getProcedureText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcp.getProcedureText());
+                }
+
+                if (surcp.getModifierText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcp.getModifierText());
+                }
+
+                if (surcp.getPrimaryProcedureIndicator() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcp.getPrimaryProcedureIndicator());
+                }
+
+                if (surcp.getSurgeonPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcp.getSurgeonPersonnelId());
+                }
+
+                if (surcp.getDtStart() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStart().getTime()));
+                }
+
+                if (surcp.getDtStop() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStop().getTime()));
+                }
+
+                if (surcp.getWoundClassCode() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcp.getWoundClassCode());
+                }
+
+                if (surcp.getLookupProcedureCodeTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcp.getLookupProcedureCodeTerm());
+                }
+
+                if (surcp.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcp.getAudit().writeToJson());
+                }
+
+                if (surcp.getLookupWoundClassTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcp.getLookupWoundClassTerm());
+                }
+
+                ps.addBatch();
             }
 
-            if (surcp.getProcedureText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcp.getProcedureText());
-            }
-
-            if (surcp.getModifierText() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcp.getModifierText());
-            }
-
-            if (surcp.getPrimaryProcedureIndicator() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcp.getPrimaryProcedureIndicator());
-            }
-
-            if (surcp.getSurgeonPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcp.getSurgeonPersonnelId());
-            }
-
-            if (surcp.getDtStart() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStart().getTime()));
-            }
-
-            if (surcp.getDtStop() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(surcp.getDtStop().getTime()));
-            }
-
-            if (surcp.getWoundClassCode() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcp.getWoundClassCode());
-            }
-
-            if (surcp.getLookupProcedureCodeTerm() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcp.getLookupProcedureCodeTerm());
-            }
-
-            if (surcp.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcp.getAudit().writeToJson());
-            }
-
-            if (surcp.getLookupWoundClassTerm() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcp.getLookupWoundClassTerm());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 
@@ -195,7 +217,9 @@ public class RdbmsStagingSURCPDal implements StagingSURCPDalI {
             //keep getting an error "java.sql.SQLException: Statement parameter 1 not set", which makes no sense
             //since exchange ID is mandatory. So adding this logging
             LOG.error("Error executing prepared statement " + ps);
-            LOG.error(surcp.toString());
+            for (StagingSURCP surcp: toSave) {
+                LOG.error(surcp.toString());
+            }
 
             entityManager.getTransaction().rollback();
             throw ex;

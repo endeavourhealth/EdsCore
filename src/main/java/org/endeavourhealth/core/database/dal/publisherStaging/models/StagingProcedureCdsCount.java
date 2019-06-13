@@ -5,7 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import java.util.Date;
 import java.util.Objects;
 
-public class StagingCdsCount {
+public class StagingProcedureCdsCount {
 
     private String exchangeId;
     private Date dtReceived;

@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
@@ -54,17 +56,34 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
     }
 
     @Override
-    public void save(StagingSURCC surcc, UUID serviceId) throws Exception {
+    public void saveSURCC(StagingSURCC surcc, UUID serviceId) throws Exception {
 
         if (surcc == null) {
             throw new IllegalArgumentException("surcc object is null");
         }
 
-        surcc.setRecordChecksum(surcc.hashCode());
+        List<StagingSURCC> l = new ArrayList<>();
+        l.add(surcc);
+        saveSURCCs(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, surcc)) {
-           // LOG.warn("procedure_SURCC data already filed with record_checksum: " + surcc.hashCode());
+
+    @Override
+    public void saveSURCCs(List<StagingSURCC> surccs, UUID serviceId) throws Exception {
+
+        List<StagingSURCC> toSave = new ArrayList<>();
+        for (StagingSURCC surcc: surccs) {
+
+            surcc.setRecordChecksum(surcc.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, surcc)) {
+                // LOG.warn("procedure_SURCC data already filed with record_checksum: " + surcc.hashCode());
+                toSave.add(surcc);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -72,8 +91,6 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -104,81 +121,88 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //only the first six columns are non-null
-            ps.setString(col++, surcc.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtReceived().getTime()));
-            ps.setInt(col++, surcc.getRecordChecksum());
-            ps.setInt(col++, surcc.getSurgicalCaseId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtExtract().getTime()));
-            ps.setBoolean(col++, surcc.isActiveInd());
+            for (StagingSURCC surcc: toSave) {
 
-            if (surcc.getPersonId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcc.getPersonId());
+                int col = 1;
+
+                //only the first six columns are non-null
+                ps.setString(col++, surcc.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtReceived().getTime()));
+                ps.setInt(col++, surcc.getRecordChecksum());
+                ps.setInt(col++, surcc.getSurgicalCaseId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtExtract().getTime()));
+                ps.setBoolean(col++, surcc.isActiveInd());
+
+                if (surcc.getPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcc.getPersonId());
+                }
+
+                if (surcc.getEncounterId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, surcc.getEncounterId());
+                }
+
+                if (surcc.getDtStart() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStart().getTime()));
+                }
+                if (surcc.getDtStop() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStop().getTime()));
+                }
+                if (surcc.getDtCancelled() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtCancelled().getTime()));
+                }
+
+                if (surcc.getInstitutionCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getInstitutionCode());
+                }
+
+                if (surcc.getDepartmentCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getDepartmentCode());
+                }
+
+                if (surcc.getSurgicalAreaCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getSurgicalAreaCode());
+                }
+
+                if (surcc.getTheatreNumberCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getTheatreNumberCode());
+                }
+
+                if (surcc.getSpecialtyCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getSpecialtyCode());
+                }
+
+                if (surcc.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, surcc.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            if (surcc.getEncounterId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, surcc.getEncounterId());
-            }
-
-            if (surcc.getDtStart() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStart().getTime()));
-            }
-            if (surcc.getDtStop() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtStop().getTime()));
-            }
-            if (surcc.getDtCancelled() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(surcc.getDtCancelled().getTime()));
-            }
-
-            if (surcc.getInstitutionCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getInstitutionCode());
-            }
-
-            if (surcc.getDepartmentCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getDepartmentCode());
-            }
-
-            if (surcc.getSurgicalAreaCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getSurgicalAreaCode());
-            }
-
-            if (surcc.getTheatreNumberCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getTheatreNumberCode());
-            }
-
-            if (surcc.getSpecialtyCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getSpecialtyCode());
-            }
-
-            if (surcc.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, surcc.getAudit().writeToJson());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 

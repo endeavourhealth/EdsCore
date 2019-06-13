@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
@@ -59,17 +61,35 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
     }
 
     @Override
-    public void save(StagingProcedure stagingProcedure, UUID serviceId) throws Exception {
+    public void saveProcedure(StagingProcedure stagingProcedure, UUID serviceId) throws Exception {
 
         if (stagingProcedure == null) {
             throw new IllegalArgumentException("stagingProcedure is null");
         }
 
-        stagingProcedure.setRecordChecksum(stagingProcedure.hashCode());
+        List<StagingProcedure> l = new ArrayList<>();
+        l.add(stagingProcedure);
+        saveProcedures(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasSavedAlready(serviceId, stagingProcedure)) {
-            //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
+
+    @Override
+    public void saveProcedures(List<StagingProcedure> stagingProcedures, UUID serviceId) throws Exception {
+
+        List<StagingProcedure> toSave = new ArrayList<>();
+
+        for (StagingProcedure stagingProcedure: stagingProcedures) {
+
+            stagingProcedure.setRecordChecksum(stagingProcedure.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasSavedAlready(serviceId, stagingProcedure)) {
+                //   LOG.warn("stagingProcedure data already filed with record_checksum: "+stagingProcedure.hashCode());
+                toSave.add(stagingProcedure);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -77,7 +97,6 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
 
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(emisMapping);
@@ -119,53 +138,60 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //all but the last four columns are non-null
-            ps.setString(col++, stagingProcedure.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDtReceived().getTime()));
-            ps.setInt(col++, stagingProcedure.getRecordChecksum());
-            ps.setString(col++, stagingProcedure.getMrn());
-            ps.setString(col++, stagingProcedure.getNhsNumber());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDateOfBirth().getTime()));
-            ps.setInt(col++, stagingProcedure.getEncounterId());
-            ps.setString(col++, stagingProcedure.getConsultant());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getProcDtTm().getTime()));
-            ps.setString(col++, stagingProcedure.getUpdatedBy());
-            ps.setString(col++, stagingProcedure.getComments());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getCreateDtTm().getTime()));
-            ps.setString(col++, stagingProcedure.getProcCdType());
-            ps.setString(col++, stagingProcedure.getProcCd());
-            ps.setString(col++, stagingProcedure.getProcTerm());
-            ps.setString(col++, stagingProcedure.getWard());
-            ps.setString(col++, stagingProcedure.getSite());
+            for (StagingProcedure stagingProcedure: toSave) {
+
+                int col = 1;
+
+                //all but the last four columns are non-null
+                ps.setString(col++, stagingProcedure.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDtReceived().getTime()));
+                ps.setInt(col++, stagingProcedure.getRecordChecksum());
+                ps.setString(col++, stagingProcedure.getMrn());
+                ps.setString(col++, stagingProcedure.getNhsNumber());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getDateOfBirth().getTime()));
+                ps.setInt(col++, stagingProcedure.getEncounterId());
+                ps.setString(col++, stagingProcedure.getConsultant());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getProcDtTm().getTime()));
+                ps.setString(col++, stagingProcedure.getUpdatedBy());
+                ps.setString(col++, stagingProcedure.getComments());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProcedure.getCreateDtTm().getTime()));
+                ps.setString(col++, stagingProcedure.getProcCdType());
+                ps.setString(col++, stagingProcedure.getProcCd());
+                ps.setString(col++, stagingProcedure.getProcTerm());
+                ps.setString(col++, stagingProcedure.getWard());
+                ps.setString(col++, stagingProcedure.getSite());
 
 
-            if (stagingProcedure.getLookupPersonId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingProcedure.getLookupPersonId());
+                if (stagingProcedure.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingProcedure.getLookupPersonId());
+                }
+
+                if (stagingProcedure.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingProcedure.getLookupConsultantPersonnelId());
+                }
+
+                if (stagingProcedure.getLookupRecordedByPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingProcedure.getLookupRecordedByPersonnelId());
+                }
+
+                if (stagingProcedure.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProcedure.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            if (stagingProcedure.getLookupConsultantPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingProcedure.getLookupConsultantPersonnelId());
-            }
-
-            if (stagingProcedure.getLookupRecordedByPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingProcedure.getLookupRecordedByPersonnelId());
-            }
-
-            if (stagingProcedure.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProcedure.getAudit().writeToJson());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();
@@ -181,5 +207,4 @@ public class RdbmsStagingProcedureDal implements StagingProcedureDalI {
             entityManager.close();
         }
     }
-
 }

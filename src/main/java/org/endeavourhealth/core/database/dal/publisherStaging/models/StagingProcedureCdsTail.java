@@ -5,7 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import java.util.Date;
 import java.util.Objects;
 
-public class StagingCdsTail {
+public class StagingProcedureCdsTail {
     private String exchangeId;
     private Date dtReceived;
     private int recordChecksum;
@@ -19,7 +19,7 @@ public class StagingCdsTail {
     private int responsibleHcpPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingCdsTail() {
+    public StagingProcedureCdsTail() {
     }
 
 

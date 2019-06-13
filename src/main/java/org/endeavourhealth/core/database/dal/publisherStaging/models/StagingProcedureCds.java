@@ -5,7 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import java.util.Date;
 import java.util.Objects;
 
-public class StagingCds implements Cloneable {
+public class StagingProcedureCds implements Cloneable {
 
     private String exchangeId;
     private Date dtReceived;
@@ -28,7 +28,7 @@ public class StagingCds implements Cloneable {
     private Integer lookupConsultantPersonnelId;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingCds() {
+    public StagingProcedureCds() {
     }
 
     public String getExchangeId() {
@@ -193,8 +193,8 @@ public class StagingCds implements Cloneable {
 
 
 
-    public StagingCds clone() throws CloneNotSupportedException {
-        return (StagingCds) super.clone();
+    public StagingProcedureCds clone() throws CloneNotSupportedException {
+        return (StagingProcedureCds) super.clone();
     }
 
     @Override
