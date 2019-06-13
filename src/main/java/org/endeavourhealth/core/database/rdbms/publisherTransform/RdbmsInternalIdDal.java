@@ -14,10 +14,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RdbmsInternalIdDal implements InternalIdDalI {
@@ -151,6 +148,20 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
         List<InternalIdMap> mappings = new ArrayList<>(mappingsParam);
         UUID serviceId = findServiceId(mappings);
+
+        //remove any duplicates - because we generally populate mappings from multiple threads, if files contain
+        //duplicated data, we end up trying to save the same mapping more than once, which results in deadlocks
+        Set<String> hsUniques = new HashSet<>();
+        for (int i=mappings.size()-1; i>=0; i--) {
+            InternalIdMap mapping = mappings.get(i);
+            String key = mapping.getIdType() + "|" + mapping.getSourceId();
+            if (!hsUniques.contains(key)) {
+                hsUniques.add(key);
+            } else {
+                mappings.remove(i);
+            }
+        }
+
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
 
         PreparedStatement ps = null;

@@ -1,8 +1,10 @@
 package org.endeavourhealth.core.database.dal.ehr.models;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
+import org.hl7.fhir.instance.model.Reference;
 
 import java.util.Date;
 import java.util.UUID;
@@ -195,4 +197,13 @@ public class ResourceWrapper {
     public void setDeleted(boolean deleted) {
         isDeleted = deleted;
     }
+
+    public String getReferenceString() {
+        return ReferenceHelper.createResourceReference(resourceType, resourceId.toString());
+    }
+
+    public Reference getReference() {
+        return ReferenceHelper.createReference(resourceType, resourceId.toString());
+    }
+
 }

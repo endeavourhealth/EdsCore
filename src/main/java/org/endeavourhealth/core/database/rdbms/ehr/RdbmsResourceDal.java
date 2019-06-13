@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.ehr;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ParserPool;
+import org.endeavourhealth.common.fhir.ReferenceComponents;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
@@ -13,6 +14,7 @@ import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 import org.endeavourhealth.core.exceptions.TransformException;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
 import org.hibernate.internal.SessionImpl;
+import org.hl7.fhir.instance.model.Reference;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
@@ -654,6 +656,86 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
+    @Override
+    public Map<String, ResourceWrapper> getCurrentVersionForReferences(UUID serviceId, List<String> references) throws Exception {
+
+        if (references.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "select service_id, system_id, resource_type, resource_id, updated_at, patient_id, resource_data, resource_checksum"
+                    + " from"
+                    + " resource_current"
+                    + " where (";
+            for (int i=0; i<references.size(); i++) {
+                if (i>0) {
+                    sql += ") or (";
+                }
+                sql += "resource_type = ? and resource_id = ?";
+            }
+            sql += ")";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+
+            for (String referenceStr: references) {
+                Reference reference = ReferenceHelper.createReference(referenceStr);
+                ReferenceComponents comps = ReferenceHelper.getReferenceComponents(reference);
+
+                ps.setString(col++, comps.getResourceType().toString());
+                ps.setString(col++, comps.getId());
+            }
+
+            Map<String, ResourceWrapper> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                col = 1;
+                String serviceIdStr = rs.getString(col++);
+                String systemIdStr = rs.getString(col++);
+                String type = rs.getString(col++);
+                String id = rs.getString(col++);
+                java.sql.Timestamp tsUpdatedAt = rs.getTimestamp(col++);
+                String patientIdStr = rs.getString(col++);
+                String resourceJson = rs.getString(col++);
+                long resourceChecksum = rs.getLong(col++);
+
+                ResourceWrapper wrapper = new ResourceWrapper();
+                wrapper.setServiceId(UUID.fromString(serviceIdStr));
+                wrapper.setSystemId(UUID.fromString(systemIdStr));
+                wrapper.setResourceType(type);
+                wrapper.setResourceId(UUID.fromString(id));
+                wrapper.setCreatedAt(new java.util.Date(tsUpdatedAt.getTime()));
+                if (!Strings.isNullOrEmpty(patientIdStr)) {
+                    wrapper.setPatientId(UUID.fromString(patientIdStr));
+                }
+                wrapper.setResourceData(resourceJson);
+                wrapper.setResourceChecksum(new Long(resourceChecksum));
+
+                String reference = ReferenceHelper.createResourceReference(type, id);
+                ret.put(reference, wrapper);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+
+    }
+
     public List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
 
@@ -1002,6 +1084,69 @@ public class RdbmsResourceDal implements ResourceDalI {
         } finally {
             entityManager.close();
         }
+    }
+
+    @Override
+    public Map<String, Long> getResourceChecksumsForReferences(UUID serviceId, List<String> references) throws Exception {
+
+        if (references.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
+
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "select resource_type, resource_id, resource_checksum"
+                    + " from"
+                    + " resource_current"
+                    + " where (";
+            for (int i=0; i<references.size(); i++) {
+                if (i>0) {
+                    sql += ") or (";
+                }
+                sql += "resource_type = ? and resource_id = ?";
+            }
+            sql += ")";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+
+            for (String referenceStr: references) {
+                Reference reference = ReferenceHelper.createReference(referenceStr);
+                ReferenceComponents comps = ReferenceHelper.getReferenceComponents(reference);
+
+                ps.setString(col++, comps.getResourceType().toString());
+                ps.setString(col++, comps.getId());
+            }
+
+            Map<String, Long> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                col = 1;
+                String type = rs.getString(col++);
+                String id = rs.getString(col++);
+                long checksum = rs.getLong(col++);
+
+                String reference = ReferenceHelper.createResourceReference(type, id);
+                ret.put(reference, new Long(checksum));
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+
     }
 
     /**
