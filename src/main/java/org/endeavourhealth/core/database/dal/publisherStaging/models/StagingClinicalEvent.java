@@ -28,11 +28,15 @@ public class StagingClinicalEvent {
     private String lookupEventResultStatus;
     private String eventResultTxt;
     private Integer eventResultNbr;
+    private String comparator;
+    private Double processedNumericResult;
     private Date eventResultDt;
     private Integer normalcyCd;
     private String lookupNormalcy;
     private String normalRangeLowTxt;
+    private Double normalRangeLowValue;
     private String normalRangeHighTxt;
+    private Double normalRangeHighValue;
     private Date eventPerformedDtTm;
     private Integer eventPerformedPrsnlId;
     private String eventTag;
@@ -220,6 +224,22 @@ public class StagingClinicalEvent {
         this.eventResultNbr = eventResultNbr;
     }
 
+    public String getComparator() {
+        return comparator;
+    }
+
+    public void setComparator(String comparator) {
+        this.comparator = comparator;
+    }
+
+    public Double getProcessedNumericResult() {
+        return processedNumericResult;
+    }
+
+    public void setProcessedNumericResult(Double processedNumericResult) {
+        this.processedNumericResult = processedNumericResult;
+    }
+
     public Date getEventResultDt() {
         return eventResultDt;
     }
@@ -252,12 +272,28 @@ public class StagingClinicalEvent {
         this.normalRangeLowTxt = normalRangeLowTxt;
     }
 
+    public Double getNormalRangeLowValue() {
+        return normalRangeLowValue;
+    }
+
+    public void setNormalRangeLowValue(Double normalRangeLowValue) {
+        this.normalRangeLowValue = normalRangeLowValue;
+    }
+
     public String getNormalRangeHighTxt() {
         return normalRangeHighTxt;
     }
 
     public void setNormalRangeHighTxt(String normalRangeHighTxt) {
         this.normalRangeHighTxt = normalRangeHighTxt;
+    }
+
+    public Double getNormalRangeHighValue() {
+        return normalRangeHighValue;
+    }
+
+    public void setNormalRangeHighValue(Double normalRangeHighValue) {
+        this.normalRangeHighValue = normalRangeHighValue;
     }
 
     public Date getEventPerformedDtTm() {

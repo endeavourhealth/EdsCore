@@ -86,8 +86,9 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                     + " event_end_dt_tm, clinically_significant_dt_tm, event_class_cd, lookup_event_class, "
                     + "event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, event_result_dt, normalcy_cd,"
                     + "lookup_normalcy_code, normal_range_low_txt, normal_range_high_txt, event_performed_dt_tm, event_performed_prsnl_id, event_tag,"
-                    + "event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + "event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json, "
+                    + "comparator, processed_numeric_result, normal_range_low_value, normal_range_high_value )  "
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -124,7 +125,11 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                     + " record_status_cd = VALUES(record_status_cd), "
                     + " lookup_record_status_code = VALUES(lookup_record_status_code), "
                     + " lookup_mrn = VALUES(lookup_mrn), "
-                    + " audit_json = VALUES(audit_json)";
+                    + " audit_json = VALUES(audit_json), "
+                    + " comparator = VALUES(comparator), "
+                    + " processed_numeric_result = VALUES(processed_numeric_result), "
+                    + " normal_range_low_value = VALUES(normal_range_low_value), "
+                    + " normal_range_high_value = VALUES(normal_range_high_value)";
 
             ps = connection.prepareStatement(sql);
 
@@ -316,6 +321,30 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, stagingClinicalEvent.getAuditJson().writeToJson());
+            }
+
+            if (stagingClinicalEvent.getComparator() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getComparator());
+            }
+
+            if (stagingClinicalEvent.getProcessedNumericResult() == null) {
+                ps.setNull(col++, Types.DOUBLE);
+            } else {
+                ps.setDouble(col++, stagingClinicalEvent.getProcessedNumericResult());
+            }
+
+            if (stagingClinicalEvent.getNormalRangeLowValue() == null) {
+                ps.setNull(col++, Types.DOUBLE);
+            } else {
+                ps.setDouble(col++, stagingClinicalEvent.getNormalRangeLowValue());
+            }
+
+            if (stagingClinicalEvent.getNormalRangeHighValue() == null) {
+                ps.setNull(col++, Types.DOUBLE);
+            } else {
+                ps.setDouble(col++, stagingClinicalEvent.getNormalRangeHighValue());
             }
 
             ps.executeUpdate();
