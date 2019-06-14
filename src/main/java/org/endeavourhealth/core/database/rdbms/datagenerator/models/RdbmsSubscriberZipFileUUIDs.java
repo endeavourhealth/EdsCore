@@ -2,7 +2,7 @@ package org.endeavourhealth.core.database.rdbms.datagenerator.models;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.Objects;
 
 @Entity
@@ -13,8 +13,8 @@ public class RdbmsSubscriberZipFileUUIDs implements Serializable {
     private String queuedMessageUUID;
     private String queuedMessageBody;
     private long filingOrder;
-    private Date fileSent;
-    private Date fileFilingAttempted;
+    private Timestamp fileSent;
+    private Timestamp fileFilingAttempted;
     private Boolean fileFilingSuccess;
     private String filingFailureMessage;
 
@@ -60,21 +60,21 @@ public class RdbmsSubscriberZipFileUUIDs implements Serializable {
 
     @Basic
     @Column(name = "file_sent")
-    public Date getFileSent() {
+    public Timestamp getFileSent() {
         return fileSent;
     }
 
-    public void setFileSent(Date fileSent) {
+    public void setFileSent(Timestamp fileSent) {
         this.fileSent = fileSent;
     }
 
     @Basic
     @Column(name = "file_filing_attempted")
-    public Date getFileFilingAttempted() {
+    public Timestamp getFileFilingAttempted() {
         return fileFilingAttempted;
     }
 
-    public void setFileFilingAttempted(Date fileFilingAttempted) {
+    public void setFileFilingAttempted(Timestamp fileFilingAttempted) {
         this.fileFilingAttempted = fileFilingAttempted;
     }
 
