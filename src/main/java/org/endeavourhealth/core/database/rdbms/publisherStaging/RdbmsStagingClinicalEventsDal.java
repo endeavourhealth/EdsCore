@@ -82,12 +82,12 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
             String sql = "INSERT INTO clinical_event "
                     + " (exchange_id, dt_received, record_checksum, event_id, "
                     + " active_ind, person_id, encounter_id, order_id, "
-                    + " parent_event_id, event_cd, code_disp_txt, lookup_event_code, lookup_event_term, event_start_dt_tm, "
+                    + " parent_event_id, event_cd, lookup_event_code, lookup_event_term, event_start_dt_tm, "
                     + " event_end_dt_tm, clinically_significant_dt_tm, event_class_cd, lookup_event_class, "
                     + "event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, event_result_dt, normalcy_cd,"
                     + "lookup_normalcy_code, normal_range_low_txt, normal_range_high_txt, event_performed_dt_tm, event_performed_prsnl_id, event_tag,"
                     + "event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
@@ -99,7 +99,6 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                     + " order_id = VALUES(order_id), "
                     + " parent_event_id = VALUES(parent_event_id), "
                     + " event_cd = VALUES(event_cd), "
-                    + " code_disp_txt = VALUES(code_disp_txt), "
                     + " lookup_event_code = VALUES(lookup_event_code), "
                     + " lookup_event_term = VALUES(lookup_event_term), "
                     + " event_start_dt_tm = VALUES(event_start_dt_tm), "
@@ -161,12 +160,6 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setNull(col++, Types.VARCHAR);
             } else {
                 ps.setString(col++, stagingClinicalEvent.getEventCd());
-            }
-
-            if (stagingClinicalEvent.getCodeDispTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getCodeDispTxt());
             }
 
             if (stagingClinicalEvent.getLookupEventCode() == null) {
