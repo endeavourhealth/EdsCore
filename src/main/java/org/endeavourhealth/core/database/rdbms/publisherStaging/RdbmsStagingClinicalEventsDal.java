@@ -87,7 +87,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                     + "event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, event_result_dt, normalcy_cd,"
                     + "lookup_normalcy_code, normal_range_low_txt, normal_range_high_txt, event_performed_dt_tm, event_performed_prsnl_id, event_tag,"
                     + "event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json)  "
-                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+                    + " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
                     + " ON DUPLICATE KEY UPDATE "
                     + " exchange_id = VALUES(exchange_id), "
                     + " dt_received = VALUES(dt_received), "
