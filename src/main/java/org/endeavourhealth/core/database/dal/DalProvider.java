@@ -453,6 +453,10 @@ public class DalProvider {
         return new RdbmsStagingTargetDal();
     }
 
+    public static StagingClinicalEventDalI factoryBartsStagingClinicalEventDalI() {
+        return new RdbmsStagingClinicalEventsDal();
+    }
+
     public static SubscriberInstanceMappingDalI factorySubscriberInstanceMappingDal(String subscriberConfigName) {
         return new RdbmsSubscriberInstanceMappingDalI(subscriberConfigName);
     }
