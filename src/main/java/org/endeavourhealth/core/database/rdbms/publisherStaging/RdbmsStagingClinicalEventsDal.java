@@ -169,6 +169,18 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setString(col++, stagingClinicalEvent.getCodeDispTxt());
             }
 
+            if (stagingClinicalEvent.getLookupEventCode() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getLookupEventCode());
+            }
+
+            if (stagingClinicalEvent.getLookupEventTerm() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getLookupEventTerm());
+            }
+
             if (stagingClinicalEvent.getEventStartDtTm() == null) {
                 ps.setNull(col++, Types.TIMESTAMP);
             } else {
@@ -193,10 +205,22 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setInt(col++, stagingClinicalEvent.getEventClassCd());
             }
 
+            if (stagingClinicalEvent.getLookupEventClass() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getLookupEventClass());
+            }
+
             if (stagingClinicalEvent.getEventResultStatusCd() == null) {
                 ps.setNull(col++, Types.INTEGER);
             } else {
                 ps.setInt(col++, stagingClinicalEvent.getEventResultStatusCd());
+            }
+
+            if (stagingClinicalEvent.getLookupEventResultStatus() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getLookupEventResultStatus());
             }
 
             if (stagingClinicalEvent.getEventResultTxt() == null) {
@@ -221,6 +245,12 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setNull(col++, Types.INTEGER);
             } else {
                 ps.setInt(col++, stagingClinicalEvent.getNormalcyCd());
+            }
+
+            if (stagingClinicalEvent.getLookupNormalcy() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                ps.setString(col++, stagingClinicalEvent.getLookupNormalcy());
             }
 
             if (stagingClinicalEvent.getNormalRangeLowTxt() == null) {
