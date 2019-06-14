@@ -62,6 +62,101 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
     }
 
     @Override
+    public void saveCVREF(CernerCodeValueRef mapping) throws Exception {
+        if (mapping == null) {
+            throw new IllegalArgumentException("mapping is null");
+        }
+        List<CernerCodeValueRef> l = new ArrayList<>();
+        l.add(mapping);
+        saveCVREFs(l);
+    }
+
+    @Override
+    public void saveCVREFs(List<CernerCodeValueRef> mappings) throws Exception {
+
+        if (mappings.isEmpty()) {
+            return;
+        }
+
+        UUID serviceId = null;
+        for (CernerCodeValueRef mapping: mappings) {
+            if (serviceId == null) {
+                serviceId = mapping.getServiceId();
+            } else if (!mapping.getServiceId().equals(serviceId)) {
+                throw new Exception("Can't save CVREFs for different services");
+            }
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            // Key is code_value_cd, code_set_nbr, service_id
+            String sql = "INSERT INTO cerner_code_value_ref "
+                    + " (code_value_cd, date, active_ind, code_desc_txt,code_disp_txt,code_meaning_txt,code_set_nbr,code_set_desc_txt,alias_nhs_cd_alias,service_id,audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " code_value_cd = VALUES(code_value_cd), "
+                    + " date = VALUES(date),"
+                    + " active_ind = VALUES(active_ind),"
+                    + " code_desc_txt = VALUES(code_desc_txt),"
+                    + "code_disp_txt = VALUES(code_disp_txt),"
+                    + "code_meaning_txt = VALUES(code_meaning_txt),"
+                    + "code_set_nbr = VALUES (code_set_nbr),"
+                    + "code_set_desc_txt = VALUES(code_set_desc_txt),"
+                    + "alias_nhs_cd_alias = VALUES(alias_nhs_cd_alias),"
+                    + "service_id = VALUES(service_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            //EntityTransaction transaction = entityManager.getTransaction();
+            //transaction.begin();
+            entityManager.getTransaction().begin();
+
+            for (CernerCodeValueRef mapping: mappings) {
+
+                int col = 1;
+
+                // Only JSON audit field is nullable
+                ps.setString(col++, mapping.getCodeValueCd());
+                ps.setDate(col++, new java.sql.Date(mapping.getDate().getTime()));
+                ps.setByte(col++, mapping.getActiveInd());
+                ps.setString(col++, mapping.getCodeDescTxt());
+                ps.setString(col++, mapping.getCodeDispTxt());
+                ps.setString(col++, mapping.getCodeMeaningTxt());
+                ps.setLong(col++, mapping.getCodeSetNbr());
+                ps.setString(col++, mapping.getCodeSetDescTxt());
+                ps.setString(col++, mapping.getAliasNhsCdAlias());
+                ps.setString(col++, mapping.getServiceId().toString());
+                if (mapping.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
     public CernerCodeValueRef getCodeWithoutCodeSet(String code, UUID serviceId) throws Exception {
         //LOG.trace("readCernerCodeRefDB:" + codeSet + " " + code);
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -163,77 +258,6 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
         }
     }
 
-    public void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception {
-        if (mapping == null) {
-            throw new IllegalArgumentException("mapping is null");
-        }
-
-        RdbmsCernerCodeValueRef cernerMapping = new RdbmsCernerCodeValueRef(mapping);
-
-        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
-        PreparedStatement ps = null;
-
-        try {
-            //EntityTransaction transaction = entityManager.getTransaction();
-            //transaction.begin();
-            entityManager.getTransaction().begin();
-
-            //have to use prepared statement as JPA doesn't support upserts
-            //entityManager.persist(emisMapping);
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-            // Key is code_value_cd, code_set_nbr, service_id
-            String sql = "INSERT INTO cerner_code_value_ref "
-                    + " (code_value_cd, date, active_ind, code_desc_txt,code_disp_txt,code_meaning_txt,code_set_nbr,code_set_desc_txt,alias_nhs_cd_alias,service_id,audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " code_value_cd = VALUES(code_value_cd), "
-                    + " date = VALUES(date),"
-                    + " active_ind = VALUES(active_ind),"
-                    + " code_desc_txt = VALUES(code_desc_txt),"
-                    + "code_disp_txt = VALUES(code_disp_txt),"
-                    + "code_meaning_txt = VALUES(code_meaning_txt),"
-                    + "code_set_nbr = VALUES (code_set_nbr),"
-                    + "code_set_desc_txt = VALUES(code_set_desc_txt),"
-                    + "alias_nhs_cd_alias = VALUES(alias_nhs_cd_alias),"
-                    + "service_id = VALUES(service_id),"
-                    + " audit_json = VALUES(audit_json)";
-
-            ps = connection.prepareStatement(sql);
-            // Only JSON audit field is nullable
-            ps.setString(1, cernerMapping.getCodeValueCd());
-            ps.setDate(2, new java.sql.Date(cernerMapping.getDate().getTime()));
-            ps.setByte(3, cernerMapping.getActiveInd());
-            ps.setString(4,cernerMapping.getCodeDescTxt());
-            ps.setString(5, cernerMapping.getCodeDispTxt());
-            ps.setString(6, cernerMapping.getCodeMeaningTxt());
-            ps.setLong(7,cernerMapping.getCodeSetNbr());
-            ps.setString(8,cernerMapping.getCodeSetDescTxt());
-            ps.setString(9,cernerMapping.getAliasNhsCdAlias());
-            ps.setString(10,cernerMapping.getServiceId());
-            if (cernerMapping.getAuditJson() == null) {
-                ps.setNull(11, Types.VARCHAR);
-            } else {
-                ps.setString(11, cernerMapping.getAuditJson());
-            }
-
-            ps.executeUpdate();
-
-            //transaction.commit();
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
-    }
 
 
     @Override
@@ -303,23 +327,35 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
 
 
     @Override
-    public void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception {
+    public void saveNOMREF(CernerNomenclatureRef nomenclatureRef) throws Exception {
 
         if (nomenclatureRef == null) {
             throw new IllegalArgumentException("mapping is null");
         }
+        List<CernerNomenclatureRef> l = new ArrayList<>();
+        l.add(nomenclatureRef);
+        saveNOMREFs(l);
+    }
 
-        RdbmsCernerNomenclatureRef dbObj = new RdbmsCernerNomenclatureRef(nomenclatureRef);
-        UUID serviceId = nomenclatureRef.getServiceId();
+    @Override
+    public void saveNOMREFs(List<CernerNomenclatureRef> nomenclatureRefs) throws Exception {
+
+        if (nomenclatureRefs.isEmpty()) {
+            return;
+        }
+
+        UUID serviceId = null;
+        for (CernerNomenclatureRef mapping: nomenclatureRefs) {
+            if (serviceId == null) {
+                serviceId = mapping.getServiceId();
+            } else if (!mapping.getServiceId().equals(serviceId)) {
+                throw new Exception("Can't save NOMREFs for different services");
+            }
+        }
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
-
         try {
-            entityManager.getTransaction().begin();
-
-            //have to use prepared statement as JPA doesn't support upserts
-            //entityManager.persist(emisMapping);
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
@@ -340,55 +376,62 @@ public class RdbmsCernerCodeValueRefDal implements CernerCodeValueRefDalI {
                     + " concept_identifier = VALUES(concept_identifier),"
                     + " audit_json = VALUES(audit_json)";
 
-            int col = 1;
-
             ps = connection.prepareStatement(sql);
 
-            ps.setString(1, dbObj.getServiceId());
-            ps.setLong(2, dbObj.getNomenclatureId());
-            ps.setBoolean(3, dbObj.isActive());
-            if (dbObj.getMnemonicText() == null) {
-                ps.setNull(4, Types.VARCHAR);
-            } else {
-                ps.setString(4, dbObj.getMnemonicText());
-            }
-            if (dbObj.getValueText() == null) {
-                ps.setNull(5, Types.VARCHAR);
-            } else {
-                ps.setString(5, dbObj.getValueText());
-            }
-            if (dbObj.getDisplayText() == null) {
-                ps.setNull(6, Types.VARCHAR);
-            } else {
-                ps.setString(6, dbObj.getDisplayText());
-            }
-            if (dbObj.getDescriptionText() == null) {
-                ps.setNull(7, Types.VARCHAR);
-            } else {
-                ps.setString(7, dbObj.getDescriptionText());
-            }
-            if (dbObj.getNomenclatureTypeCode() == null) {
-                ps.setNull(8, Types.BIGINT);
-            } else {
-                ps.setLong(8, dbObj.getNomenclatureTypeCode());
-            }
-            if (dbObj.getVocabularyCode() == null) {
-                ps.setNull(9, Types.BIGINT);
-            } else {
-                ps.setLong(9, dbObj.getVocabularyCode());
-            }
-            if (dbObj.getConceptIdentifier() == null) {
-                ps.setNull(10, Types.VARCHAR);
-            } else {
-                ps.setString(10, dbObj.getConceptIdentifier());
-            }
-            if (dbObj.getAuditJson() == null) {
-                ps.setNull(11, Types.VARCHAR);
-            } else {
-                ps.setString(11, dbObj.getAuditJson());
+            entityManager.getTransaction().begin();
+
+            for (CernerNomenclatureRef nomref: nomenclatureRefs) {
+
+                int col = 1;
+
+                ps.setString(col++, nomref.getServiceId().toString());
+                ps.setLong(col++, nomref.getNomenclatureId());
+                ps.setBoolean(col++, nomref.isActive());
+                if (nomref.getMnemonicText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getMnemonicText());
+                }
+                if (nomref.getValueText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getValueText());
+                }
+                if (nomref.getDisplayText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getDisplayText());
+                }
+                if (nomref.getDescriptionText() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getDescriptionText());
+                }
+                if (nomref.getNomenclatureTypeCode() == null) {
+                    ps.setNull(col++, Types.BIGINT);
+                } else {
+                    ps.setLong(col++, nomref.getNomenclatureTypeCode());
+                }
+                if (nomref.getVocabularyCode() == null) {
+                    ps.setNull(col++, Types.BIGINT);
+                } else {
+                    ps.setLong(col++, nomref.getVocabularyCode());
+                }
+                if (nomref.getConceptIdentifier() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getConceptIdentifier());
+                }
+                if (nomref.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, nomref.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            ps.executeUpdate();
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();

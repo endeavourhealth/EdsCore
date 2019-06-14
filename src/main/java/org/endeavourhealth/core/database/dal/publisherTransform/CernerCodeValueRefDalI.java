@@ -11,7 +11,8 @@ public interface CernerCodeValueRefDalI {
 
     //CVREF
     CernerCodeValueRef getCodeFromCodeSet(Long codeSet, String code, UUID serviceId) throws Exception;
-    void save(CernerCodeValueRef mapping, UUID serviceId) throws Exception;
+    void saveCVREF(CernerCodeValueRef mapping) throws Exception;
+    void saveCVREFs(List<CernerCodeValueRef> mappings) throws Exception;
 
     CernerCodeValueRef getCodeWithoutCodeSet(String code, UUID serviceId) throws Exception;
     CernerCodeValueRef getCodeFromMultipleCodeSets(String code, UUID serviceId, Long... codeSets) throws Exception;
@@ -20,8 +21,8 @@ public interface CernerCodeValueRefDalI {
     //NOMREF
     CernerNomenclatureRef getNomenclatureRefForId(UUID serviceId, Long nomenclatureId) throws Exception;
     CernerNomenclatureRef getNomenclatureRefForValueText(UUID serviceId, String valueText) throws Exception;
-
-    void saveNomenclatureRef(CernerNomenclatureRef nomenclatureRef) throws Exception;
+    void saveNOMREF(CernerNomenclatureRef nomenclatureRef) throws Exception;
+    void saveNOMREFs(List<CernerNomenclatureRef> nomenclatureRefs) throws Exception;
 
     //CLEVE mapping
     void updateCleveMappingStateTable(CernerClinicalEventMappingState mapping) throws Exception;
