@@ -24,7 +24,10 @@ public class RdbmsCernerClinicalEventMappingDal implements CernerClinicalEventMa
             Connection connection = session.connection();
 
             //primary key (service_id, nomenclature_id)
-            String sql = "SELECT * FROM cerner_clinical_event_map WHERE cerner_cvref_code = ?";
+            String sql = "SELECT cerner_cvref_code, cerner_cvref_term, snomed_concept_id, " +
+                    "snomed_preferred_term, snomed_description_id, snomed_description_term, match_algorithm " +
+                    "FROM cerner_clinical_event_map " +
+                    "WHERE cerner_cvref_code = ?";
 
             ps = connection.prepareStatement(sql);
             ps.setString(1, cvrefCode.toString());

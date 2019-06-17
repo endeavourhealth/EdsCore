@@ -4,6 +4,9 @@ import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedLooku
 
 public class SnomedLookup {
 
+    //typeId 900000000000003001 -> Fully specified name
+    //typeId 900000000000013009 -> Synonym
+
     private String conceptId = null;
     private String typeId = null;
     private String term = null;
