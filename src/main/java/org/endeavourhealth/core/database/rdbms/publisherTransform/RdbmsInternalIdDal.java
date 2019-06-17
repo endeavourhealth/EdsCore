@@ -64,8 +64,6 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
 
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
 
