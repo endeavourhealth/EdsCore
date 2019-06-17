@@ -354,8 +354,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
             String sql = "select unique_id, is_delete, event_id, person_id, encounter_id, order_id, parent_event_id, event_cd, " +
                     " lookup_event_code, lookup_event_term, event_start_dt_tm, event_end_dt_tm, clinically_significant_dt_tm, event_class_cd, "+
                     " lookup_event_class, event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, "+
-                    " processed_numeric_result, comparator, event_result_dt, normalcy_cd, lookup_normalcy_code, normal_range_low_txt "+
-                    " normal_range_low_value, normal_range_high_txt, normal_range_high_value, event_performed_dt_tm, event_performed_prsnl_id, event_tag "+
+                    " processed_numeric_result, comparator, event_result_dt, normalcy_cd, lookup_normalcy_code, normal_range_low_txt, "+
+                    " normal_range_low_value, normal_range_high_txt, normal_range_high_value, event_performed_dt_tm, event_performed_prsnl_id, event_tag, "+
                     " event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json "+
                     " from "+
                     " clinical_event_target "+
@@ -437,9 +437,9 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingClinicalEventTarget.setEventResultNbr(eventResultNbr);
                 }
 
-                double processedNumbericResult = rs.getDouble(col++);
+                double processedNumericResult = rs.getDouble(col++);
                 if (!rs.wasNull()) {
-                    stagingClinicalEventTarget.setProcessedNumericResult(processedNumbericResult);
+                    stagingClinicalEventTarget.setProcessedNumericResult(processedNumericResult);
                 }
 
                 stagingClinicalEventTarget.setComparator(rs.getString(col++));
@@ -461,6 +461,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (!rs.wasNull()) {
                     stagingClinicalEventTarget.setNormalRangeLowValue(normalRangeLowValue);
                 }
+
                 stagingClinicalEventTarget.setNormalRangeHighTxt(rs.getString(col++));
 
                 double normalRangeHighValue = rs.getDouble(col++);
