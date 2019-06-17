@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingClinicalEventTarget;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionTarget;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
@@ -301,6 +302,212 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 }
 
                 resultList.add(stagingConditionTarget);
+            }
+
+            return resultList;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        CallableStatement stmt = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call process_clinical_events_staging_exchange(?)}";
+            stmt = connection.prepareCall(sql);
+
+            entityManager.getTransaction().begin();
+
+            stmt.setString(1, exchangeId.toString());
+
+            stmt.execute();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "select unique_id, is_delete, event_id, person_id, encounter_id, order_id, parent_event_id, event_cd, " +
+                    " lookup_event_code, lookup_event_term, event_start_dt_tm, event_end_dt_tm, clinically_significant_dt_tm, event_class_cd, "+
+                    " lookup_event_class, event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, "+
+                    " processed_numeric_result, comparator, event_result_dt, normalcy_cd, lookup_normalcy_code, normal_range_low_txt "+
+                    " normal_range_low_value, normal_range_high_txt, normal_range_high_value, event_performed_dt_tm, event_performed_prsnl_id, event_tag "+
+                    " event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json "+
+                    " from "+
+                    " clinical_event_target "+
+                    " where exchange_id = ?";
+
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, exchangeId.toString());
+
+            ResultSet rs = ps.executeQuery();
+            List<StagingClinicalEventTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+                StagingClinicalEventTarget stagingClinicalEventTarget = new StagingClinicalEventTarget();
+
+                stagingClinicalEventTarget.setUniqueId(rs.getString(col++));
+                stagingClinicalEventTarget.setDeleted(rs.getBoolean(col++));
+
+                int eventId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventId(eventId);
+                }
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEncounterId(encounterId);
+                }
+
+                int orderId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setOrderId(orderId);
+                }
+
+                int parentEventId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setParentEventId(parentEventId);
+                }
+
+                stagingClinicalEventTarget.setEventCd(rs.getString(col++));
+                stagingClinicalEventTarget.setLookupEventCode(rs.getString(col++));
+                stagingClinicalEventTarget.setLookupEventTerm(rs.getString(col++));
+
+                java.sql.Timestamp tsESD = rs.getTimestamp(col++);
+                if (tsESD != null) {
+                    stagingClinicalEventTarget.setEventStartDtTm(new Date(tsESD.getTime()));
+                }
+
+                java.sql.Timestamp tsEED = rs.getTimestamp(col++);
+                if (tsEED != null) {
+                    stagingClinicalEventTarget.setEventEndDtTm(new Date(tsEED.getTime()));
+                }
+
+                java.sql.Timestamp tsCSD = rs.getTimestamp(col++);
+                if (tsCSD != null) {
+                    stagingClinicalEventTarget.setClinicallySignificantDtTm(new Date(tsCSD.getTime()));
+                }
+
+                int eventClassCode = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventClassCd(eventClassCode);
+                }
+
+                stagingClinicalEventTarget.setLookupEventClass(rs.getString(col++));
+
+                int eventResultStatusCode = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventResultStatusCd(eventResultStatusCode);
+                }
+
+                stagingClinicalEventTarget.setLookupEventResultStatus(rs.getString(col++));
+                stagingClinicalEventTarget.setEventResultTxt(rs.getString(col++));
+
+                int eventResultNbr = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventResultNbr(eventResultNbr);
+                }
+
+                double processedNumbericResult = rs.getDouble(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setProcessedNumericResult(processedNumbericResult);
+                }
+
+                stagingClinicalEventTarget.setComparator(rs.getString(col++));
+
+                java.sql.Timestamp tsERD = rs.getTimestamp(col++);
+                if (tsERD != null) {
+                    stagingClinicalEventTarget.setEventResultDt(new Date(tsERD.getTime()));
+                }
+
+                int normalcyCode = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setNormalcyCd(normalcyCode);
+                }
+
+                stagingClinicalEventTarget.setLookupNormalcy(rs.getString(col++));
+                stagingClinicalEventTarget.setNormalRangeLowTxt(rs.getString(col++));
+
+                double normalRangeLowValue = rs.getDouble(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setNormalRangeLowValue(normalRangeLowValue);
+                }
+                stagingClinicalEventTarget.setNormalRangeHighTxt(rs.getString(col++));
+
+                double normalRangeHighValue = rs.getDouble(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setNormalRangeHighValue(normalRangeHighValue);
+                }
+
+                java.sql.Timestamp tsEPD = rs.getTimestamp(col++);
+                if (tsEPD != null) {
+                    stagingClinicalEventTarget.setEventPerformedDtTm(new Date(tsEPD.getTime()));
+                }
+
+                int performedPrsnl = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventPerformedPrsnlId(performedPrsnl);
+                }
+
+                stagingClinicalEventTarget.setEventTag(rs.getString(col++));
+                stagingClinicalEventTarget.setEventTitleTxt(rs.getString(col++));
+
+                int eventResultsUnitCode = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setEventResultUnitsCd(eventResultsUnitCode);
+                }
+
+                stagingClinicalEventTarget.setLookupEventResultsUnitsCode(rs.getString(col++));
+
+                int recordStatusCode = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setRecordStatusCd(recordStatusCode);
+                }
+
+                stagingClinicalEventTarget.setLookupRecordStatusCode(rs.getString(col++));
+                stagingClinicalEventTarget.setLookupMrn(rs.getString(col++));
+
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingClinicalEventTarget.setAuditJson(audit);
+                }
+
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingClinicalEventTarget.setConfidential(confidential);
+                }
+
+                resultList.add(stagingClinicalEventTarget);
             }
 
             return resultList;

@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging;
 
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingClinicalEventTarget;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionTarget;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
 
@@ -14,4 +15,8 @@ public interface StagingTargetDalI {
     //TODO - calls in to methods from transform code
     void processStagingForTargetConditions(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingConditionTarget> getTargetConditions(UUID exchangeId, UUID serviceId) throws Exception;
+
+
+    void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
+    List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
 }
