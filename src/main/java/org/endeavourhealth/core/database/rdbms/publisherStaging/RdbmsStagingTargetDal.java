@@ -356,7 +356,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     " lookup_event_class, event_result_status_cd, lookup_event_result_status, event_result_txt, event_result_nbr, "+
                     " processed_numeric_result, comparator, event_result_dt, normalcy_cd, lookup_normalcy_code, normal_range_low_txt, "+
                     " normal_range_low_value, normal_range_high_txt, normal_range_high_value, event_performed_dt_tm, event_performed_prsnl_id, event_tag, "+
-                    " event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json "+
+                    " event_title_txt, event_result_units_cd, lookup_result_units_code, record_status_cd, lookup_record_status_code, lookup_mrn, audit_json, is_confidential "+
                     " from "+
                     " clinical_event_target "+
                     " where exchange_id = ?";
