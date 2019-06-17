@@ -14,6 +14,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,6 +50,65 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
             if (entityManager.isOpen()) {
                 entityManager.close();
             }
+        }
+    }
+
+    @Override
+    public Map<String, String> getDestinationIds(UUID serviceId, String idType, Set<String> sourceIds) throws Exception {
+
+        if (sourceIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+        PreparedStatement ps = null;
+        try {
+            entityManager.getTransaction().begin();
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "SELECT source_id, destination_id"
+                    + " FROM internal_id_map"
+                    + " WHERE service_id = ?"
+                    + " AND id_type = ?"
+                    + " AND source_id IN (";
+            for (int i=0; i<sourceIds.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            ps.setString(col++, idType);
+            for (String sourceId: sourceIds) {
+                ps.setString(col++, sourceId);
+            }
+
+            Map<String, String> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                col = 1;
+                String sourceId = rs.getString(col++);
+                String destId = rs.getString(col++);
+
+                ret.put(sourceId, destId);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
         }
     }
 
