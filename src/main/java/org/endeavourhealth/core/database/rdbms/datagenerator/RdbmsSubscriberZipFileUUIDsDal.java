@@ -111,8 +111,9 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         }
     }
 
-    public RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(int subscriberId, String queuedMessageId,
-                                                                          String queuedMessageBody) throws Exception {
+    public synchronized RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(int subscriberId, String batchId,
+                                                                                       String queuedMessageId,
+                                                                                       String queuedMessageBody) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
 
@@ -120,6 +121,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
             RdbmsSubscriberZipFileUUIDs rszfu = new RdbmsSubscriberZipFileUUIDs();
 
             rszfu.setSubscriberId(subscriberId);
+            rszfu.setBatchUUID(batchId);
             rszfu.setQueuedMessageUUID(queuedMessageId);
             rszfu.setQueuedMessageBody(queuedMessageBody);
 

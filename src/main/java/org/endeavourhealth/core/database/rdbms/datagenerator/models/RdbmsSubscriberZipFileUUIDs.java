@@ -10,6 +10,7 @@ import java.util.Objects;
 public class RdbmsSubscriberZipFileUUIDs implements Serializable {
 
     private int subscriberId;
+    private String batchUUID;
     private String queuedMessageUUID;
     private String queuedMessageBody;
     private long filingOrder;
@@ -26,6 +27,16 @@ public class RdbmsSubscriberZipFileUUIDs implements Serializable {
 
     public void setSubscriberId(int subscriberId) {
         this.subscriberId = subscriberId;
+    }
+
+    @Basic
+    @Column(name = "batch_uuid")
+    public String getBatchUUID() {
+        return batchUUID;
+    }
+
+    public void setBatchUUID(String batchUUID) {
+        this.batchUUID = batchUUID;
     }
 
     @Id
@@ -104,6 +115,7 @@ public class RdbmsSubscriberZipFileUUIDs implements Serializable {
         if (o == null || getClass() != o.getClass()) return false;
         RdbmsSubscriberZipFileUUIDs that = (RdbmsSubscriberZipFileUUIDs) o;
         return subscriberId == that.subscriberId &&
+                Objects.equals(batchUUID, that.batchUUID) &&
                 Objects.equals(queuedMessageUUID, that.queuedMessageUUID) &&
                 Objects.equals(queuedMessageBody, that.queuedMessageBody) &&
                 filingOrder == that.filingOrder &&
@@ -115,7 +127,7 @@ public class RdbmsSubscriberZipFileUUIDs implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(subscriberId, queuedMessageUUID, queuedMessageBody,
+        return Objects.hash(subscriberId, batchUUID, queuedMessageUUID, queuedMessageBody,
                 filingOrder, fileSent, fileFilingAttempted, fileFilingSuccess, filingFailureMessage);
     }
 }
