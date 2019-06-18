@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingDIAGNDal implements StagingDIAGNDalI {
@@ -53,17 +55,32 @@ public class RdbmsStagingDIAGNDal implements StagingDIAGNDalI {
     }
 
     @Override
-    public void save(StagingDIAGN stagingDIAGN, UUID serviceId) throws Exception {
+    public void saveDIAGN(StagingDIAGN stagingDIAGN, UUID serviceId) throws Exception {
 
         if (stagingDIAGN == null) {
             throw new IllegalArgumentException("stagingDIAGN is null");
         }
 
-        stagingDIAGN.setRecordChecksum(stagingDIAGN.hashCode());
+        List<StagingDIAGN> l = new ArrayList<>();
+        l.add(stagingDIAGN);
+        saveDIAGNs(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, stagingDIAGN)) {
-            // LOG.warn("diagnosis_DIAGN data already filed with record_checksum: "+stagingDIAGN.hashCode());
+    @Override
+    public void saveDIAGNs(List<StagingDIAGN> stagingDIAGNs, UUID serviceId) throws Exception {
+
+        List<StagingDIAGN> toSave = new ArrayList<>();
+
+        for (StagingDIAGN stagingDIAGN: stagingDIAGNs) {
+            stagingDIAGN.setRecordChecksum(stagingDIAGN.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, stagingDIAGN)) {
+                toSave.add(stagingDIAGN);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -71,7 +88,6 @@ public class RdbmsStagingDIAGNDal implements StagingDIAGNDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
@@ -104,96 +120,102 @@ public class RdbmsStagingDIAGNDal implements StagingDIAGNDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //first five columns are non-null
-            ps.setString(col++, stagingDIAGN.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingDIAGN.getDtReceived().getTime()));
-            ps.setInt(col++, stagingDIAGN.getRecordChecksum());
-            ps.setInt(col++, stagingDIAGN.getDiagnosisId());
-            ps.setBoolean(col++, stagingDIAGN.isActiveInd());
+            for (StagingDIAGN stagingDIAGN: toSave) {
 
-            if (stagingDIAGN.getEncounterId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDIAGN.getEncounterId());
+                int col = 1;
+
+                //first five columns are non-null
+                ps.setString(col++, stagingDIAGN.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingDIAGN.getDtReceived().getTime()));
+                ps.setInt(col++, stagingDIAGN.getRecordChecksum());
+                ps.setInt(col++, stagingDIAGN.getDiagnosisId());
+                ps.setBoolean(col++, stagingDIAGN.isActiveInd());
+
+                if (stagingDIAGN.getEncounterId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDIAGN.getEncounterId());
+                }
+
+                if (stagingDIAGN.getEncounterSliceId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDIAGN.getEncounterSliceId());
+                }
+
+                if (stagingDIAGN.getDiagnosisDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingDIAGN.getDiagnosisDtTm().getTime()));
+                }
+
+                if (stagingDIAGN.getDiagnosisCodeType() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getDiagnosisCodeType());
+                }
+
+                if (stagingDIAGN.getDiagnosisCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getDiagnosisCode());
+                }
+
+                if (stagingDIAGN.getDiagnosisTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getDiagnosisTerm());
+                }
+
+                if (stagingDIAGN.getDiagnosisNotes() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getDiagnosisNotes());
+                }
+
+                if (stagingDIAGN.getDiagnosisType() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getDiagnosisType());
+                }
+
+                if (stagingDIAGN.getDiagnosisSeqNo() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDIAGN.getDiagnosisSeqNo());
+                }
+
+                if (stagingDIAGN.getDiagnosisPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDIAGN.getDiagnosisPersonnelId());
+                }
+
+                if (stagingDIAGN.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDIAGN.getLookupPersonId());
+                }
+
+                if (stagingDIAGN.getLookupMrn() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getLookupMrn());
+                }
+
+                if (stagingDIAGN.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDIAGN.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            if (stagingDIAGN.getEncounterSliceId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDIAGN.getEncounterSliceId());
-            }
+            ps.executeBatch();
 
-            if (stagingDIAGN.getDiagnosisDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingDIAGN.getDiagnosisDtTm().getTime()));
-            }
-
-            if (stagingDIAGN.getDiagnosisCodeType() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDIAGN.getDiagnosisCodeType());
-            }
-
-            if (stagingDIAGN.getDiagnosisCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDIAGN.getDiagnosisCode());
-            }
-
-            if (stagingDIAGN.getDiagnosisTerm() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else{
-                ps.setString(col++, stagingDIAGN.getDiagnosisTerm());
-            }
-
-            if (stagingDIAGN.getDiagnosisNotes() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else{
-                ps.setString(col++, stagingDIAGN.getDiagnosisNotes());
-            }
-
-            if (stagingDIAGN.getDiagnosisType() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else{
-                ps.setString(col++, stagingDIAGN.getDiagnosisType());
-            }
-
-            if (stagingDIAGN.getDiagnosisSeqNo() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDIAGN.getDiagnosisSeqNo());
-            }
-
-            if (stagingDIAGN.getDiagnosisPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDIAGN.getDiagnosisPersonnelId());
-            }
-
-            if (stagingDIAGN.getLookupPersonId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDIAGN.getLookupPersonId());
-            }
-
-            if (stagingDIAGN.getLookupMrn() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDIAGN.getLookupMrn());
-            }
-
-            if (stagingDIAGN.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDIAGN.getAudit().writeToJson());
-            }
-
-            ps.executeUpdate();
-
-            //transaction.commit();
             entityManager.getTransaction().commit();
 
         } catch (Exception ex) {

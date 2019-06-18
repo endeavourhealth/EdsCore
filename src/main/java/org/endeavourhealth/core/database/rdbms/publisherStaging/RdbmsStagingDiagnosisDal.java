@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
@@ -54,17 +56,32 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
     }
 
     @Override
-    public void save(StagingDiagnosis stagingDiagnosis, UUID serviceId) throws Exception {
+    public void saveDiag(StagingDiagnosis stagingDiag, UUID serviceId) throws Exception {
 
-        if (stagingDiagnosis == null) {
+        if (stagingDiag == null) {
             throw new IllegalArgumentException("stagingDiagnosis is null");
         }
 
-        stagingDiagnosis.setRecordChecksum(stagingDiagnosis.hashCode());
+        List<StagingDiagnosis> l = new ArrayList<>();
+        l.add(stagingDiag);
+        saveDiags(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasSavedAlready(serviceId, stagingDiagnosis)) {
-            //   LOG.warn("stagingDiagnosis data already filed with record_checksum: "+stagingDiagnosis.hashCode());
+    @Override
+    public void saveDiags(List<StagingDiagnosis> stagingDiags, UUID serviceId) throws Exception {
+
+        List<StagingDiagnosis> toSave = new ArrayList<>();
+
+        for (StagingDiagnosis stagingDiagnosis: stagingDiags) {
+            stagingDiagnosis.setRecordChecksum(stagingDiagnosis.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasSavedAlready(serviceId, stagingDiagnosis)) {
+                toSave.add(stagingDiagnosis);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -72,7 +89,6 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
@@ -108,73 +124,80 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //all but the last five columns are non-null
-            ps.setString(col++, stagingDiagnosis.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDtReceived().getTime()));
-            ps.setInt(col++, stagingDiagnosis.getRecordChecksum());
-            ps.setInt(col++, stagingDiagnosis.getDiagnosisId());
-            ps.setInt(col++, stagingDiagnosis.getPersonId());
-            ps.setBoolean(col++, stagingDiagnosis.isActiveInd());
-            ps.setString(col++, stagingDiagnosis.getMrn());
-            ps.setInt(col++, stagingDiagnosis.getEncounterId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDiagDtTm().getTime()));
-            ps.setString(col++, stagingDiagnosis.getDiagType());
-            ps.setString(col++, stagingDiagnosis.getConsultant());
-            ps.setString(col++, stagingDiagnosis.getVocab());
-            ps.setString(col++, stagingDiagnosis.getDiagCd());
-            ps.setString(col++, stagingDiagnosis.getDiagTerm());
+            for (StagingDiagnosis stagingDiagnosis: toSave) {
 
-            if (stagingDiagnosis.getNotes() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getNotes());
+                int col = 1;
+
+                //all but the last five columns are non-null
+                ps.setString(col++, stagingDiagnosis.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDtReceived().getTime()));
+                ps.setInt(col++, stagingDiagnosis.getRecordChecksum());
+                ps.setInt(col++, stagingDiagnosis.getDiagnosisId());
+                ps.setInt(col++, stagingDiagnosis.getPersonId());
+                ps.setBoolean(col++, stagingDiagnosis.isActiveInd());
+                ps.setString(col++, stagingDiagnosis.getMrn());
+                ps.setInt(col++, stagingDiagnosis.getEncounterId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDiagDtTm().getTime()));
+                ps.setString(col++, stagingDiagnosis.getDiagType());
+                ps.setString(col++, stagingDiagnosis.getConsultant());
+                ps.setString(col++, stagingDiagnosis.getVocab());
+                ps.setString(col++, stagingDiagnosis.getDiagCd());
+                ps.setString(col++, stagingDiagnosis.getDiagTerm());
+
+                if (stagingDiagnosis.getNotes() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getNotes());
+                }
+
+                if (stagingDiagnosis.getConfirmation() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getConfirmation());
+                }
+
+                if (stagingDiagnosis.getClassification() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getClassification());
+                }
+
+                if (stagingDiagnosis.getRanking() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getRanking());
+                }
+
+                if (stagingDiagnosis.getAxis() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getAxis());
+                }
+
+                if (stagingDiagnosis.getLocation() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getLocation());
+                }
+
+                if (stagingDiagnosis.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingDiagnosis.getLookupConsultantPersonnelId());
+                }
+
+                if (stagingDiagnosis.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingDiagnosis.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            if (stagingDiagnosis.getConfirmation() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getConfirmation());
-            }
-
-            if (stagingDiagnosis.getClassification() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getClassification());
-            }
-
-            if (stagingDiagnosis.getRanking() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getRanking());
-            }
-
-            if (stagingDiagnosis.getAxis() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getAxis());
-            }
-
-            if (stagingDiagnosis.getLocation() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getLocation());
-            }
-
-            if (stagingDiagnosis.getLookupConsultantPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingDiagnosis.getLookupConsultantPersonnelId());
-            }
-
-            if (stagingDiagnosis.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingDiagnosis.getAudit().writeToJson());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 
@@ -189,5 +212,4 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
             entityManager.close();
         }
     }
-
 }

@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingProblemDal implements StagingProblemDalI {
@@ -54,17 +56,32 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
     }
 
     @Override
-    public void save(StagingProblem stagingProblem, UUID serviceId) throws Exception {
+    public void saveProblem(StagingProblem stagingProblem, UUID serviceId) throws Exception {
 
         if (stagingProblem == null) {
             throw new IllegalArgumentException("stagingProblem is null");
         }
 
-        stagingProblem.setRecordChecksum(stagingProblem.hashCode());
+        List<StagingProblem> l = new ArrayList<>();
+        l.add(stagingProblem);
+        saveProblems(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasSavedAlready(serviceId, stagingProblem)) {
-            //   LOG.warn("stagingProblem data already filed with record_checksum: "+stagingProblem.hashCode());
+    @Override
+    public void saveProblems(List<StagingProblem> stagingProblems, UUID serviceId) throws Exception {
+
+        List<StagingProblem> toSave = new ArrayList<>();
+
+        for (StagingProblem stagingProblem: stagingProblems) {
+            stagingProblem.setRecordChecksum(stagingProblem.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasSavedAlready(serviceId, stagingProblem)) {
+                toSave.add(stagingProblem);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -72,7 +89,6 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
@@ -108,117 +124,123 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //all but the first five columns are non-null
-            ps.setString(col++, stagingProblem.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getDtReceived().getTime()));
-            ps.setInt(col++, stagingProblem.getRecordChecksum());
-            ps.setInt(col++, stagingProblem.getProblemId());
-            ps.setInt(col++, stagingProblem.getPersonId());
+            for (StagingProblem stagingProblem: toSave) {
 
-            if (stagingProblem.getMrn() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getMrn());
+                int col = 1;
+
+                //all but the first five columns are non-null
+                ps.setString(col++, stagingProblem.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getDtReceived().getTime()));
+                ps.setInt(col++, stagingProblem.getRecordChecksum());
+                ps.setInt(col++, stagingProblem.getProblemId());
+                ps.setInt(col++, stagingProblem.getPersonId());
+
+                if (stagingProblem.getMrn() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getMrn());
+                }
+
+                if (stagingProblem.getOnsetDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getOnsetDtTm().getTime()));
+                }
+
+                if (stagingProblem.getOnsetPrecision() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getOnsetPrecision());
+                }
+
+                if (stagingProblem.getUpdatedBy() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getUpdatedBy());
+                }
+                if (stagingProblem.getVocab() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getVocab());
+                }
+                if (stagingProblem.getProblemCd() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getProblemCd());
+                }
+
+                if (stagingProblem.getProblemTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getProblemTerm());
+                }
+
+                if (stagingProblem.getProblemTxt() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getProblemTxt());
+                }
+
+                if (stagingProblem.getClassification() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getClassification());
+                }
+
+                if (stagingProblem.getConfirmation() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getConfirmation());
+                }
+
+                if (stagingProblem.getRanking() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getRanking());
+                }
+
+                if (stagingProblem.getAxis() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getAxis());
+                }
+
+                if (stagingProblem.getProblemStatus() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getProblemStatus());
+                }
+
+                if (stagingProblem.getProblemStatusDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getProblemStatusDtTm().getTime()));
+                }
+
+                if (stagingProblem.getLocation() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getLocation());
+                }
+
+                if (stagingProblem.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingProblem.getLookupConsultantPersonnelId());
+                }
+
+                if (stagingProblem.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingProblem.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
             }
 
-            if (stagingProblem.getOnsetDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getOnsetDtTm().getTime()));
-            }
-
-            if (stagingProblem.getOnsetPrecision() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getOnsetPrecision());
-            }
-
-            if (stagingProblem.getUpdatedBy() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getUpdatedBy());
-            }
-            if (stagingProblem.getVocab() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getVocab());
-            }
-            if (stagingProblem.getProblemCd() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getProblemCd());
-            }
-
-            if (stagingProblem.getProblemTerm() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getProblemTerm());
-            }
-
-            if (stagingProblem.getProblemTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getProblemTxt());
-            }
-
-            if (stagingProblem.getClassification() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getClassification());
-            }
-
-            if (stagingProblem.getConfirmation() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getConfirmation());
-            }
-
-            if (stagingProblem.getRanking() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getRanking());
-            }
-
-            if (stagingProblem.getAxis() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getAxis());
-            }
-
-
-            if (stagingProblem.getProblemStatus() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getProblemStatus());
-            }
-
-            if (stagingProblem.getProblemStatusDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingProblem.getProblemStatusDtTm().getTime()));
-            }
-
-            if (stagingProblem.getLocation() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getLocation());
-            }
-
-            if (stagingProblem.getLookupConsultantPersonnelId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingProblem.getLookupConsultantPersonnelId());
-            }
-
-            if (stagingProblem.getAudit() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingProblem.getAudit().writeToJson());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             entityManager.getTransaction().commit();
 
@@ -233,5 +255,4 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
             entityManager.close();
         }
     }
-
 }
