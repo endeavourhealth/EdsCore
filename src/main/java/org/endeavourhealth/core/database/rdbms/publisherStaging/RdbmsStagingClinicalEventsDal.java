@@ -12,6 +12,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
@@ -54,16 +56,33 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
     }
 
     @Override
-    public void save(StagingClinicalEvent stagingClinicalEvent, UUID serviceId) throws Exception {
+    public void saveCLEVE(StagingClinicalEvent stagingClinicalEvent, UUID serviceId) throws Exception {
+
         if (stagingClinicalEvent == null) {
-            throw new IllegalArgumentException("stagingClinicalEvent is null");
+            throw new IllegalArgumentException("stagingCLEVE is null");
         }
 
-        stagingClinicalEvent.setRecordChecksum(stagingClinicalEvent.hashCode());
+        List<StagingClinicalEvent> l = new ArrayList<>();
+        l.add(stagingClinicalEvent);
+        saveCLEVEs(l, serviceId);
+    }
 
-        //check if record already filed to avoid duplicates
-        if (wasAlreadySaved(serviceId, stagingClinicalEvent)) {
-            // LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingClinicalEvent.hashCode());
+    @Override
+    public void saveCLEVEs(List<StagingClinicalEvent> stagingClinicalEvents, UUID serviceId) throws Exception {
+
+        List<StagingClinicalEvent> toSave = new ArrayList<>();
+
+        for (StagingClinicalEvent stagingCLEVE: stagingClinicalEvents) {
+            stagingCLEVE.setRecordChecksum(stagingCLEVE.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasAlreadySaved(serviceId, stagingCLEVE)) {
+                // LOG.warn("procedure_PROCE data already filed with record_checksum: "+stagingPROCE.hashCode());
+                toSave.add(stagingCLEVE);
+            }
+        }
+
+        if (toSave.isEmpty()) {
             return;
         }
 
@@ -71,8 +90,6 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(emisMapping);
 
@@ -133,221 +150,228 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
 
             ps = connection.prepareStatement(sql);
 
-            int col = 1;
+            entityManager.getTransaction().begin();
 
-            //first five columns are non-null
-            ps.setString(col++, stagingClinicalEvent.getExchangeId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getDtReceived().getTime()));
-            ps.setLong(col++, stagingClinicalEvent.getRecordChecksum());
-            ps.setLong(col++, stagingClinicalEvent.getEventId());
-            ps.setBoolean(col++, stagingClinicalEvent.isActiveInd());
-            ps.setInt(col++, stagingClinicalEvent.getPersonId());
+            for (StagingClinicalEvent stagingClinicalEvent : toSave) {
 
-            if (stagingClinicalEvent.getEncounterId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getEncounterId());
+                int col = 1;
+
+                //first five columns are non-null
+                ps.setString(col++, stagingClinicalEvent.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getDtReceived().getTime()));
+                ps.setLong(col++, stagingClinicalEvent.getRecordChecksum());
+                ps.setLong(col++, stagingClinicalEvent.getEventId());
+                ps.setBoolean(col++, stagingClinicalEvent.isActiveInd());
+                ps.setInt(col++, stagingClinicalEvent.getPersonId());
+
+                if (stagingClinicalEvent.getEncounterId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEncounterId());
+                }
+
+                if (stagingClinicalEvent.getOrderId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getOrderId());
+                }
+
+                if (stagingClinicalEvent.getParentEventId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getParentEventId());
+                }
+
+                if (stagingClinicalEvent.getEventCd() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getEventCd());
+                }
+
+                if (stagingClinicalEvent.getLookupEventCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupEventCode());
+                }
+
+                if (stagingClinicalEvent.getLookupEventTerm() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupEventTerm());
+                }
+
+                if (stagingClinicalEvent.getEventStartDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventStartDtTm().getTime()));
+                }
+
+                if (stagingClinicalEvent.getEventEndDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventEndDtTm().getTime()));
+                }
+
+                if (stagingClinicalEvent.getClinicallySignificantDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getClinicallySignificantDtTm().getTime()));
+                }
+
+                if (stagingClinicalEvent.getEventClassCd() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEventClassCd());
+                }
+
+                if (stagingClinicalEvent.getLookupEventClass() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupEventClass());
+                }
+
+                if (stagingClinicalEvent.getEventResultStatusCd() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEventResultStatusCd());
+                }
+
+                if (stagingClinicalEvent.getLookupEventResultStatus() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupEventResultStatus());
+                }
+
+                if (stagingClinicalEvent.getEventResultTxt() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getEventResultTxt());
+                }
+
+                if (stagingClinicalEvent.getEventResultNbr() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEventResultNbr());
+                }
+
+                if (stagingClinicalEvent.getEventResultDt() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventResultDt().getTime()));
+                }
+
+                if (stagingClinicalEvent.getNormalcyCd() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getNormalcyCd());
+                }
+
+                if (stagingClinicalEvent.getLookupNormalcy() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupNormalcy());
+                }
+
+                if (stagingClinicalEvent.getNormalRangeLowTxt() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getNormalRangeLowTxt());
+                }
+
+                if (stagingClinicalEvent.getNormalRangeHighTxt() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getNormalRangeHighTxt());
+                }
+
+                if (stagingClinicalEvent.getEventPerformedDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventPerformedDtTm().getTime()));
+                }
+
+                if (stagingClinicalEvent.getEventPerformedPrsnlId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEventPerformedPrsnlId());
+                }
+
+                if (stagingClinicalEvent.getEventTag() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getEventTag());
+                }
+
+                if (stagingClinicalEvent.getEventTitleTxt() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getEventTitleTxt());
+                }
+
+                if (stagingClinicalEvent.getEventResultUnitsCd() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getEventResultUnitsCd());
+                }
+
+                if (stagingClinicalEvent.getLookupEventResultsUnitsCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupEventResultsUnitsCode());
+                }
+
+                if (stagingClinicalEvent.getRecordStatusCd() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, stagingClinicalEvent.getRecordStatusCd());
+                }
+
+                if (stagingClinicalEvent.getLookupRecordStatusCode() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupRecordStatusCode());
+                }
+
+                if (stagingClinicalEvent.getLookupMrn() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getLookupMrn());
+                }
+
+                if (stagingClinicalEvent.getAuditJson() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getAuditJson().writeToJson());
+                }
+
+                if (stagingClinicalEvent.getComparator() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, stagingClinicalEvent.getComparator());
+                }
+
+                if (stagingClinicalEvent.getProcessedNumericResult() == null) {
+                    ps.setNull(col++, Types.DOUBLE);
+                } else {
+                    ps.setDouble(col++, stagingClinicalEvent.getProcessedNumericResult());
+                }
+
+                if (stagingClinicalEvent.getNormalRangeLowValue() == null) {
+                    ps.setNull(col++, Types.DOUBLE);
+                } else {
+                    ps.setDouble(col++, stagingClinicalEvent.getNormalRangeLowValue());
+                }
+
+                if (stagingClinicalEvent.getNormalRangeHighValue() == null) {
+                    ps.setNull(col++, Types.DOUBLE);
+                } else {
+                    ps.setDouble(col++, stagingClinicalEvent.getNormalRangeHighValue());
+                }
+
+                ps.addBatch();
             }
 
-            if (stagingClinicalEvent.getOrderId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getOrderId());
-            }
-
-            if (stagingClinicalEvent.getParentEventId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getParentEventId());
-            }
-
-            if (stagingClinicalEvent.getEventCd() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getEventCd());
-            }
-
-            if (stagingClinicalEvent.getLookupEventCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupEventCode());
-            }
-
-            if (stagingClinicalEvent.getLookupEventTerm() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupEventTerm());
-            }
-
-            if (stagingClinicalEvent.getEventStartDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventStartDtTm().getTime()));
-            }
-
-            if (stagingClinicalEvent.getEventEndDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventEndDtTm().getTime()));
-            }
-
-            if (stagingClinicalEvent.getClinicallySignificantDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getClinicallySignificantDtTm().getTime()));
-            }
-
-            if (stagingClinicalEvent.getEventClassCd() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else{
-                ps.setInt(col++, stagingClinicalEvent.getEventClassCd());
-            }
-
-            if (stagingClinicalEvent.getLookupEventClass() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupEventClass());
-            }
-
-            if (stagingClinicalEvent.getEventResultStatusCd() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getEventResultStatusCd());
-            }
-
-            if (stagingClinicalEvent.getLookupEventResultStatus() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupEventResultStatus());
-            }
-
-            if (stagingClinicalEvent.getEventResultTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getEventResultTxt());
-            }
-
-            if (stagingClinicalEvent.getEventResultNbr() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getEventResultNbr());
-            }
-
-            if (stagingClinicalEvent.getEventResultDt() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventResultDt().getTime()));
-            }
-
-            if (stagingClinicalEvent.getNormalcyCd() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getNormalcyCd());
-            }
-
-            if (stagingClinicalEvent.getLookupNormalcy() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupNormalcy());
-            }
-
-            if (stagingClinicalEvent.getNormalRangeLowTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getNormalRangeLowTxt());
-            }
-
-            if (stagingClinicalEvent.getNormalRangeHighTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getNormalRangeHighTxt());
-            }
-
-            if (stagingClinicalEvent.getEventPerformedDtTm() == null) {
-                ps.setNull(col++, Types.TIMESTAMP);
-            } else {
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getEventPerformedDtTm().getTime()));
-            }
-
-            if (stagingClinicalEvent.getEventPerformedPrsnlId() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getEventPerformedPrsnlId());
-            }
-
-            if (stagingClinicalEvent.getEventTag() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getEventTag());
-            }
-
-            if (stagingClinicalEvent.getEventTitleTxt() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getEventTitleTxt());
-            }
-
-            if (stagingClinicalEvent.getEventResultUnitsCd() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getEventResultUnitsCd());
-            }
-
-            if (stagingClinicalEvent.getLookupEventResultsUnitsCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupEventResultsUnitsCode());
-            }
-
-            if (stagingClinicalEvent.getRecordStatusCd() == null) {
-                ps.setNull(col++, Types.INTEGER);
-            } else {
-                ps.setInt(col++, stagingClinicalEvent.getRecordStatusCd());
-            }
-
-            if (stagingClinicalEvent.getLookupRecordStatusCode() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupRecordStatusCode());
-            }
-
-            if (stagingClinicalEvent.getLookupMrn() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getLookupMrn());
-            }
-
-            if (stagingClinicalEvent.getAuditJson() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getAuditJson().writeToJson());
-            }
-
-            if (stagingClinicalEvent.getComparator() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, stagingClinicalEvent.getComparator());
-            }
-
-            if (stagingClinicalEvent.getProcessedNumericResult() == null) {
-                ps.setNull(col++, Types.DOUBLE);
-            } else {
-                ps.setDouble(col++, stagingClinicalEvent.getProcessedNumericResult());
-            }
-
-            if (stagingClinicalEvent.getNormalRangeLowValue() == null) {
-                ps.setNull(col++, Types.DOUBLE);
-            } else {
-                ps.setDouble(col++, stagingClinicalEvent.getNormalRangeLowValue());
-            }
-
-            if (stagingClinicalEvent.getNormalRangeHighValue() == null) {
-                ps.setNull(col++, Types.DOUBLE);
-            } else {
-                ps.setDouble(col++, stagingClinicalEvent.getNormalRangeHighValue());
-            }
-
-            ps.executeUpdate();
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();
