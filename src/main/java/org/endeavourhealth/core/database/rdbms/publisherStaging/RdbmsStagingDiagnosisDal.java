@@ -139,7 +139,14 @@ public class RdbmsStagingDiagnosisDal implements StagingDiagnosisDalI {
                 ps.setBoolean(col++, stagingDiagnosis.isActiveInd());
                 ps.setString(col++, stagingDiagnosis.getMrn());
                 ps.setInt(col++, stagingDiagnosis.getEncounterId());
-                ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDiagDtTm().getTime()));
+
+                if (stagingDiagnosis.getDiagDtTm() == null) {
+                    ps.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDiagDtTm().getTime()));
+                }
+
+                //ps.setTimestamp(col++, new java.sql.Timestamp(stagingDiagnosis.getDiagDtTm().getTime()));
                 ps.setString(col++, stagingDiagnosis.getDiagType());
                 ps.setString(col++, stagingDiagnosis.getConsultant());
                 ps.setString(col++, stagingDiagnosis.getVocab());
