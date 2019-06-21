@@ -764,29 +764,58 @@ public class RdbmsResourceDal implements ResourceDalI {
     }
 
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception {
+
         EntityManager entityManager = ConnectionManager.getEhrEntityManager(serviceId);
-
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsResourceCurrent c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.patientId = :patient_id";
+            String sql = "select system_id, resource_type, resource_id, updated_at, resource_data, resource_checksum"
+                    + " from resource_current"
+                    + " where service_id = ?"
+                    + " and patient_id = ?";
 
-            Query query = entityManager.createQuery(sql, RdbmsResourceCurrent.class)
-                    .setParameter("service_id", serviceId.toString())
-                    .setParameter("patient_id", patientId.toString());
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
 
-            List<RdbmsResourceCurrent> ret = query.getResultList();
+            ps = connection.prepareStatement(sql);
 
-            return ret
-                    .stream()
-                    .map(T -> new ResourceWrapper(T))
-                    .collect(Collectors.toList());
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            if (patientId != null) {
+                ps.setString(col++, patientId.toString());
+            } else {
+                //for admin resourecs, the patient ID will be a non-null empty string
+                ps.setString(col++, "");
+            }
+
+            List<ResourceWrapper> ret = new ArrayList<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                col = 1;
+
+                ResourceWrapper w = new ResourceWrapper();
+                w.setServiceId(serviceId);
+                w.setPatientId(patientId);
+                w.setSystemId(UUID.fromString(rs.getString(col++)));
+                w.setResourceType(rs.getString(col++));
+                w.setResourceId(UUID.fromString(rs.getString(col++)));
+                w.setCreatedAt(new Date(rs.getTimestamp(col++).getTime()));
+                w.setResourceData(rs.getString(col++));
+                w.setResourceChecksum(new Long(rs.getLong(col++)));
+
+                ret.add(w);
+            }
+
+            return ret;
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
+
     }
 
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception {

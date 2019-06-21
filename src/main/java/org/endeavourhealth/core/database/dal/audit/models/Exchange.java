@@ -169,12 +169,29 @@ public class Exchange {
         }
     }
 
+    public Boolean getHeaderAsBoolean(String key) throws Exception {
+        String s = getHeader(key);
+        if (Strings.isNullOrEmpty(s)) {
+            return null;
+        } else {
+            return Boolean.valueOf(s);
+        }
+    }
+
     public void setHeaderAsDate(String key, Date d) throws Exception {
         if (d == null) {
             setHeader(key, null);
         } else {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(HeaderKeys.DATE_FORMAT);
             setHeader(key, simpleDateFormat.format(d));
+        }
+    }
+
+    public void setHeaderAsBoolean(String key, Boolean b) throws Exception {
+        if (b == null) {
+            setHeader(key, null);
+        } else {
+            setHeader(key, b.toString());
         }
     }
 

@@ -1126,41 +1126,34 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             entityManager.close();
         }
     }
-    /*public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
 
-        String sql = "SELECT ps.service_id, ps.patient_id"
-                + " FROM patient_search ps"
-                + " WHERE ps.nhs_number = ?"
-                + " AND ps.service_id IN ("
-                + String.join(",", Collections.nCopies(serviceIds.size(), "?"))
-                + ")";
+    @Override
+    public List<UUID> getPatientIds(UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;
         try {
+
+            String sql = "SELECT patient_id"
+                    + " FROM patient_search"
+                    + " WHERE service_id = ?";
+
             SessionImpl session = (SessionImpl)entityManager.getDelegate();
             Connection connection = session.connection();
             ps = connection.prepareStatement(sql);
+            ps.setFetchSize(1000); //no need to load full result set at once
 
-            int index = 1;
-            ps.setString(index++, nhsNumber);
-
-            for (String serviceId: serviceIds) {
-                ps.setString(index++, serviceId);
-            }
+            ps.setString(1, serviceId.toString());
 
             ResultSet rs = ps.executeQuery();
 
-            Map<UUID, UUID> ret = new HashMap<>();
+            List<UUID> ret = new ArrayList<>();
 
             while (rs.next()) {
 
-                PatientSearch obj = new PatientSearch();
-
                 int col = 1;
-                UUID serviceId = UUID.fromString(rs.getString(col++));
                 UUID patientId = UUID.fromString(rs.getString(col++));
-                ret.put(patientId, serviceId);
+                ret.add(patientId);
             }
 
             return ret;
@@ -1171,7 +1164,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             }
             entityManager.close();
         }
-    }*/
+
+    }
+
 }
 
 class PatientSearchLocalIdentifier {

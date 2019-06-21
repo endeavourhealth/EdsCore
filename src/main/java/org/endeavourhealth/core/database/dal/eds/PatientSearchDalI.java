@@ -22,4 +22,6 @@ public interface PatientSearchDalI {
     PatientSearch searchByPatientId(UUID patientId) throws Exception;
 
     Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
+
+    List<UUID> getPatientIds(UUID serviceId) throws Exception;
 }
