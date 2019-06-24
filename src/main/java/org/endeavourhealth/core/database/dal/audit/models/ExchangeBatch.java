@@ -72,4 +72,10 @@ public class ExchangeBatch {
     public void setNeedsSaving(boolean needsSaving) {
         this.needsSaving = needsSaving;
     }
+
+    @Override
+    public String toString() {
+        return "ExchangeBatch [ExchangeID " + exchangeId + " BatchId " + batchId + " Inserted " + insertedAt + " PatientID " + edsPatientId + "]";
+    }
+
 }

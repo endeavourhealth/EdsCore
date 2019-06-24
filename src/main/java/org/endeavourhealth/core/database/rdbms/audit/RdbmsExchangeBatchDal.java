@@ -1,20 +1,20 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
 import org.endeavourhealth.core.database.dal.audit.models.ExchangeBatch;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeBatch;
 import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
 
@@ -23,79 +23,125 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
 
     public List<ExchangeBatch> retrieveForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsExchangeBatch c"
-                    + " where c.exchangeId = :exchange_id"
-                    + " order by c.insertedAt ASC";
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                    .setParameter("exchange_id", exchangeId.toString());
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
 
-            List<RdbmsExchangeBatch> ret = query.getResultList();
+            String sql = "SELECT batch_id, inserted_at, eds_patient_id"
+                    + " FROM exchange_batch"
+                    + " WHERE exchange_id = ?"
+                    + " ORDER BY inserted_at ASC";
 
-            return ret
-                    .stream()
-                    .map(T -> new ExchangeBatch(T))
-                    .collect(Collectors.toList());
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, exchangeId.toString());
+
+            ResultSet rs = ps.executeQuery();
+            return readFromResultSet(rs, exchangeId);
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
 
     public ExchangeBatch retrieveFirstForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsExchangeBatch c"
-                    + " where c.exchangeId = :exchange_id"
-                    + " order by c.insertedAt ASC";
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                    .setParameter("exchange_id", exchangeId.toString())
-                    .setMaxResults(1);
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
 
-            RdbmsExchangeBatch result = (RdbmsExchangeBatch)query.getSingleResult();
-            return new ExchangeBatch(result);
+            String sql = "SELECT batch_id, inserted_at, eds_patient_id"
+                    + " FROM exchange_batch"
+                    + " WHERE exchange_id = ?"
+                    + " ORDER BY inserted_at ASC"
+                    + " LIMIT 1";
 
-        } catch (NoResultException ex) {
-            return null;
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, exchangeId.toString());
+
+            ResultSet rs = ps.executeQuery();
+            List<ExchangeBatch> l = readFromResultSet(rs, exchangeId);
+            if (l.isEmpty()) {
+                return null;
+            } else {
+                return l.get(0);
+            }
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
 
     public ExchangeBatch getForExchangeAndBatchId(UUID exchangeId, UUID batchId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsExchangeBatch c"
-                    + " where c.exchangeId = :exchange_id"
-                    + " and c.batchId = :batch_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeBatch.class)
-                    .setParameter("exchange_id", exchangeId.toString())
-                    .setParameter("batch_id", batchId.toString())
-                    .setMaxResults(1);
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
 
+            String sql = "SELECT batch_id, inserted_at, eds_patient_id"
+                    + " FROM exchange_batch"
+                    + " WHERE exchange_id = ?"
+                    + " AND batch_id = ?"
+                    + " LIMIT 1";
 
-            RdbmsExchangeBatch result = (RdbmsExchangeBatch)query.getSingleResult();
-            return new ExchangeBatch(result);
+            ps = connection.prepareStatement(sql);
 
-        } catch (NoResultException ex) {
-            return null;
+            int col = 1;
+            ps.setString(col++, exchangeId.toString());
+            ps.setString(col++, batchId.toString());
+
+            ResultSet rs = ps.executeQuery();
+            List<ExchangeBatch> l = readFromResultSet(rs, exchangeId);
+            if (l.isEmpty()) {
+                return null;
+            } else {
+                return l.get(0);
+            }
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
+    }
+
+    private static List<ExchangeBatch> readFromResultSet(ResultSet rs, UUID exchangeId) throws Exception{
+        List<ExchangeBatch> ret = new ArrayList<>();
+
+        while (rs.next()) {
+            int col = 1;
+
+            String batchIdStr = rs.getString(col++);
+            java.sql.Timestamp ts = rs.getTimestamp(col++);
+            String patientIdStr = rs.getString(col++);
+
+            ExchangeBatch b = new ExchangeBatch();
+            b.setExchangeId(exchangeId);
+            b.setBatchId(UUID.fromString(batchIdStr));
+            b.setInsertedAt(new Date(ts.getTime()));
+            if (!Strings.isNullOrEmpty(patientIdStr)) {
+                b.setEdsPatientId(UUID.fromString(patientIdStr));
+            }
+
+            ret.add(b);
+        }
+
+        return ret;
+
     }
 
     @Override
@@ -151,96 +197,4 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         }
     }
 
-    /*
-    @Override
-    public void save(ExchangeBatch exchangeBatch) throws Exception {
-        if (exchangeBatch == null) {
-            throw new IllegalArgumentException("exchangeBatch is null");
-        }
-
-        RdbmsExchangeBatch dbObj = new RdbmsExchangeBatch(exchangeBatch);
-
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        PreparedStatement ps = null;
-        try {
-            entityManager.getTransaction().begin();
-
-            //persist only works for initial inserts not updates, so changing to use upsert
-            //entityManager.persist(dbObj);
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "INSERT INTO exchange_batch"
-                    + " (exchange_id, batch_id, inserted_at, eds_patient_id)"
-                    + " VALUES (?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " eds_patient_id = VALUES(eds_patient_id)";
-
-            ps = connection.prepareStatement(sql);
-
-            int col = 1;
-            ps.setString(col++, dbObj.getExchangeId());
-            ps.setString(col++, dbObj.getBatchId());
-            ps.setTimestamp(col++, new java.sql.Timestamp(dbObj.getInsertedAt().getTime()));
-            if (dbObj.getEdsPatientId() == null) {
-                ps.setNull(col++, Types.VARCHAR);
-            } else {
-                ps.setString(col++, dbObj.getEdsPatientId());
-            }
-
-            ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
-    }
-
-    @Override
-    public void delete(ExchangeBatch exchangeBatch) throws Exception {
-        if (exchangeBatch == null) {
-            throw new IllegalArgumentException("exchangeBatch is null");
-        }
-
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-        PreparedStatement ps = null;
-        try {
-            entityManager.getTransaction().begin();
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "DELETE FROM exchange_batch"
-                    + " WHERE exchange_id = ? AND batch_id = ?";
-
-            ps = connection.prepareStatement(sql);
-
-            int col = 1;
-            ps.setString(col++, exchangeBatch.getExchangeId().toString());
-            ps.setString(col++, exchangeBatch.getBatchId().toString());
-
-            ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
-    }*/
 }
