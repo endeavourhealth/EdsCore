@@ -62,6 +62,8 @@ public class MetadataFactory {
                 return new OrderMetadata((Order)resource);
             case Flag:
                 return new FlagMetadata((Flag)resource);
+            case QuestionnaireResponse:
+                return new QuestionnaireResponseMetadata((QuestionnaireResponse)resource);
 
             default:
                 throw new UnprocessableEntityException("Resource Type not supported:" + resource.getResourceType().toString());
