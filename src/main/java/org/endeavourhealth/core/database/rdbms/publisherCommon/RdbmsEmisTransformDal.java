@@ -220,8 +220,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
