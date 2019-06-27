@@ -1,19 +1,17 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
-import com.google.common.base.Strings;
-import org.endeavourhealth.common.cache.ParserPool;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
-import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
-import org.hl7.fhir.instance.model.CodeableConcept;
+
+import java.util.Date;
 
 public class EmisCsvCodeMap {
 
-    private static final String CODEABLE_CONCEPT = "CodeableConcept";
+    //private static final String CODEABLE_CONCEPT = "CodeableConcept";
 
     private boolean medication = false;
     private long codeId = -1;
     private String codeType = null;
-    private String codeableConcept = null; //JSON of the FHIR codeable concept
+    //private String codeableConcept = null; //JSON of the FHIR codeable concept
     private String readTerm = null;
     private String readCode = null;
     private Long snomedConceptId = null;
@@ -24,10 +22,11 @@ public class EmisCsvCodeMap {
     private String nationalCodeDescription = null;
     private Long parentCodeId = null;
     private ResourceFieldMappingAudit audit = null;
+    private Date dtLastReceived = null;
 
     public EmisCsvCodeMap() {}
 
-    public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) throws Exception {
+    /*public EmisCsvCodeMap(RdbmsEmisCsvCodeMap proxy) throws Exception {
         this.medication = proxy.isMedication();
         this.codeId = proxy.getCodeId();
         this.codeType = proxy.getCodeType();
@@ -44,7 +43,7 @@ public class EmisCsvCodeMap {
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
-    }
+    }*/
 
 
     public boolean isMedication() {
@@ -71,13 +70,13 @@ public class EmisCsvCodeMap {
         this.codeType = codeType;
     }
 
-    public String getCodeableConcept() {
+    /*public String getCodeableConcept() {
         return codeableConcept;
     }
 
     public void setCodeableConcept(String codeableConcept) {
         this.codeableConcept = codeableConcept;
-    }
+    }*/
 
     public String getReadTerm() {
         return readTerm;
@@ -159,11 +158,37 @@ public class EmisCsvCodeMap {
         this.audit = audit;
     }
 
-    public CodeableConcept getCodeableConceptObject() throws Exception {
+    /*public CodeableConcept getCodeableConceptObject() throws Exception {
         return (CodeableConcept)ParserPool.getInstance().parseType(this.codeableConcept, CODEABLE_CONCEPT);
     }
 
     public void setCodeableConceptObject(CodeableConcept codeableConcept) throws Exception {
         this.codeableConcept = ParserPool.getInstance().composeString(codeableConcept, CODEABLE_CONCEPT);
+    }*/
+
+    public Date getDtLastReceived() {
+        return dtLastReceived;
+    }
+
+    public void setDtLastReceived(Date dtLastReceived) {
+        this.dtLastReceived = dtLastReceived;
+    }
+
+    @Override
+    public String toString() {
+        return "EmisCsvCodeMap ["
+        +  "medication = " + medication + ", "
+        +  "codeId = " + codeId + ", "
+        +  "codeType = " + codeType + ", "
+        +  "readTerm = " + readTerm + ", "
+        +  "readCode = " + readCode + ", "
+        +  "snomedConceptId = " + snomedConceptId + ", "
+        +  "snomedDescriptionId = " + snomedDescriptionId + ", "
+        +  "snomedTerm = " + snomedTerm + ", "
+        +  "nationalCode = " + nationalCode + ", "
+        +  "nationalCodeCategory = " + nationalCodeCategory + ", "
+        +  "nationalCodeDescription = " + nationalCodeDescription + ", "
+        +  "parentCodeId = " + parentCodeId + ", "
+        +  "dtLastReceived = " + dtLastReceived + "]";
     }
 }

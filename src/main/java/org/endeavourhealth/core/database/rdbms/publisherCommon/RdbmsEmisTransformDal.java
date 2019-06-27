@@ -8,20 +8,15 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied;
-import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisCsvCodeMap;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Types;
+import java.sql.*;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
@@ -31,20 +26,78 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             throw new IllegalArgumentException("Trying to save null or empty mappings");
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-        PreparedStatement ps = null;
-        try {
-            entityManager.getTransaction().begin();
+        //ensure all mappings are meds or not
+        Boolean medication = null;
+        Map<Long, EmisCsvCodeMap> hmMappings = new HashMap<>();
 
+        for (EmisCsvCodeMap mapping: mappings) {
+            if (medication == null) {
+                medication = new Boolean(mapping.isMedication());
+            } else if (medication.booleanValue() != mapping.isMedication()) {
+                throw new Exception("Must be saving all medications or all non-medications");
+            }
+
+            hmMappings.put(new Long(mapping.getCodeId()), mapping);
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        PreparedStatement psSelect = null;
+        PreparedStatement psInsert = null;
+
+        try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO emis_csv_code_map"
-                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json)"
+            String sql = "SELECT code_id, dt_last_received"
+                    + " FROM emis_csv_code_map"
+                    + " WHERE medication = ?"
+                    + " AND code_id IN (";
+            for (int i=0; i<mappings.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
+            psSelect = connection.prepareStatement(sql);
+
+            int col = 1;
+            psSelect.setBoolean(col++, medication.booleanValue());
+            for (EmisCsvCodeMap mapping: mappings) {
+                psSelect.setLong(col++, mapping.getCodeId());
+            }
+
+            ResultSet rs = psSelect.executeQuery();
+            while (rs.next()) {
+                col = 1;
+                long codeId = rs.getLong(col++);
+                Date dtLastReceived = null;
+                Timestamp ts = rs.getTimestamp(col++);
+                if (!rs.wasNull()) {
+                    dtLastReceived = new Date(ts.getTime());
+                }
+
+                EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
+
+                //if the one already on the DB has a date and that date is the same or
+                //later than the one we're trying to save, then SKIP the one we're saving
+                if (dtLastReceived != null
+                        && !mapping.getDtLastReceived().after(dtLastReceived)) {
+
+                    hmMappings.remove(new Long(codeId));
+                }
+            }
+
+            //if there's nothing new to save, return out
+            if (hmMappings.isEmpty()) {
+                return;
+            }
+
+            sql = "INSERT INTO emis_csv_code_map"
+                    + " (medication, code_id, code_type, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json, dt_last_received)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " code_type = VALUES(code_type),"
-                    + " codeable_concept = VALUES(codeable_concept),"
                     + " read_term = VALUES(read_term),"
                     + " read_code = VALUES(read_code),"
                     + " snomed_concept_id = VALUES(snomed_concept_id),"
@@ -54,80 +107,84 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " national_code_category = VALUES(national_code_category),"
                     + " national_code_description = VALUES(national_code_description),"
                     + " parent_code_id = VALUES(parent_code_id),"
-                    + " audit_json = VALUES(audit_json)";
+                    + " audit_json = VALUES(audit_json),"
+                    + " dt_last_received = VALUES(dt_last_received)";
 
-            ps = connection.prepareStatement(sql);
+            psInsert = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
             
-            for (EmisCsvCodeMap mapping: mappings) {
+            for (Long codeId: hmMappings.keySet()) {
+                EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
 
-                int col = 1;
-                ps.setBoolean(col++, mapping.isMedication());
-                ps.setLong(col++, mapping.getCodeId());
+                col = 1;
+                psInsert.setBoolean(col++, mapping.isMedication());
+                psInsert.setLong(col++, mapping.getCodeId());
                 if (Strings.isNullOrEmpty(mapping.getCodeType())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getCodeType());
-                }
-                if (Strings.isNullOrEmpty(mapping.getCodeableConcept())) {
-                    ps.setNull(col++, Types.VARCHAR);
-                } else {
-                    ps.setString(col++, mapping.getCodeableConcept());
+                    psInsert.setString(col++, mapping.getCodeType());
                 }
                 if (Strings.isNullOrEmpty(mapping.getReadTerm())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getReadTerm());
+                    psInsert.setString(col++, mapping.getReadTerm());
                 }
                 if (Strings.isNullOrEmpty(mapping.getReadCode())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getReadCode());
+                    psInsert.setString(col++, mapping.getReadCode());
                 }
                 if (mapping.getSnomedConceptId() == null) {
-                    ps.setNull(col++, Types.BIGINT);
+                    psInsert.setNull(col++, Types.BIGINT);
                 } else {
-                    ps.setLong(col++, mapping.getSnomedConceptId());
+                    psInsert.setLong(col++, mapping.getSnomedConceptId());
                 }
                 if (mapping.getSnomedDescriptionId() == null) {
-                    ps.setNull(col++, Types.BIGINT);
+                    psInsert.setNull(col++, Types.BIGINT);
                 } else {
-                    ps.setLong(col++, mapping.getSnomedDescriptionId());
+                    psInsert.setLong(col++, mapping.getSnomedDescriptionId());
                 }
                 if (Strings.isNullOrEmpty(mapping.getSnomedTerm())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getSnomedTerm());
+                    psInsert.setString(col++, mapping.getSnomedTerm());
                 }
                 if (Strings.isNullOrEmpty(mapping.getNationalCode())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getNationalCode());
+                    psInsert.setString(col++, mapping.getNationalCode());
                 }
                 if (Strings.isNullOrEmpty(mapping.getNationalCodeCategory())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getNationalCodeCategory());
+                    psInsert.setString(col++, mapping.getNationalCodeCategory());
                 }
                 if (Strings.isNullOrEmpty(mapping.getNationalCodeDescription())) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getNationalCodeDescription());
+                    psInsert.setString(col++, mapping.getNationalCodeDescription());
                 }
                 if (mapping.getParentCodeId() == null) {
-                    ps.setNull(col++, Types.BIGINT);
+                    psInsert.setNull(col++, Types.BIGINT);
                 } else {
-                    ps.setLong(col++, mapping.getParentCodeId());
+                    psInsert.setLong(col++, mapping.getParentCodeId());
                 }
                 if (mapping.getAudit() == null) {
-                    ps.setNull(col++, Types.VARCHAR);
+                    psInsert.setNull(col++, Types.VARCHAR);
                 } else {
-                    ps.setString(col++, mapping.getAudit().writeToJson());
+                    psInsert.setString(col++, mapping.getAudit().writeToJson());
+                }
+                if (mapping.getDtLastReceived() == null) {
+                    psInsert.setNull(col++, Types.TIMESTAMP);
+                } else {
+                    psInsert.setTimestamp(col++, new Timestamp(mapping.getDtLastReceived().getTime()));
                 }
 
-                ps.addBatch();
+                psInsert.addBatch();
             }
     
-            ps.executeBatch();
+            psInsert.executeBatch();
 
             entityManager.getTransaction().commit();
 
@@ -136,8 +193,11 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             throw ex;
 
         } finally {
-            if (ps != null) {
-                ps.close();
+            if (psSelect != null) {
+                psSelect.close();
+            }
+            if (psInsert != null) {
+                psInsert.close();
             }
             entityManager.close();
         }
@@ -149,143 +209,88 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             throw new IllegalArgumentException("mapping is null");
         }
 
-        RdbmsEmisCsvCodeMap emisMapping = new RdbmsEmisCsvCodeMap(mapping);
+        List<EmisCsvCodeMap>l = new ArrayList<>();
+        l.add(mapping);
+        saveCodeMappings(l);
+    }
+
+    @Override
+    public EmisCsvCodeMap getCodeMapping(boolean medication, Long codeId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
-
         try {
-            //EntityTransaction transaction = entityManager.getTransaction();
-            //transaction.begin();
             entityManager.getTransaction().begin();
-
-            //have to use prepared statement as JPA doesn't support upserts
-            //entityManager.persist(emisMapping);
 
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO emis_csv_code_map"
-                    + " (medication, code_id, code_type, codeable_concept, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " code_type = VALUES(code_type),"
-                    + " codeable_concept = VALUES(codeable_concept),"
-                    + " read_term = VALUES(read_term),"
-                    + " read_code = VALUES(read_code),"
-                    + " snomed_concept_id = VALUES(snomed_concept_id),"
-                    + " snomed_description_id = VALUES(snomed_description_id),"
-                    + " snomed_term = VALUES(snomed_term),"
-                    + " national_code = VALUES(national_code),"
-                    + " national_code_category = VALUES(national_code_category),"
-                    + " national_code_description = VALUES(national_code_description),"
-                    + " parent_code_id = VALUES(parent_code_id),"
-                    + " audit_json = VALUES(audit_json)";
+            String sql = "SELECT medication, code_id, code_type, read_term, read_code, snomed_concept_id, "
+                        + "snomed_description_id, snomed_term, national_code, national_code_category, "
+                        + "national_code_description, parent_code_id, audit_json, dt_last_received "
+                        + "FROM emis_csv_code_map "
+                        + "WHERE medication = ? "
+                        + "AND code_id = ?";
 
             ps = connection.prepareStatement(sql);
 
-            ps.setBoolean(1, emisMapping.isMedication());
-            ps.setLong(2, emisMapping.getCodeId());
-            if (Strings.isNullOrEmpty(emisMapping.getCodeType())) {
-                ps.setNull(3, Types.VARCHAR);
+            int col = 1;
+            ps.setBoolean(col++, medication);
+            ps.setLong(col++, codeId.longValue());
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                EmisCsvCodeMap ret = new EmisCsvCodeMap();
+
+                col = 1;
+                ret.setMedication(rs.getBoolean(col++));
+                ret.setCodeId(rs.getLong(col++));
+                ret.setCodeType(rs.getString(col++));
+                ret.setReadTerm(rs.getString(col++));
+                ret.setReadCode(rs.getString(col++));
+
+                //have to use isNull for this field because it returns a primitive long
+                long snomedConceptId = rs.getLong(col++);
+                if (!rs.wasNull()) {
+                    ret.setSnomedConceptId(new Long(snomedConceptId));
+                }
+
+                long snomedDescriptionId = rs.getLong(col++);
+                if (!rs.wasNull()) {
+                    ret.setSnomedDescriptionId(new Long(snomedDescriptionId));
+                }
+
+                ret.setSnomedTerm(rs.getString(col++));
+                ret.setNationalCode(rs.getString(col++));
+                ret.setNationalCodeCategory(rs.getString(col++));
+                ret.setNationalCodeDescription(rs.getString(col++));
+
+                long parentCodeId = rs.getLong(col++);
+                if (!rs.wasNull()) {
+                    ret.setParentCodeId(new Long(parentCodeId));
+                }
+
+                String auditJson = rs.getString(col++);
+                if (!rs.wasNull()) {
+                    ret.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                }
+
+                Timestamp ts = rs.getTimestamp(col++);
+                if (!rs.wasNull()) {
+                    ret.setDtLastReceived(new Date(ts.getTime()));
+                }
+
+                return ret;
+
             } else {
-                ps.setString(3, emisMapping.getCodeType());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getCodeableConcept())) {
-                ps.setNull(4, Types.VARCHAR);
-            } else {
-                ps.setString(4, emisMapping.getCodeableConcept());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getReadTerm())) {
-                ps.setNull(5, Types.VARCHAR);
-            } else {
-                ps.setString(5, emisMapping.getReadTerm());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getReadCode())) {
-                ps.setNull(6, Types.VARCHAR);
-            } else {
-                ps.setString(6, emisMapping.getReadCode());
-            }
-            if (emisMapping.getSnomedConceptId() == null) {
-                ps.setNull(7, Types.BIGINT);
-            } else {
-                ps.setLong(7, emisMapping.getSnomedConceptId());
-            }
-            if (emisMapping.getSnomedDescriptionId() == null) {
-                ps.setNull(8, Types.BIGINT);
-            } else {
-                ps.setLong(8, emisMapping.getSnomedDescriptionId());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getSnomedTerm())) {
-                ps.setNull(9, Types.VARCHAR);
-            } else {
-                ps.setString(9, emisMapping.getSnomedTerm());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getNationalCode())) {
-                ps.setNull(10, Types.VARCHAR);
-            } else {
-                ps.setString(10, emisMapping.getNationalCode());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getNationalCodeCategory())) {
-                ps.setNull(11, Types.VARCHAR);
-            } else {
-                ps.setString(11, emisMapping.getNationalCodeCategory());
-            }
-            if (Strings.isNullOrEmpty(emisMapping.getNationalCodeDescription())) {
-                ps.setNull(12, Types.VARCHAR);
-            } else {
-                ps.setString(12, emisMapping.getNationalCodeDescription());
-            }
-            if (emisMapping.getParentCodeId() == null) {
-                ps.setNull(13, Types.BIGINT);
-            } else {
-                ps.setLong(13, emisMapping.getParentCodeId());
-            }
-            if (emisMapping.getAuditJson() == null) {
-                ps.setNull(14, Types.VARCHAR);
-            } else {
-                ps.setString(14, emisMapping.getAuditJson());
+                return null;
             }
 
-            ps.executeUpdate();
-
-            //transaction.commit();
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
 
         } finally {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
-        }
-    }
-
-    @Override
-    public EmisCsvCodeMap getCodeMapping(boolean medication, Long codeId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-
-        try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsEmisCsvCodeMap c"
-                    + " where c.medication = :medication"
-                    + " and c.codeId = :code_id";
-
-            Query query = entityManager.createQuery(sql, RdbmsEmisCsvCodeMap.class)
-                    .setParameter("medication", new Boolean(medication))
-                    .setParameter("code_id", codeId);
-
-            RdbmsEmisCsvCodeMap emisMapping = (RdbmsEmisCsvCodeMap)query.getSingleResult();
-            return new EmisCsvCodeMap(emisMapping);
-
-        } catch (NoResultException ex) {
-            return null;
-
-        } finally {
             entityManager.close();
         }
     }
