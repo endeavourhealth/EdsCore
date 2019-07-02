@@ -6,6 +6,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminRes
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied;
 import org.hibernate.internal.SessionImpl;
@@ -396,6 +397,20 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         if (resources == null || resources.isEmpty()) {
             throw new IllegalArgumentException("resources is null or empty");
         }
+
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                trySaveAdminResources(resources);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    public void trySaveAdminResources(List<EmisAdminResourceCache> resources) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
         PreparedStatement ps = null;
