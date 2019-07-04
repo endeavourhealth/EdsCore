@@ -189,10 +189,11 @@ public class RdbmsInternalIdDal implements InternalIdDalI {
     @Override
     public void save(List<InternalIdMap> mappingsParam) throws Exception {
         //allow several attempts if it fails due to a deadlock
+        List<InternalIdMap> mappings = Collections.synchronizedList(mappingsParam);
         DeadlockHandler h = new DeadlockHandler();
         while (true) {
             try {
-                trySave(mappingsParam);
+                trySave(mappings);
                 break;
 
             } catch (Exception ex) {
