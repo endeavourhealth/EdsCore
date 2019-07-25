@@ -44,7 +44,8 @@ public class ConnectionManager {
         PublisherCommon,
         FhirAudit,
         PublisherStaging,
-        DataGenerator;
+        DataGenerator,
+        SftpReader
     }
     private static final Logger LOG = LoggerFactory.getLogger(ConnectionManager.class);
     private static Map<String, EntityManagerFactory> entityManagerFactoryMap = new ConcurrentHashMap<>();
@@ -262,6 +263,9 @@ public class ConnectionManager {
                 configName = "staging";
             } else if (dbName == Db.DataGenerator) {
                 configName = "data_generator";
+            } else if (dbName == Db.SftpReader) {
+                configName = "sftp_reader";
+
             }
             else {
                 throw new RuntimeException("Unknown database " + dbName);
@@ -308,6 +312,8 @@ public class ConnectionManager {
             return "PublisherStagingDb";
         } else if (dbName == Db.DataGenerator) {
             return "DataGeneratorDb";
+        } else if (dbName == Db.SftpReader) {
+            return "SftpReaderDb";
         }
         else {
             throw new RuntimeException("Unknown database " + dbName);
@@ -324,6 +330,10 @@ public class ConnectionManager {
 
     public static EntityManager getHl7ReceiverEntityManager() throws Exception {
         return getEntityManager(Db.Hl7Receiver);
+    }
+
+    public static EntityManager getSftpReaderEntityManager() throws Exception {
+        return getEntityManager(Db.SftpReader);
     }
 
     public static EntityManager getAdminEntityManager() throws Exception {
