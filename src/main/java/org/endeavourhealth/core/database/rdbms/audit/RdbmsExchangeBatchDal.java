@@ -32,7 +32,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
             String sql = "SELECT batch_id, inserted_at, eds_patient_id"
                     + " FROM exchange_batch"
                     + " WHERE exchange_id = ?"
-                    + " ORDER BY inserted_at ASC";
+                    + " ORDER BY inserted_at ASC, eds_patient_id"; //include patient ID in the sorting so if the admin batch has the same time, it is still first
 
             ps = connection.prepareStatement(sql);
 
@@ -60,7 +60,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
             String sql = "SELECT batch_id, inserted_at, eds_patient_id"
                     + " FROM exchange_batch"
                     + " WHERE exchange_id = ?"
-                    + " ORDER BY inserted_at ASC"
+                    + " ORDER BY inserted_at ASC, eds_patient_id"
                     + " LIMIT 1";
 
             ps = connection.prepareStatement(sql);

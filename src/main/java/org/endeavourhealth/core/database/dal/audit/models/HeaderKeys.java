@@ -30,6 +30,7 @@ public abstract class HeaderKeys {
     public static final String TransformBatch = "TransformBatch";
     public static final String ProtocolIds = "Protocols";
     public static final String SubscriberBatch = "SubscriberBatch";
-    public static final String IsForPopulatingSubscriber = "IsForPopulatingSubscriber"; //tells us if this exchange was a "dummy" one created to populate a subscriber from scratch
+
+    public static final String DUMMY_SENDER_SOFTWARE_FOR_BULK_TRANSFORM = "BULK_TRANSFORM_TO_SUBSCRIBER";
 }
 
