@@ -5,6 +5,8 @@ import org.endeavourhealth.core.database.dal.audit.ExchangeDalI;
 import org.endeavourhealth.core.database.dal.audit.models.*;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.audit.models.*;
+import org.endeavourhealth.core.xml.TransformErrorSerializer;
+import org.endeavourhealth.core.xml.transformError.TransformError;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +16,7 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Date;
@@ -32,8 +35,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(dbObj);
 
@@ -51,6 +52,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " body = VALUES(body)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             ps.setString(1, dbObj.getId());
             ps.setTimestamp(2, new java.sql.Timestamp(dbObj.getTimestamp().getTime()));
@@ -104,8 +107,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(dbObj);
 
@@ -124,6 +125,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " number_batches_created = VALUES(number_batches_created)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             ps.setString(1, dbObj.getId());
             ps.setString(2, dbObj.getServiceId());
@@ -181,8 +184,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(dbObj);
 
@@ -196,6 +197,9 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " exchange_ids_in_error = VALUES(exchange_ids_in_error)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
             ps.setString(1, dbObj.getServiceId());
             ps.setString(2, dbObj.getSystemId());
             ps.setString(3, dbObj.getExchangeIdsInError());
@@ -248,8 +252,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support deleting without retrieving
             //entityManager.remove(dbObj);
 
@@ -261,6 +263,9 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " AND system_id = ?";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
             ps.setString(1, dbObj.getServiceId());
             ps.setString(2, dbObj.getSystemId());
 
@@ -732,8 +737,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         PreparedStatement ps = null;
 
         try {
-            entityManager.getTransaction().begin();
-
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(dbObj);
 
@@ -750,6 +753,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " queued_message_id = VALUES(queued_message_id)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             ps.setString(1, dbObj.getExchangeId());
             ps.setString(2, dbObj.getExchangeBatchId());
@@ -851,8 +856,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -865,6 +868,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " exchange_id = VALUES(exchange_id)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             int col = 1;
             ps.setString(col++, dataReceived.getServiceId().toString());
@@ -940,8 +945,6 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -954,6 +957,8 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     + " exchange_id = VALUES(exchange_id)";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             int col = 1;
             ps.setString(col++, dataProcessed.getServiceId().toString());
@@ -1020,6 +1025,109 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                     .collect(Collectors.toList());
 
         } finally {
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(ExchangeSubscriberSendAudit audit) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO exchange_subscriber_send_audit"
+                    + " (exchange_id, exchange_batch_id, subscriber_config_name, inserted_at, error_xml, queued_message_id)"
+                    + " VALUES (?, ?, ?, ?, ?, ?)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            int col = 1;
+            ps.setString(col++, audit.getExchangeId().toString());
+            ps.setString(col++, audit.getExchangeBatchId().toString());
+            ps.setString(col++, audit.getSubscriberConfigName());
+            ps.setTimestamp(col++, new java.sql.Timestamp(audit.getInsertedAt().getTime()));
+
+            if (audit.getError() == null) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                String xml = TransformErrorSerializer.writeToXml(audit.getError());
+                ps.setString(col++, xml);
+            }
+
+            ps.setString(col++, audit.getQueuedMessageId().toString());
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<ExchangeSubscriberSendAudit> getSubscriberSendAudits(UUID exchangeId, UUID batchId, String subscriberConfigName) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "SELECT inserted_at, error_xml, queued_message_id"
+                    + " FROM exchange_subscriber_send_audit"
+                    + " WHERE exchange_id = ?"
+                    + " AND exchange_batch_id = ?"
+                    + " AND subscriber_config_name = ?"
+                    + " ORDER BY inserted_at ASC";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, exchangeId.toString());
+            ps.setString(col++, batchId.toString());
+            ps.setString(col++, subscriberConfigName);
+
+            List<ExchangeSubscriberSendAudit> ret = new ArrayList<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                col = 1;
+                Date d = new Date(rs.getTimestamp(col++).getTime());
+                String errorXml = rs.getString(col++);
+                UUID queuedMessageId = UUID.fromString(rs.getString(col++));
+
+                ExchangeSubscriberSendAudit audit = new ExchangeSubscriberSendAudit();
+                audit.setExchangeId(exchangeId);
+                audit.setExchangeBatchId(batchId);
+                audit.setSubscriberConfigName(subscriberConfigName);
+                audit.setInsertedAt(d);
+                audit.setQueuedMessageId(queuedMessageId);
+
+                if (!Strings.isNullOrEmpty(errorXml)) {
+                    TransformError error = TransformErrorSerializer.readFromXml(errorXml);
+                    audit.setError(error);
+                }
+
+                ret.add(audit);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }

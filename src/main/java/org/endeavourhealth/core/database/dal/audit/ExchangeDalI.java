@@ -44,4 +44,7 @@ public interface ExchangeDalI {
     void save(LastDataProcessed dataProcessed) throws Exception;
     List<LastDataProcessed> getLastDataProcessed() throws Exception;
     List<LastDataProcessed> getLastDataProcessed(UUID serviceId) throws Exception;
+
+    void save(ExchangeSubscriberSendAudit subscriberSendAudit) throws Exception;
+    List<ExchangeSubscriberSendAudit> getSubscriberSendAudits(UUID exchangeId, UUID batchId, String subscriberConfigName) throws Exception;
 }
