@@ -89,6 +89,8 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
 
+        long eventId = -1L;  //for debug only
+
         try {
             //have to use prepared statement as JPA doesn't support upserts
             //entityManager.persist(emisMapping);
@@ -161,6 +163,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getDtReceived().getTime()));
                 ps.setLong(col++, stagingClinicalEvent.getRecordChecksum());
                 ps.setLong(col++, stagingClinicalEvent.getEventId());
+                eventId = stagingClinicalEvent.getEventId();
                 ps.setBoolean(col++, stagingClinicalEvent.isActiveInd());
                 ps.setInt(col++, stagingClinicalEvent.getPersonId());
 
@@ -378,6 +381,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
+            LOG.debug("Exception while processing Clinical Event Id: "+eventId);
             throw ex;
 
         } finally {
