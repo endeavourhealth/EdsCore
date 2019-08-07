@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingPROCEDal.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingClinicalEventsDal.class);
 
     private boolean wasAlreadySaved(UUID serviceId, StagingClinicalEvent obj) throws Exception {
 
@@ -89,7 +89,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
         PreparedStatement ps = null;
 
-        long eventId = -1L;  //for debug only
+        long eventId = -1L; String processedNumResult = ""; String resTxt = ""; //for debug only
 
         try {
             //have to use prepared statement as JPA doesn't support upserts
@@ -163,7 +163,6 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 ps.setTimestamp(col++, new java.sql.Timestamp(stagingClinicalEvent.getDtReceived().getTime()));
                 ps.setLong(col++, stagingClinicalEvent.getRecordChecksum());
                 ps.setLong(col++, stagingClinicalEvent.getEventId());
-                eventId = stagingClinicalEvent.getEventId();
                 ps.setBoolean(col++, stagingClinicalEvent.isActiveInd());
                 ps.setInt(col++, stagingClinicalEvent.getPersonId());
 
@@ -248,6 +247,10 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 if (stagingClinicalEvent.getEventResultTxt() == null) {
                     ps.setNull(col++, Types.VARCHAR);
                 } else {
+
+                    //debug only
+                    resTxt = stagingClinicalEvent.getEventResultTxt();
+
                     ps.setString(col++, stagingClinicalEvent.getEventResultTxt());
                 }
 
@@ -356,6 +359,11 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 if (stagingClinicalEvent.getProcessedNumericResult() == null) {
                     ps.setNull(col++, Types.DOUBLE);
                 } else {
+
+                    //debug only
+                    eventId = stagingClinicalEvent.getEventId();
+                    processedNumResult = stagingClinicalEvent.getProcessedNumericResult().toString();
+
                     ps.setDouble(col++, stagingClinicalEvent.getProcessedNumericResult());
                 }
 
@@ -381,7 +389,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
 
         } catch (Exception ex) {
             entityManager.getTransaction().rollback();
-            LOG.debug("Exception while processing Clinical Event Id: "+eventId);
+            LOG.debug("Exception while processing Clinical Event Id: "+eventId+" with processedNumResult: "+processedNumResult+ " and resTxt: "+resTxt);
             throw ex;
 
         } finally {
