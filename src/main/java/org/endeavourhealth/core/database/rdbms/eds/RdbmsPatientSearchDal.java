@@ -778,7 +778,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String sql = "SELECT ps.service_id, ps.patient_id, ps.nhs_number, ps.forenames, ps.surname, ps.date_of_birth, ps.date_of_death, ps.address_line_1, ps.address_line_2, ps.address_line_3, ps.city, ps.district, ps.postcode, ps.gender, ps.registered_practice_ods_code, "
                 + " pse.episode_id, pse.registration_start, pse.registration_end, pse.care_mananger, pse.organisation_name, pse.organisation_type_code, pse.registration_type_code"
                 + " FROM patient_search ps"
-                + " INNER JOIN patient_search_episode pse"
+                + " LEFT OUTER JOIN patient_search_episode pse"
                 + " ON ps.patient_id = pse.patient_id"
                 + " AND ps.service_id = pse.service_id";
 
