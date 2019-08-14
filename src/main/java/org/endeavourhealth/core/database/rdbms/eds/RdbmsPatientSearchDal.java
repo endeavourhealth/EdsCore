@@ -895,6 +895,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 PatientSearch obj = new PatientSearch();
 
                 int col = 1;
+
+                //fields from patient_search
                 obj.setServiceId(UUID.fromString(rs.getString(col++)));
                 obj.setPatientId(UUID.fromString(rs.getString(col++)));
                 obj.setNhsNumber(rs.getString(col++));
@@ -910,13 +912,18 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 obj.setPostcode(rs.getString(col++));
                 obj.setGender(rs.getString(col++));
                 obj.setRegisteredPracticeOdsCode(rs.getString(col++));
-                obj.setEpisodeId(UUID.fromString(rs.getString(col++)));
-                obj.setRegistrationStart(rs.getDate(col++));
-                obj.setRegistrationEnd(rs.getDate(col++));
-                obj.setCareManager(rs.getString(col++));
-                obj.setOrganisationName(rs.getString(col++));
-                obj.setOrganisationTypeCode(rs.getString(col++));
-                obj.setRegistrationTypeCode(rs.getString(col++));
+
+                //fields from patient search episode, which may be null
+                String episodeId = rs.getString(col++);
+                if (episodeId != null) {
+                    obj.setEpisodeId(UUID.fromString(episodeId));
+                    obj.setRegistrationStart(rs.getDate(col++));
+                    obj.setRegistrationEnd(rs.getDate(col++));
+                    obj.setCareManager(rs.getString(col++));
+                    obj.setOrganisationName(rs.getString(col++));
+                    obj.setOrganisationTypeCode(rs.getString(col++));
+                    obj.setRegistrationTypeCode(rs.getString(col++));
+                }
 
                 ret.add(obj);
             }
