@@ -93,8 +93,8 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
         EntityManager entityManager = ConnectionManager.getJDBCReaderEntityManager();
         SessionImpl session = (SessionImpl) entityManager.getDelegate();
         Connection connection = session.connection();
+        PreparedStatement ps = null;
         try {
-
             String sql = "INSERT INTO key_value_pairs"
                     + " (batch_name, connection_name, key_value, data_value)"
                     + " VALUES (?, ?, ?, ?)"
@@ -104,7 +104,7 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
                     + " key_value = VALUES(key_value),"
                     + " data_value = VALUES(data_value)";
 
-            PreparedStatement ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement(sql);
 
             ps.setString(1, kvp.getBatchName());
             ps.setString(2, kvp.getConnectionName());
@@ -122,9 +122,10 @@ public class RdbmsJDBCReaderDal implements JDBCReaderDalI {
             throw ex;
 
         } finally {
-            if (entityManager.isOpen()) {
-                entityManager.close();
+            if (ps != null) {
+                ps.close();
             }
+            entityManager.close();
         }
     }
 

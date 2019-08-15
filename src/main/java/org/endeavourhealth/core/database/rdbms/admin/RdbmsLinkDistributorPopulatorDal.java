@@ -19,8 +19,6 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
@@ -30,8 +28,9 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
                     + " select patient_id, nhs_number, date_of_birth, 0 " +
                     " from eds.patient_search";
 
-
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             ps.executeUpdate();
 
@@ -89,16 +88,14 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
         PreparedStatement ps = null;
         try {
-            entityManager.getTransaction().begin();
-
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = null;
-
-            sql = "TRUNCATE TABLE admin.link_distributor_populator";
+            String sql = "TRUNCATE TABLE admin.link_distributor_populator";
 
             ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
 
             ps.executeUpdate();
 
@@ -118,29 +115,39 @@ public class RdbmsLinkDistributorPopulatorDal implements LinkDistributorPopulato
 
     @Override
     public void updateDoneFlag(List<String> patients) throws Exception {
-        EntityManager adminEntityManager = ConnectionManager.getAdminEntityManager();
-        SessionImpl adminSession = (SessionImpl) adminEntityManager.getDelegate();
-        Connection adminConnection = adminSession.connection();
-        adminConnection.setAutoCommit(true);
-
-        String updateSQL = "UPDATE link_distributor_populator  " +
-            " SET done = 1" +
-            " WHERE patient_id = ?";
-
-        PreparedStatement update = adminConnection.prepareStatement(updateSQL);
-
-        for (String pat : patients) {
-            update.setString(1, pat);
-            update.addBatch();
-        }
-
+        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
+        PreparedStatement ps = null;
         try {
-            update.executeBatch();
-            update.clearBatch();
+
+            SessionImpl adminSession = (SessionImpl)entityManager.getDelegate();
+            Connection adminConnection = adminSession.connection();
+
+            String updateSQL = "UPDATE link_distributor_populator  " +
+                    " SET done = 1" +
+                    " WHERE patient_id = ?";
+
+            ps = adminConnection.prepareStatement(updateSQL);
+
+            entityManager.getTransaction().begin();
+
+            for (String pat : patients) {
+                ps.setString(1, pat);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
         } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
             throw ex;
+
         } finally {
-            adminEntityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
         }
     }
 }

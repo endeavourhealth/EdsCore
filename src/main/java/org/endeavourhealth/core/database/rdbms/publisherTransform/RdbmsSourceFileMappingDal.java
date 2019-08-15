@@ -1387,6 +1387,9 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             throw ex;
 
         } finally {
+            if (ps != null) {
+                ps.close();
+            }
             entityManager.close();
         }
     }
