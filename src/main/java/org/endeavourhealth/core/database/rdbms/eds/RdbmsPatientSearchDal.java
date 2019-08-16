@@ -780,16 +780,21 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " FROM patient_search ps"
                 + " LEFT OUTER JOIN patient_search_episode pse"
                 + " ON ps.patient_id = pse.patient_id"
-                + " AND ps.service_id = pse.service_id";
+                + " AND ps.service_id = pse.service_id"
+                + " AND pse.dt_deleted IS NULL";
 
         if (!Strings.isNullOrEmpty(localId)) {
             sql += " INNER JOIN patient_search_local_identifier psi"
                     + " ON psi.patient_id = ps.patient_id"
-                    + " AND psi.service_id = ps.service_id";
+                    + " AND psi.service_id = ps.service_id"
+                    + " AND psi.dt_deleted IS NULL";
         }
 
+        //always exclude deleted ones
+        sql += " WHERE ps.dt_deleted IS NULL";
+
         if (serviceIds != null) {
-            sql += " WHERE ps.service_id IN (";
+            sql += " AND ps.service_id IN (";
             sql += String.join(",", Collections.nCopies(serviceIds.size(), "?"));
             sql += ")";
         }
@@ -812,19 +817,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             sql += " AND psi.local_id = ?";
 
         } else if (patientId != null) {
-            //nasty hack, but when searching by patient ID we don't add service IDs, so need to add the where clause here
-            sql += " WHERE ps.patient_id = ?";
+            sql += " AND ps.patient_id = ?";
 
         } else {
             throw new IllegalArgumentException("Insufficient parameters passed in to search function");
-        }
-
-        //exclude deleted ones
-        sql += " AND ps.dt_deleted IS NULL";
-        sql += " AND pse.dt_deleted IS NULL";
-
-        if (!Strings.isNullOrEmpty(localId)) {
-            sql += " AND psi.dt_deleted IS NULL";
         }
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
