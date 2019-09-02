@@ -6,6 +6,8 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarning;
 import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsTransformWarningType;
 import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -19,6 +21,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RdbmsTransformWarningDal implements TransformWarningDalI {
 
     private static Map<String, Integer> warningTypeCache = new ConcurrentHashMap<>();
+
+    private static final Logger LOG = LoggerFactory.getLogger(TransformWarningDalI.class); //Added for debugging NPE
 
     public void recordWarning(UUID serviceId, UUID systemId, UUID exchangeId, Integer publishedFileId, Integer recordNumber, String warningText, String... warningParams) throws Exception {
 
@@ -96,6 +100,13 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
 
                     int col = 1;
                     ps.setString(col++, warning.getServiceId().toString());
+                    //TODO remove this when we fix the NPE.
+                    if (warning.getSystemId() == null) {
+                        LOG.error("SystemId is null for: " + findParam(warning.getWarningParams(), 0)
+                        + ":" + findParam(warning.getWarningParams(), 1)
+                        + ":" + findParam(warning.getWarningParams(), 2)
+                        + ":" + findParam(warning.getWarningParams(), 3));
+                    }
                     ps.setString(col++, warning.getSystemId().toString());
                     ps.setString(col++, warning.getExchangeId().toString());
                     ps.setNull(col++, Types.BIGINT); //field no longer used
