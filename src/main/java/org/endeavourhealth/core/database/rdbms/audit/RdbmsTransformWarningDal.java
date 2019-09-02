@@ -100,14 +100,11 @@ public class RdbmsTransformWarningDal implements TransformWarningDalI {
 
                     int col = 1;
                     ps.setString(col++, warning.getServiceId().toString());
-                    //TODO remove this when we fix the NPE.
                     if (warning.getSystemId() == null) {
-                        LOG.error("SystemId is null for: " + findParam(warning.getWarningParams(), 0)
-                        + ":" + findParam(warning.getWarningParams(), 1)
-                        + ":" + findParam(warning.getWarningParams(), 2)
-                        + ":" + findParam(warning.getWarningParams(), 3));
+                        ps.setNull(col++, Types.VARCHAR);
+                    } else {
+                        ps.setString(col++, warning.getSystemId().toString());
                     }
-                    ps.setString(col++, warning.getSystemId().toString());
                     ps.setString(col++, warning.getExchangeId().toString());
                     ps.setNull(col++, Types.BIGINT); //field no longer used
                     ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
