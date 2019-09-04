@@ -137,4 +137,9 @@ public class Service {
     public void setOrganisationType(OrganisationType organisationType) {
         this.organisationType = organisationType;
     }
+
+    @Override
+    public String toString() {
+        return "" + id + " " + name + " " + localId;
+    }
 }

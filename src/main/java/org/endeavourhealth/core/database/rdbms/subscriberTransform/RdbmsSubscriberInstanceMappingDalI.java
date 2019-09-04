@@ -141,6 +141,24 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
         }
     }
 
+    @Override
+    public UUID findResourceIdFromInstanceMapping(ResourceType resourceType, String mappingValue) throws Exception {
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+
+        try {
+            RdbmsEnterpriseInstanceMap existingMapping = findMappingByMappedValue(entityManager, resourceType, mappingValue);
+            if (existingMapping != null) {
+                return UUID.fromString(existingMapping.getResourceIdTo());
+
+            } else {
+                return null;
+            }
+
+        } finally {
+            entityManager.close();
+        }
+    }
+
 
     private static RdbmsEnterpriseInstanceMap findMappingByMappedValue(EntityManager entityManager, ResourceType resourceType, String mappingValue) {
 

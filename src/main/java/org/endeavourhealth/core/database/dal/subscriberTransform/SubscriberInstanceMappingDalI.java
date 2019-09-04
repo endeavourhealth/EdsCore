@@ -10,5 +10,5 @@ public interface SubscriberInstanceMappingDalI {
     UUID findInstanceMappedId(ResourceType resourceType, UUID resourceId) throws Exception;
     UUID findOrCreateInstanceMappedId(ResourceType resourceType, UUID resourceId, String mappingValue) throws Exception;
     void takeOverInstanceMapping(ResourceType resourceType, UUID oldMappedResourceId, UUID newMappedResourceId) throws Exception;
-
+    UUID findResourceIdFromInstanceMapping(ResourceType resourceType, String mappingValue) throws Exception;
 }

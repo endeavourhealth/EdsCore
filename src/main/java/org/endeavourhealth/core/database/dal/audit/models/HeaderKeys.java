@@ -31,6 +31,6 @@ public abstract class HeaderKeys {
     public static final String ProtocolIds = "Protocols";
     public static final String SubscriberBatch = "SubscriberBatch";
 
-    public static final String DUMMY_SENDER_SOFTWARE_FOR_BULK_TRANSFORM = "BULK_TRANSFORM_TO_SUBSCRIBER";
+
 }
 
