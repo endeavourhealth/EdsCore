@@ -196,10 +196,6 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSusResourceMap</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceMergeMap</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileType</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileTypeColumn</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFile</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsSourceFileRecord</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerNomenclatureRef</class>

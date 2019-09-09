@@ -5,6 +5,7 @@ import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 import org.hl7.fhir.instance.model.Reference;
+import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.Date;
 import java.util.UUID;
@@ -206,4 +207,37 @@ public class ResourceWrapper {
         return ReferenceHelper.createReference(resourceType, resourceId.toString());
     }
 
+    /**
+     * helpers
+     */
+    public ResourceType getResourceTypeObj() {
+        if (Strings.isNullOrEmpty(resourceType)) {
+            return null;
+        }
+        return ResourceType.valueOf(resourceType);
+    }
+
+    public void setResourceTypeObj(ResourceType o) {
+        if (o == null) {
+            this.resourceType = null;
+        } else {
+            this.resourceType = o.toString();
+        }
+    }
+
+    public String getResourceIdStr() {
+        if (resourceId == null) {
+            return null;
+        } else {
+            return resourceId.toString();
+        }
+    }
+
+    public void setResourceIdStr(String s) {
+        if (Strings.isNullOrEmpty(s)) {
+            this.resourceId = null;
+        } else {
+            this.resourceId = UUID.fromString(s);
+        }
+    }
 }

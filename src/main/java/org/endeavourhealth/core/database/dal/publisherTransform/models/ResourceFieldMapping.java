@@ -102,4 +102,9 @@ public class ResourceFieldMapping {
     public void setValue(String value) {
         this.value = value;
     }
+
+    @Override
+    public String toString() {
+        return "Field [" + resourceField + "] val [" + value + "] from row " + sourceFileRow + " col " + sourceFileColumn + " of " + sourceFileName;
+    }
 }

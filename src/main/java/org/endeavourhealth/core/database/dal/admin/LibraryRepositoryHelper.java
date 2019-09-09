@@ -137,14 +137,18 @@ public class LibraryRepositoryHelper {
 		}
 
 		System system = libraryItem.getSystem();
-		TechnicalInterface technicalInterface = system
-				.getTechnicalInterface()
-				.stream()
-				.filter(ti -> ti.getUuid().equals(technicalInterfaceUuidStr))
-				.findFirst()
-				.get();
+		for (TechnicalInterface technicalInterface: system.getTechnicalInterface()) {
+			if (technicalInterface.getUuid().equals(technicalInterfaceUuidStr)) {
+				return technicalInterface;
+			}
+		}
 
-		return technicalInterface;
+		//if we get here, something's very wrong
+		LOG.error("Failed to find TechnicalInterface " + technicalInterfaceUuidStr + " in System " + system.getUuid() + " " + system.getTechnicalInterface().size() + " technical interfaces present:");
+		for (TechnicalInterface technicalInterface: system.getTechnicalInterface()) {
+			LOG.error("" + technicalInterface.getUuid() + " " + technicalInterface.getName() + " " + technicalInterface.getMessageFormat() + " " + technicalInterface.getMessageFormatVersion());
+		}
+		throw new Exception("Failed to find TechnicalInterface " + technicalInterfaceUuidStr + " in System " + system.getUuid());
 	}
 
 	/**
