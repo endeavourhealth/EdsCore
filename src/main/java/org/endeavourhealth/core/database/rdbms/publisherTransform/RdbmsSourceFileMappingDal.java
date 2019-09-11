@@ -638,7 +638,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
             }
 
             //if the population of the above table hasn't completed yet, then check the old table
-            ps.close();
+            /*ps.close();
 
             sql = "SELECT r.source_location, f.new_published_file_id"
                     + " FROM source_file_record r"
@@ -658,7 +658,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
                 row.setRecord(Integer.parseInt(locationStr));
                 row.setOldStyleAuditId(null);
                 return;
-            }
+            }*/
 
             throw new Exception("Failed to find published file details for old-style audit ID " + oldSourceRecordId);
 
