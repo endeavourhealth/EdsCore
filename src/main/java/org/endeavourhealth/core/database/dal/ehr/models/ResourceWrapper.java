@@ -4,7 +4,10 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
+import org.endeavourhealth.core.fhirStorage.FhirSerializationHelper;
+import org.endeavourhealth.core.fhirStorage.exceptions.SerializationException;
 import org.hl7.fhir.instance.model.Reference;
+import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.Date;
@@ -238,6 +241,18 @@ public class ResourceWrapper {
             this.resourceId = null;
         } else {
             this.resourceId = UUID.fromString(s);
+        }
+    }
+
+    public <T extends Resource> T getResourceAs(T cls) throws SerializationException {
+        return (T)getResource();
+    }
+
+    public Resource getResource() throws SerializationException {
+        if (isDeleted) {
+            return null;
+        } else {
+            return FhirSerializationHelper.deserializeResource(this.getResourceData());
         }
     }
 }
