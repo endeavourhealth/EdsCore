@@ -41,14 +41,18 @@ public class ResourceWrapper {
         sb.append(resourceId.toString());
 
         if (patientId != null) {
-            sb.append(" for patient ");
+            sb.append(", patient ");
             sb.append(patientId.toString());
         }
 
-        sb.append(" checksum ");
+        sb.append(", checksum ");
         sb.append(resourceChecksum);
-        sb.append(" batch ID ");
-        sb.append(exchangeBatchId.toString());
+
+        if (exchangeBatchId != null) {
+            sb.append(", batch ID ");
+            sb.append(exchangeBatchId.toString());
+        }
+
         sb.append("\r\n");
         if (isDeleted) {
             sb.append("DELETED");
