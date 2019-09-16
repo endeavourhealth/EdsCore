@@ -24,4 +24,10 @@ public interface PatientSearchDalI {
     Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
 
     List<UUID> getPatientIds(UUID serviceId) throws Exception;
+
+    /**
+     * returns the "best" patient record from the UUIDs supplied for identifying the one most likely
+     * to represent the true state of the patients demographics
+     */
+    UUID findBestPatientRecord(List<UUID> patientIds) throws Exception;
 }

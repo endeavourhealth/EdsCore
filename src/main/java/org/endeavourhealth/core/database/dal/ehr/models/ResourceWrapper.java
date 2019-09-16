@@ -70,7 +70,11 @@ public class ResourceWrapper {
         this.resourceId = UUID.fromString(proxy.getResourceId());
         this.resourceType = proxy.getResourceType();
         //this.version = proxy.getVersion(); //not present in proxy
-        this.createdAt = proxy.getUpdatedAt();
+
+        //Hibernate returns a java.sql.Timestamp which isn't fully compatible with java.util.Date (equals fn doesn't work) so we need to convert
+        this.createdAt = new java.util.Date(proxy.getUpdatedAt().getTime());
+        //this.createdAt = proxy.getUpdatedAt();
+
         if (!Strings.isNullOrEmpty(proxy.getPatientId())) {
             this.patientId = UUID.fromString(proxy.getPatientId());
         }
@@ -89,7 +93,11 @@ public class ResourceWrapper {
         this.resourceId = UUID.fromString(proxy.getResourceId());
         this.resourceType = proxy.getResourceType();
         //this.version = proxy.getVersion(); //not present in proxy
-        this.createdAt = proxy.getCreatedAt();
+
+        //Hibernate returns a java.sql.Timestamp which isn't fully compatible with java.util.Date (equals fn doesn't work) so we need to convert
+        this.createdAt = new java.util.Date(proxy.getCreatedAt().getTime());
+        //this.createdAt = proxy.getCreatedAt();
+
         if (!Strings.isNullOrEmpty(proxy.getPatientId())) {
             this.patientId = UUID.fromString(proxy.getPatientId());
         }

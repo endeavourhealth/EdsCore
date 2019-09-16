@@ -2,6 +2,8 @@ package org.endeavourhealth.core.database.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.*;
+import org.endeavourhealth.common.fhir.schema.RegistrationStatus;
+import org.endeavourhealth.common.fhir.schema.RegistrationType;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
@@ -1168,6 +1170,70 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             entityManager.close();
         }
 
+    }
+
+    @Override
+    public UUID findBestPatientRecord(List<UUID> patientIds) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT patient_id,"
+                    + " IF (e.registration_type_code = '" + RegistrationType.REGULAR_GMS + "', 1, 0) as `registration_type_rank`," //if reg type = GMS then up-rank
+                    + " IF (e.registration_status_code is null or e.registration_status_code not in ('"
+                    + RegistrationStatus.PRE_REGISTERED_FP1_SUBMITTED.getCode() + "', '"
+                    + RegistrationStatus.PRE_REGISTERED_MEDICAL_CARD_RECEIVED.getCode() + "', '"
+                    + RegistrationStatus.PRE_REGISTERED_PRESENTED.getCode() + "'), 1, 0) as `registration_status_rank`," //if pre-registered status, then down-rank
+                    + " IF (ps.date_of_death is not null, 1, 0) as `death_rank`," //records is a date of death more likely to be actively used, so up-vote
+                    + " IF (e.registration_end is null, '9999-12-31', e.registration_end) as `registration_end_sortable`," //up-vote non-ended ones
+                    + " FROM patient_search ps"
+                    + " INNER JOI eds.patient_search_episode e"
+                    + " ON e.service_id = ps.service_id"
+                    + " AND e.patient_id = ps.patient_id"
+                    + " WHERE ps.dt_deleted is null"
+                    + " AND e.dt_deleted is null"
+                    + " AND ps.patient_id IN (";
+
+            //MySQL JDBC driver doesn't support the ps.setArray(..) feature, so we need to explicitly define each of the options in the IN statement
+            for (int i=0; i<patientIds.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")"
+                    + " ORDER BY"
+                    + " registration_status_rank desc," //avoid pre-registered records if possible
+                    + " death_rank desc," //records marked as deceased are more likely to be used than ones not
+                    + " registration_type_rank desc," //prefer GMS registrations over others
+                    + " registration_start desc," //want the most recent registration
+                    + " registration_end_sortable desc"
+                    + " LIMIT 1";
+
+            SessionImpl session = (SessionImpl)entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            ps = connection.prepareStatement(sql);
+
+            for (int i=0; i<patientIds.size(); i++) {
+                UUID patientId = patientIds.get(i);
+                ps.setString(i+1, patientId.toString());
+            }
+
+            ResultSet rs = ps.executeQuery();
+            if (!rs.next()) {
+                throw new Exception("Failed to find best patient record ID for from patient IDs " + patientIds);
+            }
+
+            String bestIdStr = rs.getString(1);
+            return UUID.fromString(bestIdStr);
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
     }
 
 }
