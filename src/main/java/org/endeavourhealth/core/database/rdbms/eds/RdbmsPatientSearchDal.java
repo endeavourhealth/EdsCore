@@ -1178,16 +1178,16 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT patient_id,"
+            String sql = "SELECT ps.patient_id,"
                     + " IF (e.registration_type_code = '" + RegistrationType.REGULAR_GMS + "', 1, 0) as `registration_type_rank`," //if reg type = GMS then up-rank
                     + " IF (e.registration_status_code is null or e.registration_status_code not in ('"
                     + RegistrationStatus.PRE_REGISTERED_FP1_SUBMITTED.getCode() + "', '"
                     + RegistrationStatus.PRE_REGISTERED_MEDICAL_CARD_RECEIVED.getCode() + "', '"
                     + RegistrationStatus.PRE_REGISTERED_PRESENTED.getCode() + "'), 1, 0) as `registration_status_rank`," //if pre-registered status, then down-rank
                     + " IF (ps.date_of_death is not null, 1, 0) as `death_rank`," //records is a date of death more likely to be actively used, so up-vote
-                    + " IF (e.registration_end is null, '9999-12-31', e.registration_end) as `registration_end_sortable`," //up-vote non-ended ones
+                    + " IF (e.registration_end is null, '9999-12-31', e.registration_end) as `registration_end_sortable`" //up-vote non-ended ones
                     + " FROM patient_search ps"
-                    + " INNER JOI eds.patient_search_episode e"
+                    + " INNER JOIN eds.patient_search_episode e"
                     + " ON e.service_id = ps.service_id"
                     + " AND e.patient_id = ps.patient_id"
                     + " WHERE ps.dt_deleted is null"
