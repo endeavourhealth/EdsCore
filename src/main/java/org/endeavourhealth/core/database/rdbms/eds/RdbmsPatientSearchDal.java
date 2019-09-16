@@ -1187,7 +1187,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                     + " IF (ps.date_of_death is not null, 1, 0) as `death_rank`," //records is a date of death more likely to be actively used, so up-vote
                     + " IF (e.registration_end is null, '9999-12-31', e.registration_end) as `registration_end_sortable`" //up-vote non-ended ones
                     + " FROM patient_search ps"
-                    + " INNER JOIN eds.patient_search_episode e"
+                    + " LEFT OUTER JOIN eds.patient_search_episode e"
                     + " ON e.service_id = ps.service_id"
                     + " AND e.patient_id = ps.patient_id"
                     + " WHERE ps.dt_deleted is null"
