@@ -1190,8 +1190,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                     + " LEFT OUTER JOIN eds.patient_search_episode e"
                     + " ON e.service_id = ps.service_id"
                     + " AND e.patient_id = ps.patient_id"
+                    + " AND e.dt_deleted is null" //inside the join, so deleted episodes don't mean we never get at least one result back
                     + " WHERE ps.dt_deleted is null"
-                    + " AND e.dt_deleted is null"
                     + " AND ps.patient_id IN (";
 
             //MySQL JDBC driver doesn't support the ps.setArray(..) feature, so we need to explicitly define each of the options in the IN statement
