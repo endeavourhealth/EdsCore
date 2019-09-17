@@ -1,14 +1,19 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.endeavourhealth.core.database.dal.subscriberTransform.PseudoIdDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPseudoIdMap;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsSubscriberPseudoId;
+import org.hibernate.internal.SessionImpl;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.util.UUID;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.util.*;
 
 public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
@@ -16,6 +21,57 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
     public RdbmsPseudoIdDal(String subscriberConfigName) {
         this.subscriberConfigName = subscriberConfigName;
+    }
+
+    @Override
+    public void auditPseudoId(String saltName, TreeMap<String, String> keys, String pseudoId) throws Exception {
+
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode root = new ObjectNode(mapper.getNodeFactory());
+
+        List<String> values = new ArrayList<>();
+        Set set = keys.entrySet();
+        Iterator i = set.iterator();
+        while(i.hasNext()) {
+            Map.Entry me = (Map.Entry)i.next();
+            String key = (String)me.getKey();
+            String val = (String)me.getValue();
+            root.put(key, val);
+        }
+        String sourceValueStr = mapper.writeValueAsString(root);
+
+        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO pseudo_id_audit (salt_key_name, source_values, pseudo_id)"
+                    + " VALUES (?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " pseudo_id = VALUES(pseudo_id)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            int col = 1;
+            ps.setString(col++, saltName);
+            ps.setString(col++, sourceValueStr);
+            ps.setString(col++, pseudoId);
+
+            ps.executeUpdate();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     @Override
@@ -45,7 +101,7 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
         }
     }
 
-    @Override
+    /*@Override
     public String findPseudoIdOldWay(String patientId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
@@ -59,38 +115,6 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
                 return null;
             }
 
-        } finally {
-            entityManager.close();
-        }
-    }
-
-    /*public List<String> findPatientIdsFromPseudoIds(List<String> pseudoIds) throws Exception {
-
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-
-        try {
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<RdbmsPseudoIdMap> cq = cb.createQuery(RdbmsPseudoIdMap.class);
-            Root<RdbmsPseudoIdMap> rootEntry = cq.from(RdbmsPseudoIdMap.class);
-
-            Predicate predicate = rootEntry.get("pseudoId").in(pseudoIds);
-            cq.where(predicate);
-
-            TypedQuery<RdbmsPseudoIdMap> query = entityManager.createQuery(cq);
-
-            entityManager.close();
-
-            try {
-                List<RdbmsPseudoIdMap> maps = query.getResultList();
-
-                List<String> patientIds = maps.stream()
-                                            .map(RdbmsPseudoIdMap::getPatientId)
-                                            .collect(Collectors.toList());
-                return patientIds;
-
-            } catch (NoResultException ex) {
-                return null;
-            }
         } finally {
             entityManager.close();
         }

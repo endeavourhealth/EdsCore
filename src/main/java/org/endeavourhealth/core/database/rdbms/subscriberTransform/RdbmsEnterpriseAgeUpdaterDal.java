@@ -115,9 +115,15 @@ public class RdbmsEnterpriseAgeUpdaterDal implements EnterpriseAgeUpdaterlDalI {
 
                 //period doesn't help with calculating the number of days in each month, so use an alternative
                 //method to calculate the number of days
-                long millis = new Date().getTime() - map.getDateOfBirth().getTime();
-                int days = (int)TimeUnit.DAYS.convert(millis, TimeUnit.MILLISECONDS);
-                ret[EnterpriseAge.UNIT_WEEKS] = new Integer(days / 7);
+                long millisAge;
+                if (dateOfDeath == null) {
+                    millisAge = new Date().getTime() - map.getDateOfBirth().getTime();
+                } else {
+                    millisAge = dateOfDeath.getTime() - map.getDateOfBirth().getTime();
+                }
+
+                int daysAge = (int)TimeUnit.DAYS.convert(millisAge, TimeUnit.MILLISECONDS);
+                ret[EnterpriseAge.UNIT_WEEKS] = new Integer(daysAge / 7);
                 //ret[UNIT_WEEKS] = new Integer(period.getDays() / 7);
             }
         }
