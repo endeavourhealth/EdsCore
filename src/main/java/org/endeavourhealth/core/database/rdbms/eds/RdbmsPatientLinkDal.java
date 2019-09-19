@@ -178,7 +178,8 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
             String sql = "select c"
                     + " from"
                     + " RdbmsPatientLinkHistory c"
-                    + " where c.updated >= :timestamp";
+                    + " where c.updated >= :timestamp"
+                    + " and c.previousPersonId IS NOT NULL";
 
             Query query = entityManager.createQuery(sql, RdbmsPatientLinkHistory.class)
                     .setParameter("timestamp", timestamp, TemporalType.TIMESTAMP);
