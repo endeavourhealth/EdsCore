@@ -1175,6 +1175,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     @Override
     public UUID findBestPatientRecord(List<UUID> patientIds) throws Exception {
 
+        if (patientIds.isEmpty()) {
+            throw new Exception("Can't find patient IDs with list of zero IDs");
+        }
+
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;
         try {
