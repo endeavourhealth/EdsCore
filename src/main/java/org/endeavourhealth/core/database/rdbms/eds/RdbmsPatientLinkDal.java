@@ -69,6 +69,30 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
                 //if we don't have an NHS number, then just assign a new random person ID
                 if (previousPersonId == null) {
                     newPersonId = UUID.randomUUID().toString();
+
+                } else {
+                    //if we previously had a person ID, we need to see if that person ID is one matched to
+                    //an NHS number or not. If a record has an NHS number and then has that removed, then we need
+                    //to make sure a new person ID is generated
+                    String sql = "select c"
+                            + " from"
+                            + " RdbmsPatientLinkPerson c"
+                            + " where c.personId = :personId";
+
+                    Query query = entityManager.createQuery(sql, RdbmsPatientLinkPerson.class)
+                                    .setParameter("personId", previousPersonId);
+
+                    try {
+                        query.getSingleResult();
+
+                        //if the patient_link_person table has a record for this person ID, then
+                        //we need to match to a new person ID because we no longer have the NHS number
+                        newPersonId = UUID.randomUUID().toString();
+
+                    } catch (NoResultException ex) {
+                        //if there's nothing in patient_link_person for this person ID then we didn't have
+                        //an NHS number last time through, so leave with the same person ID
+                    }
                 }
             }
 
@@ -93,6 +117,9 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
                 entityManager.persist(history);
                 entityManager.persist(patientLink);
                 entityManager.getTransaction().commit();
+                //NOTE: we very occasionally get a duplicate key exception from the above SQL, which
+                //is down to two updates for the same patient going through very quickly. It's because patient_link_history
+                //uses the timestamp as part of its primary key
             }
 
             return new PatientLinkPair(patientId, newPersonId, previousPersonId);
