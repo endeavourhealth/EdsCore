@@ -187,7 +187,7 @@ public class Exchange {
         }
     }
 
-    public void setHeaderAsBoolean(String key, Boolean b) throws Exception {
+    public void setHeaderAsBoolean(String key, Boolean b) {
         if (b == null) {
             setHeader(key, null);
         } else {
