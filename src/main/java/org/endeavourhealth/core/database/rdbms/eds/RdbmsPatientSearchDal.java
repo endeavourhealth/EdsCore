@@ -2,8 +2,6 @@ package org.endeavourhealth.core.database.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.*;
-import org.endeavourhealth.common.fhir.schema.RegistrationStatus;
-import org.endeavourhealth.common.fhir.schema.RegistrationType;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
@@ -1172,7 +1170,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
     }
 
-    @Override
+    /*@Override
     public UUID findBestPatientRecord(List<UUID> patientIds) throws Exception {
 
         if (patientIds.isEmpty()) {
@@ -1238,7 +1236,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             }
             entityManager.close();
         }
-    }
+    }*/
 
 }
 

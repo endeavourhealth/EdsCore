@@ -29,5 +29,5 @@ public interface PatientSearchDalI {
      * returns the "best" patient record from the UUIDs supplied for identifying the one most likely
      * to represent the true state of the patients demographics
      */
-    UUID findBestPatientRecord(List<UUID> patientIds) throws Exception;
+    //UUID findBestPatientRecord(List<UUID> patientIds) throws Exception;
 }

@@ -31,6 +31,7 @@ public abstract class HeaderKeys {
     public static final String ProtocolIds = "Protocols";
     public static final String SubscriberBatch = "SubscriberBatch";
 
-
+    //control
+    public static final String AllowRequeueing = "AllowRequeueing";
 }
 
