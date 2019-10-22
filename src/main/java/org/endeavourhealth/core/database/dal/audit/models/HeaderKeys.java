@@ -32,6 +32,6 @@ public abstract class HeaderKeys {
     public static final String SubscriberBatch = "SubscriberBatch";
 
     //control
-    public static final String AllowRequeueing = "AllowRequeueing";
+    public static final String AllowQueueing = "AllowQueueing";
 }
 
