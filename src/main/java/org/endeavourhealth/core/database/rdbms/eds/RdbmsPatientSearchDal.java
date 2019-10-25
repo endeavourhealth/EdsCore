@@ -63,6 +63,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         Date dob = fhirPatient.getBirthDate();
         Date dod = findDateOfDeath(fhirPatient);
         String registeredPracticeOdsCode = findRegisteredPracticeOdsCode(serviceId, fhirPatient);
+        OrganisationDetails managingOrg = findManagingOrganisationDetails(serviceId, fhirPatient);
+        String orgOdsCode = managingOrg.getOdsCode();
+        String orgName = managingOrg.getName();
+        String orgTypeCode = managingOrg.getTypeCode();
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement psPatient = null;
@@ -148,6 +152,21 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 psPatient.setNull(col++, Types.VARCHAR);
             }
             psPatient.setNull(col++, Types.TIMESTAMP);
+            if (!Strings.isNullOrEmpty(orgOdsCode)) {
+                psPatient.setString(col++, orgOdsCode);
+            } else {
+                psPatient.setNull(col++, Types.VARCHAR);
+            }
+            if (!Strings.isNullOrEmpty(orgName)) {
+                psPatient.setString(col++, orgName);
+            } else {
+                psPatient.setNull(col++, Types.VARCHAR);
+            }
+            if (!Strings.isNullOrEmpty(orgTypeCode)) {
+                psPatient.setString(col++, orgTypeCode);
+            } else {
+                psPatient.setNull(col++, Types.VARCHAR);
+            }
 
             psPatient.executeUpdate();
 
@@ -198,6 +217,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             entityManager.close();
         }
     }
+
 
     private static String findRegisteredPracticeOdsCode(UUID serviceId, Patient fhirPatient) throws Exception {
         if (!fhirPatient.hasCareProvider()) {
@@ -318,10 +338,13 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         Date regStart = null;
         Date regEnd = null;
         String careManager = null;
-        String orgName = null;
-        String orgTypeCode = null;
+        OrganisationDetails managingOrg = findManagingOrganisationDetails(serviceId, fhirEpisode);
+        String orgOdsCode = managingOrg.getOdsCode();
+        String orgName = managingOrg.getName();
+        String orgTypeCode = managingOrg.getTypeCode();
         String registrationType = findRegistrationType(fhirEpisode);
         String registrationStatus = findRegistrationStatus(fhirEpisode);
+
 
         if (fhirEpisode.hasPeriod()) {
             Period period = fhirEpisode.getPeriod();
@@ -349,20 +372,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             }
         }
 
-        if (fhirEpisode.hasManagingOrganization()) {
-            Reference orgReference = fhirEpisode.getManagingOrganization();
-            ReferenceComponents comps = org.endeavourhealth.common.fhir.ReferenceHelper.getReferenceComponents(orgReference);
-            ResourceType type = comps.getResourceType();
-            String id = comps.getId();
 
-            Organization org = (Organization)resourceDalI.getCurrentVersionAsResource(serviceId, type, id);
-            if (org != null) {
-                orgName = org.getName();
-
-                CodeableConcept concept = org.getType();
-                orgTypeCode = CodeableConceptHelper.findCodingCode(concept, FhirValueSetUri.VALUE_SET_ORGANISATION_TYPE);
-            }
-        }
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
         PreparedStatement ps = null;
@@ -412,6 +422,11 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 ps.setNull(col++, Types.VARCHAR);
             }
             ps.setNull(col++, Types.TIMESTAMP);
+            if (!Strings.isNullOrEmpty(orgOdsCode)) {
+                ps.setString(col++, orgOdsCode);
+            } else {
+                ps.setNull(col++, Types.VARCHAR);
+            }
 
             ps.executeUpdate();
 
@@ -427,6 +442,44 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             }
             entityManager.close();
         }
+    }
+
+    private OrganisationDetails findManagingOrganisationDetails(UUID serviceId, Patient fhirPatient) throws Exception {
+        if (!fhirPatient.hasManagingOrganization()) {
+            return new OrganisationDetails(null, null, null);
+        }
+
+        return findOrganizationDetailsFromReference(serviceId, fhirPatient.getManagingOrganization());
+    }
+
+    private OrganisationDetails findManagingOrganisationDetails(UUID serviceId, EpisodeOfCare fhirEpisode) throws Exception {
+        if (!fhirEpisode.hasManagingOrganization()) {
+            return new OrganisationDetails(null, null, null);
+        }
+
+        return findOrganizationDetailsFromReference(serviceId, fhirEpisode.getManagingOrganization());
+    }
+
+    private OrganisationDetails findOrganizationDetailsFromReference(UUID serviceId, Reference orgReference) throws Exception {
+
+        ReferenceComponents comps = org.endeavourhealth.common.fhir.ReferenceHelper.getReferenceComponents(orgReference);
+        ResourceType type = comps.getResourceType();
+        String id = comps.getId();
+
+        ResourceDalI resourceDal = DalProvider.factoryResourceDal();
+        Organization org = (Organization)resourceDal.getCurrentVersionAsResource(serviceId, type, id);
+        if (org == null) {
+            return new OrganisationDetails(null, null, null);
+        }
+
+        String orgName = org.getName();
+
+        CodeableConcept concept = org.getType();
+        String orgTypeCode = CodeableConceptHelper.findCodingCode(concept, FhirValueSetUri.VALUE_SET_ORGANISATION_TYPE);
+
+        String orgOdsCode = IdentifierHelper.findOdsCode(org);
+
+        return new OrganisationDetails(orgOdsCode, orgName, orgTypeCode);
     }
 
     private String findRegistrationStatus(EpisodeOfCare fhirEpisode) {
@@ -492,8 +545,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO patient_search_episode"
-                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated, registration_status_code, dt_deleted)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, episode_id, registration_start, registration_end, care_mananger, organisation_name, organisation_type_code, registration_type_code, last_updated, registration_status_code, dt_deleted, ods_code)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " patient_id = VALUES(patient_id)," //even though this is part of the primary key, the patient ID may change due to merges, so update it here
                 + " registration_start = VALUES(registration_start),"
@@ -504,7 +557,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " registration_type_code = VALUES(registration_type_code),"
                 + " last_updated = VALUES(last_updated),"
                 + " registration_status_code = VALUES(registration_status_code),"
-                + " dt_deleted = VALUES(dt_deleted)";
+                + " dt_deleted = VALUES(dt_deleted),"
+                + " ods_code = VALUES(ods_code)";
 
         return connection.prepareStatement(sql);
     }
@@ -515,8 +569,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         Connection connection = session.connection();
 
         String sql = "INSERT INTO patient_search"
-                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted, ods_code, organisation_name, organisation_type_code)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " nhs_number = VALUES(nhs_number),"
                 + " forenames = VALUES(forenames),"
@@ -532,7 +586,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " gender = VALUES(gender),"
                 + " last_updated = VALUES(last_updated),"
                 + " registered_practice_ods_code = VALUES(registered_practice_ods_code),"
-                + " dt_deleted = VALUES(dt_deleted)";
+                + " dt_deleted = VALUES(dt_deleted),"
+                + " ods_code = VALUES(ods_code),"
+                + " organisation_name = VALUES(organisation_name),"
+                + " organisation_type_code = VALUES(organisation_type_code)";
 
         return connection.prepareStatement(sql);
     }
@@ -1276,5 +1333,29 @@ class PatientSearchLocalIdentifier {
             }
         }
         return false;
+    }
+}
+
+class OrganisationDetails {
+    private String odsCode;
+    private String name;
+    private String typeCode;
+
+    public OrganisationDetails(String odsCode, String name, String typeCode) {
+        this.odsCode = odsCode;
+        this.name = name;
+        this.typeCode = typeCode;
+    }
+
+    public String getOdsCode() {
+        return odsCode;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getTypeCode() {
+        return typeCode;
     }
 }
