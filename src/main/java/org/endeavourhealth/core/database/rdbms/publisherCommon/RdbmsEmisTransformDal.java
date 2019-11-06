@@ -22,7 +22,24 @@ import java.util.Date;
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
     @Override
-    public void saveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
+    public void saveCodeMappings( List<EmisCsvCodeMap> mappings) throws Exception {
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("mappings is null or empty");
+        }
+
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                trySaveCodeMappings(mappings);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+
+    }
+    public void trySaveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
         if (mappings == null || mappings.isEmpty()) {
             throw new IllegalArgumentException("Trying to save null or empty mappings");
         }
