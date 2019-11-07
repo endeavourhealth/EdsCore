@@ -168,5 +168,9 @@ public abstract class TerminologyService {
         //ICD-10 is the same structure as OPCS-4, so just call into the same fn
         return standardiseOpcs4Code(code);
     }
+
+    public static Read2Code lookupRead2Code(String code) throws Exception {
+        return read2ToSnomedRepository.getRead2Code(code);
+    }
 }
 

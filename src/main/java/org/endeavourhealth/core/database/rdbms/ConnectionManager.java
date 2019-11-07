@@ -177,38 +177,6 @@ public class ConnectionManager {
 
     }
 
-    /*private static synchronized EntityManagerFactory createEntityManager(Db dbName, String explicitConfigName) throws Exception {
-
-        //adding this line to force compile-time checking for this class. Spent far too long investigating
-        //why this wasn't being found when it turned out to be that it had been removed from POM.xml,
-        //so adding this to ensure it's picked up during compile-time rather than run-time
-        org.hibernate.hikaricp.internal.HikariCPConnectionProvider p = null;
-
-        JsonNode json = findDatabaseConfigJson(dbName, explicitConfigName);
-
-        String url = json.get("url").asText();
-        String user = json.get("username").asText();
-        String pass = json.get("password").asText();
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.temp.use_jdbc_metadata_defaults", "false");
-        properties.put("hibernate.hikari.dataSource.url", url);
-        properties.put("hibernate.hikari.dataSource.user", user);
-        properties.put("hibernate.hikari.dataSource.password", pass);
-
-        if (json.has("class")) {
-            properties.put("hibernate.hikari.dataSourceClassName", json.get("class").asText());
-        }
-
-        if (json.has("dialect")) {
-            properties.put("hibernate.dialect", json.get("dialect").asText());
-        }
-
-        String hibernatePersistenceUnit = getPersistenceUnitName(dbName);
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
-
-        return factory;
-    }*/
 
     private static JsonNode findDatabaseConfigJson(Db dbName, String configName) throws Exception {
 

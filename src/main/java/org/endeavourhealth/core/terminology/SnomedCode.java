@@ -31,4 +31,9 @@ public class SnomedCode {
                 .setDisplay(this.getTerm())
                 .setCode(this.getConceptCode());
     }
+
+    @Override
+    public String toString() {
+        return term + " (" + conceptCode + ")";
+    }
 }
