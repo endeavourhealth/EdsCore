@@ -112,8 +112,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             }
 
             sql = "INSERT INTO emis_csv_code_map"
-                    + " (medication, code_id, code_type, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json, dt_last_received)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (medication, code_id, code_type, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " code_type = VALUES(code_type),"
                     + " read_term = VALUES(read_term),"
@@ -126,7 +126,9 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " national_code_description = VALUES(national_code_description),"
                     + " parent_code_id = VALUES(parent_code_id),"
                     + " audit_json = VALUES(audit_json),"
-                    + " dt_last_received = VALUES(dt_last_received)";
+                    + " dt_last_received = VALUES(dt_last_received),"
+                    + " adjusted_code = VALUES(adjusted_code),"
+                    + " codeable_concept_system = VALUES(codeable_concept_system)";
 
             psInsert = connection.prepareStatement(sql);
 
@@ -198,6 +200,16 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 } else {
                     psInsert.setTimestamp(col++, new Timestamp(mapping.getDtLastReceived().getTime()));
                 }
+                if (mapping.getAdjustedCode() == null) {
+                    psInsert.setNull(col++, Types.VARCHAR);
+                } else {
+                    psInsert.setString(col++, mapping.getAdjustedCode());
+                }
+                if (mapping.getCodeableConceptSystem() == null) {
+                    psInsert.setNull(col++, Types.VARCHAR);
+                } else {
+                    psInsert.setString(col++, mapping.getCodeableConceptSystem());
+                }
 
                 psInsert.addBatch();
             }
@@ -243,7 +255,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             String sql = "SELECT medication, code_id, code_type, read_term, read_code, snomed_concept_id, "
                         + "snomed_description_id, snomed_term, national_code, national_code_category, "
-                        + "national_code_description, parent_code_id, audit_json, dt_last_received "
+                        + "national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system "
                         + "FROM emis_csv_code_map "
                         + "WHERE medication = ? "
                         + "AND code_id = ?";
@@ -295,6 +307,9 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 if (!rs.wasNull()) {
                     ret.setDtLastReceived(new Date(ts.getTime()));
                 }
+
+                ret.setAdjustedCode(rs.getString(col++));
+                ret.setCodeableConceptSystem(rs.getString(col++));
 
                 return ret;
 

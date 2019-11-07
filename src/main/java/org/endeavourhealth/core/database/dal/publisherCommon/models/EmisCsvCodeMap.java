@@ -16,13 +16,15 @@ public class EmisCsvCodeMap {
     private String readCode = null;
     private Long snomedConceptId = null;
     private Long snomedDescriptionId = null;
-    private String snomedTerm = null;
     private String nationalCode = null;
     private String nationalCodeCategory = null;
     private String nationalCodeDescription = null;
     private Long parentCodeId = null;
     private ResourceFieldMappingAudit audit = null;
     private Date dtLastReceived = null;
+    private String snomedTerm = null;
+    private String adjustedCode = null;
+    private String codeableConceptSystem = null;
 
     public EmisCsvCodeMap() {}
 
@@ -110,13 +112,6 @@ public class EmisCsvCodeMap {
         this.snomedDescriptionId = snomedDescriptionId;
     }
 
-    public String getSnomedTerm() {
-        return snomedTerm;
-    }
-
-    public void setSnomedTerm(String snomedTerm) {
-        this.snomedTerm = snomedTerm;
-    }
 
     public String getNationalCode() {
         return nationalCode;
@@ -158,20 +153,36 @@ public class EmisCsvCodeMap {
         this.audit = audit;
     }
 
-    /*public CodeableConcept getCodeableConceptObject() throws Exception {
-        return (CodeableConcept)ParserPool.getInstance().parseType(this.codeableConcept, CODEABLE_CONCEPT);
-    }
-
-    public void setCodeableConceptObject(CodeableConcept codeableConcept) throws Exception {
-        this.codeableConcept = ParserPool.getInstance().composeString(codeableConcept, CODEABLE_CONCEPT);
-    }*/
-
     public Date getDtLastReceived() {
         return dtLastReceived;
     }
 
     public void setDtLastReceived(Date dtLastReceived) {
         this.dtLastReceived = dtLastReceived;
+    }
+
+    public String getSnomedTerm() {
+        return snomedTerm;
+    }
+
+    public void setSnomedTerm(String snomedTerm) {
+        this.snomedTerm = snomedTerm;
+    }
+
+    public String getAdjustedCode() {
+        return adjustedCode;
+    }
+
+    public void setAdjustedCode(String adjustedCode) {
+        this.adjustedCode = adjustedCode;
+    }
+
+    public String getCodeableConceptSystem() {
+        return codeableConceptSystem;
+    }
+
+    public void setCodeableConceptSystem(String codeableConceptSystem) {
+        this.codeableConceptSystem = codeableConceptSystem;
     }
 
     @Override
@@ -184,11 +195,13 @@ public class EmisCsvCodeMap {
         +  "readCode = " + readCode + ", "
         +  "snomedConceptId = " + snomedConceptId + ", "
         +  "snomedDescriptionId = " + snomedDescriptionId + ", "
-        +  "snomedTerm = " + snomedTerm + ", "
         +  "nationalCode = " + nationalCode + ", "
         +  "nationalCodeCategory = " + nationalCodeCategory + ", "
         +  "nationalCodeDescription = " + nationalCodeDescription + ", "
         +  "parentCodeId = " + parentCodeId + ", "
-        +  "dtLastReceived = " + dtLastReceived + "]";
+        +  "dtLastReceived = " + dtLastReceived + ", "
+        +  "snomedTerm = " + snomedTerm + ", "
+        +  "adjustedCode = " + adjustedCode + ", "
+        +  "codeableConceptSystem = " + codeableConceptSystem + "]";
     }
 }

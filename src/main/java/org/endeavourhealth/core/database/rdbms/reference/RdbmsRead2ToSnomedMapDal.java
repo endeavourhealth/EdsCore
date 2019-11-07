@@ -28,7 +28,7 @@ public class RdbmsRead2ToSnomedMapDal implements Read2ToSnomedMapDalI {
 
             String sql = "select read_code, preferred_term"
                     + " from"
-                    + " read2 "
+                    + " read2_lookup "
                     + " where read_code = ?";
             ps = connection.prepareStatement(sql);
 
