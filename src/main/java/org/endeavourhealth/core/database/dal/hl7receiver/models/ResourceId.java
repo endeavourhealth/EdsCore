@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.dal.hl7receiver.models;
 
-import org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId;
-
 import java.util.UUID;
 
 public class ResourceId {
@@ -13,12 +11,6 @@ public class ResourceId {
 
     public ResourceId() {}
 
-    public ResourceId(RdbmsResourceId proxy) {
-        this.scopeId = proxy.getScopeId();
-        this.resourceType = proxy.getResourceType();
-        this.uniqueId = proxy.getUniqueId();
-        this.resourceId = proxy.getResourceId();
-    }
 
     public String getScopeId() {
         return scopeId;

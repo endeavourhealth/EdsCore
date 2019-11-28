@@ -25,7 +25,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
     private boolean wasCdsAlreadyFiled(UUID serviceId, StagingProcedureCds cds) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -77,7 +77,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
     private boolean wasConditionCdsAlreadyFiled(UUID serviceId, StagingConditionCds cdsCondition) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -128,7 +128,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
     private boolean wasCdsCountAlreadyFiled(UUID serviceId, StagingProcedureCdsCount cdsCount) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -195,7 +195,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -331,7 +331,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -396,7 +396,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
     private boolean wasConditionCdsCountAlreadyFiled(UUID serviceId, StagingConditionCdsCount cdsConditionCount) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -464,7 +464,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -593,7 +593,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {

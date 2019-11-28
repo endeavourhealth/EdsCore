@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class RdbmsCodingDal implements CodingDalI {
 
     public List<Concept> search(String term, int maxResultsSize, int start) throws Exception {
-        EntityManager entityManager = ConnectionManager.getCodingEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
         try {
             String sql = "select c" +
@@ -42,7 +42,7 @@ public class RdbmsCodingDal implements CodingDalI {
     }
 
     public Concept getConcept(String code) throws Exception {
-        EntityManager entityManager = ConnectionManager.getCodingEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
         try {
             String sql = "select c" +
@@ -69,7 +69,7 @@ public class RdbmsCodingDal implements CodingDalI {
     }
 
     public List<Concept> getChildren(String code) throws Exception {
-        EntityManager entityManager = ConnectionManager.getCodingEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
         try {
             String sql = "select r" +
@@ -96,7 +96,7 @@ public class RdbmsCodingDal implements CodingDalI {
 
 
     public List<Concept> getParents(String code) throws Exception {
-        EntityManager entityManager = ConnectionManager.getCodingEntityManager();
+        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
         try {
             String sql = "select r" +

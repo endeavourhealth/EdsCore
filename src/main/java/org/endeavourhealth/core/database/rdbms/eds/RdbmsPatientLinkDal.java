@@ -18,6 +18,7 @@ import java.util.*;
 
 public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
+    @Override
     public PatientLinkPair updatePersonId(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
@@ -151,6 +152,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
         }
     }
 
+    @Override
     public String getPersonId(String patientId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
@@ -198,6 +200,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
         }
     }
 
+    @Override
     public List<PatientLinkPair> getChangesSince(Date timestamp) throws Exception {
         EntityManager entityManager = ConnectionManager.getEdsEntityManager();
 

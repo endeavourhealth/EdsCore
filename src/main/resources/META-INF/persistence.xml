@@ -15,7 +15,7 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
+
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="4" />
@@ -49,7 +49,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="5" />
@@ -69,7 +68,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="15" />
@@ -82,39 +80,14 @@
         </properties>
     </persistence-unit>
 
-    <persistence-unit name="CodingDb">
-        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConcept</class>
-        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsConceptPcLink</class>
-        <exclude-unlisted-classes>true</exclude-unlisted-classes>
-        <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="validate"/>
-            <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
-            <property name="hibernate.auth" value="Container" />
-            <property name="hibernate.hikari.connectionTimeout" value="300000" />
-            <property name="hibernate.hikari.maximumPoolSize" value="5" />
-            <property name="hibernate.hikari.minimumIdle" value="1" />
-            <property name="hibernate.hikari.dataSourceClassName" value="org.postgresql.ds.PGSimpleDataSource" />
-            <property name="hibernate.hikari.dataSource.url" value="jdbc:postgresql://localhost:5432/coding"/>
-            <property name="hibernate.hikari.dataSource.user" value="postgres"/>
-            <property name="hibernate.hikari.dataSource.password" value=""/>
-            <property name="hibernate.connection.autocommit" value="false" />
-            <!-- NOTE: ALL THESE PROPERTIES MAY BE OVERRIDDEN BY THE CONFIG JSON -->
-        </properties>
-    </persistence-unit>
-
-
     <persistence-unit name="EdsDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLink</class>
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkHistory</class>
         <class>org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkPerson</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="5" />
@@ -133,7 +106,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="12" /> <!--one per thread used for filing, plus one for transform thread, plus a spare-->
@@ -149,11 +121,9 @@
 
     <persistence-unit name="HL7ReceiverDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>org.endeavourhealth.core.database.rdbms.hl7receiver.models.RdbmsResourceId</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="5" />
@@ -170,7 +140,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="5" />
@@ -205,7 +174,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="12" /> <!-- match the ehr DB, since saving to EHR and publisher_transform is done at the same time-->
@@ -231,7 +199,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
@@ -254,7 +221,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
@@ -278,7 +244,6 @@
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="1" />
@@ -309,9 +274,8 @@
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoa2001Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoa2011Lookup</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
@@ -344,9 +308,8 @@
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrPractitionerIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPcrTableNameIdMap</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="5" />
@@ -364,7 +327,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="10" />
@@ -385,7 +347,6 @@
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
             <property name="hibernate.auth" value="Container" />
             <property name="hibernate.hikari.connectionTimeout" value="300000" />
             <property name="hibernate.hikari.maximumPoolSize" value="10" />

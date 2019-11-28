@@ -23,7 +23,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
     private boolean wasAlreadySaved(UUID serviceId, StagingProcedureCdsTail obj) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -72,7 +72,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
 
     private boolean wasAlreadySaved(UUID serviceId, StagingConditionCdsTail obj) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -138,7 +138,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -228,7 +228,7 @@ public class RdbmsStagingCdsTailDal implements StagingCdsTailDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {

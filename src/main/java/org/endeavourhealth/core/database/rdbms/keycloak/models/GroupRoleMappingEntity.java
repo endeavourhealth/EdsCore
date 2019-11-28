@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.keycloak.models;
 
-import org.endeavourhealth.core.database.rdbms.keycloak.PersistenceManagerKeycloak;
+import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -60,7 +60,7 @@ public class GroupRoleMappingEntity implements Serializable {
     }
 
     public static GroupRoleMappingEntity getGroupRoleMappingByRoleId(String roleId) throws Exception {
-        EntityManager entityManager = PersistenceManagerKeycloak.getEntityManager();
+        EntityManager entityManager = ConnectionManager.getKeyCloakEntityManager();
 
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<GroupRoleMappingEntity> cq = cb.createQuery(GroupRoleMappingEntity.class);

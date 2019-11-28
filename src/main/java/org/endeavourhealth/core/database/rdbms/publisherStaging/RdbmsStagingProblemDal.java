@@ -22,7 +22,7 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
 
     private boolean wasSavedAlready(UUID serviceId, StagingProblem obj) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -85,7 +85,7 @@ public class RdbmsStagingProblemDal implements StagingProblemDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {

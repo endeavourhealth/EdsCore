@@ -28,7 +28,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
 
     private boolean wasAlreadySaved(UUID serviceId, StagingPROCE obj) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -93,7 +93,7 @@ public class RdbmsStagingPROCEDal implements StagingPROCEDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {

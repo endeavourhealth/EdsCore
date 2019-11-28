@@ -28,7 +28,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public void processStagingForTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         CallableStatement stmt = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -55,7 +55,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
     public void processStagingForTargetConditions(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         CallableStatement stmt = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -83,7 +83,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public List<StagingProcedureTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -217,7 +217,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public List<StagingConditionTarget> getTargetConditions(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -317,7 +317,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         CallableStatement stmt = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -345,7 +345,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();

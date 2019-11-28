@@ -22,7 +22,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
 
     private boolean wasAlreadySaved(UUID serviceId, StagingSURCC obj) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -87,7 +87,7 @@ public class RdbmsStagingSURCCDal implements StagingSURCCDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityMananger(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
