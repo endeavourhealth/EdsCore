@@ -1030,6 +1030,113 @@ public class RdbmsExchangeDal implements ExchangeDalI {
     }
 
     @Override
+    public void save(LastDataToSubscriber dataSent) throws Exception {
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "INSERT INTO last_data_to_subscriber"
+                    + " (subscriber_config_name, service_id, system_id, data_date, sent_date, exchange_id)"
+                    + " VALUES (?, ?, ?, ?, ?, ?)";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, dataSent.getSubscriberConfigName());
+            ps.setString(col++, dataSent.getServiceId().toString());
+            ps.setString(col++, dataSent.getSystemId().toString());
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataSent.getDataDate().getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(dataSent.getSentDate().getTime()));
+            ps.setString(col++, dataSent.getExchangeId().toString());
+
+            ps.executeUpdate();
+            connection.commit();
+
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
+    public List<LastDataToSubscriber> getLastDataToSubscriber() throws Exception {
+        return getLastDataToSubscriberImpl(null, null);
+    }
+
+    @Override
+    public List<LastDataToSubscriber> getLastDataToSubscriber(UUID serviceId) throws Exception {
+        return getLastDataToSubscriberImpl(serviceId, null);
+    }
+
+    @Override
+    public List<LastDataToSubscriber> getLastDataToSubscriber(String subscriberConfigName) throws Exception {
+        return getLastDataToSubscriberImpl(null, subscriberConfigName);
+    }
+
+    private static List<LastDataToSubscriber> getLastDataToSubscriberImpl(UUID serviceId, String subscriberConfigName) throws Exception {
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT subscriber_config_name, service_id, system_id, data_date, sent_date, exchange_id"
+                    + " FROM last_data_to_subscriber";
+
+            if (serviceId != null || subscriberConfigName != null) {
+                sql += " WHERE";
+
+                if (serviceId != null) {
+                    sql += " service_id = ?";
+                    if (subscriberConfigName != null) {
+                        sql += " AND";
+                    }
+                }
+
+                if (subscriberConfigName != null) {
+                    sql += " subscriber_config_name = ?";
+                }
+            }
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+
+            if (serviceId != null) {
+                ps.setString(col++, serviceId.toString());
+            }
+
+            if (subscriberConfigName != null) {
+                ps.setString(col++, subscriberConfigName);
+            }
+
+            List<LastDataToSubscriber> ret = new ArrayList<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                col = 1;
+
+                LastDataToSubscriber d = new LastDataToSubscriber();
+                d.setSubscriberConfigName(rs.getString(col++));
+                d.setServiceId(UUID.fromString(rs.getString(col++)));
+                d.setSystemId(UUID.fromString(rs.getString(col++)));
+                d.setDataDate(new java.util.Date(rs.getTimestamp(col++).getTime()));
+                d.setSentDate(new java.util.Date(rs.getTimestamp(col++).getTime()));
+                d.setExchangeId(UUID.fromString(rs.getString(col++)));
+
+                ret.add(d);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
     public void save(ExchangeSubscriberSendAudit audit) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;

@@ -472,4 +472,9 @@ public class DalProvider {
     public static SubscriberResourceMappingDalI factorySubscriberResourceMappingDal(String subscriberConfigName) {
         return new RdbmsSubscriberResourceMappingDal(subscriberConfigName);
     }
+
+    public static ApplicationHeartbeatDalI factoryApplicationHeartbeatDal() {
+        return new RdbmsApplicationHeartbeatDal();
+    }
+
 }

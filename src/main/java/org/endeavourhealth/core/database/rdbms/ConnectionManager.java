@@ -23,6 +23,7 @@ import javax.persistence.Persistence;
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,10 +109,11 @@ public class ConnectionManager {
      * to easily get them but using the same Hikari connection pool as used by Hibernate. End result is we
      * don't have any more connections open but don't have to keep unwrapping the connection out of EntityManagers
      */
-
     private static Connection getConnection(Db dbName, String instanceName) throws Exception {
         try {
-            return getDataSourceNewWay(dbName, instanceName).getConnection();
+            DataSource dataSource = getDataSourceNewWay(dbName, instanceName);
+            return dataSource.getConnection();
+
         } catch (Exception e) {
             //if using the old-style config, we need to get a connection by pulling the connection provider from the entityManagerFactory
             String msg = e.getMessage();
@@ -254,8 +256,9 @@ public class ConnectionManager {
                 String url = child.asText();
                 properties.put("jdbcUrl", url);
 
-            } else if (fieldName.equals("credentials")) {
-                //if we find a "credentials" element, this gives us the name of another config record, so recurse
+            } else if (fieldName.equals("credentials")
+                    || fieldName.equals("nested_config")) {
+                //if we find a "nested_config" or "credentials" element, this gives us the name of another config record, so recurse
                 String credentialsName = child.asText();
                 populateConnectionPropertiesNewWay(credentialsName, properties);
 
@@ -730,6 +733,141 @@ public class ConnectionManager {
 
     public static Connection getDataGeneratorConnection() throws Exception {
         return getConnection(Db.DataGenerator);
+    }
+
+    
+
+    /**
+     * returns a DB connection that isn't from a connection pool. Useful if the connection will be kept open
+     * for an extended period
+     */
+    private static Connection getConnectionNonPooled(Db dbName) throws Exception {
+        return getConnectionNonPooled(dbName, null);
+    }
+
+    private static Connection getConnectionNonPooled(Db dbName, String instanceName) throws Exception {
+        try {
+            return openNonPooledConnectionNewWay(dbName, instanceName);
+
+        } catch (Exception e) {
+            return openNonPooledConnectionOldWay(dbName, instanceName);
+        }
+    }
+
+
+
+    private static Connection openNonPooledConnectionNewWay(Db dbName, String instanceName) throws Exception {
+        //load the config record from the DB (including URL, username and password) into a properties map, then apply to the pool
+        String configName = dbName.getConfigName(instanceName);
+        Properties properties = new Properties();
+        populateConnectionPropertiesNewWay(configName, properties);
+
+        String url = (String)properties.remove("jdbcUrl");
+
+        //DriverManager expects the username to be in a property called "user", so remove and re-add if necessary
+        String username = (String)properties.remove("username");
+        if (!Strings.isNullOrEmpty(username)) {
+            properties.put("user", username);
+        }
+
+        Connection connection = DriverManager.getConnection(url, properties);
+        connection.setAutoCommit(false); //so this matches the pooled connections
+        return connection;
+    }
+
+    private static Connection openNonPooledConnectionOldWay(Db dbName, String instanceName) throws Exception {
+        JsonNode json = findDatabaseConfigJsonOldWay(dbName, instanceName);
+
+        Properties properties = new Properties();
+        String url = null;
+
+        Iterator<String> fieldNames = json.fieldNames();
+        while (fieldNames.hasNext()) {
+            String fieldName = fieldNames.next();
+            JsonNode child = json.get(fieldName);
+
+            if (fieldName.equals("url")) {
+                url = child.asText();
+
+            } else if (fieldName.equals("username")) {
+                String user = child.asText();
+                properties.put("user", user); //note that the property needs to be called username
+
+            } else if (fieldName.equals("password")) {
+                String pass = child.asText();
+                properties.put("password", pass);
+
+            } else {
+                //ignore it, as it's nothing to do with the DB connection
+            }
+        }
+
+        Connection connection = DriverManager.getConnection(url, properties);
+        connection.setAutoCommit(false); //so this matches the pooled connections
+        return connection;
+    }
+
+    public static Connection getEdsNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Eds);
+    }
+
+    public static Connection getReferenceNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Reference);
+    }
+
+    public static Connection getHl7ReceiverNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Hl7Receiver);
+    }
+
+    public static Connection getSftpReaderNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.SftpReader);
+    }
+
+    public static Connection getAdminNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Admin);
+    }
+
+    public static Connection getAuditNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Audit);
+    }
+
+    public static Connection getFhirAuditNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.FhirAudit);
+    }
+
+    public static Connection getPublisherTransformNonPooledConnection(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getConnectionNonPooled(Db.PublisherTransform, configName);
+    }
+
+    public static Connection getSubscriberTransformNonPooledConnection(String configName) throws Exception {
+        return getConnectionNonPooled(Db.SubscriberTransform, configName);
+    }
+
+    public static Connection getEhrNonPooledConnection(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getConnectionNonPooled(Db.Ehr, configName);
+    }
+
+    public static Connection getLogbackNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.Logback);
+    }
+
+    public static Connection getJDBCReaderNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.JdbcReader);
+    }
+
+    public static Connection getPublisherCommonNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.PublisherCommon);
+    }
+
+    public static Connection getPublisherStagingNonPooledConnection(UUID serviceId) throws Exception {
+        String configName = findConfigNameForPublisherService(serviceId);
+        return getConnectionNonPooled(Db.PublisherStaging, configName);
+    }
+
+    public static Connection getDataGeneratorNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.DataGenerator);
     }
 
 }
