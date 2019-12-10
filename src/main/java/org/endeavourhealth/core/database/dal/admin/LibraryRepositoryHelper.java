@@ -1,11 +1,15 @@
 package org.endeavourhealth.core.database.dal.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
+import org.endeavourhealth.common.cache.ObjectMapperPool;
+import org.endeavourhealth.common.utility.ExpiringCache;
 import org.endeavourhealth.common.utility.XmlSerializer;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.admin.models.ActiveItem;
 import org.endeavourhealth.core.database.dal.admin.models.DefinitionItemType;
 import org.endeavourhealth.core.database.dal.admin.models.Item;
+import org.endeavourhealth.core.fhirStorage.JsonServiceInterfaceEndpoint;
 import org.endeavourhealth.core.xml.QueryDocument.*;
 import org.endeavourhealth.core.xml.QueryDocument.System;
 import org.slf4j.Logger;
@@ -15,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class LibraryRepositoryHelper {
 	private static final Logger LOG = LoggerFactory.getLogger(LibraryRepositoryHelper.class);
@@ -27,8 +30,9 @@ public class LibraryRepositoryHelper {
 
 	private static final LibraryDalI repository = DalProvider.factoryLibraryDal();
 
-	private static final Map<String, ExpiringCache<TechnicalInterface>> technicalInterfaceCache = new ConcurrentHashMap<>();
-	private static final Map<String, ExpiringCache<LibraryItem>> libraryItemCache = new ConcurrentHashMap<>();
+	private static final Map<String, TechnicalInterface> technicalInterfaceCache = new ExpiringCache<>(CACHE_DURATION);
+	private static final Map<String, LibraryItem> libraryItemCache = new ExpiringCache<>(CACHE_DURATION);
+	private static final Map<String, String> serviceEndpointCache = new ExpiringCache<>(CACHE_DURATION);
 
 	public static List<LibraryItem> getProtocolsByServiceId(String serviceId, String systemId) throws Exception {
 		DefinitionItemType itemType = DefinitionItemType.Protocol;
@@ -159,24 +163,12 @@ public class LibraryRepositoryHelper {
 	public static TechnicalInterface getTechnicalInterfaceDetailsUsingCache(String systemUuidStr, String technicalInterfaceUuidStr) throws Exception {
 
 		String cacheKey = systemUuidStr + ":" + technicalInterfaceUuidStr;
-		ExpiringCache<TechnicalInterface> cacheWrapper = technicalInterfaceCache.get(cacheKey);
-		if (cacheWrapper == null
-				|| cacheWrapper.isExpired()) {
-
-			synchronized (technicalInterfaceCache) {
-
-				//once in the sync block, make another check, in case another thread has refreshed our cache for us
-				cacheWrapper = technicalInterfaceCache.get(cacheKey);
-				if (cacheWrapper == null
-						|| cacheWrapper.isExpired()) {
-
-					TechnicalInterface ti = getTechnicalInterfaceDetails(systemUuidStr, technicalInterfaceUuidStr);
-					cacheWrapper = new ExpiringCache<>(ti, CACHE_DURATION);
-					technicalInterfaceCache.put(cacheKey, cacheWrapper);
-				}
-			}
+		TechnicalInterface ti = technicalInterfaceCache.get(cacheKey);
+		if (ti == null) {
+			ti = getTechnicalInterfaceDetails(systemUuidStr, technicalInterfaceUuidStr);
+			technicalInterfaceCache.put(cacheKey, ti);
 		}
-		return cacheWrapper.getObject();
+		return ti;
 	}
 
 	/**
@@ -185,48 +177,46 @@ public class LibraryRepositoryHelper {
      */
 	public static LibraryItem getLibraryItemUsingCache(UUID itemUuid) throws Exception {
 		String cacheKey = itemUuid.toString();
-		ExpiringCache<LibraryItem> cacheWrapper = libraryItemCache.get(cacheKey);
-		if (cacheWrapper == null
-				|| cacheWrapper.isExpired()) {
+		LibraryItem libraryItem = libraryItemCache.get(cacheKey);
+		if (libraryItem == null) {
+			libraryItem = getLibraryItem(itemUuid);
+			libraryItemCache.put(cacheKey, libraryItem);
+		}
+		return libraryItem;
+	}
 
-			synchronized (libraryItemCache) {
+	public static String getSubscriberEndpoint(ServiceContract contract) throws Exception {
 
-				//once in the sync block, make another check, in case another thread has refreshed our cache for us
-				cacheWrapper = libraryItemCache.get(cacheKey);
-				if (cacheWrapper == null
-						|| cacheWrapper.isExpired()) {
+		try {
+			UUID serviceId = UUID.fromString(contract.getService().getUuid());
+			UUID technicalInterfaceId = UUID.fromString(contract.getTechnicalInterface().getUuid());
 
-					LibraryItem libraryItem = getLibraryItem(itemUuid);
-					cacheWrapper = new ExpiringCache<>(libraryItem, CACHE_DURATION);
-					libraryItemCache.put(cacheKey, cacheWrapper);
+			String cacheKey = serviceId.toString() + ":" + technicalInterfaceId.toString();
+			String endpoint = serviceEndpointCache.get(cacheKey);
+			if (endpoint == null) {
+
+				ServiceDalI serviceRepository = DalProvider.factoryServiceDal();
+
+				org.endeavourhealth.core.database.dal.admin.models.Service service = serviceRepository.getById(serviceId);
+				List<JsonServiceInterfaceEndpoint> serviceEndpoints = ObjectMapperPool.getInstance().readValue(service.getEndpoints(), new TypeReference<List<JsonServiceInterfaceEndpoint>>() {
+				});
+				for (JsonServiceInterfaceEndpoint serviceEndpoint : serviceEndpoints) {
+					if (serviceEndpoint.getTechnicalInterfaceUuid().equals(technicalInterfaceId)) {
+						endpoint = serviceEndpoint.getEndpoint();
+
+						//concurrent map can't store null values, so only add to the cache if non-null
+						if (endpoint != null) {
+							serviceEndpointCache.put(cacheKey, endpoint);
+						}
+						break;
+					}
 				}
 			}
+
+			return endpoint;
+
+		} catch (Exception ex) {
+			throw new Exception("Failed to get endpoint for contract", ex);
 		}
-		return cacheWrapper.getObject();
-	}
-}
-
-/**
- * simple cache wrapper to allow us to expire items in the map
- */
-class ExpiringCache<T> {
-	private T object;
-	private long expiry;
-
-	public ExpiringCache(T object, long msLife) {
-		this.object = object;
-		this.expiry = java.lang.System.currentTimeMillis() + msLife;
-	}
-
-	public boolean isExpired() {
-		return java.lang.System.currentTimeMillis() > expiry;
-	}
-
-	public T getObject() {
-		return object;
-	}
-
-	public long getExpiry() {
-		return expiry;
 	}
 }
