@@ -33,5 +33,6 @@ public abstract class HeaderKeys {
 
     //control
     public static final String AllowQueueing = "AllowQueueing";
+    public static final String LastMessage = "LastMessage";
 }
 

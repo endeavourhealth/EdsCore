@@ -642,6 +642,13 @@ public class ConnectionManager {
         return getEntityManager(Db.SubscriberTransform, configName);
     }
 
+    /**
+     * no hibernate entities on subscriber/enterprise DBs
+     */
+    /*public static EntityManager getSubscriberEntityManager(String configName) throws Exception {
+        return getEntityManager(Db.Subscriber, configName);
+    }*/
+
     public static EntityManager getEhrEntityManager(UUID serviceId) throws Exception {
         String configName = findConfigNameForPublisherService(serviceId);
         return getEntityManager(Db.Ehr, configName);
@@ -707,6 +714,10 @@ public class ConnectionManager {
 
     public static Connection getSubscriberTransformConnection(String configName) throws Exception {
         return getConnection(Db.SubscriberTransform, configName);
+    }
+
+    public static Connection getSubscriberConnection(String configName) throws Exception {
+        return getConnection(Db.Subscriber, configName);
     }
 
     public static Connection getEhrConnection(UUID serviceId) throws Exception {
@@ -842,6 +853,10 @@ public class ConnectionManager {
 
     public static Connection getSubscriberTransformNonPooledConnection(String configName) throws Exception {
         return getConnectionNonPooled(Db.SubscriberTransform, configName);
+    }
+
+    public static Connection getSubscriberNonPooledConnection(String configName) throws Exception {
+        return getConnectionNonPooled(Db.Subscriber, configName);
     }
 
     public static Connection getEhrNonPooledConnection(UUID serviceId) throws Exception {
