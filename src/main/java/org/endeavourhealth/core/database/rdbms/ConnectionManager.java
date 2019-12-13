@@ -117,7 +117,7 @@ public class ConnectionManager {
         } catch (Exception e) {
             //if using the old-style config, we need to get a connection by pulling the connection provider from the entityManagerFactory
             String msg = e.getMessage();
-            LOG.error("Failed to get DB connection new way for " + dbName + " " + instanceName + " so will get new way: " + msg);
+            LOG.error("Failed to get DB connection new way for " + dbName + " " + instanceName + " so will get old way: " + msg);
             EntityManagerFactory factory = getEntityManagerFactory(dbName, instanceName);
             SessionFactoryImpl sessionFactory = (SessionFactoryImpl)factory;
             ConnectionProvider provider = sessionFactory.getServiceRegistry().getService(ConnectionProvider.class);
@@ -244,7 +244,7 @@ public class ConnectionManager {
 
         JsonNode json = ConfigManager.getConfigurationAsJson(configName);
         if (json == null) {
-            throw new Exception("Failed to find config record [" + configName + "]");
+            throw new Exception("Failed to find config record [" + configName + "] for app ID " + ConfigManager.getAppId());
         }
 
         Iterator<String> fieldNames = json.fieldNames();
