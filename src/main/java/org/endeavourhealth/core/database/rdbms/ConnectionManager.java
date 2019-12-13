@@ -773,15 +773,11 @@ public class ConnectionManager {
         Properties properties = new Properties();
         populateConnectionPropertiesNewWay(configName, properties);
 
-        String url = (String)properties.remove("jdbcUrl");
+        String url = (String)properties.get("jdbcUrl");
+        String username = (String)properties.get("username");
+        String password = (String)properties.get("password");
 
-        //DriverManager expects the username to be in a property called "user", so remove and re-add if necessary
-        String username = (String)properties.remove("username");
-        if (!Strings.isNullOrEmpty(username)) {
-            properties.put("user", username);
-        }
-
-        Connection connection = DriverManager.getConnection(url, properties);
+        Connection connection = DriverManager.getConnection(url, username, password);
         connection.setAutoCommit(false); //so this matches the pooled connections
         return connection;
     }
@@ -789,8 +785,9 @@ public class ConnectionManager {
     private static Connection openNonPooledConnectionOldWay(Db dbName, String instanceName) throws Exception {
         JsonNode json = findDatabaseConfigJsonOldWay(dbName, instanceName);
 
-        Properties properties = new Properties();
         String url = null;
+        String username = null;
+        String password = null;
 
         Iterator<String> fieldNames = json.fieldNames();
         while (fieldNames.hasNext()) {
@@ -801,19 +798,17 @@ public class ConnectionManager {
                 url = child.asText();
 
             } else if (fieldName.equals("username")) {
-                String user = child.asText();
-                properties.put("user", user); //note that the property needs to be called username
+                username = child.asText();
 
             } else if (fieldName.equals("password")) {
-                String pass = child.asText();
-                properties.put("password", pass);
+                password = child.asText();
 
             } else {
                 //ignore it, as it's nothing to do with the DB connection
             }
         }
 
-        Connection connection = DriverManager.getConnection(url, properties);
+        Connection connection = DriverManager.getConnection(url, username, password);
         connection.setAutoCommit(false); //so this matches the pooled connections
         return connection;
     }
