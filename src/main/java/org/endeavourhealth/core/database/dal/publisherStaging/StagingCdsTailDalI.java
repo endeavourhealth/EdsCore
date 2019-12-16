@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging;
 
+import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingCdsTail;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCdsTail;
 import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCdsTail;
 
@@ -13,4 +14,6 @@ public interface StagingCdsTailDalI {
 
     void saveConditionTail(StagingConditionCdsTail cdsConditionTail, UUID serviceId) throws Exception;
     void saveConditionTails(List<StagingConditionCdsTail> cdsConditionTails, UUID serviceId) throws Exception;
+
+    void saveCdsTails(List<StagingCdsTail> cdsTails, UUID serviceId) throws Exception;
 }

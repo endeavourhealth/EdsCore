@@ -1,9 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging;
 
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCds;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCdsCount;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCds;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCdsCount;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,4 +16,8 @@ public interface StagingCdsDalI {
     void saveConditionCount(StagingConditionCdsCount cds, UUID serviceId) throws Exception;
     void saveConditions(List<StagingConditionCds> cdses, UUID serviceId) throws Exception;
     void saveConditionCounts(List<StagingConditionCdsCount> cdses, UUID serviceId) throws Exception;
+
+    void saveCDSInpatients(List<StagingInpatientCds> cdses, UUID serviceId) throws Exception;
+    void saveCDSOutpatients(List<StagingOutpatientCds> cdses, UUID serviceId) throws Exception;
+    void saveCDSEmergencies(List<StagingEmergencyCds> cdses, UUID serviceId) throws Exception;
 }

@@ -1,10 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingCdsDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCds;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionCdsCount;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCds;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureCdsCount;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.*;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
@@ -102,6 +99,111 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (rs.next()) {
                 int dbChecksum = rs.getInt(1);
                 return dbChecksum == cdsCondition.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    private boolean wasInpatientCdsAlreadyFiled(UUID serviceId, StagingInpatientCds cdsInpatient) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum "
+                    + "from cds_inpatient "
+                    + "where cds_unique_identifier = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsInpatient.getCdsUniqueIdentifier());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getDtReceived().getTime()));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsInpatient.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    private boolean wasOutpatientCdsAlreadyFiled(UUID serviceId, StagingOutpatientCds cdsOutpatient) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum "
+                    + "from cds_outpatient "
+                    + "where cds_unique_identifier = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsOutpatient.getCdsUniqueIdentifier());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getDtReceived().getTime()));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsOutpatient.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    private boolean wasEmergencyCdsAlreadyFiled(UUID serviceId, StagingEmergencyCds cdsEmergency) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum "
+                    + "from cds_emergency "
+                    + "where cds_unique_identifier = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsEmergency.getCdsUniqueIdentifier());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getDtReceived().getTime()));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsEmergency.getRecordChecksum();
             } else {
                 return false;
             }
@@ -645,6 +747,578 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             LOG.error("Error saving");
             for (StagingConditionCdsCount cdsConditionCount: toSave) {
                 LOG.error("" + cdsConditionCount);
+            }
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+
+    @Override
+    public void saveCDSInpatients(List<StagingInpatientCds> cdses, UUID serviceId) throws Exception {
+
+        List<StagingInpatientCds> toSave = new ArrayList<>();
+
+        for (StagingInpatientCds cdsInpatient: cdses) {
+
+            cdsInpatient.setRecordChecksum(cdsInpatient.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasInpatientCdsAlreadyFiled(serviceId, cdsInpatient)) {
+
+                toSave.add(cdsInpatient);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO cds_inpatient  "
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
+                    " patient_pathway_identifier, spell_number, admission_method_code, admission_source_code, " +
+                    " patient_classification, spell_start_date, episode_number, " +
+                    " episode_start_site_code, episode_start_ward_code, episode_start_date, " +
+                    " episode_end_site_code, episode_end_ward_code, episode_end_date, " +
+                    " discharge_date, discharge_destination_code, discharge_method, " +
+                    " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
+                    " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " cds_activity_date=VALUES(cds_activity_date),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " cds_update_type = VALUES(cds_update_type),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " withheld = VALUES(withheld),"
+                    + " date_of_birth = VALUES(date_of_birth),"
+                    + " consultant_code = VALUES(consultant_code),"
+                    + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
+                    + " spell_number = VALUES(spell_number),"
+                    + " admission_method_code = VALUES(admission_method_code),"
+                    + " admission_source_code = VALUES(admission_source_code),"
+                    + " patient_classification = VALUES(patient_classification),"
+                    + " spell_start_date = VALUES(spell_start_date),"
+                    + " episode_number = VALUES(episode_number),"
+                    + " episode_start_site_code = VALUES(episode_start_site_code),"
+                    + " episode_start_ward_code = VALUES(episode_start_ward_code),"
+                    + " episode_start_date = VALUES(episode_start_date),"
+                    + " episode_end_site_code = VALUES(episode_end_site_code),"
+                    + " episode_end_ward_code = VALUES(episode_end_ward_code),"
+                    + " episode_end_date = VALUES(episode_end_date),"
+                    + " discharge_date = VALUES(discharge_date),"
+                    + " discharge_destination_code = VALUES(discharge_destination_code),"
+                    + " discharge_method = VALUES(discharge_method),"
+                    + " primary_diagnosis_ICD = VALUES(primary_diagnosis_ICD),"
+                    + " secondary_diagnosis_ICD = VALUES(secondary_diagnosis_ICD),"
+                    + " other_diagnosis_ICD = VALUES(other_diagnosis_ICD),"
+                    + " primary_procedure_OPCS = VALUES(primary_procedure_OPCS),"
+                    + " primary_procedure_date = VALUES(primary_procedure_date),"
+                    + " secondary_procedure_OPCS = VALUES(secondary_procedure_OPCS),"
+                    + " secondary_procedure_date = VALUES(secondary_procedure_date),"
+                    + " other_procedures_OPCS = VALUES(other_procedures_OPCS),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (StagingInpatientCds cdsInpatient : toSave) {
+
+                int col = 1;
+
+                ps.setString(col++, cdsInpatient.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getDtReceived().getTime()));
+                ps.setInt(col++, cdsInpatient.getRecordChecksum());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getCdsActivityDate().getTime()));
+                ps.setString(col++, cdsInpatient.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsInpatient.getCdsUpdateType());
+                ps.setString(col++, cdsInpatient.getMrn());
+                ps.setString(col++, cdsInpatient.getNhsNumber());
+                if (cdsInpatient.getWithheld() == null) {
+                    ps.setNull(col++, Types.BOOLEAN);
+                } else {
+                    ps.setBoolean(col++, cdsInpatient.getWithheld().booleanValue());
+                }
+                if (cdsInpatient.getDateOfBirth() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getDateOfBirth().getTime()));
+                }
+                ps.setString(col++, cdsInpatient.getConsultantCode());
+
+                ps.setString(col++, cdsInpatient.getPatientPathwayIdentifier());
+                ps.setString(col++, cdsInpatient.getSpellNumber());
+                ps.setString(col++, cdsInpatient.getAdmissionMethodCode());
+                ps.setString(col++, cdsInpatient.getAdmissionSourceCode());
+                ps.setString(col++, cdsInpatient.getPatientClassification());
+
+                if (cdsInpatient.getSpellStartDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getSpellStartDate().getTime()));
+                }
+
+                ps.setString(col++, cdsInpatient.getEpisodeNumber());
+                ps.setString(col++, cdsInpatient.getEpisodeStartSiteCode());
+                ps.setString(col++, cdsInpatient.getEpisodeStartWardCode());
+
+                if (cdsInpatient.getEpisodeStartDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getEpisodeStartDate().getTime()));
+                }
+
+                ps.setString(col++, cdsInpatient.getEpisodeEndSiteCode());
+                ps.setString(col++, cdsInpatient.getEpisodeEndWardCode());
+
+                if (cdsInpatient.getEpisodeEndDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getEpisodeEndDate().getTime()));
+                }
+
+                if (cdsInpatient.getDischargeDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getDischargeDate().getTime()));
+                }
+
+                ps.setString(col++, cdsInpatient.getDischargeDestinationCode());
+                ps.setString(col++, cdsInpatient.getDischargeMethod());
+                ps.setString(col++, cdsInpatient.getPrimaryDiagnosisICD());
+                ps.setString(col++, cdsInpatient.getSecondaryDiagnosisICD());
+                ps.setString(col++, cdsInpatient.getOtherDiagnosisICD());
+                ps.setString(col++, cdsInpatient.getPrimaryProcedureOPCS());
+
+                if (cdsInpatient.getPrimaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getPrimaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsInpatient.getSecondaryProcedureOPCS());
+
+                if (cdsInpatient.getSecondaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsInpatient.getSecondaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsInpatient.getOtherProceduresOPCS());
+
+                if (cdsInpatient.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsInpatient.getLookupPersonId());
+                }
+
+                if (cdsInpatient.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsInpatient.getLookupConsultantPersonnelId());
+                }
+
+                if (cdsInpatient.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsInpatient.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
+            LOG.error("Error saving");
+            for (StagingInpatientCds cdsInPatient: toSave) {
+                LOG.error("" + cdsInPatient);
+            }
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveCDSOutpatients(List<StagingOutpatientCds> cdses, UUID serviceId) throws Exception {
+
+        List<StagingOutpatientCds> toSave = new ArrayList<>();
+
+        for (StagingOutpatientCds cdsOutpatient: cdses) {
+
+            cdsOutpatient.setRecordChecksum(cdsOutpatient.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasOutpatientCdsAlreadyFiled(serviceId, cdsOutpatient)) {
+
+                toSave.add(cdsOutpatient);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO cds_outpatient  "
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
+                    " patient_pathway_identifier, appt_attendance_identifier, appt_attended_code, appt_outcome_code, " +
+                    " appt_date, appt_site_code, " +
+                    " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
+                    " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " cds_activity_date=VALUES(cds_activity_date),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " cds_update_type = VALUES(cds_update_type),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " withheld = VALUES(withheld),"
+                    + " date_of_birth = VALUES(date_of_birth),"
+                    + " consultant_code = VALUES(consultant_code),"
+                    + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
+                    + " appt_attendance_identifier = VALUES(appt_attendance_identifier),"
+                    + " appt_attended_code = VALUES(appt_attended_code),"
+                    + " appt_outcome_code = VALUES(appt_outcome_code),"
+                    + " appt_date = VALUES(appt_date),"
+                    + " appt_site_code = VALUES(appt_site_code),"
+                    + " primary_diagnosis_ICD = VALUES(primary_diagnosis_ICD),"
+                    + " secondary_diagnosis_ICD = VALUES(secondary_diagnosis_ICD),"
+                    + " other_diagnosis_ICD = VALUES(other_diagnosis_ICD),"
+                    + " primary_procedure_OPCS = VALUES(primary_procedure_OPCS),"
+                    + " primary_procedure_date = VALUES(primary_procedure_date),"
+                    + " secondary_procedure_OPCS = VALUES(secondary_procedure_OPCS),"
+                    + " secondary_procedure_date = VALUES(secondary_procedure_date),"
+                    + " other_procedures_OPCS = VALUES(other_procedures_OPCS),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (StagingOutpatientCds cdsOutpatient : toSave) {
+
+                int col = 1;
+
+                ps.setString(col++, cdsOutpatient.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getDtReceived().getTime()));
+                ps.setInt(col++, cdsOutpatient.getRecordChecksum());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getCdsActivityDate().getTime()));
+                ps.setString(col++, cdsOutpatient.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsOutpatient.getCdsUpdateType());
+                ps.setString(col++, cdsOutpatient.getMrn());
+                ps.setString(col++, cdsOutpatient.getNhsNumber());
+                if (cdsOutpatient.getWithheld() == null) {
+                    ps.setNull(col++, Types.BOOLEAN);
+                } else {
+                    ps.setBoolean(col++, cdsOutpatient.getWithheld().booleanValue());
+                }
+                if (cdsOutpatient.getDateOfBirth() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getDateOfBirth().getTime()));
+                }
+                ps.setString(col++, cdsOutpatient.getConsultantCode());
+
+                ps.setString(col++, cdsOutpatient.getPatientPathwayIdentifier());
+
+                ps.setString(col++, cdsOutpatient.getApptAttendanceIdentifier());
+                ps.setString(col++, cdsOutpatient.getApptAttendedCode());
+                ps.setString(col++, cdsOutpatient.getApptOutcomeCode());
+
+                if (cdsOutpatient.getApptDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getApptDate().getTime()));
+                }
+
+                ps.setString(col++, cdsOutpatient.getApptSiteCode());
+
+                ps.setString(col++, cdsOutpatient.getPrimaryDiagnosisICD());
+                ps.setString(col++, cdsOutpatient.getSecondaryDiagnosisICD());
+                ps.setString(col++, cdsOutpatient.getOtherDiagnosisICD());
+                ps.setString(col++, cdsOutpatient.getPrimaryProcedureOPCS());
+
+                if (cdsOutpatient.getPrimaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getPrimaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsOutpatient.getSecondaryProcedureOPCS());
+
+                if (cdsOutpatient.getSecondaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsOutpatient.getSecondaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsOutpatient.getOtherProceduresOPCS());
+
+                if (cdsOutpatient.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsOutpatient.getLookupPersonId());
+                }
+
+                if (cdsOutpatient.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsOutpatient.getLookupConsultantPersonnelId());
+                }
+
+                if (cdsOutpatient.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsOutpatient.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
+            LOG.error("Error saving");
+            for (StagingOutpatientCds cdsOutpatient: toSave) {
+                LOG.error("" + cdsOutpatient);
+            }
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveCDSEmergencies(List<StagingEmergencyCds> cdses, UUID serviceId) throws Exception {
+
+        List<StagingEmergencyCds> toSave = new ArrayList<>();
+
+        for (StagingEmergencyCds cdsEmergency: cdses) {
+
+            cdsEmergency.setRecordChecksum(cdsEmergency.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasEmergencyCdsAlreadyFiled(serviceId, cdsEmergency)) {
+
+                toSave.add(cdsEmergency);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO cds_emergency  "
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, patient_pathway_identifier, " +
+                    " department_type, ambulance_incident_number, ambulance_trust_organisation_code, " +
+                    " attendance_identifier, arrival_mode, attendance_category, attendance_source, " +
+                    " arrival_date, initial_assessment_date, chief_complaint, seen_for_treatment_date, "+
+                    " decided_to_admit_date, treatment_function_code, discharge_status, discharge_destination, " +
+                    " conclusion_date, departure_date, mh_classifications, diagnosis, investigations, treatments, " +
+                    " referred_to_services, safeguarding_concerns, lookup_person_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " cds_activity_date=VALUES(cds_activity_date),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " cds_update_type = VALUES(cds_update_type),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " withheld = VALUES(withheld),"
+                    + " date_of_birth = VALUES(date_of_birth),"
+                    + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
+                    + " department_type = VALUES(patient_pathway_identifier),"
+                    + " ambulance_incident_number = VALUES(ambulance_incident_number),"
+                    + " ambulance_trust_organisation_code = VALUES(ambulance_trust_organisation_code),"
+                    + " attendance_identifier = VALUES(attendance_identifier),"
+                    + " arrival_mode = VALUES(arrival_mode),"
+                    + " attendance_category = VALUES(attendance_category),"
+                    + " attendance_source = VALUES(attendance_source),"
+                    + " arrival_date = VALUES(arrival_date),"
+                    + " initial_assessment_date = VALUES(initial_assessment_date),"
+                    + " chief_complaint = VALUES(chief_complaint),"
+                    + " seen_for_treatment_date = VALUES(seen_for_treatment_date),"
+                    + " decided_to_admit_date = VALUES(decided_to_admit_date),"
+                    + " treatment_function_code = VALUES(treatment_function_code),"
+                    + " discharge_status = VALUES(discharge_status),"
+                    + " discharge_destination = VALUES(discharge_destination),"
+                    + " conclusion_date = VALUES(conclusion_date),"
+                    + " departure_date = VALUES(departure_date),"
+                    + " mh_classifications = VALUES(mh_classifications),"
+                    + " diagnosis = VALUES(diagnosis),"
+                    + " investigations = VALUES(investigations),"
+                    + " treatments = VALUES(treatments),"
+                    + " referred_to_services = VALUES(referred_to_services),"
+                    + " safeguarding_concerns = VALUES(safeguarding_concerns),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (StagingEmergencyCds cdsEmergency : toSave) {
+
+                int col = 1;
+
+                ps.setString(col++, cdsEmergency.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getDtReceived().getTime()));
+                ps.setInt(col++, cdsEmergency.getRecordChecksum());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getCdsActivityDate().getTime()));
+                ps.setString(col++, cdsEmergency.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsEmergency.getCdsUpdateType());
+                ps.setString(col++, cdsEmergency.getMrn());
+                ps.setString(col++, cdsEmergency.getNhsNumber());
+                if (cdsEmergency.getWithheld() == null) {
+                    ps.setNull(col++, Types.BOOLEAN);
+                } else {
+                    ps.setBoolean(col++, cdsEmergency.getWithheld().booleanValue());
+                }
+                if (cdsEmergency.getDateOfBirth() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getDateOfBirth().getTime()));
+                }
+
+                ps.setString(col++, cdsEmergency.getPatientPathwayIdentifier());
+
+                ps.setString(col++, cdsEmergency.getDepartmentType());
+                ps.setString(col++, cdsEmergency.getAmbulanceIncidentNumber());
+                ps.setString(col++, cdsEmergency.getAmbulanceTrustOrganisationCode());
+                ps.setString(col++, cdsEmergency.getAttendanceIdentifier());
+                ps.setString(col++, cdsEmergency.getArrivalMode());
+                ps.setString(col++, cdsEmergency.getAttendanceCategory());
+                ps.setString(col++, cdsEmergency.getAttendanceSource());
+
+                if (cdsEmergency.getArrivalDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getArrivalDate().getTime()));
+                }
+                if (cdsEmergency.getInitialAssessmentDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getInitialAssessmentDate().getTime()));
+                }
+                ps.setString(col++, cdsEmergency.getChiefComplaint());
+
+                if (cdsEmergency.getSeenForTreatmentDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getSeenForTreatmentDate().getTime()));
+                }
+                if (cdsEmergency.getDecidedToAdmitDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getDecidedToAdmitDate().getTime()));
+                }
+                ps.setString(col++, cdsEmergency.getTreatmentFunctionCode());
+                ps.setString(col++, cdsEmergency.getDischargeStatus());
+                ps.setString(col++, cdsEmergency.getDischargeDestination());
+
+                if (cdsEmergency.getConclusionDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getConclusionDate().getTime()));
+                }
+                if (cdsEmergency.getDepartureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsEmergency.getDepartureDate().getTime()));
+                }
+                ps.setString(col++, cdsEmergency.getMhClassifications());
+                ps.setString(col++, cdsEmergency.getDiagnosis());
+                ps.setString(col++, cdsEmergency.getInvestigations());
+                ps.setString(col++, cdsEmergency.getTreatments());
+                ps.setString(col++, cdsEmergency.getReferredToServices());
+                ps.setString(col++, cdsEmergency.getSafeguardingConcerns());
+
+                if (cdsEmergency.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsEmergency.getLookupPersonId());
+                }
+
+                if (cdsEmergency.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsEmergency.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
+            LOG.error("Error saving");
+            for (StagingEmergencyCds cdsEmergency: toSave) {
+                LOG.error("" + cdsEmergency);
             }
             throw ex;
 
