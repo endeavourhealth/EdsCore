@@ -25,14 +25,24 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
+            //TODO - move config_list table to publisher_common DB and remove the service ID column
+            // Quick fix for NWL services where we only get a config list option once across multiple services.
+//            String sql = "select c"
+//                    + " from "
+//                    + " RdbmsTppConfigListOption c"
+//                    + " where c.serviceId = :service_id"
+//                    + " and c.rowId = :row_id";
+//
+//            Query query = entityManager.createQuery(sql, RdbmsTppConfigListOption.class)
+//                    .setParameter("service_id", serviceId.toString())
+//                    .setParameter("row_id", rowId)
+//                    .setMaxResults(1);
             String sql = "select c"
                     + " from "
                     + " RdbmsTppConfigListOption c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.rowId = :row_id";
+                    + " where c.rowId = :row_id";
 
             Query query = entityManager.createQuery(sql, RdbmsTppConfigListOption.class)
-                    .setParameter("service_id", serviceId.toString())
                     .setParameter("row_id", rowId)
                     .setMaxResults(1);
 
@@ -40,7 +50,7 @@ public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
                 RdbmsTppConfigListOption result = (RdbmsTppConfigListOption) query.getSingleResult();
                 return new TppConfigListOption(result);
             } catch (NoResultException e) {
-                LOG.error("No code found for rowId " + rowId + ", service " + serviceId);
+                LOG.error("No code found for rowId " + rowId + ", service " + serviceId + " . ServiceId ignored. ");
                 return null;
             }
         } finally {
