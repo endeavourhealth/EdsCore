@@ -35,6 +35,7 @@ public class EnterpriseConnector {
             LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " new way");
 
         } catch (Exception ex) {
+            LOG.error("Failed to get enterprise connection new way", ex);
             mainConnection = openSingleConnectionOldWay(config, false);
             LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " old way");
         }
