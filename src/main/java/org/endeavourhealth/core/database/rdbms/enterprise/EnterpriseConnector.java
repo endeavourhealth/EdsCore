@@ -35,7 +35,6 @@ public class EnterpriseConnector {
             LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " new way");
 
         } catch (Exception ex) {
-            LOG.error("Failed to get enterprise connection new way", ex);
             mainConnection = openSingleConnectionOldWay(config, false);
             LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " old way");
         }
@@ -61,6 +60,7 @@ public class EnterpriseConnector {
                     LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " new way");
 
                 } catch (Exception ex) {
+                    LOG.error("Failed to get replica enterprise connection new way", ex);
                     replicaConnection = openSingleConnectionOldWay(replica, true);
                     LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " old way");
                 }
@@ -87,51 +87,40 @@ public class EnterpriseConnector {
 
     private static ConnectionWrapper openSingleConnectionOldWay(JsonNode config, boolean isReplica) throws Exception {
 
-        //try the new approach, which uses a separate config record to hold the DB connection details
-        try {
-            String subscriberDbConfigName = config.get("subscriber_db").asText();
-            DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, subscriberDbConfigName);
-            LOG.debug("Got enterprise/subscriber dataSource " + subscriberDbConfigName + " new way");
+        String url = config.get("enterprise_url").asText();
 
-            return new ConnectionWrapper(dataSource, isReplica);
+        ConnectionWrapper cached = cache.get(url);
+        if (cached == null) {
 
-        } catch (Exception ex) {
+            //sync and check again, just in case
+            synchronized (cache) {
+                cached = cache.get(url);
+                if (cached == null) {
 
-            String url = config.get("enterprise_url").asText();
+                    String driverClass = config.get("driverClass").asText();
+                    String username = config.get("enterprise_username").asText();
+                    String password = config.get("enterprise_password").asText();
 
-            ConnectionWrapper cached = cache.get(url);
-            if (cached == null) {
+                    //force the driver to be loaded
+                    Class.forName(driverClass);
 
-                //sync and check again, just in case
-                synchronized (cache) {
-                    cached = cache.get(url);
-                    if (cached == null) {
+                    HikariDataSource pool = new HikariDataSource();
+                    pool.setJdbcUrl(url);
+                    pool.setUsername(username);
+                    pool.setPassword(password);
+                    pool.setMaximumPoolSize(3);
+                    pool.setMinimumIdle(1);
+                    pool.setIdleTimeout(60000);
+                    pool.setPoolName("EnterpriseFilerConnectionPool" + url);
+                    pool.setAutoCommit(false);
 
-                        String driverClass = config.get("driverClass").asText();
-                        String username = config.get("enterprise_username").asText();
-                        String password = config.get("enterprise_password").asText();
-
-                        //force the driver to be loaded
-                        Class.forName(driverClass);
-
-                        HikariDataSource pool = new HikariDataSource();
-                        pool.setJdbcUrl(url);
-                        pool.setUsername(username);
-                        pool.setPassword(password);
-                        pool.setMaximumPoolSize(3);
-                        pool.setMinimumIdle(1);
-                        pool.setIdleTimeout(60000);
-                        pool.setPoolName("EnterpriseFilerConnectionPool" + url);
-                        pool.setAutoCommit(false);
-
-                        cached = new ConnectionWrapper(pool, isReplica);
-                        cache.put(url, cached);
-                    }
+                    cached = new ConnectionWrapper(pool, isReplica);
+                    cache.put(url, cached);
                 }
             }
-
-            return cached;
         }
+
+        return cached;
     }
 
 
