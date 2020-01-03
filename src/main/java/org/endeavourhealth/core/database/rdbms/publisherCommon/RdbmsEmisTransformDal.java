@@ -580,6 +580,73 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
+    @Override
+    public Map<String, EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid,
+                                                                 ResourceType resourceType, List<String> sourceIds) throws Exception {
+
+        if (sourceIds.isEmpty()) {
+            throw new Exception("Source IDs cannot be empty");
+        }
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json"
+                    + " FROM emis_admin_resource_cache"
+                    + " WHERE data_sharing_agreement_guid = ?"
+                    + " AND resource_type = ?"
+                    + " AND emis_guid IN (";
+            for (int i=0; i<sourceIds.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, dataSharingAgreementGuid);
+            ps.setString(col++, resourceType.toString());
+            for (int i=0; i<sourceIds.size(); i++) {
+                ps.setString(col++, sourceIds.get(i));
+            }
+
+            Map<String, EmisAdminResourceCache> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                col = 1;
+                String sharingGuid = rs.getString(col++);
+                String emisGuid = rs.getString(col++);
+                String type = rs.getString(col++);
+                String resourceData = rs.getString(col++);
+                String auditJson = rs.getString(col++);
+
+                EmisAdminResourceCache o = new EmisAdminResourceCache();
+                o.setDataSharingAgreementGuid(sharingGuid);
+                o.setEmisGuid(emisGuid);
+                o.setResourceType(type);
+                o.setResourceData(resourceData);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    o.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
+                }
+
+                ret.put(emisGuid, o);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
     private EntityManager adminCacheRetrieveEntityManager;
     private PreparedStatement adminCacheRetrievePreparedStatement;
     private ResultSet adminCacheRetrieveResultSet;

@@ -5,6 +5,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeM
 import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public interface EmisTransformDalI {
@@ -19,6 +20,7 @@ public interface EmisTransformDalI {
     void deleteAdminResources(List<EmisAdminResourceCache> resourceCache) throws Exception;
 
     EmisAdminResourceCache getAdminResource(String dataSharingAgreementGuid, ResourceType resourceType, String sourceId) throws Exception;
+    Map<String, EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid, ResourceType resourceType, List<String> sourceIds) throws Exception;
 
     //far too many admin resources to retrieve in one go, so changing to stream them
     void startRetrievingAdminResources(String dataSharingAgreementGuid) throws Exception;

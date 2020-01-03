@@ -71,4 +71,14 @@ public class EmisAdminResourceCache {
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("dataSharingAgreementGuid = " + dataSharingAgreementGuid);
+        sb.append(", resourceType = " + resourceType);
+        sb.append(", emisGuid = " + emisGuid);
+        sb.append("\r\n" + resourceData);
+        return sb.toString();
+    }
 }
