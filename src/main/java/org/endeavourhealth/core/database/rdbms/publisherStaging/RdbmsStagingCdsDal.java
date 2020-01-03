@@ -1188,7 +1188,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " withheld = VALUES(withheld),"
                     + " date_of_birth = VALUES(date_of_birth),"
                     + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
-                    + " department_type = VALUES(patient_pathway_identifier),"
+                    + " department_type = VALUES(department_type),"
                     + " ambulance_incident_number = VALUES(ambulance_incident_number),"
                     + " ambulance_trust_organisation_code = VALUES(ambulance_trust_organisation_code),"
                     + " attendance_identifier = VALUES(attendance_identifier),"
@@ -1242,7 +1242,6 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 }
 
                 ps.setString(col++, cdsEmergency.getPatientPathwayIdentifier());
-
                 ps.setString(col++, cdsEmergency.getDepartmentType());
                 ps.setString(col++, cdsEmergency.getAmbulanceIncidentNumber());
                 ps.setString(col++, cdsEmergency.getAmbulanceTrustOrganisationCode());
