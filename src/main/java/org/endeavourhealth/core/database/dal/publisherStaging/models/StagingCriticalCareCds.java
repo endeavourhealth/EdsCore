@@ -374,7 +374,7 @@ public class StagingCriticalCareCds implements Cloneable {
                 criticalCareTypeId,
                 spellNumber,
                 episodeNumber,
-                criticalCareIdentifier,
+                // criticalCareIdentifier,   now in PK
                 careStartDate,
                 careUnitFunction,
                 admissionSourceCode,

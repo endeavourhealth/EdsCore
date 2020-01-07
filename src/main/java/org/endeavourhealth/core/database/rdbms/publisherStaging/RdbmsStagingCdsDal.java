@@ -226,6 +226,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "select record_checksum "
                     + "from cds_critical_care "
                     + "where cds_unique_identifier = ? "
+                    + "and critical_care_identifier = ? "
                     + "and dt_received <= ? "
                     + "order by dt_received desc "
                     + "limit 1";
@@ -233,6 +234,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             int col = 1;
             ps.setString(col++, cdsCriticalCare.getCdsUniqueIdentifier());
+            ps.setString(col++, cdsCriticalCare.getCriticalCareIdentifier());
             ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getDtReceived().getTime()));
 
             ResultSet rs = ps.executeQuery();
