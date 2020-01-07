@@ -216,6 +216,41 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         }
     }
 
+    private boolean wasCriticalCareCdsAlreadyFiled(UUID serviceId, StagingCriticalCareCds cdsCriticalCare) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum "
+                    + "from cds_critical_care "
+                    + "where cds_unique_identifier = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsCriticalCare.getCdsUniqueIdentifier());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getDtReceived().getTime()));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsCriticalCare.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
     @Override
     public void saveCondition(StagingConditionCds cdsCondition, UUID serviceId) throws Exception {
 
@@ -1318,6 +1353,226 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             LOG.error("Error saving");
             for (StagingEmergencyCds cdsEmergency: toSave) {
                 LOG.error("" + cdsEmergency);
+            }
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveCDSCriticalCares(List<StagingCriticalCareCds> cdses, UUID serviceId) throws Exception {
+
+        List<StagingCriticalCareCds> toSave = new ArrayList<>();
+
+        for (StagingCriticalCareCds cdsCriticalCare: cdses) {
+
+            cdsCriticalCare.setRecordChecksum(cdsCriticalCare.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasCriticalCareCdsAlreadyFiled(serviceId, cdsCriticalCare)) {
+
+                toSave.add(cdsCriticalCare);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO cds_critical_care  "
+                    + " (exchange_id, dt_received, record_checksum, cds_unique_identifier, mrn, nhs_number, critical_care_type_id, " +
+                      " spell_number, episode_number, critical_care_identifier, care_start_date, care_unit_function, " +
+                      " admission_source_code, admission_type_code, admission_location, gestation_length_at_delivery, advanced_respiratory_support_days, " +
+                      " basic_respiratory_supports_days, advanced_cardiovascular_support_days, basic_cardiovascular_support_days, " +
+                      " renal_support_days, neurological_support_days, gastro_intestinal_support_days, dermatological_support_days, " +
+                      " liver_support_days, organ_support_maximum, critical_care_level2_days, critical_care_level3_days, " +
+                      " discharge_date, discharge_ready_date, discharge_status_code, discharge_destination, discharge_location, " +
+                      " care_activity_1, care_activity_2100, lookup_person_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " critical_care_type_id = VALUES(critical_care_type_id),"
+                    + " spell_number = VALUES(spell_number),"
+                    + " episode_number = VALUES(episode_number),"
+                    + " critical_care_identifier = VALUES(critical_care_identifier),"
+                    + " care_start_date = VALUES(care_start_date),"
+                    + " care_unit_function = VALUES(care_unit_function),"
+                    + " admission_source_code = VALUES(admission_source_code),"
+                    + " admission_type_code = VALUES(admission_type_code),"
+                    + " admission_location = VALUES(admission_location),"
+                    + " gestation_length_at_delivery = VALUES(gestation_length_at_delivery),"
+                    + " advanced_respiratory_support_days = VALUES(advanced_respiratory_support_days),"
+                    + " basic_respiratory_supports_days = VALUES(basic_respiratory_supports_days),"
+                    + " advanced_cardiovascular_support_days = VALUES(advanced_cardiovascular_support_days),"
+                    + " basic_cardiovascular_support_days = VALUES(basic_cardiovascular_support_days),"
+                    + " renal_support_days = VALUES(renal_support_days),"
+                    + " neurological_support_days = VALUES(neurological_support_days),"
+                    + " gastro_intestinal_support_days = VALUES(gastro_intestinal_support_days),"
+                    + " dermatological_support_days = VALUES(dermatological_support_days),"
+                    + " liver_support_days = VALUES(liver_support_days),"
+                    + " organ_support_maximum = VALUES(organ_support_maximum),"
+                    + " critical_care_level2_days = VALUES(critical_care_level2_days),"
+                    + " critical_care_level3_days = VALUES(critical_care_level3_days),"
+                    + " discharge_date = VALUES(discharge_date),"
+                    + " discharge_ready_date = VALUES(discharge_ready_date),"
+                    + " discharge_status_code = VALUES(discharge_status_code),"
+                    + " discharge_destination = VALUES(discharge_destination),"
+                    + " discharge_location = VALUES(discharge_location),"
+                    + " care_activity_1 = VALUES(care_activity_1),"
+                    + " care_activity_2100 = VALUES(care_activity_2100),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (StagingCriticalCareCds cdsCriticalCare : toSave) {
+
+                int col = 1;
+
+                ps.setString(col++, cdsCriticalCare.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getDtReceived().getTime()));
+                ps.setInt(col++, cdsCriticalCare.getRecordChecksum());
+                ps.setString(col++, cdsCriticalCare.getCdsUniqueIdentifier());
+                ps.setString(col++, cdsCriticalCare.getMrn());
+                ps.setString(col++, cdsCriticalCare.getNhsNumber());
+
+                ps.setString(col++, cdsCriticalCare.getCriticalCareTypeId());
+                ps.setString(col++, cdsCriticalCare.getSpellNumber());
+                ps.setString(col++, cdsCriticalCare.getEpisodeNumber());
+                ps.setString(col++, cdsCriticalCare.getCriticalCareIdentifier());
+
+                if (cdsCriticalCare.getCareStartDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getCareStartDate().getTime()));
+                }
+                ps.setString(col++, cdsCriticalCare.getCareUnitFunction());
+                ps.setString(col++, cdsCriticalCare.getAdmissionSourceCode());
+                ps.setString(col++, cdsCriticalCare.getAdmissionTypeCode());
+                ps.setString(col++, cdsCriticalCare.getAdmissionLocation());
+                ps.setString(col++, cdsCriticalCare.getGestationLengthAtDelivery());
+
+                if (cdsCriticalCare.getAdvancedRespiratorySupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getAdvancedRespiratorySupportDays());
+                }
+                if (cdsCriticalCare.getBasicRespiratorySupportsDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getBasicRespiratorySupportsDays());
+                }
+                if (cdsCriticalCare.getAdvancedCardiovascularSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getAdvancedCardiovascularSupportDays());
+                }
+                if (cdsCriticalCare.getBasicCardiovascularSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getBasicCardiovascularSupportDays());
+                }
+                if (cdsCriticalCare.getRenalSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getRenalSupportDays());
+                }
+                if (cdsCriticalCare.getNeurologicalSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getNeurologicalSupportDays());
+                }
+                if (cdsCriticalCare.getGastroIntestinalSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getGastroIntestinalSupportDays());
+                }
+                if (cdsCriticalCare.getDermatologicalSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getDermatologicalSupportDays());
+                }
+                if (cdsCriticalCare.getLiverSupportDays() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getLiverSupportDays());
+                }
+                if (cdsCriticalCare.getOrganSupportMaximum() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getOrganSupportMaximum());
+                }
+                if (cdsCriticalCare.getCriticalCareLevel2Days() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getCriticalCareLevel2Days());
+                }
+                if (cdsCriticalCare.getCriticalCareLevel3Days() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getCriticalCareLevel3Days());
+                }
+                if (cdsCriticalCare.getDischargeDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getDischargeDate().getTime()));
+                }
+                if (cdsCriticalCare.getDischargeReadyDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsCriticalCare.getDischargeReadyDate().getTime()));
+                }
+                ps.setString(col++, cdsCriticalCare.getDischargeStatusCode());
+                ps.setString(col++, cdsCriticalCare.getDischargeDestination());
+                ps.setString(col++, cdsCriticalCare.getDischargeLocation());
+
+                ps.setString(col++, cdsCriticalCare.getCareActivity1());
+                ps.setString(col++, cdsCriticalCare.getCareActivity2100());
+
+                if (cdsCriticalCare.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsCriticalCare.getLookupPersonId());
+                }
+
+                if (cdsCriticalCare.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsCriticalCare.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
+            LOG.error("Error saving");
+            for (StagingCriticalCareCds cdsCritical: toSave) {
+                LOG.error("" + cdsCritical);
             }
             throw ex;
 
