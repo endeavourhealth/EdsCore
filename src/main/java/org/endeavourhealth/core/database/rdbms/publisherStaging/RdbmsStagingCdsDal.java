@@ -261,7 +261,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
             String sql = "select record_checksum "
-                    + "from cds_Home_del_birth "
+                    + "from cds_Home_delivery_birth "
                     + "where cds_unique_identifier = ? "
                     + "and dt_received <= ? "
                     + "order by dt_received desc "
@@ -1648,7 +1648,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO cds_home_del_birth  "
+            String sql = "INSERT INTO cds_home_delivery_birth  "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
                     " birth_weight, live_or_still_birth_indicator, total_previous_pregnancies, " +
