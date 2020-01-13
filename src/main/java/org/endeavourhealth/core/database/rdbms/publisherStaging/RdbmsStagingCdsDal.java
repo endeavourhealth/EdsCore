@@ -253,6 +253,41 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
         }
     }
 
+    private boolean wasHomeDelBirthCdsAlreadyFiled(UUID serviceId, StagingHomeDelBirthCds cdsHomeDelBirth) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select record_checksum "
+                    + "from cds_Home_del_birth "
+                    + "where cds_unique_identifier = ? "
+                    + "and dt_received <= ? "
+                    + "order by dt_received desc "
+                    + "limit 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, cdsHomeDelBirth.getCdsUniqueIdentifier());
+            ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDtReceived().getTime()));
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int dbChecksum = rs.getInt(1);
+                return dbChecksum == cdsHomeDelBirth.getRecordChecksum();
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
     @Override
     public void saveCondition(StagingConditionCds cdsCondition, UUID serviceId) throws Exception {
 
@@ -823,7 +858,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO cds_inpatient  "
+            String sql = "INSERT INTO cds_inpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
                     " patient_pathway_identifier, spell_number, admission_method_code, admission_source_code, " +
@@ -1032,7 +1067,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO cds_outpatient  "
+            String sql = "INSERT INTO cds_outpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
                     " patient_pathway_identifier, appt_attendance_identifier, appt_attended_code, appt_outcome_code, " +
@@ -1203,7 +1238,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO cds_emergency  "
+            String sql = "INSERT INTO cds_emergency "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, patient_pathway_identifier, " +
                     " department_type, ambulance_incident_number, ambulance_trust_organisation_code, " +
@@ -1393,7 +1428,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO cds_critical_care  "
+            String sql = "INSERT INTO cds_critical_care "
                     + " (exchange_id, dt_received, record_checksum, cds_unique_identifier, mrn, nhs_number, critical_care_type_id, " +
                       " spell_number, episode_number, critical_care_identifier, care_start_date, care_unit_function, " +
                       " admission_source_code, admission_type_code, admission_location, gestation_length_at_delivery, advanced_respiratory_support_days, " +
@@ -1575,6 +1610,223 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             LOG.error("Error saving");
             for (StagingCriticalCareCds cdsCritical: toSave) {
                 LOG.error("" + cdsCritical);
+            }
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void saveCDSHomeDelBirths(List<StagingHomeDelBirthCds> cdses, UUID serviceId) throws Exception {
+
+        List<StagingHomeDelBirthCds> toSave = new ArrayList<>();
+
+        for (StagingHomeDelBirthCds cdsHomeDelBirth : cdses) {
+
+            cdsHomeDelBirth.setRecordChecksum(cdsHomeDelBirth.hashCode());
+
+            //check if record already filed to avoid duplicates
+            if (!wasHomeDelBirthCdsAlreadyFiled(serviceId, cdsHomeDelBirth)) {
+
+                toSave.add(cdsHomeDelBirth);
+            }
+        }
+
+        if (toSave.isEmpty()) {
+            return;
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO cds_home_del_birth  "
+                    + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
+                    " birth_weight, live_or_still_birth_indicator, total_previous_pregnancies, " +
+                    " patient_pathway_identifier, spell_number, admission_method_code, admission_source_code, " +
+                    " patient_classification, spell_start_date, episode_number, " +
+                    " episode_start_site_code, episode_start_ward_code, episode_start_date, " +
+                    " episode_end_site_code, episode_end_ward_code, episode_end_date, " +
+                    " discharge_date, discharge_destination_code, discharge_method, " +
+                    " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
+                    " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
+                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " exchange_id = VALUES(exchange_id),"
+                    + " dt_received = VALUES(dt_received),"
+                    + " record_checksum = VALUES(record_checksum),"
+                    + " cds_activity_date=VALUES(cds_activity_date),"
+                    + " cds_unique_identifier = VALUES(cds_unique_identifier),"
+                    + " cds_update_type = VALUES(cds_update_type),"
+                    + " mrn = VALUES(mrn),"
+                    + " nhs_number = VALUES(nhs_number),"
+                    + " withheld = VALUES(withheld),"
+                    + " date_of_birth = VALUES(date_of_birth),"
+                    + " consultant_code = VALUES(consultant_code),"
+                    + " birth_weight = VALUES(birth_weight),"
+                    + " live_or_still_birth_indicator = VALUES(live_or_still_birth_indicator),"
+                    + " total_previous_pregnancies = VALUES(total_previous_pregnancies),"
+                    + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
+                    + " spell_number = VALUES(spell_number),"
+                    + " admission_method_code = VALUES(admission_method_code),"
+                    + " admission_source_code = VALUES(admission_source_code),"
+                    + " patient_classification = VALUES(patient_classification),"
+                    + " spell_start_date = VALUES(spell_start_date),"
+                    + " episode_number = VALUES(episode_number),"
+                    + " episode_start_site_code = VALUES(episode_start_site_code),"
+                    + " episode_start_ward_code = VALUES(episode_start_ward_code),"
+                    + " episode_start_date = VALUES(episode_start_date),"
+                    + " episode_end_site_code = VALUES(episode_end_site_code),"
+                    + " episode_end_ward_code = VALUES(episode_end_ward_code),"
+                    + " episode_end_date = VALUES(episode_end_date),"
+                    + " discharge_date = VALUES(discharge_date),"
+                    + " discharge_destination_code = VALUES(discharge_destination_code),"
+                    + " discharge_method = VALUES(discharge_method),"
+                    + " primary_diagnosis_ICD = VALUES(primary_diagnosis_ICD),"
+                    + " secondary_diagnosis_ICD = VALUES(secondary_diagnosis_ICD),"
+                    + " other_diagnosis_ICD = VALUES(other_diagnosis_ICD),"
+                    + " primary_procedure_OPCS = VALUES(primary_procedure_OPCS),"
+                    + " primary_procedure_date = VALUES(primary_procedure_date),"
+                    + " secondary_procedure_OPCS = VALUES(secondary_procedure_OPCS),"
+                    + " secondary_procedure_date = VALUES(secondary_procedure_date),"
+                    + " other_procedures_OPCS = VALUES(other_procedures_OPCS),"
+                    + " lookup_person_id = VALUES(lookup_person_id),"
+                    + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (StagingHomeDelBirthCds cdsHomeDelBirth : toSave) {
+
+                int col = 1;
+
+                ps.setString(col++, cdsHomeDelBirth.getExchangeId());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDtReceived().getTime()));
+                ps.setInt(col++, cdsHomeDelBirth.getRecordChecksum());
+                ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getCdsActivityDate().getTime()));
+                ps.setString(col++, cdsHomeDelBirth.getCdsUniqueIdentifier());
+                ps.setInt(col++, cdsHomeDelBirth.getCdsUpdateType());
+                ps.setString(col++, cdsHomeDelBirth.getMrn());
+                ps.setString(col++, cdsHomeDelBirth.getNhsNumber());
+                if (cdsHomeDelBirth.getWithheld() == null) {
+                    ps.setNull(col++, Types.BOOLEAN);
+                } else {
+                    ps.setBoolean(col++, cdsHomeDelBirth.getWithheld().booleanValue());
+                }
+                if (cdsHomeDelBirth.getDateOfBirth() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDateOfBirth().getTime()));
+                }
+                ps.setString(col++, cdsHomeDelBirth.getConsultantCode());
+
+                ps.setString(col++, cdsHomeDelBirth.getBirthWeight());
+                ps.setString(col++, cdsHomeDelBirth.getLiveOrStillBirthIndicator());
+                ps.setString(col++, cdsHomeDelBirth.getTotalPreviousPregnancies());
+
+                ps.setString(col++, cdsHomeDelBirth.getPatientPathwayIdentifier());
+                ps.setString(col++, cdsHomeDelBirth.getSpellNumber());
+                ps.setString(col++, cdsHomeDelBirth.getAdmissionMethodCode());
+                ps.setString(col++, cdsHomeDelBirth.getAdmissionSourceCode());
+                ps.setString(col++, cdsHomeDelBirth.getPatientClassification());
+
+                if (cdsHomeDelBirth.getSpellStartDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getSpellStartDate().getTime()));
+                }
+
+                ps.setString(col++, cdsHomeDelBirth.getEpisodeNumber());
+                ps.setString(col++, cdsHomeDelBirth.getEpisodeStartSiteCode());
+                ps.setString(col++, cdsHomeDelBirth.getEpisodeStartWardCode());
+
+                if (cdsHomeDelBirth.getEpisodeStartDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getEpisodeStartDate().getTime()));
+                }
+
+                ps.setString(col++, cdsHomeDelBirth.getEpisodeEndSiteCode());
+                ps.setString(col++, cdsHomeDelBirth.getEpisodeEndWardCode());
+
+                if (cdsHomeDelBirth.getEpisodeEndDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getEpisodeEndDate().getTime()));
+                }
+
+                if (cdsHomeDelBirth.getDischargeDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDischargeDate().getTime()));
+                }
+
+                ps.setString(col++, cdsHomeDelBirth.getDischargeDestinationCode());
+                ps.setString(col++, cdsHomeDelBirth.getDischargeMethod());
+                ps.setString(col++, cdsHomeDelBirth.getPrimaryDiagnosisICD());
+                ps.setString(col++, cdsHomeDelBirth.getSecondaryDiagnosisICD());
+                ps.setString(col++, cdsHomeDelBirth.getOtherDiagnosisICD());
+                ps.setString(col++, cdsHomeDelBirth.getPrimaryProcedureOPCS());
+
+                if (cdsHomeDelBirth.getPrimaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getPrimaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsHomeDelBirth.getSecondaryProcedureOPCS());
+
+                if (cdsHomeDelBirth.getSecondaryProcedureDate() == null) {
+                    ps.setNull(col++, Types.NULL);
+                } else {
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getSecondaryProcedureDate().getTime()));
+                }
+
+                ps.setString(col++, cdsHomeDelBirth.getOtherProceduresOPCS());
+
+                if (cdsHomeDelBirth.getLookupPersonId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsHomeDelBirth.getLookupPersonId());
+                }
+
+                if (cdsHomeDelBirth.getLookupConsultantPersonnelId() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsHomeDelBirth.getLookupConsultantPersonnelId());
+                }
+
+                if (cdsHomeDelBirth.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, cdsHomeDelBirth.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+
+            LOG.error("Error saving");
+            for (StagingHomeDelBirthCds cdsHomeDelBirth: toSave) {
+                LOG.error("" + cdsHomeDelBirth);
             }
             throw ex;
 

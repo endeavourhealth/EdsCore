@@ -21,4 +21,5 @@ public interface StagingCdsDalI {
     void saveCDSOutpatients(List<StagingOutpatientCds> cdses, UUID serviceId) throws Exception;
     void saveCDSEmergencies(List<StagingEmergencyCds> cdses, UUID serviceId) throws Exception;
     void saveCDSCriticalCares(List<StagingCriticalCareCds> cdses, UUID serviceId) throws Exception;
+    void saveCDSHomeDelBirths(List<StagingHomeDelBirthCds> cdses, UUID serviceId) throws Exception;
 }
