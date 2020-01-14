@@ -17,40 +17,23 @@ public class StagingHomeDelBirthCds implements Cloneable {
     private String nhsNumber;
     private Boolean withheld;
     private Date dateOfBirth;
-    private String consultantCode;
 
     private String birthWeight;
     private String liveOrStillBirthIndicator;
     private String totalPreviousPregnancies;
 
-    private String patientPathwayIdentifier;
-    private String spellNumber;
-    private String admissionMethodCode;
-    private String admissionSourceCode;
-    private String patientClassification;
-    private Date spellStartDate;
-    private String episodeNumber;
-    private String episodeStartSiteCode;
-    private String episodeStartWardCode;
-    private Date episodeStartDate;
-    private String episodeEndSiteCode;
-    private String episodeEndWardCode;
-    private Date episodeEndDate;
-    private Date dischargeDate;
-    private String dischargeDestinationCode;
-    private String dischargeMethod;
-
-    private String primaryDiagnosisICD;
-    private String secondaryDiagnosisICD;
-    private String otherDiagnosisICD;
-    private String primaryProcedureOPCS;
-    private Date primaryProcedureDate;
-    private String secondaryProcedureOPCS;
-    private Date secondaryProcedureDate;
-    private String otherProceduresOPCS;
+    private Integer numberOfBabies;
+    private Date firstAntenatalAssessmentDate;
+    private String antenatalCarePractitioner;
+    private String antenatalCarePractice;
+    private String deliveryPlaceIntended;
+    private String deliveryPlaceChangeReasonCode;
+    private String gestationLengthLabourOnset;
+    private Date deliveryDate;
+    private String motherNhsNumber;
 
     private Integer lookupPersonId;
-    private Integer lookupConsultantPersonnelId;
+
     private ResourceFieldMappingAudit audit = null;
 
     public StagingHomeDelBirthCds() {
@@ -136,14 +119,6 @@ public class StagingHomeDelBirthCds implements Cloneable {
         this.dateOfBirth = dateOfBirth;
     }
 
-    public String getConsultantCode() {
-        return consultantCode;
-    }
-
-    public void setConsultantCode(String consultantCode) {
-        this.consultantCode = consultantCode;
-    }
-
     public String getBirthWeight() {
         return birthWeight;
     }
@@ -168,192 +143,76 @@ public class StagingHomeDelBirthCds implements Cloneable {
         this.totalPreviousPregnancies = totalPreviousPregnancies;
     }
 
-    public String getPatientPathwayIdentifier() {
-        return patientPathwayIdentifier;
+    public Integer getNumberOfBabies() {
+        return numberOfBabies;
     }
 
-    public void setPatientPathwayIdentifier(String patientPathwayIdentifier) { this.patientPathwayIdentifier = patientPathwayIdentifier; }
-
-    public String getSpellNumber() {
-        return spellNumber;
+    public void setNumberOfBabies(Integer numberOfBabies) {
+        this.numberOfBabies = numberOfBabies;
     }
 
-    public void setSpellNumber(String spellNumber) { this.spellNumber = spellNumber; }
-
-    public String getAdmissionMethodCode() {
-        return admissionMethodCode;
+    public Date getFirstAntenatalAssessmentDate() {
+        return firstAntenatalAssessmentDate;
     }
 
-    public void setAdmissionMethodCode(String admissionMethodCode) {
-        this.admissionMethodCode = admissionMethodCode;
+    public void setFirstAntenatalAssessmentDate(Date firstAntenatalAssessmentDate) {
+        this.firstAntenatalAssessmentDate = firstAntenatalAssessmentDate;
     }
 
-    public String getAdmissionSourceCode() {
-        return admissionSourceCode;
+    public String getAntenatalCarePractitioner() {
+        return antenatalCarePractitioner;
     }
 
-    public void setAdmissionSourceCode(String admissionSourceCode) {
-        this.admissionSourceCode = admissionSourceCode;
+    public void setAntenatalCarePractitioner(String antenatalCarePractitioner) {
+        this.antenatalCarePractitioner = antenatalCarePractitioner;
     }
 
-    public String getPatientClassification() {
-        return patientClassification;
+    public String getAntenatalCarePractice() {
+        return antenatalCarePractice;
     }
 
-    public void setPatientClassification(String patientClassification) {
-        this.patientClassification = patientClassification;
+    public void setAntenatalCarePractice(String antenatalCarePractice) {
+        this.antenatalCarePractice = antenatalCarePractice;
     }
 
-    public Date getSpellStartDate() {
-        return spellStartDate;
+    public String getDeliveryPlaceIntended() {
+        return deliveryPlaceIntended;
     }
 
-    public void setSpellStartDate(Date spellStartDate) {
-        this.spellStartDate = spellStartDate;
+    public void setDeliveryPlaceIntended(String deliveryPlaceIntended) {
+        this.deliveryPlaceIntended = deliveryPlaceIntended;
     }
 
-    public String getEpisodeNumber() {
-        return episodeNumber;
+    public String getDeliveryPlaceChangeReasonCode() {
+        return deliveryPlaceChangeReasonCode;
     }
 
-    public void setEpisodeNumber(String episodeNumber) {
-        this.episodeNumber = episodeNumber;
+    public void setDeliveryPlaceChangeReasonCode(String deliveryPlaceChangeReasonCode) {
+        this.deliveryPlaceChangeReasonCode = deliveryPlaceChangeReasonCode;
     }
 
-    public String getEpisodeStartSiteCode() {
-        return episodeStartSiteCode;
+    public String getGestationLengthLabourOnset() {
+        return gestationLengthLabourOnset;
     }
 
-    public void setEpisodeStartSiteCode(String episodeStartSiteCode) {
-        this.episodeStartSiteCode = episodeStartSiteCode;
+    public void setGestationLengthLabourOnset(String gestationLengthLabourOnset) {
+        this.gestationLengthLabourOnset = gestationLengthLabourOnset;
     }
 
-    public String getEpisodeStartWardCode() {
-        return episodeStartWardCode;
+    public Date getDeliveryDate() {
+        return deliveryDate;
     }
 
-    public void setEpisodeStartWardCode(String episodeStartWardCode) {
-        this.episodeStartWardCode = episodeStartWardCode;
+    public void setDeliveryDate(Date deliveryDate) {
+        this.deliveryDate = deliveryDate;
     }
 
-    public Date getEpisodeStartDate() {
-        return episodeStartDate;
+    public String getMotherNhsNumber() {
+        return motherNhsNumber;
     }
 
-    public void setEpisodeStartDate(Date episodeStartDate) {
-        this.episodeStartDate = episodeStartDate;
-    }
-
-    public String getEpisodeEndSiteCode() {
-        return episodeEndSiteCode;
-    }
-
-    public void setEpisodeEndSiteCode(String episodeEndSiteCode) {
-        this.episodeEndSiteCode = episodeEndSiteCode;
-    }
-
-    public String getEpisodeEndWardCode() {
-        return episodeEndWardCode;
-    }
-
-    public void setEpisodeEndWardCode(String episodeEndWardCode) {
-        this.episodeEndWardCode = episodeEndWardCode;
-    }
-
-    public Date getEpisodeEndDate() {
-        return episodeEndDate;
-    }
-
-    public void setEpisodeEndDate(Date episodeEndDate) {
-        this.episodeEndDate = episodeEndDate;
-    }
-
-    public Date getDischargeDate() {
-        return dischargeDate;
-    }
-
-    public void setDischargeDate(Date dischargeDate) {
-        this.dischargeDate = dischargeDate;
-    }
-
-    public String getDischargeDestinationCode() {
-        return dischargeDestinationCode;
-    }
-
-    public void setDischargeDestinationCode(String dischargeDestinationCode) {
-        this.dischargeDestinationCode = dischargeDestinationCode;
-    }
-
-    public String getDischargeMethod() {
-        return dischargeMethod;
-    }
-
-    public void setDischargeMethod(String dischargeMethod) {
-        this.dischargeMethod = dischargeMethod;
-    }
-
-    public String getPrimaryDiagnosisICD() {
-        return primaryDiagnosisICD;
-    }
-
-    public void setPrimaryDiagnosisICD(String primaryDiagnosisICD) {
-        this.primaryDiagnosisICD = primaryDiagnosisICD;
-    }
-
-    public String getSecondaryDiagnosisICD() {
-        return secondaryDiagnosisICD;
-    }
-
-    public void setSecondaryDiagnosisICD(String secondaryDiagnosisICD) {
-        this.secondaryDiagnosisICD = secondaryDiagnosisICD;
-    }
-
-    public String getOtherDiagnosisICD() {
-        return otherDiagnosisICD;
-    }
-
-    public void setOtherDiagnosisICD(String otherDiagnosisICD) {
-        this.otherDiagnosisICD = otherDiagnosisICD;
-    }
-
-    public String getPrimaryProcedureOPCS() {
-        return primaryProcedureOPCS;
-    }
-
-    public void setPrimaryProcedureOPCS(String primaryProcedureOPCS) {
-        this.primaryProcedureOPCS = primaryProcedureOPCS;
-    }
-
-    public Date getPrimaryProcedureDate() {
-        return primaryProcedureDate;
-    }
-
-    public void setPrimaryProcedureDate(Date primaryProcedureDate) {
-        this.primaryProcedureDate = primaryProcedureDate;
-    }
-
-    public String getSecondaryProcedureOPCS() {
-        return secondaryProcedureOPCS;
-    }
-
-    public void setSecondaryProcedureOPCS(String secondaryProcedureOPCS) {
-        this.secondaryProcedureOPCS = secondaryProcedureOPCS;
-    }
-
-    public Date getSecondaryProcedureDate() {
-        return secondaryProcedureDate;
-    }
-
-    public void setSecondaryProcedureDate(Date secondaryProcedureDate) {
-        this.secondaryProcedureDate = secondaryProcedureDate;
-    }
-
-    public String getOtherProceduresOPCS() {
-        return otherProceduresOPCS;
-    }
-
-    public void setOtherProceduresOPCS(String otherProceduresOPCS) {
-        this.otherProceduresOPCS = otherProceduresOPCS;
+    public void setMotherNhsNumber(String motherNhsNumber) {
+        this.motherNhsNumber = motherNhsNumber;
     }
 
     public Integer getLookupPersonId() {
@@ -364,14 +223,6 @@ public class StagingHomeDelBirthCds implements Cloneable {
         this.lookupPersonId = lookupPersonId;
     }
 
-    public Integer getLookupConsultantPersonnelId() {
-        return lookupConsultantPersonnelId;
-    }
-
-    public void setLookupConsultantPersonnelId(Integer lookupConsultantPersonnelId) {
-        this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
-    }
-
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -379,7 +230,6 @@ public class StagingHomeDelBirthCds implements Cloneable {
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
     }
-
 
     public StagingHomeDelBirthCds clone() throws CloneNotSupportedException {
         return (StagingHomeDelBirthCds) super.clone();
@@ -396,36 +246,19 @@ public class StagingHomeDelBirthCds implements Cloneable {
                 nhsNumber,
                 withheld,
                 dateOfBirth,
-                consultantCode,
                 birthWeight,
                 liveOrStillBirthIndicator,
                 totalPreviousPregnancies,
-                patientPathwayIdentifier,
-                spellNumber,
-                admissionMethodCode,
-                admissionSourceCode,
-                patientClassification,
-                spellStartDate,
-                episodeNumber,
-                episodeStartSiteCode,
-                episodeStartWardCode,
-                episodeStartDate,
-                episodeEndSiteCode,
-                episodeEndWardCode,
-                episodeEndDate,
-                dischargeDate,
-                dischargeDestinationCode,
-                dischargeMethod,
-                primaryDiagnosisICD,
-                secondaryDiagnosisICD,
-                otherDiagnosisICD,
-                primaryProcedureOPCS,
-                primaryProcedureDate,
-                secondaryProcedureOPCS,
-                secondaryProcedureDate,
-                otherProceduresOPCS,
-                lookupPersonId,
-                lookupConsultantPersonnelId);
+                numberOfBabies,
+                firstAntenatalAssessmentDate,
+                antenatalCarePractitioner,
+                antenatalCarePractice,
+                deliveryPlaceIntended,
+                deliveryPlaceChangeReasonCode,
+                gestationLengthLabourOnset,
+                deliveryDate,
+                motherNhsNumber,
+                lookupPersonId);
     }
 
     @Override
@@ -441,36 +274,19 @@ public class StagingHomeDelBirthCds implements Cloneable {
                 ", nhsNumber='" + nhsNumber + '\'' +
                 ", withheld='" + withheld + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
-                ", consultantCode='" + consultantCode + '\'' +
                 ", birthWeight='" + birthWeight + '\'' +
                 ", liveOrStillBirthIndicator='" + liveOrStillBirthIndicator + '\'' +
                 ", totalPreviousPregnancies='" + totalPreviousPregnancies + '\'' +
-                ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
-                ", spellNumber='" + spellNumber + '\'' +
-                ", admissionMethodCode='" + admissionMethodCode + '\'' +
-                ", admissionSourceCode='" + admissionSourceCode + '\'' +
-                ", patientClassification='" + patientClassification + '\'' +
-                ", spellStartDate='" + spellStartDate + '\'' +
-                ", episodeNumber='" + episodeNumber + '\'' +
-                ", episodeStartSiteCode='" + episodeStartSiteCode + '\'' +
-                ", episodeStartWardCode='" + episodeStartWardCode + '\'' +
-                ", episodeStartDate='" + episodeStartDate + '\'' +
-                ", episodeEndSiteCode='" + episodeEndSiteCode + '\'' +
-                ", episodeEndWardCode='" + episodeEndWardCode + '\'' +
-                ", episodeEndDate='" + episodeEndDate + '\'' +
-                ", dischargeDate='" + dischargeDate + '\'' +
-                ", dischargeDestinationCode='" + dischargeDestinationCode + '\'' +
-                ", dischargeMethod='" + dischargeMethod + '\'' +
-                ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +
-                ", secondaryDiagnosisICD='" + secondaryDiagnosisICD + '\'' +
-                ", otherDiagnosisICD='" + otherDiagnosisICD + '\'' +
-                ", primaryProcedureOPCS='" + primaryProcedureOPCS + '\'' +
-                ", primaryProcedureDate='" + primaryProcedureDate + '\'' +
-                ", secondaryProcedureOPCS='" + secondaryProcedureOPCS + '\'' +
-                ", secondaryProcedureDate='" + secondaryProcedureDate + '\'' +
-                ", otherProceduresOPCS='" + otherProceduresOPCS + '\'' +
+                ", numberOfBabies='" + numberOfBabies + '\'' +
+                ", firstAntenatalAssessmentDate='" + firstAntenatalAssessmentDate + '\'' +
+                ", antenatalCarePractitioner='" + antenatalCarePractitioner + '\'' +
+                ", antenatalCarePractice='" + antenatalCarePractice + '\'' +
+                ", deliveryPlaceIntended='" + deliveryPlaceIntended + '\'' +
+                ", deliveryPlaceChangeReasonCode='" + deliveryPlaceChangeReasonCode + '\'' +
+                ", gestationLengthLabourOnset='" + gestationLengthLabourOnset + '\'' +
+                ", deliveryDate='" + deliveryDate + '\'' +
+                ", motherNhsNumber='" + motherNhsNumber + '\'' +
                 ", lookupPersonId=" + lookupPersonId +
-                ", lookupConsultantPersonnelId=" + lookupConsultantPersonnelId +
                 ", audit=" + audit +
                 '}';
     }

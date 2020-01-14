@@ -1650,17 +1650,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             String sql = "INSERT INTO cds_home_delivery_birth  "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
-                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
+                    " cds_update_type, mrn, nhs_number, withheld, date_of_birth, " +
                     " birth_weight, live_or_still_birth_indicator, total_previous_pregnancies, " +
-                    " patient_pathway_identifier, spell_number, admission_method_code, admission_source_code, " +
-                    " patient_classification, spell_start_date, episode_number, " +
-                    " episode_start_site_code, episode_start_ward_code, episode_start_date, " +
-                    " episode_end_site_code, episode_end_ward_code, episode_end_date, " +
-                    " discharge_date, discharge_destination_code, discharge_method, " +
-                    " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
-                    " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
-                    " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " number_of_babies, first_antenatal_assessment_date, antenatal_care_practitioner, " +
+                    " antenatal_care_practice, delivery_place_intended, delivery_place_change_reason_code, " +
+                    " gestation_length_labour_onset, delivery_date, mother_nhs_number, lookup_person_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -1672,36 +1667,19 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " nhs_number = VALUES(nhs_number),"
                     + " withheld = VALUES(withheld),"
                     + " date_of_birth = VALUES(date_of_birth),"
-                    + " consultant_code = VALUES(consultant_code),"
                     + " birth_weight = VALUES(birth_weight),"
                     + " live_or_still_birth_indicator = VALUES(live_or_still_birth_indicator),"
                     + " total_previous_pregnancies = VALUES(total_previous_pregnancies),"
-                    + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
-                    + " spell_number = VALUES(spell_number),"
-                    + " admission_method_code = VALUES(admission_method_code),"
-                    + " admission_source_code = VALUES(admission_source_code),"
-                    + " patient_classification = VALUES(patient_classification),"
-                    + " spell_start_date = VALUES(spell_start_date),"
-                    + " episode_number = VALUES(episode_number),"
-                    + " episode_start_site_code = VALUES(episode_start_site_code),"
-                    + " episode_start_ward_code = VALUES(episode_start_ward_code),"
-                    + " episode_start_date = VALUES(episode_start_date),"
-                    + " episode_end_site_code = VALUES(episode_end_site_code),"
-                    + " episode_end_ward_code = VALUES(episode_end_ward_code),"
-                    + " episode_end_date = VALUES(episode_end_date),"
-                    + " discharge_date = VALUES(discharge_date),"
-                    + " discharge_destination_code = VALUES(discharge_destination_code),"
-                    + " discharge_method = VALUES(discharge_method),"
-                    + " primary_diagnosis_ICD = VALUES(primary_diagnosis_ICD),"
-                    + " secondary_diagnosis_ICD = VALUES(secondary_diagnosis_ICD),"
-                    + " other_diagnosis_ICD = VALUES(other_diagnosis_ICD),"
-                    + " primary_procedure_OPCS = VALUES(primary_procedure_OPCS),"
-                    + " primary_procedure_date = VALUES(primary_procedure_date),"
-                    + " secondary_procedure_OPCS = VALUES(secondary_procedure_OPCS),"
-                    + " secondary_procedure_date = VALUES(secondary_procedure_date),"
-                    + " other_procedures_OPCS = VALUES(other_procedures_OPCS),"
+                    + " number_of_babies = VALUES(number_of_babies),"
+                    + " first_antenatal_assessment_date = VALUES(first_antenatal_assessment_date),"
+                    + " antenatal_care_practitioner = VALUES(antenatal_care_practitioner),"
+                    + " antenatal_care_practice = VALUES(antenatal_care_practice),"
+                    + " delivery_place_intended = VALUES(delivery_place_intended),"
+                    + " delivery_place_change_reason_code = VALUES(delivery_place_change_reason_code),"
+                    + " gestation_length_labour_onset = VALUES(gestation_length_labour_onset),"
+                    + " delivery_date = VALUES(delivery_date),"
+                    + " mother_nhs_number = VALUES(mother_nhs_number),"
                     + " lookup_person_id = VALUES(lookup_person_id),"
-                    + " lookup_consultant_personnel_id = VALUES(lookup_consultant_personnel_id),"
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
@@ -1730,82 +1708,38 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 } else {
                     ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDateOfBirth().getTime()));
                 }
-                ps.setString(col++, cdsHomeDelBirth.getConsultantCode());
 
                 ps.setString(col++, cdsHomeDelBirth.getBirthWeight());
                 ps.setString(col++, cdsHomeDelBirth.getLiveOrStillBirthIndicator());
                 ps.setString(col++, cdsHomeDelBirth.getTotalPreviousPregnancies());
 
-                ps.setString(col++, cdsHomeDelBirth.getPatientPathwayIdentifier());
-                ps.setString(col++, cdsHomeDelBirth.getSpellNumber());
-                ps.setString(col++, cdsHomeDelBirth.getAdmissionMethodCode());
-                ps.setString(col++, cdsHomeDelBirth.getAdmissionSourceCode());
-                ps.setString(col++, cdsHomeDelBirth.getPatientClassification());
-
-                if (cdsHomeDelBirth.getSpellStartDate() == null) {
+                if (cdsHomeDelBirth.getNumberOfBabies() == null) {
+                    ps.setNull(col++, Types.INTEGER);
+                } else {
+                    ps.setInt(col++, cdsHomeDelBirth.getNumberOfBabies());
+                }
+                if (cdsHomeDelBirth.getFirstAntenatalAssessmentDate() == null) {
                     ps.setNull(col++, Types.NULL);
                 } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getSpellStartDate().getTime()));
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getFirstAntenatalAssessmentDate().getTime()));
                 }
+                ps.setString(col++, cdsHomeDelBirth.getAntenatalCarePractitioner());
+                ps.setString(col++, cdsHomeDelBirth.getAntenatalCarePractice());
+                ps.setString(col++, cdsHomeDelBirth.getDeliveryPlaceIntended());
+                ps.setString(col++, cdsHomeDelBirth.getDeliveryPlaceChangeReasonCode());
+                ps.setString(col++, cdsHomeDelBirth.getGestationLengthLabourOnset());
 
-                ps.setString(col++, cdsHomeDelBirth.getEpisodeNumber());
-                ps.setString(col++, cdsHomeDelBirth.getEpisodeStartSiteCode());
-                ps.setString(col++, cdsHomeDelBirth.getEpisodeStartWardCode());
-
-                if (cdsHomeDelBirth.getEpisodeStartDate() == null) {
-                    ps.setNull(col++, Types.NULL);
+                if (cdsHomeDelBirth.getDeliveryDate() == null) {
+                    ps.setNull(col++, Types.INTEGER);
                 } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getEpisodeStartDate().getTime()));
+                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDeliveryDate().getTime()));
                 }
-
-                ps.setString(col++, cdsHomeDelBirth.getEpisodeEndSiteCode());
-                ps.setString(col++, cdsHomeDelBirth.getEpisodeEndWardCode());
-
-                if (cdsHomeDelBirth.getEpisodeEndDate() == null) {
-                    ps.setNull(col++, Types.NULL);
-                } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getEpisodeEndDate().getTime()));
-                }
-
-                if (cdsHomeDelBirth.getDischargeDate() == null) {
-                    ps.setNull(col++, Types.NULL);
-                } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDischargeDate().getTime()));
-                }
-
-                ps.setString(col++, cdsHomeDelBirth.getDischargeDestinationCode());
-                ps.setString(col++, cdsHomeDelBirth.getDischargeMethod());
-                ps.setString(col++, cdsHomeDelBirth.getPrimaryDiagnosisICD());
-                ps.setString(col++, cdsHomeDelBirth.getSecondaryDiagnosisICD());
-                ps.setString(col++, cdsHomeDelBirth.getOtherDiagnosisICD());
-                ps.setString(col++, cdsHomeDelBirth.getPrimaryProcedureOPCS());
-
-                if (cdsHomeDelBirth.getPrimaryProcedureDate() == null) {
-                    ps.setNull(col++, Types.NULL);
-                } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getPrimaryProcedureDate().getTime()));
-                }
-
-                ps.setString(col++, cdsHomeDelBirth.getSecondaryProcedureOPCS());
-
-                if (cdsHomeDelBirth.getSecondaryProcedureDate() == null) {
-                    ps.setNull(col++, Types.NULL);
-                } else {
-                    ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getSecondaryProcedureDate().getTime()));
-                }
-
-                ps.setString(col++, cdsHomeDelBirth.getOtherProceduresOPCS());
+                ps.setString(col++, cdsHomeDelBirth.getMotherNhsNumber());
 
                 if (cdsHomeDelBirth.getLookupPersonId() == null) {
                     ps.setNull(col++, Types.INTEGER);
                 } else {
                     ps.setInt(col++, cdsHomeDelBirth.getLookupPersonId());
-                }
-
-                if (cdsHomeDelBirth.getLookupConsultantPersonnelId() == null) {
-                    ps.setNull(col++, Types.INTEGER);
-                } else {
-                    ps.setInt(col++, cdsHomeDelBirth.getLookupConsultantPersonnelId());
                 }
 
                 if (cdsHomeDelBirth.getAudit() == null) {
