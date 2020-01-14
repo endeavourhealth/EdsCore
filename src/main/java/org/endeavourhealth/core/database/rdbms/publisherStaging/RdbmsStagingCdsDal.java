@@ -261,7 +261,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
             String sql = "select record_checksum "
-                    + "from cds_Home_delivery_birth "
+                    + "from cds_home_delivery_birth "
                     + "where cds_unique_identifier = ? "
                     + "and dt_received <= ? "
                     + "order by dt_received desc "
