@@ -15,9 +15,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class TransformErrorUtility {
 
@@ -26,6 +24,7 @@ public class TransformErrorUtility {
     //general-purpose arguments
     public static final String ARG_FATAL_ERROR = "FatalError";
     public static final String ARG_WAITING = "WaitingForPreviousErrorToClear";
+    public static final String ARG_AUTO_FAILED = "AutoFailed";
 
     //subscriberTransform-specific arguments
     //public static final String ARG_EMIS_CSV_DIRECTORY= "CsvDirectory";
@@ -140,40 +139,5 @@ public class TransformErrorUtility {
             }
         }
         return null;
-    }
-
-    public static Set<Long> findRecordNumbersToProcess(String fileName, TransformError previousErrors) {
-
-        //if we're running for the first time, then return null to process the full file
-        if (previousErrors == null) {
-            return null;
-        }
-
-        //if we previously had a fatal exception, then we want to process the full file
-        if (TransformErrorUtility.containsArgument(previousErrors, ARG_FATAL_ERROR)) {
-            return null;
-        }
-
-        //if we previously aborted due to errors in a previous exchange, then we want to process it all
-        if (TransformErrorUtility.containsArgument(previousErrors, ARG_WAITING)) {
-            return null;
-        }
-
-        //if we make it to here, we only want to process specific record numbers in our file, or even none, if there were
-        //no previous errors processing this specific file
-        HashSet<Long> recordNumbers = new HashSet<>();
-
-        for (Error error: previousErrors.getError()) {
-
-            String errorFileName = TransformErrorUtility.findArgumentValue(error, ARG_EMIS_CSV_FILE);
-            if (!Strings.isNullOrEmpty(errorFileName)
-                    && errorFileName.equals(fileName)) {
-
-                String errorRecordNumber = TransformErrorUtility.findArgumentValue(error, ARG_EMIS_CSV_RECORD_NUMBER);
-                recordNumbers.add(Long.valueOf(errorRecordNumber));
-            }
-        }
-
-        return recordNumbers;
     }
 }

@@ -1,11 +1,14 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
+import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -136,6 +139,14 @@ public class Service {
 
     public void setOrganisationType(OrganisationType organisationType) {
         this.organisationType = organisationType;
+    }
+
+    public List<ServiceInterfaceEndpoint> getEndpointsList() throws Exception {
+        return ObjectMapperPool.getInstance().readValue(this.endpoints, new TypeReference<List<ServiceInterfaceEndpoint>>() {});
+    }
+
+    public void setEndpointsList(List<ServiceInterfaceEndpoint> list) throws Exception {
+        this.endpoints = ObjectMapperPool.getInstance().writeValueAsString(list);
     }
 
     @Override

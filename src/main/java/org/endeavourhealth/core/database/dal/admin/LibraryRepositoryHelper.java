@@ -9,7 +9,7 @@ import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.admin.models.ActiveItem;
 import org.endeavourhealth.core.database.dal.admin.models.DefinitionItemType;
 import org.endeavourhealth.core.database.dal.admin.models.Item;
-import org.endeavourhealth.core.fhirStorage.JsonServiceInterfaceEndpoint;
+import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 import org.endeavourhealth.core.xml.QueryDocument.*;
 import org.endeavourhealth.core.xml.QueryDocument.System;
 import org.slf4j.Logger;
@@ -198,9 +198,9 @@ public class LibraryRepositoryHelper {
 				ServiceDalI serviceRepository = DalProvider.factoryServiceDal();
 
 				org.endeavourhealth.core.database.dal.admin.models.Service service = serviceRepository.getById(serviceId);
-				List<JsonServiceInterfaceEndpoint> serviceEndpoints = ObjectMapperPool.getInstance().readValue(service.getEndpoints(), new TypeReference<List<JsonServiceInterfaceEndpoint>>() {
+				List<ServiceInterfaceEndpoint> serviceEndpoints = ObjectMapperPool.getInstance().readValue(service.getEndpoints(), new TypeReference<List<ServiceInterfaceEndpoint>>() {
 				});
-				for (JsonServiceInterfaceEndpoint serviceEndpoint : serviceEndpoints) {
+				for (ServiceInterfaceEndpoint serviceEndpoint : serviceEndpoints) {
 					if (serviceEndpoint.getTechnicalInterfaceUuid().equals(technicalInterfaceId)) {
 						endpoint = serviceEndpoint.getEndpoint();
 

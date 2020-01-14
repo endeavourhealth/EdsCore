@@ -1,12 +1,15 @@
 package org.endeavourhealth.core.database.rdbms.admin;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.core.database.dal.admin.LibraryRepositoryHelper;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
 import org.endeavourhealth.core.database.dal.admin.models.Organisation;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
+import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
+import org.endeavourhealth.core.xml.QueryDocument.*;
 import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -221,7 +224,10 @@ public class RdbmsServiceDal implements ServiceDalI {
                     .setParameter("id", id.toString());
 
             RdbmsService result = (RdbmsService)query.getSingleResult();
-            return new Service(result);
+            Service ret = new Service(result);
+
+            convertServiceIfRequired(ret);
+            return ret;
 
         } catch (NoResultException ex) {
             return null;
@@ -296,6 +302,9 @@ public class RdbmsServiceDal implements ServiceDalI {
             for (RdbmsService result : results) {
                 ret.add(new Service(result));
             }
+
+            convertServicesIfRequired(ret);
+
             return ret;
 
         } finally {
@@ -326,6 +335,8 @@ public class RdbmsServiceDal implements ServiceDalI {
             for (RdbmsService result : results) {
                 ret.add(new Service(result));
             }
+
+            convertServicesIfRequired(ret);
             return ret;
 
         } finally {
@@ -346,7 +357,10 @@ public class RdbmsServiceDal implements ServiceDalI {
                     .setParameter("id", localIdentifier);
 
             RdbmsService result = (RdbmsService)query.getSingleResult();
-            return new Service(result);
+            Service ret = new Service(result);
+
+            convertServiceIfRequired(ret);
+            return ret;
 
         } catch (NoResultException ex) {
             return null;
@@ -356,4 +370,112 @@ public class RdbmsServiceDal implements ServiceDalI {
         }
     }
 
+    /**
+     * the format of the endpoints JSON has changed slightly, so easier to just use this fn
+     * to convert on demand so as soon as new core code is run, any services will be converted
+     */
+    private void convertServiceIfRequired(Service service) throws Exception {
+        List<Service> l = new ArrayList<>();
+        l.add(service);
+        convertServicesIfRequired(l);
+    }
+    private void convertServicesIfRequired(List<Service> services) throws Exception {
+
+        for (Service service: services) {
+            String endpointsJson = service.getEndpoints();
+            if (Strings.isNullOrEmpty(endpointsJson)) {
+                continue;
+            }
+
+            List<ServiceInterfaceEndpoint> endpoints = service.getEndpointsList();
+
+            boolean needsFixing = false;
+            for (ServiceInterfaceEndpoint endpoint: endpoints) {
+                String interfaceType = endpoint.getEndpoint();
+                if (Strings.isNullOrEmpty(interfaceType)
+                        || interfaceType.equals("http://")) {
+                    needsFixing = true;
+                    break;
+                }
+            }
+
+            if (!needsFixing) {
+                continue;
+            }
+
+            LOG.debug("Converting endpoints JSON for " + service);
+
+            String serviceIdStr = service.getId().toString();
+            List<LibraryItem> protocols = LibraryRepositoryHelper.getProtocolsByServiceId(serviceIdStr, null);
+
+            for (ServiceInterfaceEndpoint endpoint: endpoints) {
+                String interfaceType = endpoint.getEndpoint();
+
+                if (Strings.isNullOrEmpty(interfaceType)
+                        || interfaceType.equals("http://")) {
+
+                    //work out type
+                    interfaceType = null;
+
+                    String systemIdStr = endpoint.getSystemUuid().toString();
+
+                    for (LibraryItem libraryItem: protocols) {
+                        Protocol protocol = libraryItem.getProtocol();
+
+                        for (ServiceContract serviceContract : protocol.getServiceContract()) {
+                            if (serviceContract.getService().getUuid().equals(serviceIdStr)
+                                    && serviceContract.getSystem().getUuid().equals(systemIdStr)
+                                    && serviceContract.getActive() == ServiceContractActive.TRUE) {
+
+                                String thisInterfaceType = null;
+                                if (serviceContract.getType().equals(ServiceContractType.PUBLISHER)) {
+                                    thisInterfaceType = ServiceInterfaceEndpoint.STATUS_NORMAL;
+
+                                } else {
+                                    thisInterfaceType = "";
+                                }
+
+                                if (interfaceType == null
+                                    || thisInterfaceType.equals(interfaceType)) {
+                                    interfaceType = thisInterfaceType;
+                                } else {
+                                    throw new Exception("Service " + serviceIdStr + " has interface for system " + systemIdStr + " that is publisher AND subscriber");
+                                }
+                            }
+                        }
+                    }
+
+                    if (interfaceType == null) {
+                        interfaceType = "";
+                    }
+
+                    endpoint.setEndpoint(interfaceType);
+                }
+            }
+
+            //save
+            service.setEndpointsList(endpoints);
+
+            Connection connection = ConnectionManager.getAdminConnection();
+            PreparedStatement ps = null;
+            try {
+                ps = connection.prepareStatement("UPDATE service SET endpoints = ? WHERE id = ?");
+
+                ps.setString(1, service.getEndpoints());
+                ps.setString(2, service.getId().toString());
+
+                ps.executeUpdate();
+
+                connection.commit();
+
+            } finally {
+                if (ps != null) {
+                    ps.close();
+                }
+                connection.close();
+            }
+
+            LOG.debug("Converted endpoints JSON for " + service);
+        }
+    }
 }
