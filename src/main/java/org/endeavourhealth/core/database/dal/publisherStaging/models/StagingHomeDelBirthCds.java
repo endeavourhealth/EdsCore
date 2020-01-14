@@ -31,6 +31,8 @@ public class StagingHomeDelBirthCds implements Cloneable {
     private String gestationLengthLabourOnset;
     private Date deliveryDate;
     private String motherNhsNumber;
+    private String deliveryPlaceActual;
+    private String deliveryMethod;
 
     private Integer lookupPersonId;
 
@@ -207,6 +209,22 @@ public class StagingHomeDelBirthCds implements Cloneable {
         this.deliveryDate = deliveryDate;
     }
 
+    public String getDeliveryPlaceActual() {
+        return deliveryPlaceActual;
+    }
+
+    public void setDeliveryPlaceActual(String deliveryPlaceActual) {
+        this.deliveryPlaceActual = deliveryPlaceActual;
+    }
+
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(String deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
+    }
+
     public String getMotherNhsNumber() {
         return motherNhsNumber;
     }
@@ -257,6 +275,8 @@ public class StagingHomeDelBirthCds implements Cloneable {
                 deliveryPlaceChangeReasonCode,
                 gestationLengthLabourOnset,
                 deliveryDate,
+                deliveryPlaceActual,
+                deliveryMethod,
                 motherNhsNumber,
                 lookupPersonId);
     }
@@ -285,6 +305,8 @@ public class StagingHomeDelBirthCds implements Cloneable {
                 ", deliveryPlaceChangeReasonCode='" + deliveryPlaceChangeReasonCode + '\'' +
                 ", gestationLengthLabourOnset='" + gestationLengthLabourOnset + '\'' +
                 ", deliveryDate='" + deliveryDate + '\'' +
+                ", deliveryPlaceActual='" + deliveryPlaceActual + '\'' +
+                ", deliveryMethod='" + deliveryMethod + '\'' +
                 ", motherNhsNumber='" + motherNhsNumber + '\'' +
                 ", lookupPersonId=" + lookupPersonId +
                 ", audit=" + audit +

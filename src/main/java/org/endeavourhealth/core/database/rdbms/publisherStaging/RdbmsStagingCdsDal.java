@@ -1654,8 +1654,9 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     " birth_weight, live_or_still_birth_indicator, total_previous_pregnancies, " +
                     " number_of_babies, first_antenatal_assessment_date, antenatal_care_practitioner, " +
                     " antenatal_care_practice, delivery_place_intended, delivery_place_change_reason_code, " +
-                    " gestation_length_labour_onset, delivery_date, mother_nhs_number, lookup_person_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    " gestation_length_labour_onset, delivery_date, delivery_place_actual, delivery_method, " +
+                    " mother_nhs_number, lookup_person_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -1678,6 +1679,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " delivery_place_change_reason_code = VALUES(delivery_place_change_reason_code),"
                     + " gestation_length_labour_onset = VALUES(gestation_length_labour_onset),"
                     + " delivery_date = VALUES(delivery_date),"
+                    + " delivery_place_actual = VALUES(delivery_place_actual),"
+                    + " delivery_method = VALUES(delivery_method),"
                     + " mother_nhs_number = VALUES(mother_nhs_number),"
                     + " lookup_person_id = VALUES(lookup_person_id),"
                     + " audit_json = VALUES(audit_json)";
@@ -1734,6 +1737,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 } else {
                     ps.setTimestamp(col++, new java.sql.Timestamp(cdsHomeDelBirth.getDeliveryDate().getTime()));
                 }
+                ps.setString(col++, cdsHomeDelBirth.getDeliveryPlaceActual());
+                ps.setString(col++, cdsHomeDelBirth.getDeliveryMethod());
                 ps.setString(col++, cdsHomeDelBirth.getMotherNhsNumber());
 
                 if (cdsHomeDelBirth.getLookupPersonId() == null) {
