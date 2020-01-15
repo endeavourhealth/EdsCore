@@ -1241,13 +1241,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "INSERT INTO cds_emergency "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, patient_pathway_identifier, " +
-                    " department_type, ambulance_incident_number, ambulance_trust_organisation_code, " +
+                    " department_type, ambulance_incident_number, treatment_organisation_code, " +
                     " attendance_identifier, arrival_mode, attendance_category, attendance_source, " +
                     " arrival_date, initial_assessment_date, chief_complaint, seen_for_treatment_date, "+
-                    " decided_to_admit_date, treatment_function_code, discharge_status, discharge_destination, " +
+                    " decided_to_admit_date, treatment_function_code, discharge_status, discharge_destination, discharge_destination_site_id, " +
                     " conclusion_date, departure_date, mh_classifications, diagnosis, investigations, treatments, " +
                     " referred_to_services, safeguarding_concerns, lookup_person_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -1262,7 +1262,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
                     + " department_type = VALUES(department_type),"
                     + " ambulance_incident_number = VALUES(ambulance_incident_number),"
-                    + " ambulance_trust_organisation_code = VALUES(ambulance_trust_organisation_code),"
+                    + " treatment_organisation_code = VALUES(treatment_organisation_code),"
                     + " attendance_identifier = VALUES(attendance_identifier),"
                     + " arrival_mode = VALUES(arrival_mode),"
                     + " attendance_category = VALUES(attendance_category),"
@@ -1316,7 +1316,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 ps.setString(col++, cdsEmergency.getPatientPathwayIdentifier());
                 ps.setString(col++, cdsEmergency.getDepartmentType());
                 ps.setString(col++, cdsEmergency.getAmbulanceIncidentNumber());
-                ps.setString(col++, cdsEmergency.getAmbulanceTrustOrganisationCode());
+                ps.setString(col++, cdsEmergency.getTreatmentOrganisationCode());
                 ps.setString(col++, cdsEmergency.getAttendanceIdentifier());
                 ps.setString(col++, cdsEmergency.getArrivalMode());
                 ps.setString(col++, cdsEmergency.getAttendanceCategory());
@@ -1347,6 +1347,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 ps.setString(col++, cdsEmergency.getTreatmentFunctionCode());
                 ps.setString(col++, cdsEmergency.getDischargeStatus());
                 ps.setString(col++, cdsEmergency.getDischargeDestination());
+                ps.setString(col++, cdsEmergency.getDischargeDestinationSiteId());
 
                 if (cdsEmergency.getConclusionDate() == null) {
                     ps.setNull(col++, Types.NULL);

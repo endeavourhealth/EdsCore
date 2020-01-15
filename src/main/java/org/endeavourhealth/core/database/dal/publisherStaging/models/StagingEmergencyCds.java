@@ -19,12 +19,12 @@ public class StagingEmergencyCds implements Cloneable {
     private String nhsNumber;
     private Boolean withheld;
     private Date dateOfBirth;
-    // private String consultantCode;
+
     private String patientPathwayIdentifier;
 
     private String departmentType;
     private String ambulanceIncidentNumber;
-    private String ambulanceTrustOrganisationCode;
+    private String treatmentOrganisationCode;
     private String attendanceIdentifier;
     private String arrivalMode;
     private String attendanceCategory;
@@ -37,6 +37,7 @@ public class StagingEmergencyCds implements Cloneable {
     private String treatmentFunctionCode;
     private String dischargeStatus;
     private String dischargeDestination;
+    private String dischargeDestinationSiteId;
     private Date conclusionDate;
     private Date departureDate;
     private String mhClassifications;
@@ -157,12 +158,12 @@ public class StagingEmergencyCds implements Cloneable {
         this.ambulanceIncidentNumber = ambulanceIncidentNumber;
     }
 
-    public String getAmbulanceTrustOrganisationCode() {
-        return ambulanceTrustOrganisationCode;
+    public void setTreatmentOrganisationCode(String treatmentOrganisationCode) {
+        this.treatmentOrganisationCode = treatmentOrganisationCode;
     }
 
-    public void setAmbulanceTrustOrganisationCode(String ambulanceTrustOrganisationCode) {
-        this.ambulanceTrustOrganisationCode = ambulanceTrustOrganisationCode;
+    public String getTreatmentOrganisationCode() {
+        return treatmentOrganisationCode;
     }
 
     public String getAttendanceIdentifier() {
@@ -259,6 +260,14 @@ public class StagingEmergencyCds implements Cloneable {
 
     public void setDischargeDestination(String dischargeDestination) {
         this.dischargeDestination = dischargeDestination;
+    }
+
+    public String getDischargeDestinationSiteId() {
+        return dischargeDestinationSiteId;
+    }
+
+    public void setDischargeDestinationSiteId(String dischargeDestinationSiteId) {
+        this.dischargeDestinationSiteId = dischargeDestinationSiteId;
     }
 
     public Date getConclusionDate() {
@@ -360,7 +369,7 @@ public class StagingEmergencyCds implements Cloneable {
                 patientPathwayIdentifier,
                 departmentType,
                 ambulanceIncidentNumber,
-                ambulanceTrustOrganisationCode,
+                treatmentOrganisationCode,
                 attendanceIdentifier,
                 arrivalMode,
                 attendanceCategory,
@@ -373,6 +382,7 @@ public class StagingEmergencyCds implements Cloneable {
                 treatmentFunctionCode,
                 dischargeStatus,
                 dischargeDestination,
+                dischargeDestinationSiteId,
                 conclusionDate,
                 departureDate,
                 mhClassifications,
@@ -400,7 +410,7 @@ public class StagingEmergencyCds implements Cloneable {
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", departmentType='" + departmentType + '\'' +
                 ", ambulanceIncidentNumber='" + ambulanceIncidentNumber + '\'' +
-                ", ambulanceTrustOrganisationCode='" + ambulanceTrustOrganisationCode + '\'' +
+                ", treatmentOrganisationCode='" + treatmentOrganisationCode + '\'' +
                 ", attendanceIdentifier='" + attendanceIdentifier + '\'' +
                 ", arrivalMode='" + arrivalMode + '\'' +
                 ", attendanceCategory='" + attendanceCategory + '\'' +
@@ -413,6 +423,7 @@ public class StagingEmergencyCds implements Cloneable {
                 ", treatmentFunctionCode='" + treatmentFunctionCode + '\'' +
                 ", dischargeStatus='" + dischargeStatus + '\'' +
                 ", dischargeDestination='" + dischargeDestination + '\'' +
+                ", dischargeDestinationSiteId='" + dischargeDestinationSiteId + '\'' +
                 ", conclusionDate='" + conclusionDate + '\'' +
                 ", departureDate='" + departureDate + '\'' +
                 ", mhClassifications='" + mhClassifications + '\'' +
@@ -425,5 +436,4 @@ public class StagingEmergencyCds implements Cloneable {
                 ", audit=" + audit +
                 '}';
     }
-
 }
