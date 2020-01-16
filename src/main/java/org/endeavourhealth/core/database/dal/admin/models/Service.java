@@ -1,15 +1,12 @@
 package org.endeavourhealth.core.database.dal.admin.models;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class Service {
@@ -18,7 +15,6 @@ public class Service {
     private String name = null;
     private String localId = null;
     private String endpoints = null; //json containing a map of linked endpoints
-    private Map<UUID, String> organisations = null;
     private String publisherConfigName = null; //config name pointing to DB storing this services published data
     private String notes = null;
     private String postcode = null;
@@ -40,18 +36,6 @@ public class Service {
         this.name = proxy.getName();
         this.localId = proxy.getLocalId();
         this.endpoints = proxy.getEndpoints();
-
-        this.organisations = new HashMap<>();
-        String json = proxy.getOrganisations();
-        if (!Strings.isNullOrEmpty(json)) {
-            Map<String, String> map = ObjectMapperPool.getInstance().readValue(json, HashMap.class);
-            for (String key : map.keySet()) {
-                UUID uuid = UUID.fromString(key);
-                String name = map.get(key);
-                this.organisations.put(uuid, name);
-            }
-        }
-
         this.publisherConfigName = proxy.getPublisherConfigName();
         this.notes = proxy.getNotes();
         this.postcode = proxy.getPostcode();
@@ -91,14 +75,6 @@ public class Service {
 
     public void setEndpoints(String endpoints) {
         this.endpoints = endpoints;
-    }
-
-    public Map<UUID, String> getOrganisations() {
-        return organisations;
-    }
-
-    public void setOrganisations(Map<UUID, String> organisations) {
-        this.organisations = organisations;
     }
 
     public String getPublisherConfigName() {

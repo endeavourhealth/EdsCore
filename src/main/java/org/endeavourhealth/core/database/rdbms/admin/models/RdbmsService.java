@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.rdbms.admin.models;
 
-import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
 
 import javax.persistence.Column;
@@ -8,8 +7,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
-import java.util.Map;
-import java.util.UUID;
 
 @Entity
 @Table(name = "service")
@@ -33,10 +30,6 @@ public class RdbmsService implements Serializable {
         this.name = proxy.getName();
         this.localId = proxy.getLocalId();
         this.endpoints = proxy.getEndpoints();
-
-        Map<UUID, String> map = proxy.getOrganisations();
-        this.organisations = ObjectMapperPool.getInstance().writeValueAsString(map);
-
         this.publisherConfigName = proxy.getPublisherConfigName();
         this.notes = proxy.getNotes();
         this.postcode = proxy.getPostcode();

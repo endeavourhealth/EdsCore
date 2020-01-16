@@ -3,14 +3,11 @@ package org.endeavourhealth.core.database.rdbms.admin;
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.admin.LibraryRepositoryHelper;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
-import org.endeavourhealth.core.database.dal.admin.models.Organisation;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsOrganisation;
 import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 import org.endeavourhealth.core.xml.QueryDocument.*;
-import org.hibernate.internal.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,22 +17,20 @@ import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class RdbmsServiceDal implements ServiceDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsServiceDal.class);
 
     public UUID save(Service service) throws Exception{
 
-        Set<UUID> additions = null;
-        Set<UUID> deletions = null;
-
         UUID serviceUuid = null;
 
         if (service.getId() == null) {
 
-            //it can't be done using unique indexes, since the UPSERT SQL used during the save would result in
-            //overwrites, but manually validate that the national ID is unique if trying to save a new service
+            //if no UUID has been assigned validate the ODS code isn't already in use before assigning one
             String localId = service.getLocalId();
             if (!Strings.isNullOrEmpty(localId)) {
                 Service existingService = getByLocalIdentifier(localId);
@@ -45,88 +40,39 @@ public class RdbmsServiceDal implements ServiceDalI {
             }
 
             serviceUuid = UUID.randomUUID();
-            // New service, just save with all orgs as additions
             service.setId(serviceUuid);
 
-            additions = new HashSet<>(service.getOrganisations().keySet());
-            deletions = new HashSet<>();
         } else {
             serviceUuid = service.getId();
-
-            // Existing service, update org links
-            Map<UUID, String> newMap = service.getOrganisations();
-
-            Service oldService = getById(serviceUuid);
-            Map<UUID, String> oldMap = oldService.getOrganisations();
-
-            additions = new HashSet<>(newMap.keySet());
-            additions.removeAll(oldMap.keySet());
-
-            deletions = new HashSet<>(oldMap.keySet());
-            deletions.removeAll(newMap.keySet());
         }
 
         RdbmsService dbService = new RdbmsService(service);
 
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
+        Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement psService = null;
-        PreparedStatement psOrganisation = null;
 
         try {
-            entityManager.getTransaction().begin();
-
-            //have to use prepared statements to avoid having to do a retrieve before every update
-            //entityManager.persist(dbService);
-
-            psService = createSaveServicePreparedStatement(entityManager);
+            psService = createSaveServicePreparedStatement(connection);
             addToSaveServicePreparedStatement(psService, dbService);
 
-            RdbmsOrganisationDal organisationDal = new RdbmsOrganisationDal();
-            psOrganisation = RdbmsOrganisationDal.createSaveOrganisationPreparedStatement(entityManager);
-
-            // Process removed orgs
-            for (UUID orgUuid : deletions) {
-                Organisation organisation = organisationDal.getById(orgUuid);
-                Map<UUID, String> map = organisation.getServices();
-                map.remove(serviceUuid);
-
-                RdbmsOrganisation dbOrganisation = new RdbmsOrganisation(organisation);
-                RdbmsOrganisationDal.addToSaveOrganisationPreparedStatement(psOrganisation, dbOrganisation);
-            }
-
-            // Process added orgs
-            for (UUID orgUuid : additions) {
-                Organisation organisation = organisationDal.getById(orgUuid);
-                Map<UUID, String> map = organisation.getServices();
-                map.put(serviceUuid, service.getName());
-
-                RdbmsOrganisation dbOrganisation = new RdbmsOrganisation(organisation);
-                RdbmsOrganisationDal.addToSaveOrganisationPreparedStatement(psOrganisation, dbOrganisation);
-            }
-
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (psService != null) {
                 psService.close();
             }
-            if (psOrganisation != null) {
-                psOrganisation.close();
-            }
-            entityManager.close();
+            connection.close();
         }
 
         return serviceUuid;
     }
 
-    public static PreparedStatement createSaveServicePreparedStatement(EntityManager entityManager) throws Exception {
+    public static PreparedStatement createSaveServicePreparedStatement(Connection connection) throws Exception {
 
-        SessionImpl session = (SessionImpl)entityManager.getDelegate();
-        Connection connection = session.connection();
 
         String sql = "INSERT INTO service"
                 + " (id, name, local_id, endpoints, organisations, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
@@ -194,10 +140,7 @@ public class RdbmsServiceDal implements ServiceDalI {
         ps.executeUpdate();
     }
 
-    private static PreparedStatement createDeleteServicePreparedStatement(EntityManager entityManager) throws Exception {
-
-        SessionImpl session = (SessionImpl)entityManager.getDelegate();
-        Connection connection = session.connection();
+    private static PreparedStatement createDeleteServicePreparedStatement(Connection connection) throws Exception {
 
         String sql = "DELETE FROM service"
                 + " WHERE id = ?";;
@@ -242,46 +185,24 @@ public class RdbmsServiceDal implements ServiceDalI {
 
         RdbmsService dbService = new RdbmsService(service);
 
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
+        Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement psService = null;
-        PreparedStatement psOrganisation = null;
 
         try {
-            entityManager.getTransaction().begin();
-
-            psService = createDeleteServicePreparedStatement(entityManager);
+            psService = createDeleteServicePreparedStatement(connection);
             addToDeleteServicePreparedStatement(psService, dbService);
-            //entityManager.remove(dbService);
 
-            //also need to update any linked organisations
-            RdbmsOrganisationDal organisationDal = new RdbmsOrganisationDal();
-            psOrganisation = RdbmsOrganisationDal.createSaveOrganisationPreparedStatement(entityManager);
-
-            for (UUID orgUuid : service.getOrganisations().keySet()) {
-                Organisation organisation = organisationDal.getById(orgUuid);
-                if (organisation != null) {
-                    Map<UUID, String> map = organisation.getServices();
-                    map.remove(service.getId());
-
-                    RdbmsOrganisation dbOrganisation = new RdbmsOrganisation(organisation);
-                    RdbmsOrganisationDal.addToSaveOrganisationPreparedStatement(psOrganisation, dbOrganisation);
-                }
-            }
-
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (psService != null) {
                 psService.close();
             }
-            if (psOrganisation != null) {
-                psOrganisation.close();
-            }
-            entityManager.close();
+            connection.close();
         }
     }
 

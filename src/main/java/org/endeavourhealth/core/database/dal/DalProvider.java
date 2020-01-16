@@ -110,10 +110,6 @@ public class DalProvider {
         return new RdbmsServiceDal();
     }
 
-    public static OrganisationDalI factoryOrganisationDal() {
-        return new RdbmsOrganisationDal();
-    }
-
     public static LibraryDalI factoryLibraryDal() {
         return new RdbmsLibraryDal();
     }
