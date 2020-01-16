@@ -389,21 +389,23 @@ public class RdbmsServiceDal implements ServiceDalI {
 
             List<ServiceInterfaceEndpoint> endpoints = service.getEndpointsList();
 
-            boolean needsFixing = false;
+            boolean potentiallyNeedsFixing = false;
             for (ServiceInterfaceEndpoint endpoint: endpoints) {
                 String interfaceType = endpoint.getEndpoint();
                 if (Strings.isNullOrEmpty(interfaceType)
                         || interfaceType.equals("http://")) {
-                    needsFixing = true;
+                    potentiallyNeedsFixing = true;
                     break;
                 }
             }
 
-            if (!needsFixing) {
+            if (!potentiallyNeedsFixing) {
                 continue;
             }
 
             LOG.debug("Converting endpoints JSON for " + service);
+
+            boolean needsSaving = false;
 
             String serviceIdStr = service.getId().toString();
             List<LibraryItem> protocols = LibraryRepositoryHelper.getProtocolsByServiceId(serviceIdStr, null);
@@ -449,33 +451,48 @@ public class RdbmsServiceDal implements ServiceDalI {
                         interfaceType = "";
                     }
 
-                    endpoint.setEndpoint(interfaceType);
+                    String oldInterfaceType = endpoint.getEndpoint();
+                    if (oldInterfaceType == null) {
+                        oldInterfaceType = "";
+                    }
+
+                    //only set if it's different
+                    if (!oldInterfaceType.equals(interfaceType)) {
+                        endpoint.setEndpoint(interfaceType);
+                        needsSaving = true;
+                    }
                 }
             }
 
             //save
-            service.setEndpointsList(endpoints);
+            if (needsSaving) {
+                service.setEndpointsList(endpoints);
 
-            Connection connection = ConnectionManager.getAdminConnection();
-            PreparedStatement ps = null;
-            try {
-                ps = connection.prepareStatement("UPDATE service SET endpoints = ? WHERE id = ?");
+                Connection connection = ConnectionManager.getAdminConnection();
+                PreparedStatement ps = null;
+                try {
+                    ps = connection.prepareStatement("UPDATE service SET endpoints = ? WHERE id = ?");
 
-                ps.setString(1, service.getEndpoints());
-                ps.setString(2, service.getId().toString());
+                    ps.setString(1, service.getEndpoints());
+                    ps.setString(2, service.getId().toString());
 
-                ps.executeUpdate();
+                    ps.executeUpdate();
 
-                connection.commit();
+                    connection.commit();
 
-            } finally {
-                if (ps != null) {
-                    ps.close();
+                } finally {
+                    if (ps != null) {
+                        ps.close();
+                    }
+                    connection.close();
                 }
-                connection.close();
+
+                LOG.debug("Converted endpoints JSON for " + service);
+            } else {
+                LOG.debug("No conversion required for endpoints JSON for " + service);
             }
 
-            LOG.debug("Converted endpoints JSON for " + service);
+
         }
     }
 }
