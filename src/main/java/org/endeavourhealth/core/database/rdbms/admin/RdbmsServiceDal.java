@@ -75,13 +75,12 @@ public class RdbmsServiceDal implements ServiceDalI {
 
 
         String sql = "INSERT INTO service"
-                + " (id, name, local_id, endpoints, organisations, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " name = VALUES(name),"
                 + " local_id = VALUES(local_id),"
                 + " endpoints = VALUES(endpoints),"
-                + " organisations = VALUES(organisations),"
                 + " publisher_config_name = VALUES(publisher_config_name),"
                 + " notes = VALUES(notes),"
                 + " postcode = VALUES(postcode),"
@@ -103,11 +102,6 @@ public class RdbmsServiceDal implements ServiceDalI {
         }
         if (!Strings.isNullOrEmpty(service.getEndpoints())) {
             ps.setString(col++, service.getEndpoints());
-        } else {
-            ps.setNull(col++, Types.VARCHAR);
-        }
-        if (!Strings.isNullOrEmpty(service.getOrganisations())) {
-            ps.setString(col++, service.getOrganisations());
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }

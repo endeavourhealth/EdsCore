@@ -289,7 +289,6 @@
     <persistence-unit name="SubscriberTransformDb">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseAge</class>
-        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseOrganisationIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterprisePersonIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterprisePersonUpdateHistory</class>

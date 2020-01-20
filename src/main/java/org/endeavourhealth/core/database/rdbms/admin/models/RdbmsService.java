@@ -16,7 +16,6 @@ public class RdbmsService implements Serializable {
     private String name = null;
     private String localId = null;
     private String endpoints = null; //json containing a map of linked endpoints
-    private String organisations = null; //json containing a map of linked organisations UUIDs and names
     private String publisherConfigName = null; //config name that will tell us where published data is
     private String notes = null;
     private String postcode = null;
@@ -74,15 +73,6 @@ public class RdbmsService implements Serializable {
 
     public void setEndpoints(String endpoints) {
         this.endpoints = endpoints;
-    }
-
-    @Column(name = "organisations", nullable = true)
-    public String getOrganisations() {
-        return organisations;
-    }
-
-    public void setOrganisations(String organisations) {
-        this.organisations = organisations;
     }
 
     @Column(name = "publisher_config_name", nullable = true)
