@@ -20,6 +20,8 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     private static final String ENTERPRISE_ID_MAP_SMALL = "enterprise_id_map";
     private static final String ENTERPRISE_ID_MAP_LARGE = "enterprise_id_map_3";
 
+    private static final String DUPLICATE_KEY_ERR = "Duplicate entry .* for key 'PRIMARY'";
+
     private String subscriberConfigName = null;
 
     public RdbmsSubscriberResourceMappingDal(String subscriberConfigName) {
@@ -77,6 +79,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     public void findOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
         //allow several attempts if it fails due to a deadlock
         DeadlockHandler h = new DeadlockHandler();
+        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
         while (true) {
             try {
                 tryFindOrCreateEnterpriseIdsOldWay(resources, ids);
@@ -261,27 +264,13 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
     @Override
     public SubscriberId findOrCreateSubscriberId(byte subscriberTable, String sourceId) throws Exception {
-        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
 
-        try {
-            SubscriberId ret = findSubscriberIdImpl(subscriberTable, sourceId, connection);
-            if (ret != null) {
-                return ret;
-            }
+        List<String> l = new ArrayList<>();
+        l.add(sourceId);
 
-            return createSubscriberIdImpl(subscriberTable, sourceId, connection);
-
-        } catch (Exception ex) {
-            //if another thread has beat us to it, we'll get an exception, so try the find again
-            SubscriberId ret = findSubscriberIdImpl(subscriberTable, sourceId, connection);
-            if (ret != null) {
-                return ret;
-            }
-
-            throw ex;
-        } finally {
-            connection.close();
-        }
+        //public Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
+        Map<String, SubscriberId> ids = findOrCreateSubscriberIds(subscriberTable, l);
+        return ids.get(sourceId);
     }
 
     private SubscriberId createSubscriberIdImpl(byte subscriberTable, String sourceId, Connection connection) throws Exception {
@@ -329,6 +318,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     public Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
         //allow several attempts if it fails due to a deadlock
         DeadlockHandler h = new DeadlockHandler();
+        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
         while (true) {
             try {
                 return tryFindOrCreateSubscriberIds(subscriberTable, sourceIds);
