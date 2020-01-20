@@ -1,21 +1,19 @@
 package org.endeavourhealth.core.database.rdbms.admin;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.database.dal.admin.LibraryRepositoryHelper;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
 import org.endeavourhealth.core.database.dal.admin.models.Service;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 import org.endeavourhealth.core.xml.QueryDocument.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +25,6 @@ public class RdbmsServiceDal implements ServiceDalI {
     public UUID save(Service service) throws Exception{
 
         UUID serviceUuid = null;
-
         if (service.getId() == null) {
 
             //if no UUID has been assigned validate the ODS code isn't already in use before assigning one
@@ -46,15 +43,14 @@ public class RdbmsServiceDal implements ServiceDalI {
             serviceUuid = service.getId();
         }
 
-        RdbmsService dbService = new RdbmsService(service);
-
         Connection connection = ConnectionManager.getAdminConnection();
-        PreparedStatement psService = null;
+        PreparedStatement ps = null;
 
         try {
-            psService = createSaveServicePreparedStatement(connection);
-            addToSaveServicePreparedStatement(psService, dbService);
+            ps = createSaveServicePreparedStatement(connection);
+            addToSaveServicePreparedStatement(ps, service);
 
+            ps.executeUpdate();
             connection.commit();
 
         } catch (Exception ex) {
@@ -62,8 +58,8 @@ public class RdbmsServiceDal implements ServiceDalI {
             throw ex;
 
         } finally {
-            if (psService != null) {
-                psService.close();
+            if (ps != null) {
+                ps.close();
             }
             connection.close();
         }
@@ -72,7 +68,6 @@ public class RdbmsServiceDal implements ServiceDalI {
     }
 
     public static PreparedStatement createSaveServicePreparedStatement(Connection connection) throws Exception {
-
 
         String sql = "INSERT INTO service"
                 + " (id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
@@ -90,10 +85,10 @@ public class RdbmsServiceDal implements ServiceDalI {
         return connection.prepareStatement(sql);
     }
 
-    public static void addToSaveServicePreparedStatement(PreparedStatement ps, RdbmsService service) throws Exception {
+    public static void addToSaveServicePreparedStatement(PreparedStatement ps, Service service) throws Exception {
 
         int col = 1;
-        ps.setString(col++, service.getId());
+        ps.setString(col++, service.getId().toString());
         ps.setString(col++, service.getName());
         if (!Strings.isNullOrEmpty(service.getLocalId())) {
             ps.setString(col++, service.getLocalId());
@@ -125,67 +120,79 @@ public class RdbmsServiceDal implements ServiceDalI {
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
-        if (!Strings.isNullOrEmpty(service.getOrganisationType())) {
-            ps.setString(col++, service.getOrganisationType());
+        if (service.getOrganisationType() != null) {
+            ps.setString(col++, service.getOrganisationType().getCode());
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
 
-        ps.executeUpdate();
     }
 
-    private static PreparedStatement createDeleteServicePreparedStatement(Connection connection) throws Exception {
-
-        String sql = "DELETE FROM service"
-                + " WHERE id = ?";;
-
-        return connection.prepareStatement(sql);
-    }
-
-    private static void addToDeleteServicePreparedStatement(PreparedStatement ps, RdbmsService service) throws Exception {
-        ps.setString(1, service.getId());
-
-        ps.executeUpdate();
-    }
 
     public Service getById(UUID id) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-
+        Connection connection = ConnectionManager.getAdminConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsService c"
-                    + " where c.id = :id";
+            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+                    + " FROM service"
+                    + " WHERE id = ?";
 
-            Query query = entityManager.createQuery(sql, RdbmsService.class)
-                    .setParameter("id", id.toString());
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, id.toString());
 
-            RdbmsService result = (RdbmsService)query.getSingleResult();
-            Service ret = new Service(result);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Service ret = factoryFromResultSet(rs);
+                convertServiceIfRequired(ret);
+                return ret;
 
-            convertServiceIfRequired(ret);
-            return ret;
-
-        } catch (NoResultException ex) {
-            return null;
+            } else {
+                return null;
+            }
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
+    private static Service factoryFromResultSet(ResultSet rs) throws Exception {
+
+        int col = 1;
+        Service ret = new Service();
+        ret.setId(UUID.fromString(rs.getString(col++)));
+        ret.setName(rs.getString(col++));
+        ret.setLocalId(rs.getString(col++));
+        ret.setEndpoints(rs.getString(col++));
+        ret.setPublisherConfigName(rs.getString(col++));
+        ret.setNotes(rs.getString(col++));
+        ret.setPostcode(rs.getString(col++));
+        ret.setCcgCode(rs.getString(col++));
+
+        String orgTypeCode = rs.getString(col++);
+        if (orgTypeCode != null) {
+            ret.setOrganisationType(OrganisationType.fromCode(orgTypeCode));
+        }
+
+        return ret;
+    }
 
     public void delete(Service service) throws Exception {
 
-        RdbmsService dbService = new RdbmsService(service);
-
         Connection connection = ConnectionManager.getAdminConnection();
-        PreparedStatement psService = null;
+        PreparedStatement ps = null;
 
         try {
-            psService = createDeleteServicePreparedStatement(connection);
-            addToDeleteServicePreparedStatement(psService, dbService);
+            String sql = "DELETE FROM service"
+                    + " WHERE id = ?";;
 
+            ps = connection.prepareStatement(sql);
+
+            ps.setString(1, service.getId().toString());
+
+            ps.executeUpdate();
             connection.commit();
 
         } catch (Exception ex) {
@@ -193,29 +200,27 @@ public class RdbmsServiceDal implements ServiceDalI {
             throw ex;
 
         } finally {
-            if (psService != null) {
-                psService.close();
+            if (ps != null) {
+                ps.close();
             }
             connection.close();
         }
     }
 
     public List<Service> getAll() throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-
+        Connection connection = ConnectionManager.getAdminConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsService c";
+            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+                    + " FROM service";
 
-            Query query = entityManager.createQuery(sql, RdbmsService.class);
+            ps = connection.prepareStatement(sql);
 
-            List<RdbmsService> results = query.getResultList();
-
-            //can't use stream as the constructor throws an exception
             List<Service> ret = new ArrayList<>();
-            for (RdbmsService result : results) {
-                ret.add(new Service(result));
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ret.add(factoryFromResultSet(rs));
             }
 
             convertServicesIfRequired(ret);
@@ -223,65 +228,73 @@ public class RdbmsServiceDal implements ServiceDalI {
             return ret;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
     public List<Service> search(String searchData) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-
+        Connection connection = ConnectionManager.getAdminConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsService c"
-                    + " where c.name like :search_param_1"
-                    + " or c.localId = :search_param_2";
+            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+                    + " FROM service"
+                    + " WHERE name LIKE ?"
+                    + " OR local_id = ?";
 
-            Query query = entityManager.createQuery(sql, RdbmsService.class)
-                    .setParameter("search_param_1", searchData + "%")
-                    .setParameter("search_param_2", searchData);
+            ps = connection.prepareStatement(sql);
 
-            List<RdbmsService> results = query.getResultList();
-            //LOG.debug("Searching for [" + searchData + "] and got " + results.size() + " results");
-            //LOG.debug("Query = " + query);
+            int col = 1;
+            ps.setString(col++, searchData + "%");
+            ps.setString(col++, searchData);
 
-            //can't use stream as the constructor throws an exception
             List<Service> ret = new ArrayList<>();
-            for (RdbmsService result : results) {
-                ret.add(new Service(result));
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ret.add(factoryFromResultSet(rs));
             }
 
             convertServicesIfRequired(ret);
+
             return ret;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
     public Service getByLocalIdentifier(String localIdentifier) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAdminEntityManager();
-
+        Connection connection = ConnectionManager.getAdminConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsService c"
-                    + " where c.localId = :id";
+            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+                    + " FROM service"
+                    + " WHERE local_id = ?";
 
-            Query query = entityManager.createQuery(sql, RdbmsService.class)
-                    .setParameter("id", localIdentifier);
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, localIdentifier);
 
-            RdbmsService result = (RdbmsService)query.getSingleResult();
-            Service ret = new Service(result);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Service ret = factoryFromResultSet(rs);
+                convertServiceIfRequired(ret);
+                return ret;
 
-            convertServiceIfRequired(ret);
-            return ret;
-
-        } catch (NoResultException ex) {
-            return null;
+            } else {
+                return null;
+            }
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 

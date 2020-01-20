@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.dal.admin.models;
 import com.fasterxml.jackson.core.type.TypeReference;
 import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
-import org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService;
 import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 
 import java.util.List;
@@ -23,27 +22,7 @@ public class Service {
 
     public Service() {}
 
-    /*public Service(CassandraService proxy) {
-        this.id = proxy.getId();
-        this.name = proxy.getName();
-        this.localId = proxy.getLocalIdentifier();
-        this.endpoints = proxy.getEndpoints();
-        this.organisations = new HashMap<>(proxy.getOrganisations());
-    }*/
 
-    public Service(RdbmsService proxy) throws Exception {
-        this.id = UUID.fromString(proxy.getId());
-        this.name = proxy.getName();
-        this.localId = proxy.getLocalId();
-        this.endpoints = proxy.getEndpoints();
-        this.publisherConfigName = proxy.getPublisherConfigName();
-        this.notes = proxy.getNotes();
-        this.postcode = proxy.getPostcode();
-        this.ccgCode = proxy.getCcgCode();
-        if (proxy.getOrganisationType() != null) {
-            this.organisationType = OrganisationType.fromCode(proxy.getOrganisationType());
-        }
-    }
 
     public UUID getId() {
         return id;

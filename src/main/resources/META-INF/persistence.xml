@@ -8,7 +8,6 @@
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsItem</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsItemDependency</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsPatientCohort</class>
-        <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsLinkDistributorPopulator</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsLinkDistributorTaskList</class>
         <properties>

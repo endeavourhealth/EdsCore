@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.UUID;
 
 public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMappingDalI {
@@ -101,6 +103,73 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
 
     @Override
     public void takeOverInstanceMapping(ResourceType resourceType, UUID oldMappedResourceId, UUID newMappedResourceId) throws Exception {
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
+        PreparedStatement psInstanceMap = null;
+        PreparedStatement psIdMap = null;
+        PreparedStatement psIdMap3 = null;
+        try {
+            //we need to update BOTH the instance mapping table, to map everything to our new resource
+            //but also the resource_id_map so that the new resource ID links to the same enterprise ID
+
+            String sql = "update enterprise_instance_map"
+                    + " set resource_id_to = ?"
+                    + " where resource_type = ?"
+                    + " and resource_id_to = ?";
+            psInstanceMap = connection.prepareStatement(sql);
+
+            int col = 1;
+            psInstanceMap.setString(col++, newMappedResourceId.toString());
+            psInstanceMap.setString(col++, resourceType.toString());
+            psInstanceMap.setString(col++, oldMappedResourceId.toString());
+            psInstanceMap.executeUpdate();
+
+            sql = "update enterprise_id_map"
+                    + " set resource_id = ?"
+                    + " where resource_tyoe = ?"
+                    + " and resource_id = ?";
+            psIdMap = connection.prepareStatement(sql);
+
+            col = 1;
+            psIdMap.setString(col++, newMappedResourceId.toString());
+            psIdMap.setString(col++, resourceType.toString());
+            psIdMap.setString(col++, oldMappedResourceId.toString());
+            psIdMap.executeUpdate();
+
+            //TODO - remove the below when this table is dropped
+            sql = "update enterprise_id_map_3"
+                    + " set resource_id = ?"
+                    + " where resource_tyoe = ?"
+                    + " and resource_id = ?";
+            psIdMap3 = connection.prepareStatement(sql);
+
+            col = 1;
+            psIdMap3.setString(col++, newMappedResourceId.toString());
+            psIdMap3.setString(col++, resourceType.toString());
+            psIdMap3.setString(col++, oldMappedResourceId.toString());
+            psIdMap3.executeUpdate();
+
+            connection.commit();
+
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+
+        } finally {
+            if (psInstanceMap != null) {
+                psInstanceMap.close();
+            }
+            if (psIdMap != null) {
+                psIdMap.close();
+            }
+            if (psIdMap3 != null) {
+                psIdMap3.close();
+            }
+            connection.close();
+        }
+    }
+
+    /*@Override
+    public void takeOverInstanceMapping(ResourceType resourceType, UUID oldMappedResourceId, UUID newMappedResourceId) throws Exception {
         EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
         try {
@@ -139,7 +208,7 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
     @Override
     public UUID findResourceIdFromInstanceMapping(ResourceType resourceType, String mappingValue) throws Exception {
