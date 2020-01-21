@@ -125,7 +125,7 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
 
             sql = "update enterprise_id_map"
                     + " set resource_id = ?"
-                    + " where resource_tyoe = ?"
+                    + " where resource_type = ?"
                     + " and resource_id = ?";
             psIdMap = connection.prepareStatement(sql);
 
@@ -138,7 +138,7 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
             //TODO - remove the below when this table is dropped
             sql = "update enterprise_id_map_3"
                     + " set resource_id = ?"
-                    + " where resource_tyoe = ?"
+                    + " where resource_type = ?"
                     + " and resource_id = ?";
             psIdMap3 = connection.prepareStatement(sql);
 
