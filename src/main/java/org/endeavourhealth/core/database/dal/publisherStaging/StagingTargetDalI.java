@@ -9,6 +9,8 @@ import java.util.UUID;
 
 public interface StagingTargetDalI {
 
+    void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
+
     void processStagingForTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
 
     void processStagingForTargetEmergencyCds(UUID exchangeId, UUID serviceId) throws Exception;
@@ -16,10 +18,8 @@ public interface StagingTargetDalI {
     void processStagingForTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingProcedureTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception;
 
-    //TODO - calls in to methods from transform code
     void processStagingForTargetConditions(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingConditionTarget> getTargetConditions(UUID exchangeId, UUID serviceId) throws Exception;
-
 
     void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;

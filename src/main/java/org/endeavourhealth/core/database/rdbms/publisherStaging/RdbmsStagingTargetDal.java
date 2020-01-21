@@ -26,6 +26,34 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingTargetDal.class);
 
     @Override
+    public void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        CallableStatement stmt = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call process_outpatient_cds_staging_exchange(?)}";
+            stmt = connection.prepareCall(sql);
+
+            entityManager.getTransaction().begin();
+
+            stmt.setString(1, exchangeId.toString());
+
+            stmt.execute();
+
+            entityManager.getTransaction().commit();
+
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
     public void processStagingForTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
