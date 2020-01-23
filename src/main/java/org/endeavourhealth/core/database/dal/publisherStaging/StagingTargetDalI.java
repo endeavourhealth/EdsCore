@@ -1,8 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherStaging;
 
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingClinicalEventTarget;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionTarget;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -12,8 +10,10 @@ public interface StagingTargetDalI {
     void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
 
     void processStagingForTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
+    List<StagingInpatientCdsTarget> getTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
 
     void processStagingForTargetEmergencyCds(UUID exchangeId, UUID serviceId) throws Exception;
+    List<StagingEmergencyCdsTarget> getTargetEmergencyCds(UUID exchangeId, UUID serviceId) throws Exception;
 
     void processStagingForTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingProcedureTarget> getTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception;
@@ -23,4 +23,5 @@ public interface StagingTargetDalI {
 
     void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
+
 }

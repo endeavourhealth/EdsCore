@@ -2,9 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherStaging;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherStaging.StagingTargetDalI;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingClinicalEventTarget;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingConditionTarget;
-import org.endeavourhealth.core.database.dal.publisherStaging.models.StagingProcedureTarget;
+import org.endeavourhealth.core.database.dal.publisherStaging.models.*;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.hibernate.internal.SessionImpl;
@@ -549,6 +547,231 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
         } finally {
             if (ps != null) {
                 ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<StagingEmergencyCdsTarget> getTargetEmergencyCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+
+        CallableStatement cs = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call get_target_emergency_cds_exchange(?)}";
+
+            cs = connection.prepareCall(sql);
+            cs.setString(1, exchangeId.toString());
+
+            ResultSet rs = cs.executeQuery();
+            List<StagingEmergencyCdsTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+
+                StagingEmergencyCdsTarget stagingEmergencyCdsTarget = new StagingEmergencyCdsTarget();
+
+                stagingEmergencyCdsTarget.setUniqueId(rs.getString(col++));
+                stagingEmergencyCdsTarget.setDeleted(rs.getBoolean(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingEmergencyCdsTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingEmergencyCdsTarget.setEncounterId(encounterId);
+                }
+
+                int episodeId = rs.getInt(col++);
+                if (!rs.wasNull() && episodeId > 0) {
+                    stagingEmergencyCdsTarget.setEpisodeId(episodeId);
+                }
+
+                int performedPrsnlId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingEmergencyCdsTarget.setPerformerPersonnelId(performedPrsnlId);
+                }
+
+                stagingEmergencyCdsTarget.setDepartmentType(rs.getString(col++));
+                stagingEmergencyCdsTarget.setAmbulanceNo(rs.getString(col++));
+                stagingEmergencyCdsTarget.setOrganisationCode(rs.getString(col++));
+                stagingEmergencyCdsTarget.setAttendanceId(rs.getString(col++));
+                stagingEmergencyCdsTarget.setArrivalMode(rs.getString(col++));
+                stagingEmergencyCdsTarget.setAttendanceCategory(rs.getString(col++));
+
+                java.sql.Timestamp tsArrival = rs.getTimestamp(col++);
+                if (tsArrival != null) {
+                    stagingEmergencyCdsTarget.setDtArrival(new Date(tsArrival.getTime()));
+                }
+                java.sql.Timestamp tsInitialAssessment = rs.getTimestamp(col++);
+                if (tsInitialAssessment != null) {
+                    stagingEmergencyCdsTarget.setDtInitialAssessment(new Date(tsInitialAssessment.getTime()));
+                }
+                stagingEmergencyCdsTarget.setChiefComplaint(rs.getString(col++));
+
+                java.sql.Timestamp tsSeenForTreatment = rs.getTimestamp(col++);
+                if (tsSeenForTreatment != null) {
+                    stagingEmergencyCdsTarget.setDtSeenForTreatment(new Date(tsSeenForTreatment.getTime()));
+                }
+                java.sql.Timestamp tsDecidedToAdmit = rs.getTimestamp(col++);
+                if (tsDecidedToAdmit != null) {
+                    stagingEmergencyCdsTarget.setDtDecidedToAdmit(new Date(tsDecidedToAdmit.getTime()));
+                }
+                stagingEmergencyCdsTarget.setTreatmentFunctionCode(rs.getString(col++));
+                stagingEmergencyCdsTarget.setDischargeStatus(rs.getString(col++));
+                stagingEmergencyCdsTarget.setDischargeDestination(rs.getString(col++));
+
+                java.sql.Timestamp tsConclusion = rs.getTimestamp(col++);
+                if (tsConclusion != null) {
+                    stagingEmergencyCdsTarget.setDtConclusion(new Date(tsConclusion.getTime()));
+                }
+                java.sql.Timestamp tsDeparture = rs.getTimestamp(col++);
+                if (tsDeparture != null) {
+                    stagingEmergencyCdsTarget.setDtDeparture(new Date(tsDeparture.getTime()));
+                }
+                stagingEmergencyCdsTarget.setDiagnosis(rs.getString(col++));
+                stagingEmergencyCdsTarget.setInvestigations(rs.getString(col++));
+                stagingEmergencyCdsTarget.setTreatments(rs.getString(col++));
+                stagingEmergencyCdsTarget.setReferredToServices(rs.getString(col++));
+                stagingEmergencyCdsTarget.setSafeguardingConcerns(rs.getString(col++));
+
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingEmergencyCdsTarget.setAudit(audit);
+                }
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingEmergencyCdsTarget.setConfidential(confidential);
+                }
+
+                resultList.add(stagingEmergencyCdsTarget);
+            }
+
+            return resultList;
+
+        } finally {
+            if (cs != null) {
+                cs.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<StagingInpatientCdsTarget> getTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+
+        CallableStatement cs = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call get_target_inpatient_cds_exchange(?)}";
+
+            cs = connection.prepareCall(sql);
+            cs.setString(1, exchangeId.toString());
+
+            ResultSet rs = cs.executeQuery();
+            List<StagingInpatientCdsTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+
+                StagingInpatientCdsTarget stagingInpatientCdsTarget = new StagingInpatientCdsTarget();
+
+                stagingInpatientCdsTarget.setUniqueId(rs.getString(col++));
+                stagingInpatientCdsTarget.setDeleted(rs.getBoolean(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingInpatientCdsTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingInpatientCdsTarget.setEncounterId(encounterId);
+                }
+
+                int episodeId = rs.getInt(col++);
+                if (!rs.wasNull() && episodeId > 0) {
+                    stagingInpatientCdsTarget.setEpisodeId(episodeId);
+                }
+
+                int performedPrsnlId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingInpatientCdsTarget.setPerformerPersonnelId(performedPrsnlId);
+                }
+                stagingInpatientCdsTarget.setPatientPathwayIdentifier(rs.getString(col++));
+                stagingInpatientCdsTarget.setSpellNumber(rs.getString(col++));
+                stagingInpatientCdsTarget.setAdmissionMethodCode(rs.getString(col++));
+                stagingInpatientCdsTarget.setAdmissionSourceCode(rs.getString(col++));
+                stagingInpatientCdsTarget.setPatientClassification(rs.getString(col++));
+                java.sql.Timestamp tsSpellStart = rs.getTimestamp(col++);
+                if (tsSpellStart != null) {
+                    stagingInpatientCdsTarget.setDtSpellStart(new Date(tsSpellStart.getTime()));
+                }
+                stagingInpatientCdsTarget.setEpisodeNumber(rs.getString(col++));
+                stagingInpatientCdsTarget.setEpisodeStartSiteCode(rs.getString(col++));
+                stagingInpatientCdsTarget.setEpisodeStartWardCode(rs.getString(col++));
+
+                java.sql.Timestamp tsEpisodeStart = rs.getTimestamp(col++);
+                if (tsEpisodeStart != null) {
+                    stagingInpatientCdsTarget.setDtEpisodeStart(new Date(tsEpisodeStart.getTime()));
+                }
+                stagingInpatientCdsTarget.setEpisodeEndSiteCode(rs.getString(col++));
+                stagingInpatientCdsTarget.setEpisodeEndWardCode(rs.getString(col++));
+
+                java.sql.Timestamp tsEpisodeEnd = rs.getTimestamp(col++);
+                if (tsEpisodeEnd != null) {
+                    stagingInpatientCdsTarget.setDtEpisodeEnd(new Date(tsEpisodeEnd.getTime()));
+                }
+                java.sql.Timestamp tsDischarge = rs.getTimestamp(col++);
+                if (tsDischarge != null) {
+                    stagingInpatientCdsTarget.setDtDischarge(new Date(tsDischarge.getTime()));
+                }
+                stagingInpatientCdsTarget.setDischargeDestinationCode(rs.getString(col++));
+                stagingInpatientCdsTarget.setDischargeMethod(rs.getString(col++));
+                stagingInpatientCdsTarget.setPrimaryDiagnosisICD(rs.getString(col++));
+                stagingInpatientCdsTarget.setSecondaryDiagnosisICD(rs.getString(col++));
+                stagingInpatientCdsTarget.setOtherDiagnosisICD(rs.getString(col++));
+                stagingInpatientCdsTarget.setPrimaryProcedureOPCS(rs.getString(col++));
+
+                java.sql.Timestamp tsPrimaryProc = rs.getTimestamp(col++);
+                if (tsPrimaryProc != null) {
+                    stagingInpatientCdsTarget.setPrimaryProcedureDate(new Date(tsPrimaryProc.getTime()));
+                }
+                stagingInpatientCdsTarget.setSecondaryProcedureOPCS(rs.getString(col++));
+
+                java.sql.Timestamp tsSecondaryProc = rs.getTimestamp(col++);
+                if (tsSecondaryProc != null) {
+                    stagingInpatientCdsTarget.setSecondaryProcedureDate(new Date(tsSecondaryProc.getTime()));
+                }
+                stagingInpatientCdsTarget.setOtherProceduresOPCS(rs.getString(col++));
+
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingInpatientCdsTarget.setAudit(audit);
+                }
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingInpatientCdsTarget.setConfidential(confidential);
+                }
+
+                resultList.add(stagingInpatientCdsTarget);
+            }
+
+            return resultList;
+
+        } finally {
+            if (cs != null) {
+                cs.close();
             }
             entityManager.close();
         }
