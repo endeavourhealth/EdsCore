@@ -19,15 +19,18 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "INSERT INTO application_heartbeat"
-                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb, server_memory_mb, server_cpu_usage_percent)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " timestmp = VALUES(timestmp),"
                     + " host_name = VALUES(host_name),"
                     + " is_busy = VALUES(is_busy),"
                     + " max_heap_mb = VALUES(max_heap_mb),"
-                    + " current_heap_mb = VALUES(current_heap_mb)";
+                    + " current_heap_mb = VALUES(current_heap_mb),"
+                    + " server_memory_mb = VALUES(server_memory_mb),"
+                    + " server_cpu_usage_percent = VALUES(server_cpu_usage_percent)";
             ps = connection.prepareStatement(sql);
+
 
             int col = 1;
             ps.setString(col++, h.getApplicationName());
@@ -48,6 +51,16 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 ps.setNull(col++, Types.INTEGER);
             } else {
                 ps.setInt(col++, h.getCurrentHeapMb().intValue());
+            }
+            if (h.getServerMemoryMb() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, h.getServerMemoryMb().intValue());
+            }
+            if (h.getServerCpuUsagePercent() == null) {
+                ps.setNull(col++, Types.INTEGER);
+            } else {
+                ps.setInt(col++, h.getServerCpuUsagePercent().intValue());
             }
 
             ps.executeUpdate();
@@ -70,7 +83,8 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb"
+            String sql = "SELECT application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
+                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent"
                     + " FROM application_heartbeat";
             ps = connection.prepareStatement(sql);
 
@@ -99,6 +113,16 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 i = rs.getInt(col++);
                 if (!rs.wasNull()) {
                     h.setCurrentHeapMb(new Integer(i));
+                }
+
+                i = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    h.setServerMemoryMb(new Integer(i));
+                }
+
+                i = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    h.setServerCpuUsagePercent(new Integer(i));
                 }
 
                 ret.add(h);

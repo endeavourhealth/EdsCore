@@ -8,6 +8,7 @@ import org.endeavourhealth.core.database.dal.audit.models.ApplicationHeartbeat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.management.ManagementFactory;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,16 +46,30 @@ public class ApplicationHeartbeatHelper implements Runnable {
             while (!isStopped()) {
 
                 Runtime r = Runtime.getRuntime();
-                int maxHeapMb = (int)(r.maxMemory() / (1024L * 1024L));
-                int currentHeapMb = (int)(r.totalMemory() / (1024L * 1024L));
+                Integer maxHeapMb = new Integer((int)(r.maxMemory() / (1024L * 1024L)));
+                Integer currentHeapMb = new Integer((int)(r.totalMemory() / (1024L * 1024L)));
+                Integer serverMemoryMb = null;
+                Integer serverCpuUsagePercent = null;
+
+                try {
+                    com.sun.management.OperatingSystemMXBean b = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+                    serverMemoryMb = new Integer((int)(b.getTotalPhysicalMemorySize() / (1024L * 1024L)));
+                    serverCpuUsagePercent = new Integer((int)(b.getSystemCpuLoad() * 100D));
+
+                } catch (Throwable t) {
+                    //the above will fail if run on a non-Oracle JVM, since the stuff we want is only available on their
+                    //implmentation of the SystemMX bean
+                }
 
                 ApplicationHeartbeat h = new ApplicationHeartbeat();
                 h.setApplicationName(ConfigManager.getAppId()); //config manager is inited with app ID, so just use that
                 h.setApplicationInstanceName(ConfigManager.getAppSubId());
                 h.setTimestmp(new Date());
                 h.setHostName(MetricsHelper.getHostName());
-                h.setMaxHeapMb(new Integer(maxHeapMb));
-                h.setCurrentHeapMb(new Integer(currentHeapMb));
+                h.setMaxHeapMb(maxHeapMb);
+                h.setCurrentHeapMb(currentHeapMb);
+                h.setServerMemoryMb(serverMemoryMb);
+                h.setServerCpuUsagePercent(serverCpuUsagePercent);
 
                 //and if we have a callback, then use it to work out if our app is "busy"
                 if (callback != null) {
