@@ -26,7 +26,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
@@ -54,111 +54,91 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public void processStagingForTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "{call process_inpatient_cds_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
     @Override
     public void processStagingForTargetEmergencyCds(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "{call process_emergency_cds_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
     @Override
     public void processStagingForTargetProcedures(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "{call process_procedure_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
     public void processStagingForTargetConditions(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "{call process_condition_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
@@ -399,28 +379,23 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     @Override
     public void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "{call process_clinical_events_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
