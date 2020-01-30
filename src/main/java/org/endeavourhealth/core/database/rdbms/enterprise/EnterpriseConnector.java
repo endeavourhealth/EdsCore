@@ -71,15 +71,16 @@ public class EnterpriseConnector {
 
         //and set the batch size if specified
         int batchSize = 50;
+
         if (config.has("batch_size")) {
             batchSize = config.get("batch_size").asInt();
             if (batchSize <= 0) {
                 throw new Exception("Invalid batch size");
             }
+        }
 
-            for (ConnectionWrapper w : ret) {
-                w.setBatchSize(batchSize);
-            }
+        for (ConnectionWrapper w : ret) {
+            w.setBatchSize(batchSize);
         }
 
         return ret;
