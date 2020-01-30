@@ -13,7 +13,7 @@ public class StagingClinicalEvent {
     private boolean activeInd;
     private int personId;
     private Integer encounterId;
-    private Integer orderId;
+    private Long orderId;
     private Integer parentEventId;
     private String eventCd;
     private String codeDispTxt;
@@ -104,11 +104,11 @@ public class StagingClinicalEvent {
         this.encounterId = encounterId;
     }
 
-    public Integer getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 
