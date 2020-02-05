@@ -6,6 +6,7 @@ import org.endeavourhealth.common.fhir.ReferenceComponents;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
+import org.endeavourhealth.core.database.dal.ehr.models.Encounter;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
@@ -25,8 +26,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.NonUniqueResultException;
 import javax.persistence.Query;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RdbmsResourceDal implements ResourceDalI {
@@ -177,6 +178,67 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
+    public void saveEncounter(ResourceWrapper wrapper, Encounter encounter) throws Exception {
+
+        //attempts the save, and if the save fails because of a deadlock, it will have a second attempt
+        DeadlockHandler h = new DeadlockHandler();
+        while (true) {
+            try {
+                trySaveEncounter(wrapper, encounter);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    public void trySaveEncounter(ResourceWrapper wrapper, Encounter encounter) throws Exception {
+        if (encounter == null) {
+            throw new IllegalArgumentException("encounter is null");
+        }
+
+        EntityManager entityManager = ConnectionManager.getEhrEntityManager(wrapper.getServiceId());
+        PreparedStatement psEncounterHistory = null;
+        PreparedStatement psEncounterCurrent = null;
+
+        try {
+            entityManager.getTransaction().begin();
+
+            psEncounterHistory = createInsertEncounterHistoryPreparedStatement(entityManager);
+            populateInsertEncounterHistoryPreparedStatement(wrapper, encounter, psEncounterHistory);
+            psEncounterHistory.executeUpdate();
+
+            psEncounterCurrent = createInsertEncounterCurrentPreparedStatement(entityManager);
+            populateInsertEncounterCurrentPreparedStatement(wrapper, encounter, psEncounterCurrent);
+            psEncounterCurrent.executeUpdate();
+
+            entityManager.getTransaction().commit();
+            // Try to handle what is probably a MySql driver bug. And yes I know catch with class name is bad.
+            // But this seems to be a quite specific bug in this one class and we don't want to miss other NPEs
+            // that might get introduced.
+        } catch (NullPointerException npe) {
+            if (npe.getClass().getName().equals("ServerPreparedQueryBindValue")) {
+                throw new TransformException("Nullpointer in ServerPreparedQueryBindValue. MySql bug?");
+            } else {
+                entityManager.getTransaction().rollback();
+                throw npe;
+            }
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psEncounterCurrent != null) {
+                psEncounterCurrent.close();
+            }
+            if (psEncounterHistory != null) {
+                psEncounterHistory.close();
+            }
+            entityManager.close();
+        }
+    }
 
     public void save(ResourceWrapper resourceEntry) throws Exception {
 
@@ -320,6 +382,112 @@ public class RdbmsResourceDal implements ResourceDalI {
         ps.setBoolean(9, wrapper.isDeleted());
         ps.setString(10, wrapper.getExchangeBatchId().toString());
         ps.setString(11, wrapper.getVersion().toString());
+    }
+
+    private static PreparedStatement createInsertEncounterHistoryPreparedStatement(EntityManager entityManager) throws Exception {
+
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "INSERT INTO encounter_history"
+                + " (service_id, composition_resource_id, created_at, encounter_id, patient_id, "
+                + " practitioner_id, appointment_id, effective_date, effective_end_date, episode_of_care_id, "
+                + " service_provider_organisation_id, encounter_type, parent_encounter_id, additional_fields_json, "
+                + " composition_encounter_checksum, is_deleted, exchange_batch_id)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+        //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
+
+        return connection.prepareStatement(sql);
+    }
+
+    private static void populateInsertEncounterHistoryPreparedStatement(ResourceWrapper wrapper, Encounter encounter, PreparedStatement ps) throws Exception {
+
+        ps.setString(1, wrapper.getServiceId().toString());
+        ps.setString(2, wrapper.getResourceIdStr());
+        ps.setTimestamp(3, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+        ps.setString(4, encounter.getEncounterId());
+        ps.setString(5, encounter.getPatientId());
+        ps.setString(6, encounter.getPractitionerId());
+        ps.setString(7, encounter.getAppointmentId());
+
+        if (encounter.getEffectiveDate() == null) {
+            ps.setNull(8, Types.NULL);
+        } else {
+            ps.setTimestamp(8, new java.sql.Timestamp(encounter.getEffectiveDate().getTime()));
+        }
+        if (encounter.getEffectiveEndDate() == null) {
+            ps.setNull(9, Types.NULL);
+        } else {
+            ps.setTimestamp(9, new java.sql.Timestamp(encounter.getEffectiveEndDate().getTime()));
+        }
+        ps.setString(10, encounter.getEpisodeOfCareId());
+        ps.setString(11, encounter.getServiceProviderOrganisationId());
+        ps.setString(12, encounter.getEncounterType());
+        ps.setString(13, encounter.getParentEncounterId());
+        ps.setString(14, encounter.getAdditionalFieldsJson());
+
+        if (wrapper.getResourceChecksum() != null) {
+            ps.setLong(15, wrapper.getResourceChecksum());
+        } else {
+            ps.setNull(15, Types.BIGINT);
+        }
+        ps.setBoolean(16, wrapper.isDeleted());
+        ps.setString(17, wrapper.getExchangeBatchId().toString());
+    }
+
+    private static PreparedStatement createInsertEncounterCurrentPreparedStatement(EntityManager entityManager) throws Exception {
+
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        String sql = "INSERT INTO encounter_current"
+                + " (service_id, composition_resource_id, updated_at, encounter_id, patient_id, practitioner_id, "
+                + " appointment_id, effective_date, effective_end_date, episode_of_care_id, service_provider_organisation_id,"
+                + " encounter_type, parent_encounter_id, additional_fields_json, composition_encounter_checksum)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " ON DUPLICATE KEY UPDATE"
+                + " updated_at = VALUES(updated_at),"
+                + " practitioner_id = VALUES(practitioner_id),"
+                + " appointment_id = VALUES(appointment_id),"
+                + " effective_date = VALUES(effective_date),"
+                + " effective_end_date = VALUES(effective_end_date),"
+                + " episode_of_care_id = VALUES(episode_of_care_id),"
+                + " service_provider_organisation_id = VALUES(service_provider_organisation_id),"
+                + " encounter_type = VALUES(encounter_type),"
+                + " parent_encounter_id = VALUES(parent_encounter_id),"
+                + " additional_fields_json = VALUES(additional_fields_json),"
+                + " composition_encounter_checksum = VALUES(composition_encounter_checksum)";
+
+        return connection.prepareStatement(sql);
+    }
+
+    private static void populateInsertEncounterCurrentPreparedStatement(ResourceWrapper wrapper, Encounter encounter, PreparedStatement ps) throws Exception {
+
+        ps.setString(1, wrapper.getServiceId().toString());
+        ps.setString(2, wrapper.getResourceId().toString());
+        ps.setTimestamp(3, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+        ps.setString(4, encounter.getEncounterId());
+        ps.setString(5, encounter.getPatientId());
+        ps.setString(6, encounter.getPractitionerId());
+        ps.setString(7, encounter.getAppointmentId());
+
+        if (encounter.getEffectiveDate() == null) {
+            ps.setNull(8, Types.NULL);
+        } else {
+            ps.setTimestamp(8, new java.sql.Timestamp(encounter.getEffectiveDate().getTime()));
+        }
+        if (encounter.getEffectiveEndDate() == null) {
+            ps.setNull(9, Types.NULL);
+        } else {
+            ps.setTimestamp(9, new java.sql.Timestamp(encounter.getEffectiveEndDate().getTime()));
+        }
+        ps.setString(10, encounter.getEpisodeOfCareId());
+        ps.setString(11, encounter.getServiceProviderOrganisationId());
+        ps.setString(12, encounter.getEncounterType());
+        ps.setString(13, encounter.getParentEncounterId());
+        ps.setString(14, encounter.getAdditionalFieldsJson());
+        ps.setLong(15, wrapper.getResourceChecksum());
     }
 
     private static void populateDeleteResourceCurrentPreparedStatement(ResourceWrapper wrapper, PreparedStatement ps) throws SQLException {

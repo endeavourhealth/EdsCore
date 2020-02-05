@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.fhirStorage;
 
+import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.audit.ExchangeBatchDalI;
 import org.endeavourhealth.core.database.dal.audit.models.ExchangeBatch;
@@ -12,9 +13,9 @@ import org.endeavourhealth.core.fhirStorage.exceptions.UnprocessableEntityExcept
 import org.endeavourhealth.core.fhirStorage.metadata.MetadataFactory;
 import org.endeavourhealth.core.fhirStorage.metadata.PatientCompartment;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
-import org.hl7.fhir.instance.model.EpisodeOfCare;
-import org.hl7.fhir.instance.model.Patient;
-import org.hl7.fhir.instance.model.Resource;
+import org.hl7.fhir.instance.model.*;
+import org.hl7.fhir.utilities.xhtml.XhtmlNode;
+import org.hl7.fhir.utilities.xhtml.XhtmlParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,6 +165,9 @@ public class FhirStorageService {
             //only carry over the ones we've decided need to be saved
             if (hsWrappersToSave.contains(wrapper)) {
 
+                //extra processing needed for Composition Encounters
+                processCompositionResourceEncounters (wrapper);
+
                 //if we make it here, we want to save the resource
                 wrappersToSave.add(wrapper);
 
@@ -176,6 +180,40 @@ public class FhirStorageService {
                 //update the patient search etc. if necessary
                 Resource resource = hmWrappersToResource.get(wrapper);
                 updatePatientSearch(resource);
+            }
+        }
+    }
+
+    private void processCompositionResourceEncounters(ResourceWrapper wrapper) throws Exception {
+
+        // only if the resource is a composition
+        if (wrapper.getResourceType().equals(ResourceType.Composition)) {
+
+            // deserialize to obtain the Encounter sections
+            Resource resource = wrapper.getResource();
+            Composition composition = (Composition) resource;
+
+            // each section points to an Encounter object to create filing statements for
+            List<Composition.SectionComponent> sections = composition.getSection();
+            for (Composition.SectionComponent section: sections) {
+
+                // deserialize the embedded Json Encounter data from the Section Component Text element
+                Narrative sectionData = section.getText();
+                String divData = sectionData.getDivAsString();
+                XhtmlNode fragment = new XhtmlParser().parseFragment(divData);
+                String jsonEncounterData = fragment.getChildNodes().get(0).getContent();
+                org.endeavourhealth.core.database.dal.ehr.models.Encounter encounter
+                        = ObjectMapperPool.getInstance().readValue(
+                                jsonEncounterData,
+                                org.endeavourhealth.core.database.dal.ehr.models.Encounter.class);
+
+                // file the Encounter object to the ehr DB
+                resourceRepository.saveEncounter(wrapper, encounter);
+
+                // set the composition section Text to blank once Encounter object filed ok
+                // the section Id remains as the unique uuid string set during target transform
+                // to link to the filed Encounter DB table
+                section.setText(null);
             }
         }
     }
