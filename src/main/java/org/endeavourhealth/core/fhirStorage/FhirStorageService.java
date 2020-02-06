@@ -204,8 +204,8 @@ public class FhirStorageService {
                 String jsonEncounterData = fragment.getChildNodes().get(0).getContent();
                 org.endeavourhealth.core.database.dal.ehr.models.Encounter encounter
                         = ObjectMapperPool.getInstance().readValue(
-                        jsonEncounterData,
-                        org.endeavourhealth.core.database.dal.ehr.models.Encounter.class);
+                                jsonEncounterData,
+                                org.endeavourhealth.core.database.dal.ehr.models.Encounter.class);
 
                 // file the Encounter object to the ehr DB
                 resourceRepository.saveEncounter(wrapper, encounter);
@@ -215,6 +215,10 @@ public class FhirStorageService {
                 // to link to the filed Encounter DB table
                 section.setText(null);
             }
+
+            // set the updated resource back in the wrapper with updated sections
+            String resourceJson = FhirSerializationHelper.serializeResource(composition);
+            wrapper.setResourceData(resourceJson);
         }
     }
 
