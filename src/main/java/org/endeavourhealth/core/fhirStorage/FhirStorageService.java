@@ -187,15 +187,15 @@ public class FhirStorageService {
     private void processCompositionResourceEncounters(ResourceWrapper wrapper) throws Exception {
 
         // only if the resource is a composition
-        if (wrapper.getResourceType().equals(ResourceType.Composition)) {
+        Resource resource = wrapper.getResource();
+        if (resource.getResourceType().equals(ResourceType.Composition)) {
 
             // deserialize to obtain the Encounter sections
-            Resource resource = wrapper.getResource();
             Composition composition = (Composition) resource;
 
             // each section points to an Encounter object to create filing statements for
             List<Composition.SectionComponent> sections = composition.getSection();
-            for (Composition.SectionComponent section: sections) {
+            for (Composition.SectionComponent section : sections) {
 
                 // deserialize the embedded Json Encounter data from the Section Component Text element
                 Narrative sectionData = section.getText();
@@ -204,8 +204,8 @@ public class FhirStorageService {
                 String jsonEncounterData = fragment.getChildNodes().get(0).getContent();
                 org.endeavourhealth.core.database.dal.ehr.models.Encounter encounter
                         = ObjectMapperPool.getInstance().readValue(
-                                jsonEncounterData,
-                                org.endeavourhealth.core.database.dal.ehr.models.Encounter.class);
+                        jsonEncounterData,
+                        org.endeavourhealth.core.database.dal.ehr.models.Encounter.class);
 
                 // file the Encounter object to the ehr DB
                 resourceRepository.saveEncounter(wrapper, encounter);
@@ -215,8 +215,6 @@ public class FhirStorageService {
                 // to link to the filed Encounter DB table
                 section.setText(null);
             }
-        } else {
-            LOG.debug("ResourceId: "+wrapper.getResourceIdStr()+", ResourceType: " + wrapper.getResourceType());
         }
     }
 
