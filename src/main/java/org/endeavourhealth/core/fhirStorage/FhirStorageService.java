@@ -215,6 +215,8 @@ public class FhirStorageService {
                 // to link to the filed Encounter DB table
                 section.setText(null);
             }
+        } else {
+            LOG.debug("ResourceId: "+wrapper.getResourceIdStr()+", ResourceType: " + wrapper.getResourceType());
         }
     }
 
