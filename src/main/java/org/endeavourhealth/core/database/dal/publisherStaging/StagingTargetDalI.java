@@ -7,7 +7,11 @@ import java.util.UUID;
 
 public interface StagingTargetDalI {
 
+    void processStagingForTargetCriticalCareCds(UUID exchangeId, UUID serviceId) throws Exception;
+    List<StagingCriticalCareCdsTarget> getTargetCriticalCareCds(UUID exchangeId, UUID serviceId) throws Exception;
+
     void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
+    List<StagingOutpatientCdsTarget> getTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
 
     void processStagingForTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingInpatientCdsTarget> getTargetInpatientCds(UUID exchangeId, UUID serviceId) throws Exception;
@@ -23,5 +27,4 @@ public interface StagingTargetDalI {
 
     void processStagingForTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
     List<StagingClinicalEventTarget> getTargetClinicalEvents(UUID exchangeId, UUID serviceId) throws Exception;
-
 }

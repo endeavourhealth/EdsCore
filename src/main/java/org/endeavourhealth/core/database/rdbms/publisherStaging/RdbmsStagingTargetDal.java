@@ -24,30 +24,48 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsStagingTargetDal.class);
 
     @Override
-    public void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
+    public void processStagingForTargetCriticalCareCds(UUID exchangeId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId); //don't use a pooled connection as this is slow
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
         CallableStatement stmt = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "{call process_outpatient_cds_staging_exchange(?)}";
+            String sql = "{call process_critical_care_cds_staging_exchange(?)}";
             stmt = connection.prepareCall(sql);
-
-            entityManager.getTransaction().begin();
 
             stmt.setString(1, exchangeId.toString());
 
             stmt.execute();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } finally {
             if (stmt != null) {
                 stmt.close();
             }
-            entityManager.close();
+            connection.close();
+        }
+    }
+
+    @Override
+    public void processStagingForTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherStagingNonPooledConnection(serviceId); //don't use a pooled connection as this is slow
+        CallableStatement stmt = null;
+        try {
+            String sql = "{call process_outpatient_cds_staging_exchange(?)}";
+            stmt = connection.prepareCall(sql);
+
+            stmt.setString(1, exchangeId.toString());
+
+            stmt.execute();
+
+            connection.commit();
+
+        } finally {
+            if (stmt != null) {
+                stmt.close();
+            }
+            connection.close();
         }
     }
 
@@ -740,6 +758,234 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 }
 
                 resultList.add(stagingInpatientCdsTarget);
+            }
+
+            return resultList;
+
+        } finally {
+            if (cs != null) {
+                cs.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<StagingOutpatientCdsTarget> getTargetOutpatientCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+
+        CallableStatement cs = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call get_target_outpatient_cds_exchange(?)}";
+
+            cs = connection.prepareCall(sql);
+            cs.setString(1, exchangeId.toString());
+
+            ResultSet rs = cs.executeQuery();
+            List<StagingOutpatientCdsTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+
+                StagingOutpatientCdsTarget stagingOutpatientCdsTarget = new StagingOutpatientCdsTarget();
+
+                stagingOutpatientCdsTarget.setUniqueId(rs.getString(col++));
+                stagingOutpatientCdsTarget.setDeleted(rs.getBoolean(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingOutpatientCdsTarget.setPersonId(personId);
+                }
+
+                int encounterId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingOutpatientCdsTarget.setEncounterId(encounterId);
+                }
+
+                int episodeId = rs.getInt(col++);
+                if (!rs.wasNull() && episodeId > 0) {
+                    stagingOutpatientCdsTarget.setEpisodeId(episodeId);
+                }
+
+                int performedPrsnlId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingOutpatientCdsTarget.setPerformerPersonnelId(performedPrsnlId);
+                }
+                stagingOutpatientCdsTarget.setPatientPathwayIdentifier(rs.getString(col++));
+                stagingOutpatientCdsTarget.setApptAttendanceIdentifier(rs.getString(col++));
+                stagingOutpatientCdsTarget.setApptAttendedCode(rs.getString(col++));
+                stagingOutpatientCdsTarget.setApptOutcomeCode(rs.getString(col++));
+
+                java.sql.Timestamp tsApptDate = rs.getTimestamp(col++);
+                if (tsApptDate != null) {
+                    stagingOutpatientCdsTarget.setApptDate(new Date(tsApptDate.getTime()));
+                }
+                stagingOutpatientCdsTarget.setApptSiteCode(rs.getString(col++));
+
+                stagingOutpatientCdsTarget.setPrimaryDiagnosisICD(rs.getString(col++));
+                stagingOutpatientCdsTarget.setSecondaryDiagnosisICD(rs.getString(col++));
+                stagingOutpatientCdsTarget.setOtherDiagnosisICD(rs.getString(col++));
+                stagingOutpatientCdsTarget.setPrimaryProcedureOPCS(rs.getString(col++));
+
+                java.sql.Timestamp tsPrimaryProc = rs.getTimestamp(col++);
+                if (tsPrimaryProc != null) {
+                    stagingOutpatientCdsTarget.setPrimaryProcedureDate(new Date(tsPrimaryProc.getTime()));
+                }
+                stagingOutpatientCdsTarget.setSecondaryProcedureOPCS(rs.getString(col++));
+
+                java.sql.Timestamp tsSecondaryProc = rs.getTimestamp(col++);
+                if (tsSecondaryProc != null) {
+                    stagingOutpatientCdsTarget.setSecondaryProcedureDate(new Date(tsSecondaryProc.getTime()));
+                }
+                stagingOutpatientCdsTarget.setOtherProceduresOPCS(rs.getString(col++));
+
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingOutpatientCdsTarget.setAudit(audit);
+                }
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingOutpatientCdsTarget.setConfidential(confidential);
+                }
+
+                resultList.add(stagingOutpatientCdsTarget);
+            }
+
+            return resultList;
+
+        } finally {
+            if (cs != null) {
+                cs.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<StagingCriticalCareCdsTarget> getTargetCriticalCareCds(UUID exchangeId, UUID serviceId) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+
+        CallableStatement cs = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "{call get_target_critical_care_cds_exchange(?)}";
+
+            cs = connection.prepareCall(sql);
+            cs.setString(1, exchangeId.toString());
+
+            ResultSet rs = cs.executeQuery();
+            List<StagingCriticalCareCdsTarget> resultList = new ArrayList<>();
+            while (rs.next()) {
+                int col = 1;
+
+                StagingCriticalCareCdsTarget stagingCriticalCareCdsTarget = new StagingCriticalCareCdsTarget();
+
+                stagingCriticalCareCdsTarget.setUniqueId(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setDeleted(rs.getBoolean(col++));
+
+                int personId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setPersonId(personId);
+                }
+                int performedPrsnlId = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setPerformerPersonnelId(performedPrsnlId);
+                }
+                stagingCriticalCareCdsTarget.setCriticalCareTypeId(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setSpellNumber(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setEpisodeNumber(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setCriticalCareIdentifier(rs.getString(col++));
+
+                java.sql.Timestamp tsCareStart = rs.getTimestamp(col++);
+                if (tsCareStart != null) {
+                    stagingCriticalCareCdsTarget.setCareStartDate(new Date(tsCareStart.getTime()));
+                }
+                stagingCriticalCareCdsTarget.setCareUnitFunction(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setAdmissionSourceCode(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setAdmissionTypeCode(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setAdmissionLocation(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setGestationLengthAtDelivery(rs.getString(col++));
+
+                int advancedRespiratorySupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setAdvancedCardiovascularSupportDays(advancedRespiratorySupportDays);
+                }
+                int basicRespiratorySupportsDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setBasicRespiratorySupportsDays(basicRespiratorySupportsDays);
+                }
+                int advancedCardiovascularSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setAdvancedCardiovascularSupportDays(advancedCardiovascularSupportDays);
+                }
+                int basicCardiovascularSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setBasicCardiovascularSupportDays(basicCardiovascularSupportDays);
+                }
+                int renalSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setRenalSupportDays(renalSupportDays);
+                }
+                int neurologicalSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setNeurologicalSupportDays(neurologicalSupportDays);
+                }
+                int gastroIntestinalSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setGastroIntestinalSupportDays(gastroIntestinalSupportDays);
+                }
+                int dermatologicalSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setDermatologicalSupportDays(dermatologicalSupportDays);
+                }
+                int liverSupportDays = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setLiverSupportDays(liverSupportDays);
+                }
+                int organSupportMaximum = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setOrganSupportMaximum(organSupportMaximum);
+                }
+                int criticalCareLevel2Days = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setCriticalCareLevel2Days(criticalCareLevel2Days);
+                }
+                int criticalCareLevel3Days = rs.getInt(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setCriticalCareLevel3Days(criticalCareLevel3Days);
+                }
+                java.sql.Timestamp tsDischarge = rs.getTimestamp(col++);
+                if (tsDischarge != null) {
+                    stagingCriticalCareCdsTarget.setDischargeDate(new Date(tsDischarge.getTime()));
+                }
+                java.sql.Timestamp tsDischargeReady = rs.getTimestamp(col++);
+                if (tsDischargeReady != null) {
+                    stagingCriticalCareCdsTarget.setDischargeReadyDate(new Date(tsDischargeReady.getTime()));
+                }
+                stagingCriticalCareCdsTarget.setDischargeStatusCode(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setDischargeDestination(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setDischargeLocation(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setCareActivity1(rs.getString(col++));
+                stagingCriticalCareCdsTarget.setCareActivity2100(rs.getString(col++));
+
+                String auditJson = rs.getString(col++);
+                if (!Strings.isNullOrEmpty(auditJson)) {
+                    ResourceFieldMappingAudit audit = combineJson(auditJson);
+                    stagingCriticalCareCdsTarget.setAudit(audit);
+                }
+                boolean confidential = rs.getBoolean(col++);
+                if (!rs.wasNull()) {
+                    stagingCriticalCareCdsTarget.setConfidential(confidential);
+                }
+
+                resultList.add(stagingCriticalCareCdsTarget);
             }
 
             return resultList;

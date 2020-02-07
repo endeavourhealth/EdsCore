@@ -4,7 +4,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 
 import java.util.Date;
 
-public class StagingInpatientCdsTarget {
+public class StagingOutpatientCdsTarget {
 
     private String exchangeId;
     private String uniqueId;
@@ -15,21 +15,11 @@ public class StagingInpatientCdsTarget {
     private Integer performerPersonnelId;
 
     private String patientPathwayIdentifier;
-    private String spellNumber;
-    private String admissionMethodCode;
-    private String admissionSourceCode;
-    private String patientClassification;
-    private Date dtSpellStart;
-    private String episodeNumber;
-    private String episodeStartSiteCode;
-    private String episodeStartWardCode;
-    private Date dtEpisodeStart;
-    private String episodeEndSiteCode;
-    private String episodeEndWardCode;
-    private Date dtEpisodeEnd;
-    private Date dtDischarge;
-    private String dischargeDestinationCode;
-    private String dischargeMethod;
+    private String apptAttendanceIdentifier;
+    private String apptAttendedCode;
+    private String apptOutcomeCode;
+    private Date apptDate;
+    private String apptSiteCode;
 
     private String primaryDiagnosisICD;
     private String secondaryDiagnosisICD;
@@ -43,7 +33,7 @@ public class StagingInpatientCdsTarget {
     private Boolean isConfidential;
     private ResourceFieldMappingAudit audit = null;
 
-    public StagingInpatientCdsTarget() {}
+    public StagingOutpatientCdsTarget() {}
 
     public String getExchangeId() {
         return exchangeId;
@@ -109,126 +99,44 @@ public class StagingInpatientCdsTarget {
         this.patientPathwayIdentifier = patientPathwayIdentifier;
     }
 
-    public String getSpellNumber() {
-        return spellNumber;
+    public String getApptAttendanceIdentifier() {
+        return apptAttendanceIdentifier;
     }
 
-    public void setSpellNumber(String spellNumber) {
-        this.spellNumber = spellNumber;
+    public void setApptAttendanceIdentifier(String apptAttendanceIdentifier) {
+        this.apptAttendanceIdentifier = apptAttendanceIdentifier;
     }
 
-    public String getAdmissionMethodCode() {
-        return admissionMethodCode;
+    public String getApptAttendedCode() {
+        return apptAttendedCode;
     }
 
-    public void setAdmissionMethodCode(String admissionMethodCode) {
-        this.admissionMethodCode = admissionMethodCode;
+    public void setApptAttendedCode(String apptAttendedCode) {
+        this.apptAttendedCode = apptAttendedCode;
     }
 
-    public String getAdmissionSourceCode() {
-        return admissionSourceCode;
+    public String getApptOutcomeCode() {
+        return apptOutcomeCode;
     }
 
-    public void setAdmissionSourceCode(String admissionSourceCode) {
-        this.admissionSourceCode = admissionSourceCode;
+    public void setApptOutcomeCode(String apptOutcomeCode) {
+        this.apptOutcomeCode = apptOutcomeCode;
     }
 
-    public String getPatientClassification() {
-        return patientClassification;
+    public Date getApptDate() {
+        return apptDate;
     }
 
-    public void setPatientClassification(String patientClassification) {
-        this.patientClassification = patientClassification;
+    public void setApptDate(Date apptDate) {
+        this.apptDate = apptDate;
     }
 
-    public String getEpisodeNumber() {
-        return episodeNumber;
+    public String getApptSiteCode() {
+        return apptSiteCode;
     }
 
-    public void setEpisodeNumber(String episodeNumber) {
-        this.episodeNumber = episodeNumber;
-    }
-
-    public String getEpisodeStartSiteCode() {
-        return episodeStartSiteCode;
-    }
-
-    public void setEpisodeStartSiteCode(String episodeStartSiteCode) {
-        this.episodeStartSiteCode = episodeStartSiteCode;
-    }
-
-    public String getEpisodeStartWardCode() {
-        return episodeStartWardCode;
-    }
-
-    public void setEpisodeStartWardCode(String episodeStartWardCode) {
-        this.episodeStartWardCode = episodeStartWardCode;
-    }
-
-
-    public String getEpisodeEndSiteCode() {
-        return episodeEndSiteCode;
-    }
-
-    public void setEpisodeEndSiteCode(String episodeEndSiteCode) {
-        this.episodeEndSiteCode = episodeEndSiteCode;
-    }
-
-    public String getEpisodeEndWardCode() {
-        return episodeEndWardCode;
-    }
-
-    public void setEpisodeEndWardCode(String episodeEndWardCode) {
-        this.episodeEndWardCode = episodeEndWardCode;
-    }
-
-    public Date getDtSpellStart() {
-        return dtSpellStart;
-    }
-
-    public void setDtSpellStart(Date dtSpellStart) {
-        this.dtSpellStart = dtSpellStart;
-    }
-
-    public Date getDtEpisodeStart() {
-        return dtEpisodeStart;
-    }
-
-    public void setDtEpisodeStart(Date dtEpisodeStart) {
-        this.dtEpisodeStart = dtEpisodeStart;
-    }
-
-    public Date getDtEpisodeEnd() {
-        return dtEpisodeEnd;
-    }
-
-    public void setDtEpisodeEnd(Date dtEpisodeEnd) {
-        this.dtEpisodeEnd = dtEpisodeEnd;
-    }
-
-    public Date getDtDischarge() {
-        return dtDischarge;
-    }
-
-    public void setDtDischarge(Date dtDischarge) {
-        this.dtDischarge = dtDischarge;
-    }
-
-
-    public String getDischargeDestinationCode() {
-        return dischargeDestinationCode;
-    }
-
-    public void setDischargeDestinationCode(String dischargeDestinationCode) {
-        this.dischargeDestinationCode = dischargeDestinationCode;
-    }
-
-    public String getDischargeMethod() {
-        return dischargeMethod;
-    }
-
-    public void setDischargeMethod(String dischargeMethod) {
-        this.dischargeMethod = dischargeMethod;
+    public void setApptSiteCode(String apptSiteCode) {
+        this.apptSiteCode = apptSiteCode;
     }
 
     public String getPrimaryDiagnosisICD() {
@@ -313,7 +221,7 @@ public class StagingInpatientCdsTarget {
 
     @Override
     public String toString() {
-        return "StagingInpatientCdsTarget{" +
+        return "StagingOutpatientCdsTarget{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", uniqueId=" + uniqueId +
                 ", isDeleted=" + isDeleted +
@@ -322,21 +230,11 @@ public class StagingInpatientCdsTarget {
                 ", episodeId='" + episodeId + '\'' +
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
-                ", spellNumber='" + spellNumber + '\'' +
-                ", admissionMethodCode='" + admissionMethodCode + '\'' +
-                ", admissionSourceCode='" + admissionSourceCode + '\'' +
-                ", patientClassification='" + patientClassification + '\'' +
-                ", dtSpellStart='" + dtSpellStart + '\'' +
-                ", episodeNumber='" + episodeNumber + '\'' +
-                ", episodeStartSiteCode='" + episodeStartSiteCode + '\'' +
-                ", episodeStartWardCode='" + episodeStartWardCode + '\'' +
-                ", dtEpisodeStart='" + dtEpisodeStart + '\'' +
-                ", episodeEndSiteCode='" + episodeEndSiteCode + '\'' +
-                ", episodeEndWardCode='" + episodeEndWardCode + '\'' +
-                ", dtEpisodeEnd='" + dtEpisodeEnd + '\'' +
-                ", dtDischarge='" + dtDischarge + '\'' +
-                ", dischargeDestinationCode='" + dischargeDestinationCode + '\'' +
-                ", dischargeMethod='" + dischargeMethod + '\'' +
+                ", apptAttendanceIdentifier='" + apptAttendanceIdentifier + '\'' +
+                ", apptAttendedCode='" + apptAttendedCode + '\'' +
+                ", apptOutcomeCode='" + apptOutcomeCode + '\'' +
+                ", apptDate='" + apptDate + '\'' +
+                ", apptSiteCode='" + apptSiteCode + '\'' +
                 ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +
                 ", secondaryDiagnosisICD='" + secondaryDiagnosisICD + '\'' +
                 ", otherDiagnosisICD='" + otherDiagnosisICD + '\'' +
@@ -349,6 +247,4 @@ public class StagingInpatientCdsTarget {
                 ", isConfidential=" + isConfidential +
                 '}';
     }
-
-
 }
