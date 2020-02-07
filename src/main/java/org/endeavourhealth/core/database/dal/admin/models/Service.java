@@ -6,6 +6,7 @@ import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.fhirStorage.ServiceInterfaceEndpoint;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class Service {
@@ -19,6 +20,8 @@ public class Service {
     private String postcode = null;
     private String ccgCode = null;
     private OrganisationType organisationType = null;
+    private String alias = null; //AKA
+    private Map<String, String> tags = null;
 
     public Service() {}
 
@@ -102,6 +105,22 @@ public class Service {
 
     public void setEndpointsList(List<ServiceInterfaceEndpoint> list) throws Exception {
         this.endpoints = ObjectMapperPool.getInstance().writeValueAsString(list);
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public Map<String, String> getTags() {
+        return tags;
+    }
+
+    public void setTags(Map<String, String> tags) {
+        this.tags = tags;
     }
 
     @Override
