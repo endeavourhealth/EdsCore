@@ -13,7 +13,7 @@ public class StagingClinicalEventTarget {
     private int personId;
     private Integer encounterId;
     private Long orderId;
-    private Integer parentEventId;
+    private Long parentEventId;
     private String lookupEventCode;
     private String lookupEventTerm;
     private Date clinicallySignificantDtTm;
@@ -88,11 +88,11 @@ public class StagingClinicalEventTarget {
         this.orderId = orderId;
     }
 
-    public Integer getParentEventId() {
+    public Long getParentEventId() {
         return parentEventId;
     }
 
-    public void setParentEventId(Integer parentEventId) {
+    public void setParentEventId(Long parentEventId) {
         this.parentEventId = parentEventId;
     }
 

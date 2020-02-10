@@ -467,7 +467,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingClinicalEventTarget.setOrderId(orderId);
                 }
 
-                int parentEventId = rs.getInt(col++);
+                long parentEventId = rs.getLong(col++);
                 if (!rs.wasNull()) {
                     stagingClinicalEventTarget.setParentEventId(parentEventId);
                 }

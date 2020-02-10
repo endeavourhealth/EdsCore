@@ -179,7 +179,7 @@ public class RdbmsStagingClinicalEventsDal implements StagingClinicalEventDalI {
                 if (stagingClinicalEvent.getParentEventId() == null) {
                     ps.setNull(col++, Types.INTEGER);
                 } else {
-                    ps.setInt(col++, stagingClinicalEvent.getParentEventId());
+                    ps.setLong(col++, stagingClinicalEvent.getParentEventId());
                 }
 
                 if (stagingClinicalEvent.getEventCd() == null) {
