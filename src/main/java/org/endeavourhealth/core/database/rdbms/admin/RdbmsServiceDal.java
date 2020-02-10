@@ -17,15 +17,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class RdbmsServiceDal implements ServiceDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsServiceDal.class);
 
     private static Boolean cachedHasNewCols = null;
+    private static final String NOTES_KEY = "Notes";
 
     private static boolean hasNewCols() throws Exception {
         if (cachedHasNewCols == null) {
@@ -156,8 +154,15 @@ public class RdbmsServiceDal implements ServiceDalI {
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
-        if (!Strings.isNullOrEmpty(service.getNotes())) {
-            ps.setString(col++, service.getNotes());
+
+        //keep the notes column synced with the notes tag
+        String notes = null;
+        if (service.getTags() != null) {
+            notes = service.getTags().get(NOTES_KEY);
+        }
+
+        if (!Strings.isNullOrEmpty(notes)) {
+            ps.setString(col++, notes);
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
@@ -230,7 +235,7 @@ public class RdbmsServiceDal implements ServiceDalI {
         ret.setLocalId(rs.getString(col++));
         ret.setEndpoints(rs.getString(col++));
         ret.setPublisherConfigName(rs.getString(col++));
-        ret.setNotes(rs.getString(col++));
+        String notes = rs.getString(col++);
         ret.setPostcode(rs.getString(col++));
         ret.setCcgCode(rs.getString(col++));
 
@@ -247,7 +252,16 @@ public class RdbmsServiceDal implements ServiceDalI {
                 Map<String, String> tags = ObjectMapperPool.getInstance().readValue(tagsJson, new TypeReference<Map<String, String>>() {});
                 ret.setTags(tags);
             }
+        }
 
+        //if we have notes, just carry them over into the tags
+        if (!Strings.isNullOrEmpty(notes)) {
+            Map<String, String> tags = ret.getTags();
+            if (tags == null) {
+                tags = new HashMap<>();
+                ret.setTags(tags);
+            }
+            tags.put(NOTES_KEY, notes);
         }
 
         return ret;

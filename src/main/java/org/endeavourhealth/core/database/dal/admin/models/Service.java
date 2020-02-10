@@ -16,7 +16,6 @@ public class Service {
     private String localId = null;
     private String endpoints = null; //json containing a map of linked endpoints
     private String publisherConfigName = null; //config name pointing to DB storing this services published data
-    private String notes = null;
     private String postcode = null;
     private String ccgCode = null;
     private OrganisationType organisationType = null;
@@ -65,14 +64,6 @@ public class Service {
 
     public void setPublisherConfigName(String publisherConfigName) {
         this.publisherConfigName = publisherConfigName;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
     }
 
     public String getPostcode() {
