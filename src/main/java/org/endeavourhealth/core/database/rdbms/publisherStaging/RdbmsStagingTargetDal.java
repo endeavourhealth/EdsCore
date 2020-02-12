@@ -447,7 +447,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingClinicalEventTarget.setUniqueId(rs.getString(col++));
                 stagingClinicalEventTarget.setDeleted(rs.getBoolean(col++));
 
-                int eventId = rs.getInt(col++);
+                long eventId = rs.getLong(col++);
                 if (!rs.wasNull()) {
                     stagingClinicalEventTarget.setEventId(eventId);
                 }
