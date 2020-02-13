@@ -192,7 +192,6 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3HierarchyRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppImmunisationContent</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMultilexToCtv3Map</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMappingRef</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
