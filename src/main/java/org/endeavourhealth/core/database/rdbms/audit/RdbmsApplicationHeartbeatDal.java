@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ApplicationHeartbeatDalI;
 import org.endeavourhealth.core.database.dal.audit.models.ApplicationHeartbeat;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
@@ -19,8 +20,8 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "INSERT INTO application_heartbeat"
-                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb, server_memory_mb, server_cpu_usage_percent)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " timestmp = VALUES(timestmp),"
                     + " host_name = VALUES(host_name),"
@@ -28,7 +29,8 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                     + " max_heap_mb = VALUES(max_heap_mb),"
                     + " current_heap_mb = VALUES(current_heap_mb),"
                     + " server_memory_mb = VALUES(server_memory_mb),"
-                    + " server_cpu_usage_percent = VALUES(server_cpu_usage_percent)";
+                    + " server_cpu_usage_percent = VALUES(server_cpu_usage_percent),"
+                    + " is_busy_detail = VALUES(is_busy_detail)";
             ps = connection.prepareStatement(sql);
 
 
@@ -62,6 +64,16 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
             } else {
                 ps.setInt(col++, h.getServerCpuUsagePercent().intValue());
             }
+            if (Strings.isNullOrEmpty(h.getIsBusyDetail())) {
+                ps.setNull(col++, Types.VARCHAR);
+            } else {
+                String s = h.getIsBusyDetail();
+                //just in case any app provides too much detail, trim down
+                if (s.length() > 255) {
+                    s = s.substring(0, 250) + "...";
+                }
+                ps.setString(col++, s);
+            }
 
             ps.executeUpdate();
             connection.commit();
@@ -84,7 +96,7 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "SELECT application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
-                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent"
+                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail"
                     + " FROM application_heartbeat";
             ps = connection.prepareStatement(sql);
 
@@ -124,6 +136,8 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 if (!rs.wasNull()) {
                     h.setServerCpuUsagePercent(new Integer(i));
                 }
+
+                h.setIsBusyDetail(rs.getString(col++));
 
                 ret.add(h);
             }
