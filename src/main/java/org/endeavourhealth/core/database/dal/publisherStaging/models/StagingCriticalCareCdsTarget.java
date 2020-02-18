@@ -11,6 +11,7 @@ public class StagingCriticalCareCdsTarget {
     private boolean isDeleted;
     private Integer personId;
     private Integer performerPersonnelId;
+    private String organisationCode;
 
     private String criticalCareTypeId;
     private String spellNumber;
@@ -88,6 +89,14 @@ public class StagingCriticalCareCdsTarget {
 
     public void setPerformerPersonnelId(Integer performerPersonnelId) {
         this.performerPersonnelId = performerPersonnelId;
+    }
+
+    public String getOrganisationCode() {
+        return organisationCode;
+    }
+
+    public void setOrganisationCode(String organisationCode) {
+        this.organisationCode = organisationCode;
     }
 
     public String getCriticalCareTypeId() {
@@ -346,6 +355,7 @@ public class StagingCriticalCareCdsTarget {
                 ", isDeleted=" + isDeleted +
                 ", personId=" + personId +
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
+                ", organisationCode='" + organisationCode + '\'' +
                 ", criticalCareTypeId='" + criticalCareTypeId + '\'' +
                 ", spellNumber='" + spellNumber + '\'' +
                 ", episodeNumber='" + episodeNumber + '\'' +
@@ -379,4 +389,6 @@ public class StagingCriticalCareCdsTarget {
                 ", isConfidential=" + isConfidential +
                 '}';
     }
+
+
 }

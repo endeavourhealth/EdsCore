@@ -898,6 +898,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (!rs.wasNull()) {
                     stagingCriticalCareCdsTarget.setPerformerPersonnelId(performedPrsnlId);
                 }
+                stagingCriticalCareCdsTarget.setOrganisationCode(rs.getString(col++));
                 stagingCriticalCareCdsTarget.setCriticalCareTypeId(rs.getString(col++));
                 stagingCriticalCareCdsTarget.setSpellNumber(rs.getString(col++));
                 stagingCriticalCareCdsTarget.setEpisodeNumber(rs.getString(col++));
