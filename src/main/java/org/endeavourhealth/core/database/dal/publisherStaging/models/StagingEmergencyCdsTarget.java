@@ -20,6 +20,7 @@ public class StagingEmergencyCdsTarget {
     private String attendanceId;
     private String arrivalMode;
     private String attendanceCategory;
+    private String attendanceSource;
     private Date dtArrival;
     private Date dtInitialAssessment;
     private String chiefComplaint;
@@ -143,6 +144,14 @@ public class StagingEmergencyCdsTarget {
 
     public void setAttendanceCategory(String attendanceCategory) {
         this.attendanceCategory = attendanceCategory;
+    }
+
+    public String getAttendanceSource() {
+        return attendanceSource;
+    }
+
+    public void setAttendanceSource(String attendanceSource) {
+        this.attendanceSource = attendanceSource;
     }
 
     public Date getDtArrival() {
@@ -297,6 +306,7 @@ public class StagingEmergencyCdsTarget {
                 ", attendanceId='" + attendanceId + '\'' +
                 ", arrivalMode='" + arrivalMode + '\'' +
                 ", attendanceCategory='" + attendanceCategory + '\'' +
+                ", attendanceSource='" + attendanceSource + '\'' +
                 ", dtArrival='" + dtArrival + '\'' +
                 ", dtInitialAssessment='" + dtInitialAssessment + '\'' +
                 ", chiefComplaint='" + chiefComplaint + '\'' +
@@ -316,6 +326,4 @@ public class StagingEmergencyCdsTarget {
                 ", isConfidential=" + isConfidential +
                 '}';
     }
-
-
 }
