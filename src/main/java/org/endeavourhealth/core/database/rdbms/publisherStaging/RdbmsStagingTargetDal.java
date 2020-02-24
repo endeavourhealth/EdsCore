@@ -596,6 +596,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingEmergencyCdsTarget.setAttendanceId(rs.getString(col++));
                 stagingEmergencyCdsTarget.setArrivalMode(rs.getString(col++));
                 stagingEmergencyCdsTarget.setAttendanceCategory(rs.getString(col++));
+                stagingEmergencyCdsTarget.setAttendanceSource(rs.getString(col++));
 
                 java.sql.Timestamp tsArrival = rs.getTimestamp(col++);
                 if (tsArrival != null) {
