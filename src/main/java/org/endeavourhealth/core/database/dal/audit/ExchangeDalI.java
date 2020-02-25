@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.dal.audit;
 
 import org.endeavourhealth.core.database.dal.audit.models.*;
+import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonDDSOrganisationStatus;
 
 import java.util.Date;
 import java.util.List;
@@ -52,4 +53,6 @@ public interface ExchangeDalI {
 
     void save(ExchangeSubscriberSendAudit subscriberSendAudit) throws Exception;
     List<ExchangeSubscriberSendAudit> getSubscriberSendAudits(UUID exchangeId, UUID batchId, String subscriberConfigName) throws Exception;
+
+    public List<JsonDDSOrganisationStatus> getOrganisationStatus(List<String> odsCodes, String agreementName) throws Exception;
 }

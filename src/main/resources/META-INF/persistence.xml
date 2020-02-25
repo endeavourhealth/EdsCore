@@ -355,4 +355,68 @@
 
     </persistence-unit>
 
+    <persistence-unit name="UserManager">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.DelegationRelationshipEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.DelegationEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.ApplicationPolicyEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.AuditEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.AuditActionEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.ItemTypeEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.ApplicationEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.ApplicationAccessProfileEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.ApplicationPolicyAttributeEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.UserRegionEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.usermanager.models.UserApplicationPolicyEntity</class>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.auth" value="Container" />
+            <property name="hibernate.hikari.connectionTimeout" value="300000" />
+            <property name="hibernate.hikari.maximumPoolSize" value="4" />
+            <property name="hibernate.hikari.minimumIdle" value="1" />
+            <property name="hibernate.hikari.idleTimeout" value="60000" />
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
+            <!-- NOTE: ALL THESE PROPERTIES MAY BE OVERRIDDEN BY THE CONFIG JSON -->
+        </properties>
+    </persistence-unit>
+
+    <persistence-unit name="DataSharingManager">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.AddressEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.CohortEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataFlowEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataProcessingAgreementEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataSharingAgreementEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataSharingSummaryEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataSetEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DocumentationEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ExtractTechnicalDetailsEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.MasterMappingEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.PurposeEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.RegionEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationTypeEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataExchangeEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectApplicationPolicyEntity</class>
+        <class>org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectScheduleEntity</class>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.auth" value="Container" />
+            <property name="hibernate.hikari.connectionTimeout" value="300000" />
+            <property name="hibernate.hikari.maximumPoolSize" value="4" />
+            <property name="hibernate.hikari.minimumIdle" value="1" />
+            <property name="hibernate.hikari.idleTimeout" value="60000" />
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource" />
+            <property name="hibernate.hikari.leakDetectionThreshold" value="5000" />
+            <property name="hibernate.connection.autocommit" value="false" />
+            <!-- NOTE: ALL THESE PROPERTIES MAY BE OVERRIDDEN BY THE CONFIG JSON -->
+        </properties>
+    </persistence-unit>
+
 </persistence>

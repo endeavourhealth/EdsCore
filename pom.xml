@@ -4,7 +4,7 @@
 
   <groupId>org.endeavourhealth.common</groupId>
   <artifactId>core</artifactId>
-  <version>1.607-SNAPSHOT</version>
+  <version>1.608-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -142,6 +142,32 @@
     <dependency>
       <groupId>org.apache.jcs</groupId>
       <artifactId>jcs</artifactId>
+    </dependency>
+
+    <!-- keycloak -->
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-adapter-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-adapter-spi</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.endeavourhealth.common</groupId>
+      <artifactId>security</artifactId>
     </dependency>
   </dependencies>
 
