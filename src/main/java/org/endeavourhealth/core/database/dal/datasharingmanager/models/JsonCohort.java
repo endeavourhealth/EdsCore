@@ -15,6 +15,7 @@ public class JsonCohort {
     private Map<UUID, String> dpas = null;
     private Map<UUID, String> dsas = null;
     private Map<UUID, String> projects = null;
+    private Map<UUID, String> regions = null;
 
     public String getUuid() {
         return uuid;
@@ -78,5 +79,13 @@ public class JsonCohort {
 
     public void setProjects(Map<UUID, String> projects) {
         this.projects = projects;
+    }
+
+    public Map<UUID, String> getRegions() {
+    	 return regions; 
+    }
+
+    public void setRegions(Map<UUID, String> regions) {
+        this.regions = regions;
     }
 }

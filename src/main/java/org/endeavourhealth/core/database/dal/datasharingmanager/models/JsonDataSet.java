@@ -18,6 +18,7 @@ public class JsonDataSet {
     private Map<UUID, String> dpas = null;
     private Map<UUID, String> dsas = null;
     private Map<UUID, String> projects = null;
+    private Map<UUID, String> regions = null;
 
     public JsonDataSet() {
     }
@@ -94,5 +95,13 @@ public class JsonDataSet {
 
     public void setProjects(Map<UUID, String> projects) {
         this.projects = projects;
+    }
+
+    public Map<UUID, String> getRegions() { 
+    	return regions; 
+    }
+
+    public void setRegions(Map<UUID, String> regions) { 
+    	this.regions = regions; 
     }
 }

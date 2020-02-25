@@ -22,6 +22,7 @@ public class DataSetEntity {
     @Transient private List<String> dpas;
     @Transient private List<String> dsas;
     @Transient private List<String> projects;
+    @Transient private List<String> regions;
 
     public DataSetEntity() {
     }
@@ -47,6 +48,10 @@ public class DataSetEntity {
         if (dataSet.getProjects() != null) {
             dataSet.getProjects().forEach((k, v) -> this.projects.add(k.toString()));
         }
+        this.regions = new ArrayList<>();
+        if (dataSet.getRegions() != null) {
+            dataSet.getRegions().forEach((k, v) -> this.regions.add(k.toString()));
+        }
     }
 
     public void setMappingsFromDAL () throws Exception {
@@ -58,6 +63,8 @@ public class DataSetEntity {
         this.setDsas(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.DATASHARINGAGREEMENT.getMapType()));
 
         this.setProjects(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.PROJECT.getMapType()));
+
+        this.setRegions(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.REGION.getMapType()));
     }
 
     @Id
@@ -145,4 +152,11 @@ public class DataSetEntity {
     public void setProjects(List<String> projects) {
         this.projects = projects;
     }
+
+    @Transient
+    public List<String> getRegions() { return regions; }
+
+    @Transient
+    public void setRegions(List<String> regions) { this.regions = regions; }
+
 }

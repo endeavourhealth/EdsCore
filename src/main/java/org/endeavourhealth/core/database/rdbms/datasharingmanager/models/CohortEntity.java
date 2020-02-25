@@ -23,6 +23,7 @@ public class CohortEntity {
     @Transient private List<String> dpas;
     @Transient private List<String> dsas;
     @Transient private List<String> projects;
+    @Transient private List<String> regions;
 
     public CohortEntity(JsonCohort cohort) {
         updateFromJson(cohort);
@@ -46,6 +47,10 @@ public class CohortEntity {
         if (cohort.getProjects() != null) {
             cohort.getProjects().forEach((k, v) -> this.projects.add(k.toString()));
         }
+        this.regions = new ArrayList<>();
+        if (cohort.getRegions() != null) {
+            cohort.getRegions().forEach((k, v) -> this.regions.add(k.toString()));
+        }
     }
 
     public CohortEntity() {
@@ -61,6 +66,7 @@ public class CohortEntity {
 
         this.setProjects(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.PROJECT.getMapType()));
 
+        this.setRegions(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.REGION.getMapType()));
 
     }
 
@@ -132,6 +138,16 @@ public class CohortEntity {
     @Transient
     public void setProjects(List<String> projects) {
         this.projects = projects;
+    }
+
+    @Transient
+    public List<String> getRegions() {
+        return regions;
+    }
+
+    @Transient
+    public void setRegions(List<String> regions) {
+        this.regions = regions;
     }
 
     @Override
