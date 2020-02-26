@@ -866,10 +866,11 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     " episode_start_site_code, episode_start_ward_code, episode_start_date, " +
                     " episode_end_site_code, episode_end_ward_code, episode_end_date, " +
                     " discharge_date, discharge_destination_code, discharge_method, " +
+                    " maternity_data_birth, maternity_data_delivery, " +
                     " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
                     " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
                     " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -898,6 +899,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " discharge_date = VALUES(discharge_date),"
                     + " discharge_destination_code = VALUES(discharge_destination_code),"
                     + " discharge_method = VALUES(discharge_method),"
+                    + " maternity_data_birth = VALUES(maternity_data_birth),"
+                    + " maternity_data_delivery = VALUES(maternity_data_delivery),"
                     + " primary_diagnosis_ICD = VALUES(primary_diagnosis_ICD),"
                     + " secondary_diagnosis_ICD = VALUES(secondary_diagnosis_ICD),"
                     + " other_diagnosis_ICD = VALUES(other_diagnosis_ICD),"
@@ -977,6 +980,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
                 ps.setString(col++, cdsInpatient.getDischargeDestinationCode());
                 ps.setString(col++, cdsInpatient.getDischargeMethod());
+
+                ps.setString(col++, cdsInpatient.getMaternityDataBirth());
+                ps.setString(col++, cdsInpatient.getMaternityDataDelivery());
+
                 ps.setString(col++, cdsInpatient.getPrimaryDiagnosisICD());
                 ps.setString(col++, cdsInpatient.getSecondaryDiagnosisICD());
                 ps.setString(col++, cdsInpatient.getOtherDiagnosisICD());

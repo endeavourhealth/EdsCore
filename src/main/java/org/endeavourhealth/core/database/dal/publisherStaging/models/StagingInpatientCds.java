@@ -36,6 +36,9 @@ public class StagingInpatientCds implements Cloneable {
     private String dischargeDestinationCode;
     private String dischargeMethod;
 
+    private String maternityDataBirth;
+    private String maternityDataDelivery;
+
     private String primaryDiagnosisICD;
     private String secondaryDiagnosisICD;
     private String otherDiagnosisICD;
@@ -344,6 +347,22 @@ public class StagingInpatientCds implements Cloneable {
         this.lookupConsultantPersonnelId = lookupConsultantPersonnelId;
     }
 
+    public String getMaternityDataBirth() {
+        return maternityDataBirth;
+    }
+
+    public void setMaternityDataBirth(String maternityDataBirth) {
+        this.maternityDataBirth = maternityDataBirth;
+    }
+
+    public String getMaternityDataDelivery() {
+        return maternityDataDelivery;
+    }
+
+    public void setMaternityDataDelivery(String maternityDataDelivery) {
+        this.maternityDataDelivery = maternityDataDelivery;
+    }
+
     public ResourceFieldMappingAudit getAudit() {
         return audit;
     }
@@ -385,6 +404,8 @@ public class StagingInpatientCds implements Cloneable {
                 dischargeDate,
                 dischargeDestinationCode,
                 dischargeMethod,
+                maternityDataBirth,
+                maternityDataDelivery,
                 primaryDiagnosisICD,
                 secondaryDiagnosisICD,
                 otherDiagnosisICD,
@@ -427,6 +448,8 @@ public class StagingInpatientCds implements Cloneable {
                 ", dischargeDate='" + dischargeDate + '\'' +
                 ", dischargeDestinationCode='" + dischargeDestinationCode + '\'' +
                 ", dischargeMethod='" + dischargeMethod + '\'' +
+                ", maternityDataBirth='" + maternityDataBirth + '\'' +
+                ", maternityDataDelivery='" + maternityDataDelivery + '\'' +
                 ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +
                 ", secondaryDiagnosisICD='" + secondaryDiagnosisICD + '\'' +
                 ", otherDiagnosisICD='" + otherDiagnosisICD + '\'' +

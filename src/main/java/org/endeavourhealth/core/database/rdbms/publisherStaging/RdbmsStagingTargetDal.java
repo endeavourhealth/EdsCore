@@ -731,6 +731,10 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 }
                 stagingInpatientCdsTarget.setDischargeDestinationCode(rs.getString(col++));
                 stagingInpatientCdsTarget.setDischargeMethod(rs.getString(col++));
+
+                stagingInpatientCdsTarget.setMaternityDataBirth(rs.getString(col++));
+                stagingInpatientCdsTarget.setMaternityDataDelivery(rs.getString(col++));
+
                 stagingInpatientCdsTarget.setPrimaryDiagnosisICD(rs.getString(col++));
                 stagingInpatientCdsTarget.setSecondaryDiagnosisICD(rs.getString(col++));
                 stagingInpatientCdsTarget.setOtherDiagnosisICD(rs.getString(col++));
