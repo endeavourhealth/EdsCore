@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisMissingCodes;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
@@ -11,15 +12,18 @@ import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisA
 import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.ResourceType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisTransformDal.class);
 
     @Override
     public void saveCodeMappings( List<EmisCsvCodeMap> mappings) throws Exception {
@@ -39,6 +43,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
 
     }
+
     public void trySaveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
         if (mappings == null || mappings.isEmpty()) {
             throw new IllegalArgumentException("Trying to save null or empty mappings");
@@ -133,7 +138,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             psInsert = connection.prepareStatement(sql);
 
             entityManager.getTransaction().begin();
-            
+
             for (Long codeId: hmMappings.keySet()) {
                 EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
 
@@ -213,7 +218,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
                 psInsert.addBatch();
             }
-    
+
             psInsert.executeBatch();
 
             entityManager.getTransaction().commit();
@@ -314,7 +319,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 return ret;
 
             } else {
-                return null;
+                  return null;
             }
 
 
@@ -325,6 +330,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             entityManager.close();
         }
     }
+
 
     public void saveAdminResource(EmisAdminResourceCache resourceCache) throws Exception {
         if (resourceCache == null) {
@@ -763,6 +769,49 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
+    @Override
+    public void saveErrorRecords(EmisMissingCodes errorCodeVals) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement psInsert = null;
+
+        try{
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            Date now = new Date();
+            String sql = "INSERT INTO emis_missing_code_error"
+                    + " (service_id, exchange_id, timestmp, file_type, patient_guid, code_id, record_guid, dt_fixed)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+
+            psInsert = connection.prepareStatement(sql);
+            int col = 1;
+            psInsert.setString(col++, errorCodeVals.getServiceId() );
+            psInsert.setString(col++, errorCodeVals.getExchangeId());
+            psInsert.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+            psInsert.setString(col++, errorCodeVals.getErrorRecclassName());
+            psInsert.setString(col++, errorCodeVals.getPatientGuid());
+            psInsert.setLong(col++, errorCodeVals.getCodeId());
+            psInsert.setString(col++, errorCodeVals.getRecordGuid());
+            psInsert.setTimestamp(col++, null);
+
+            psInsert.executeUpdate();
+            connection.commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
+            entityManager.close();
+        }
+
+
+    }
+
+    /*
     /**
      *
      @Override
