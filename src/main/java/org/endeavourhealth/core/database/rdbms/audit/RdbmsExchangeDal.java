@@ -1255,9 +1255,9 @@ public class RdbmsExchangeDal implements ExchangeDalI {
                             "   when err.exchangeIdsInError is null then 0 " +
                             "   else 1 " +
                             "end" +
-                            " from ServiceEntity s " +
-                            "inner join ExchangeEntity x on x.serviceId = s.id " +
-                            "left outer join ExchangeTransformErrorStateEntity err on err.serviceId = s.id " +
+                            " from RdbmsService s " +
+                            "inner join RdbmsExchange x on x.serviceId = s.id " +
+                            "left outer join RdbmsExchangeTransformErrorState err on err.serviceId = s.id " +
                             "where s.localId IN (:odsList) " +
                             "group by s.localId " +
                             "order by x.timestamp desc");

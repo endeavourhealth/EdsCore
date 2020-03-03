@@ -10,6 +10,7 @@
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsPatientCohort</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsLinkDistributorPopulator</class>
         <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsLinkDistributorTaskList</class>
+        <class>org.endeavourhealth.core.database.rdbms.admin.models.RdbmsService</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
