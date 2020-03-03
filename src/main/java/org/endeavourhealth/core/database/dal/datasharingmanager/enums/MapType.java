@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum MapType {
-    SERVICE((short)0),
-    ORGANISATION((short)1),
+    ORGANISATION((short)0),
+    SERVICE((short)1),
     REGION((short)2),
     DATASHARINGAGREEMENT((short)3),
     DATAFLOW((short)4),
