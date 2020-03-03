@@ -771,21 +771,21 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
     @Override
     public void saveErrorRecords(EmisMissingCodes errorCodeVals) throws Exception {
+
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement psInsert = null;
 
-        try{
+        try {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
             Date now = new Date();
             String sql = "INSERT INTO emis_missing_code_error"
-                    + " (service_id, exchange_id, timestmp, file_type, patient_guid, code_id, record_guid, dt_fixed)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
+                    + " (service_id, exchange_id, timestmp, file_type, patient_guid, code_id, record_guid, dt_fixed,code_type)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)";
 
             psInsert = connection.prepareStatement(sql);
             int col = 1;
-            psInsert.setString(col++, errorCodeVals.getServiceId() );
+            psInsert.setString(col++, errorCodeVals.getServiceId());
             psInsert.setString(col++, errorCodeVals.getExchangeId());
             psInsert.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
             psInsert.setString(col++, errorCodeVals.getErrorRecclassName());
@@ -793,6 +793,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             psInsert.setLong(col++, errorCodeVals.getCodeId());
             psInsert.setString(col++, errorCodeVals.getRecordGuid());
             psInsert.setTimestamp(col++, null);
+            psInsert.setString(col++, errorCodeVals.getCodeType());
 
             psInsert.executeUpdate();
             connection.commit();
@@ -807,8 +808,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             }
             entityManager.close();
         }
-
-
     }
 
     /*

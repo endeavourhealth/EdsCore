@@ -8,6 +8,7 @@ public class EmisMissingCodes {
     private String recordGuid;
     private Long codeId;
     private String fileType;
+    private String codeType;
 
     public EmisMissingCodes() {
     }
@@ -70,6 +71,12 @@ public class EmisMissingCodes {
         this.codeId = codeId;
     }
 
+    public String getCodeType() {
+        return codeType;
+    }
 
+    public void setCodeType(String codeType) {
+        this.codeType = codeType;
+    }
 }
 

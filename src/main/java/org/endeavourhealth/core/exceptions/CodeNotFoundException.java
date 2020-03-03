@@ -1,8 +1,9 @@
 package org.endeavourhealth.core.exceptions;
 
 public class CodeNotFoundException extends Exception {
+    private String codeValue;
+    private Long code;
 
-    private Long codeValue;
     public CodeNotFoundException(String message) {
         super(message);
     }
@@ -10,13 +11,19 @@ public class CodeNotFoundException extends Exception {
     public CodeNotFoundException(String message, Throwable cause) {
         super(message, cause);
     }
-    public CodeNotFoundException(Long codeValue, String message) {
+
+    public CodeNotFoundException(Long code, CodeType codeType, String message) {
         super(message);
-        this.codeValue=codeValue;
+        this.code = code;
+        this.codeValue = codeType.getCodeValue();
     }
 
-    public Long getCodeValue() {
+    public String getCodeValue() {
         return this.codeValue;
+    }
+
+    public Long getCode() {
+        return this.code;
     }
 }
 
