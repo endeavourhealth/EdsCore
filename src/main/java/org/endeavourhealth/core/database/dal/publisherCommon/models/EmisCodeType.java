@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
-public enum CodeType {
+public enum EmisCodeType {
 
     CLINICAL_CODE("CLINICAL_CODE", "C"),
     DRUG_CODE("DRUG_CODE", "D");
@@ -16,7 +16,7 @@ public enum CodeType {
         return codeValue;
     }
 
-    CodeType(String code, String codeValue) {
+    EmisCodeType(String code, String codeValue) {
         this.code = code;
         this.codeValue = codeValue;
     }

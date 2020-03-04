@@ -10,7 +10,7 @@ public class EmisMissingCodes {
     private String patientGuid;
     private long codeId;
     private String recordGuid;
-    private CodeType codeType;
+    private EmisCodeType codeType;
 
     public EmisMissingCodes() {
     }
@@ -63,11 +63,11 @@ public class EmisMissingCodes {
         this.recordGuid = recordGuid;
     }
 
-    public CodeType getCodeType() {
+    public EmisCodeType getCodeType() {
         return codeType;
     }
 
-    public void setCodeType(CodeType codeType) {
+    public void setCodeType(EmisCodeType codeType) {
         this.codeType = codeType;
     }
 }

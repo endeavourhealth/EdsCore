@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.exceptions;
 
-import org.endeavourhealth.core.database.dal.publisherCommon.models.CodeType;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCodeType;
 
 public class EmisCodeNotFoundException extends Exception {
     private String codeValue;
@@ -14,7 +14,7 @@ public class EmisCodeNotFoundException extends Exception {
         super(message, cause);
     }
 
-    public EmisCodeNotFoundException(Long code, CodeType codeType, String message) {
+    public EmisCodeNotFoundException(Long code, EmisCodeType codeType, String message) {
         super(message);
         this.code = code;
         this.codeValue = codeType.getCodeValue();
