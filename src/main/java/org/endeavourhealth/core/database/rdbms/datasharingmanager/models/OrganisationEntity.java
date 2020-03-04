@@ -205,10 +205,10 @@ public class OrganisationEntity {
 
     public void setMappingsFromDAL () throws Exception {
         MasterMappingDalI masterMappingRepository = DalProvider.factoryDSMMasterMappingDal();
-        Short thisMapType = MapType.ORGANISATION.getMapType();
+        Short thisMapType = (short) this.isService;
 
         this.setRegions(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.REGION.getMapType()));
-        this.setParentOrganisations(masterMappingRepository.getParentMappings(this.uuid, thisMapType, thisMapType));
+        this.setParentOrganisations(masterMappingRepository.getParentMappings(this.uuid, thisMapType, MapType.ORGANISATION.getMapType()));
         this.setChildOrganisations(masterMappingRepository.getChildMappings(this.uuid, thisMapType, thisMapType));
         this.setServices(masterMappingRepository.getChildMappings(this.uuid, thisMapType, MapType.SERVICE.getMapType()));
         this.setDpaPublishing(masterMappingRepository.getParentMappings(this.uuid, MapType.PUBLISHER.getMapType(), MapType.DATAPROCESSINGAGREEMENT.getMapType()));
