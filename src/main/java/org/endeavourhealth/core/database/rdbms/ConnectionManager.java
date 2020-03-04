@@ -50,7 +50,9 @@ public class ConnectionManager {
         DataGenerator("db_data_generator", true, "DataGeneratorDb"),
         SftpReader("db_sftp_reader", true, "SftpReaderDb"),
         Subscriber("db_subscriber", false, "SubscriberDb"), //this is used for Enterprise and Subscriber DBs
-        KeyCloak("keycloak_db", true, "KeycloakDB");
+        KeyCloak("keycloak_db", true, "KeycloakDB"),
+        UserManager("user-manager", true, "UserManager"),
+        DataSharingManager("data-sharing-manager", true, "DataSharingManager");
 
         private String configName;
         private boolean singleInstance;
@@ -416,6 +418,10 @@ public class ConnectionManager {
                 json = json.get("staging");
             }
 
+        } else if (dbName == Db.DataSharingManager) {
+            json = ConfigManager.getConfigurationAsJson("database", "data-sharing-manager");
+        } else if (dbName == Db.UserManager) {
+            json = ConfigManager.getConfigurationAsJson("database", "user-manager");
         } else {
 
             if (dbName == Db.Eds) {
@@ -442,7 +448,6 @@ public class ConnectionManager {
                 configName = "data_generator";
             } else if (dbName == Db.SftpReader) {
                 configName = "sftp_reader";
-
             }
             else {
                 throw new RuntimeException("Unknown database " + dbName);
@@ -642,6 +647,14 @@ public class ConnectionManager {
         return getEntityManager(Db.SubscriberTransform, configName);
     }
 
+    public static EntityManager getDsmEntityManager() throws Exception {
+        return getEntityManager(Db.DataSharingManager);
+    }
+
+    public static EntityManager getUmEntityManager() throws Exception {
+        return getEntityManager(Db.UserManager);
+    }
+
     /**
      * no hibernate entities on subscriber/enterprise DBs
      */
@@ -746,7 +759,7 @@ public class ConnectionManager {
         return getConnection(Db.DataGenerator);
     }
 
-    
+
 
     /**
      * returns a DB connection that isn't from a connection pool. Useful if the connection will be kept open

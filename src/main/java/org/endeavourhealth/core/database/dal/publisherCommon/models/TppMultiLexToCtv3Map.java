@@ -1,8 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
-import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
-import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMultilexToCtv3Map;
 
 public class TppMultiLexToCtv3Map {
     private long rowId;
@@ -13,7 +11,7 @@ public class TppMultiLexToCtv3Map {
 
     public TppMultiLexToCtv3Map() {}
 
-    public TppMultiLexToCtv3Map(RdbmsTppMultilexToCtv3Map proxy) throws Exception {
+    /*public TppMultiLexToCtv3Map(RdbmsTppMultilexToCtv3Map proxy) throws Exception {
         this.rowId = proxy.getRowId();
         this.multiLexProductId = proxy.getMultilexProductId();
         this.ctv3ReadCode = proxy.getCtv3ReadCode();
@@ -21,7 +19,7 @@ public class TppMultiLexToCtv3Map {
         if (!Strings.isNullOrEmpty(proxy.getAuditJson())) {
             this.audit = ResourceFieldMappingAudit.readFromJson(proxy.getAuditJson());
         }
-    }
+    }*/
 
     public TppMultiLexToCtv3Map(long rowId,
                                 long multiLexProductId,
@@ -73,5 +71,10 @@ public class TppMultiLexToCtv3Map {
 
     public void setAudit(ResourceFieldMappingAudit audit) {
         this.audit = audit;
+    }
+
+    @Override
+    public String toString() {
+        return "RowId = " + rowId + " ProductId = " + multiLexProductId + " CTV3Code " + ctv3ReadCode + " CTV3Term " + ctv3ReadTerm;
     }
 }

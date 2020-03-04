@@ -4,6 +4,7 @@ import org.endeavourhealth.core.database.dal.admin.*;
 import org.endeavourhealth.core.database.dal.audit.*;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
 import org.endeavourhealth.core.database.dal.datagenerator.SubscriberZipFileUUIDsDalI;
+import org.endeavourhealth.core.database.dal.datasharingmanager.*;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
@@ -15,9 +16,11 @@ import org.endeavourhealth.core.database.dal.publisherStaging.*;
 import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
+import org.endeavourhealth.core.database.dal.usermanager.*;
 import org.endeavourhealth.core.database.rdbms.admin.*;
 import org.endeavourhealth.core.database.rdbms.audit.*;
 import org.endeavourhealth.core.database.rdbms.datagenerator.RdbmsSubscriberZipFileUUIDsDal;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.*;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
@@ -29,6 +32,7 @@ import org.endeavourhealth.core.database.rdbms.publisherStaging.*;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.*;
 import org.endeavourhealth.core.database.rdbms.reference.*;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.*;
+import org.endeavourhealth.core.database.rdbms.usermanager.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,6 +156,84 @@ public class DalProvider {
 
     public static CernerProcedureMapDalI factoryCernerProcedureMapDal() { return new CernerProcedureMapDal();}
 
+
+    public static CohortDalI factoryDSMCohortDal() {
+        return new RdbmsCoreCohortDal();
+    }
+
+    public static DataProcessingAgreementDalI factoryDSMDataProcessingAgreementDal() {
+        return new RdbmsCoreDataProcessingAgreementDal();
+    }
+
+    public static DataSetDalI factoryDSMDataSetDal() {
+        return new RdbmsCoreDataSetDal();
+    }
+
+    public static DataSharingAgreementDalI factoryDSMDataSharingAgreementDal() {
+        return new RdbmsCoreDataSharingAgreementDal();
+    }
+    public static DocumentationDalI factoryDSMDocumentationDal() {
+        return new RdbmsCoreDocumentationDal();
+    }
+
+    public static ExtractTechnicalDetailsDalI factoryDSMExtractTechnicalDetailsDal() {
+        return new RdbmsCoreExtractTechnicalDetailsDal();
+    }
+
+    public static MasterMappingDalI factoryDSMMasterMappingDal() {
+        return new RdbmsCoreMasterMappingDal();
+    }
+    public static OrganisationDalI factoryDSMOrganisationDal() {
+        return new RdbmsCoreOrganisationDal();
+    }
+    public static ProjectApplicationPolicyDalI factoryDSMProjectApplicationPolicyDal() {
+        return new RdbmsCoreProjectApplicationPolicyDal();
+    }
+
+    public static ProjectDalI factoryDSMProjectDal() {
+        return new RdbmsCoreProjectDal();
+    }
+    public static ProjectScheduleDalI factoryDSMProjectScheduleDal() {
+        return new RdbmsCoreProjectScheduleDal();
+    }
+    public static PurposeDalI factoryDSMPurposeDal() {
+        return new RdbmsCorePurposeDal();
+    }
+    public static RegionDalI factoryDSMRegionDal() {
+        return new RdbmsCoreRegionDal();
+    }
+    public static ValueSetsDalI factoryDSMValueSetsDal() {
+        return new RdbmsCoreValueSetsDal();
+    }
+
+
+    public static ApplicationAccessProfileDalI factoryUMApplicationAccessProfileDal() {
+        return new RdbmsCoreApplicationAccessProfileDal();
+    }
+    public static ApplicationDalI factoryUMApplicationDal() {
+        return new RdbmsCoreApplicationDal();
+    }
+    public static ApplicationPolicyAttributeDalI factoryUMApplicationPolicyAttributeDal() {
+        return new RdbmsCoreApplicationPolicyAttributeDal();
+    }
+    public static ApplicationPolicyDalI factoryUMApplicationPolicyDal() {
+        return new RdbmsCoreApplicationPolicyDal();
+    }
+    public static DelegationDalI factoryUMDelegationDal() {
+        return new RdbmsCoreDelegationDal();
+    }
+    public static DelegationRelationshipDalI factoryUMDelegationRelationshipDal() {
+        return new RdbmsCoreDelegationRelationshipDal();
+    }
+    public static UserApplicationPolicyDalI factoryUMUserApplicationPolicyDal() {
+        return new RdbmsCoreUserApplicationPolicyDal();
+    }
+    public static UserProjectDalI factoryUMUserProjectDal() {
+        return new RdbmsCoreUserProjectDal();
+    }
+    public static UserRegionDalI factoryUMUserRegionDal() {
+        return new RdbmsCoreUserRegionDal();
+    }
 
     /*public static ResourceDalI factoryResourceDal() {
         if (useCassandra()) {

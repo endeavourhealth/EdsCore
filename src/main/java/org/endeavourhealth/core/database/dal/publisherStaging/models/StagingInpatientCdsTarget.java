@@ -31,6 +31,9 @@ public class StagingInpatientCdsTarget {
     private String dischargeDestinationCode;
     private String dischargeMethod;
 
+    private String maternityDataBirth;
+    private String maternityDataDelivery;
+
     private String primaryDiagnosisICD;
     private String secondaryDiagnosisICD;
     private String otherDiagnosisICD;
@@ -231,6 +234,22 @@ public class StagingInpatientCdsTarget {
         this.dischargeMethod = dischargeMethod;
     }
 
+    public String getMaternityDataBirth() {
+        return maternityDataBirth;
+    }
+
+    public void setMaternityDataBirth(String maternityDataBirth) {
+        this.maternityDataBirth = maternityDataBirth;
+    }
+
+    public String getMaternityDataDelivery() {
+        return maternityDataDelivery;
+    }
+
+    public void setMaternityDataDelivery(String maternityDataDelivery) {
+        this.maternityDataDelivery = maternityDataDelivery;
+    }
+
     public String getPrimaryDiagnosisICD() {
         return primaryDiagnosisICD;
     }
@@ -313,7 +332,7 @@ public class StagingInpatientCdsTarget {
 
     @Override
     public String toString() {
-        return "StagingEmergencyCdsTarget{" +
+        return "StagingInpatientCdsTarget{" +
                 "exchangeId='" + exchangeId + '\'' +
                 ", uniqueId=" + uniqueId +
                 ", isDeleted=" + isDeleted +
@@ -337,6 +356,8 @@ public class StagingInpatientCdsTarget {
                 ", dtDischarge='" + dtDischarge + '\'' +
                 ", dischargeDestinationCode='" + dischargeDestinationCode + '\'' +
                 ", dischargeMethod='" + dischargeMethod + '\'' +
+                ", maternityDataBirth='" + maternityDataBirth + '\'' +
+                ", maternityDataDelivery='" + maternityDataDelivery + '\'' +
                 ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +
                 ", secondaryDiagnosisICD='" + secondaryDiagnosisICD + '\'' +
                 ", otherDiagnosisICD='" + otherDiagnosisICD + '\'' +
@@ -349,6 +370,4 @@ public class StagingInpatientCdsTarget {
                 ", isConfidential=" + isConfidential +
                 '}';
     }
-
-
 }

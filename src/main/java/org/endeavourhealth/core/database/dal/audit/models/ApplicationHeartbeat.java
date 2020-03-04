@@ -12,6 +12,7 @@ public class ApplicationHeartbeat {
     private Integer currentHeapMb;
     private Integer serverMemoryMb;
     private Integer serverCpuUsagePercent;
+    private String isBusyDetail;
 
     public ApplicationHeartbeat() {
     }
@@ -88,6 +89,14 @@ public class ApplicationHeartbeat {
         this.serverCpuUsagePercent = serverCpuUsagePercent;
     }
 
+    public String getIsBusyDetail() {
+        return isBusyDetail;
+    }
+
+    public void setIsBusyDetail(String isBusyDetail) {
+        this.isBusyDetail = isBusyDetail;
+    }
+
     @Override
     public String toString() {
         return "applicationName [" + applicationName + "], "
@@ -95,9 +104,12 @@ public class ApplicationHeartbeat {
                 + "timestmp [" + timestmp + "], "
                 + "hostName [" + hostName + "], "
                 + "isBusy [" + isBusy + "], "
+                + "isBusyDetail [" + isBusyDetail + "], "
                 + "maxHeapMb [" + maxHeapMb + "], "
                 + "currentHeapMb [" + currentHeapMb + "], "
                 + "serverMemoryMb [" + serverMemoryMb + "], "
                 + "serverCpuUsagePercent [" + serverCpuUsagePercent + "]";
     }
+
+
 }

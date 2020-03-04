@@ -1,6 +1,8 @@
 package org.endeavourhealth.core.database.rdbms.admin;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
+import org.endeavourhealth.common.cache.ObjectMapperPool;
 import org.endeavourhealth.common.fhir.schema.OrganisationType;
 import org.endeavourhealth.core.database.dal.admin.LibraryRepositoryHelper;
 import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
@@ -15,12 +17,40 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class RdbmsServiceDal implements ServiceDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsServiceDal.class);
+
+    private static Boolean cachedHasNewCols = null;
+    private static final String NOTES_KEY = "Notes";
+
+    private static boolean hasNewCols() throws Exception {
+        if (cachedHasNewCols == null) {
+
+            Connection conn = ConnectionManager.getAdminConnection();
+            PreparedStatement ps = null;
+            try {
+                String sql = "SELECT 1 FROM service WHERE alias IS NULL AND tags IS NULL";
+                ps = conn.prepareStatement(sql);
+                ps.executeQuery();
+
+                //if the above works, then the column is present
+                cachedHasNewCols = Boolean.TRUE;
+                LOG.debug("Alias column found");
+
+            } catch (Exception ex) {
+                //any exception with the above and the column isn't present
+                cachedHasNewCols = Boolean.FALSE;
+                LOG.debug("Alias column not found");
+
+            } finally {
+                ps.close();
+                conn.close();
+            }
+        }
+        return cachedHasNewCols.booleanValue();
+    }
 
     public UUID save(Service service) throws Exception{
 
@@ -69,18 +99,37 @@ public class RdbmsServiceDal implements ServiceDalI {
 
     public static PreparedStatement createSaveServicePreparedStatement(Connection connection) throws Exception {
 
-        String sql = "INSERT INTO service"
-                + " (id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                + " ON DUPLICATE KEY UPDATE"
-                + " name = VALUES(name),"
-                + " local_id = VALUES(local_id),"
-                + " endpoints = VALUES(endpoints),"
-                + " publisher_config_name = VALUES(publisher_config_name),"
-                + " notes = VALUES(notes),"
-                + " postcode = VALUES(postcode),"
-                + " ccg_code = VALUES(ccg_code),"
-                + " organisation_type = VALUES(organisation_type)";
+        String sql = null;
+        if (hasNewCols()) {
+            sql = "INSERT INTO service"
+                    + " (id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type, alias, tags)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " name = VALUES(name),"
+                    + " local_id = VALUES(local_id),"
+                    + " endpoints = VALUES(endpoints),"
+                    + " publisher_config_name = VALUES(publisher_config_name),"
+                    + " notes = VALUES(notes),"
+                    + " postcode = VALUES(postcode),"
+                    + " ccg_code = VALUES(ccg_code),"
+                    + " organisation_type = VALUES(organisation_type),"
+                    + " alias = VALUES(alias),"
+                    + " tags = VALUES(tags)";
+
+        } else {
+            sql = "INSERT INTO service"
+                    + " (id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " name = VALUES(name),"
+                    + " local_id = VALUES(local_id),"
+                    + " endpoints = VALUES(endpoints),"
+                    + " publisher_config_name = VALUES(publisher_config_name),"
+                    + " notes = VALUES(notes),"
+                    + " postcode = VALUES(postcode),"
+                    + " ccg_code = VALUES(ccg_code),"
+                    + " organisation_type = VALUES(organisation_type)";
+        }
 
         return connection.prepareStatement(sql);
     }
@@ -105,8 +154,15 @@ public class RdbmsServiceDal implements ServiceDalI {
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
-        if (!Strings.isNullOrEmpty(service.getNotes())) {
-            ps.setString(col++, service.getNotes());
+
+        //keep the notes column synced with the notes tag
+        String notes = null;
+        if (service.getTags() != null) {
+            notes = service.getTags().get(NOTES_KEY);
+        }
+
+        if (!Strings.isNullOrEmpty(notes)) {
+            ps.setString(col++, notes);
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
@@ -125,7 +181,19 @@ public class RdbmsServiceDal implements ServiceDalI {
         } else {
             ps.setNull(col++, Types.VARCHAR);
         }
-
+        if (hasNewCols()) {
+            if (service.getAlias() != null) {
+                ps.setString(col++, service.getAlias());
+            } else {
+                ps.setNull(col++, Types.VARCHAR);
+            }
+            if (service.getTags() != null) {
+                String tagsJson = ObjectMapperPool.getInstance().writeValueAsString(service.getTags());
+                ps.setString(col++, tagsJson);
+            } else {
+                ps.setNull(col++, Types.VARCHAR);
+            }
+        }
     }
 
 
@@ -133,7 +201,7 @@ public class RdbmsServiceDal implements ServiceDalI {
         Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+            String sql = "SELECT " + getSelectColumns()
                     + " FROM service"
                     + " WHERE id = ?";
 
@@ -167,13 +235,33 @@ public class RdbmsServiceDal implements ServiceDalI {
         ret.setLocalId(rs.getString(col++));
         ret.setEndpoints(rs.getString(col++));
         ret.setPublisherConfigName(rs.getString(col++));
-        ret.setNotes(rs.getString(col++));
+        String notes = rs.getString(col++);
         ret.setPostcode(rs.getString(col++));
         ret.setCcgCode(rs.getString(col++));
 
         String orgTypeCode = rs.getString(col++);
         if (orgTypeCode != null) {
             ret.setOrganisationType(OrganisationType.fromCode(orgTypeCode));
+        }
+
+        if (hasNewCols()) {
+            ret.setAlias(rs.getString(col++));
+
+            String tagsJson = rs.getString(col++);
+            if (tagsJson != null) {
+                Map<String, String> tags = ObjectMapperPool.getInstance().readValue(tagsJson, new TypeReference<Map<String, String>>() {});
+                ret.setTags(tags);
+            }
+        }
+
+        //if we have notes, just carry them over into the tags
+        if (!Strings.isNullOrEmpty(notes)) {
+            Map<String, String> tags = ret.getTags();
+            if (tags == null) {
+                tags = new HashMap<>();
+                ret.setTags(tags);
+            }
+            tags.put(NOTES_KEY, notes);
         }
 
         return ret;
@@ -207,11 +295,20 @@ public class RdbmsServiceDal implements ServiceDalI {
         }
     }
 
+    private static String getSelectColumns() throws Exception {
+        if (hasNewCols()) {
+            return "id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type, alias, tags";
+        } else {
+            return "id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type";
+        }
+    }
+
+
     public List<Service> getAll() throws Exception {
         Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+            String sql = "SELECT " + getSelectColumns()
                     + " FROM service";
 
             ps = connection.prepareStatement(sql);
@@ -239,16 +336,32 @@ public class RdbmsServiceDal implements ServiceDalI {
         Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
-                    + " FROM service"
-                    + " WHERE name LIKE ?"
-                    + " OR local_id = ?";
+            if (hasNewCols()) {
+                String sql = "SELECT " + getSelectColumns()
+                        + " FROM service"
+                        + " WHERE name LIKE ?"
+                        + " OR alias LIKE ?"
+                        + " OR local_id = ?";
 
-            ps = connection.prepareStatement(sql);
+                ps = connection.prepareStatement(sql);
 
-            int col = 1;
-            ps.setString(col++, searchData + "%");
-            ps.setString(col++, searchData);
+                int col = 1;
+                ps.setString(col++, searchData + "%");
+                ps.setString(col++, searchData + "%");
+                ps.setString(col++, searchData);
+
+            } else {
+                String sql = "SELECT " + getSelectColumns()
+                        + " FROM service"
+                        + " WHERE name LIKE ?"
+                        + " OR local_id = ?";
+
+                ps = connection.prepareStatement(sql);
+
+                int col = 1;
+                ps.setString(col++, searchData + "%");
+                ps.setString(col++, searchData);
+            }
 
             List<Service> ret = new ArrayList<>();
 
@@ -273,7 +386,7 @@ public class RdbmsServiceDal implements ServiceDalI {
         Connection connection = ConnectionManager.getAdminConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT id, name, local_id, endpoints, publisher_config_name, notes, postcode, ccg_code, organisation_type"
+            String sql = "SELECT " + getSelectColumns()
                     + " FROM service"
                     + " WHERE local_id = ?";
 
