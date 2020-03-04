@@ -2,10 +2,10 @@ package org.endeavourhealth.core.database.rdbms.datasharingmanager;
 
 
 import org.endeavourhealth.core.database.dal.datasharingmanager.OrganisationDalI;
-import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity;
 import org.endeavourhealth.core.database.dal.datasharingmanager.enums.MapType;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonOrganisationCCG;
+import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -165,8 +165,12 @@ public class RdbmsCoreOrganisationDal implements OrganisationDalI {
             TypedQuery<OrganisationEntity> query = entityManager.createQuery(cq);
 
             List<OrganisationEntity> ret = query.getResultList();
+            if (ret.isEmpty()) {
+                return null;
+            } else {
+                return ret.get(0);
+            }
 
-            return ret.get(0);
         } finally {
             entityManager.close();
         }

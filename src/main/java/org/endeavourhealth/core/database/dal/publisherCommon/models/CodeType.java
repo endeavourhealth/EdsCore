@@ -1,4 +1,4 @@
-package org.endeavourhealth.core.exceptions;
+package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
 public enum CodeType {
 

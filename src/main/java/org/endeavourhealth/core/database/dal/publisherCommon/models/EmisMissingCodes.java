@@ -1,16 +1,34 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
+import java.util.UUID;
+
 public class EmisMissingCodes {
 
-    private String serviceId;
-    private String exchangeId;
-    private String patientGuid;
-    private String recordGuid;
-    private Long codeId;
+    private UUID serviceId;
+    private UUID exchangeId;
     private String fileType;
-    private String codeType;
+    private String patientGuid;
+    private long codeId;
+    private String recordGuid;
+    private CodeType codeType;
 
     public EmisMissingCodes() {
+    }
+
+    public UUID getServiceId() {
+        return serviceId;
+    }
+
+    public void setServiceId(UUID serviceId) {
+        this.serviceId = serviceId;
+    }
+
+    public UUID getExchangeId() {
+        return exchangeId;
+    }
+
+    public void setExchangeId(UUID exchangeId) {
+        this.exchangeId = exchangeId;
     }
 
     public String getFileType() {
@@ -21,38 +39,20 @@ public class EmisMissingCodes {
         this.fileType = fileType;
     }
 
-    public String getErrorRecclassName() {
-        return errorRecclassName;
-    }
-
-    public void setErrorRecclassName(String errorRecclassName) {
-        this.errorRecclassName = errorRecclassName;
-    }
-
-    private String errorRecclassName;
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getExchangeId() {
-        return exchangeId;
-    }
-
-    public void setExchangeId(String exchangeId) {
-        this.exchangeId = exchangeId;
-    }
-
     public String getPatientGuid() {
         return patientGuid;
     }
 
     public void setPatientGuid(String patientGuid) {
         this.patientGuid = patientGuid;
+    }
+
+    public long getCodeId() {
+        return codeId;
+    }
+
+    public void setCodeId(long codeId) {
+        this.codeId = codeId;
     }
 
     public String getRecordGuid() {
@@ -63,19 +63,11 @@ public class EmisMissingCodes {
         this.recordGuid = recordGuid;
     }
 
-    public Long getCodeId() {
-        return codeId;
-    }
-
-    public void setCodeId(Long codeId) {
-        this.codeId = codeId;
-    }
-
-    public String getCodeType() {
+    public CodeType getCodeType() {
         return codeType;
     }
 
-    public void setCodeType(String codeType) {
+    public void setCodeType(CodeType codeType) {
         this.codeType = codeType;
     }
 }

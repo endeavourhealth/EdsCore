@@ -30,6 +30,8 @@ public abstract class HeaderKeys {
     public static final String TransformBatch = "TransformBatch";
     public static final String ProtocolIds = "Protocols";
     public static final String SubscriberBatch = "SubscriberBatch";
+    public static final String SharingAgreementIds = "SharingAgreements";
+    public static final String IsBulk = "IsBulk";
 
     //control
     public static final String AllowQueueing = "AllowQueueing";

@@ -6,7 +6,6 @@ import java.util.List;
 
 public interface TppCtv3LookupDalI {
 
-    TppCtv3Lookup getContentFromRowId(Long rowId) throws Exception;
     TppCtv3Lookup getContentFromCtv3Code(String ctv3Code) throws Exception;
 
     void save(TppCtv3Lookup ctv3Lookup) throws Exception;

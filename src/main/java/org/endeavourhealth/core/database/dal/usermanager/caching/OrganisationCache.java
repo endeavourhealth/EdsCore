@@ -4,11 +4,9 @@ package org.endeavourhealth.core.database.dal.usermanager.caching;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.datasharingmanager.DataProcessingAgreementDalI;
 import org.endeavourhealth.core.database.dal.datasharingmanager.OrganisationDalI;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreDataProcessingAgreementDal;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreOrganisationDal;
+import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonOrganisationCCG;
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataProcessingAgreementEntity;
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity;
-import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonOrganisationCCG;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +69,9 @@ public class OrganisationCache {
         OrganisationEntity foundOrg = findOrgByOdsInCache(odsCode);
         if (foundOrg == null) {
             foundOrg = repository.getOrganisationsFromOdsCode(odsCode);
-            organisationMap.put(foundOrg.getUuid(), foundOrg);
+            if (foundOrg != null) {
+                organisationMap.put(foundOrg.getUuid(), foundOrg);
+            }
         }
 
         CacheManager.startScheduler();

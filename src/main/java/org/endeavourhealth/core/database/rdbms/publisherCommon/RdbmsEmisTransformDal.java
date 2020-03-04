@@ -19,8 +19,8 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.*;
-import java.util.Date;
 import java.util.*;
+import java.util.Date;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisTransformDal.class);
@@ -772,74 +772,43 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     @Override
     public void saveErrorRecords(EmisMissingCodes errorCodeVals) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement psInsert = null;
-
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
             Date now = new Date();
-            String sql = "INSERT INTO emis_missing_code_error"
-                    + " (service_id, exchange_id, timestmp, file_type, patient_guid, code_id, record_guid, dt_fixed,code_type)"
+
+            //use insert ignore so that if we re-process the same file (without any fixed data)
+            //we don't have any issues when it tries to log the error again
+            String sql = "INSERT IGNORE INTO emis_missing_code_error"
+                    + " (service_id, exchange_id, timestmp, file_type, patient_guid, code_id, record_guid, dt_fixed, code_type)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?,?)";
 
             psInsert = connection.prepareStatement(sql);
             int col = 1;
-            psInsert.setString(col++, errorCodeVals.getServiceId());
-            psInsert.setString(col++, errorCodeVals.getExchangeId());
+            psInsert.setString(col++, errorCodeVals.getServiceId().toString());
+            psInsert.setString(col++, errorCodeVals.getExchangeId().toString());
             psInsert.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
-            psInsert.setString(col++, errorCodeVals.getErrorRecclassName());
+            psInsert.setString(col++, errorCodeVals.getFileType());
             psInsert.setString(col++, errorCodeVals.getPatientGuid());
             psInsert.setLong(col++, errorCodeVals.getCodeId());
             psInsert.setString(col++, errorCodeVals.getRecordGuid());
             psInsert.setTimestamp(col++, null);
-            psInsert.setString(col++, errorCodeVals.getCodeType());
+            psInsert.setString(col++, errorCodeVals.getCodeType().getCodeValue());
 
             psInsert.executeUpdate();
             connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (psInsert != null) {
                 psInsert.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
-
-    /*
-    /**
-     *
-     @Override
-     public List<EmisAdminResourceCache> getAdminResources(String dataSharingAgreementGuid) throws Exception {
-         EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-
-         try {
-         String sql = "select c"
-         + " from"
-         + " RdbmsEmisAdminResourceCache c"
-         + " where c.dataSharingAgreementGuid = :data_sharing_agreement_guid";
-
-         Query query = entityManager.createQuery(sql, RdbmsEmisAdminResourceCache.class)
-         .setParameter("data_sharing_agreement_guid", dataSharingAgreementGuid);
-
-         List<RdbmsEmisAdminResourceCache> results = query.getResultList();
-
-         List<EmisAdminResourceCache> ret = new ArrayList<>();
-         for (RdbmsEmisAdminResourceCache result: results) {
-         ret.add(new EmisAdminResourceCache(result));
-         }
-
-         return ret;
-
-         } finally {
-         entityManager.close();
-         }
-     }
-     */
 
 
 }

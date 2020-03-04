@@ -42,4 +42,9 @@ public final class ServiceInterfaceEndpoint {
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
+
+    @Override
+    public String toString() {
+        return "SystemID " + systemUuid + ", TechnicalInterfaceID " + technicalInterfaceUuid + ", Endpoint " + endpoint;
+    }
 }

@@ -3,14 +3,14 @@ package org.endeavourhealth.core.database.rdbms.datasharingmanager;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.datasharingmanager.DataSharingAgreementDalI;
 import org.endeavourhealth.core.database.dal.datasharingmanager.MasterMappingDalI;
-import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataSharingAgreementEntity;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.RegionEntity;
 import org.endeavourhealth.core.database.dal.datasharingmanager.enums.MapType;
 import org.endeavourhealth.core.database.dal.usermanager.caching.DataSharingAgreementCache;
 import org.endeavourhealth.core.database.dal.usermanager.caching.OrganisationCache;
 import org.endeavourhealth.core.database.dal.usermanager.caching.RegionCache;
+import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.DataSharingAgreementEntity;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.OrganisationEntity;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.RegionEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
@@ -77,15 +77,16 @@ public class RdbmsCoreDataSharingAgreementDal implements DataSharingAgreementDal
     }
 
     public List<DataSharingAgreementEntity> getAllDSAsForPublisherOrganisation(String odsCode) throws Exception {
-        List<String> dsaUUIDs = new ArrayList<>();
 
         // find org details from ods code
         OrganisationEntity org = OrganisationCache.getOrganisationDetailsFromOdsCode(odsCode);
+        if (org == null) {
+            return new ArrayList<>();
+        }
 
         // get all DSAs where the org is a publisher
-        dsaUUIDs = masterMappingRepository.getParentMappings(org.getUuid(),
+        List<String> dsaUUIDs = masterMappingRepository.getParentMappings(org.getUuid(),
                 MapType.PUBLISHER.getMapType(), MapType.DATASHARINGAGREEMENT.getMapType());
-
 
         List<DataSharingAgreementEntity> ret = new ArrayList<>();
 
@@ -99,10 +100,11 @@ public class RdbmsCoreDataSharingAgreementDal implements DataSharingAgreementDal
 
     public List<DataSharingAgreementEntity> getDSAsWithMatchingPublisherAndSubscriber(String publisherOds, String subscriberOds) throws Exception {
 
-        List<String> pubOdsCodes = new ArrayList<>();
-
         OrganisationEntity pubOrg = OrganisationCache.getOrganisationDetailsFromOdsCode(publisherOds);
         OrganisationEntity subOrg = OrganisationCache.getOrganisationDetailsFromOdsCode(subscriberOds);
+        if (pubOrg == null || subOrg == null) {
+            return new ArrayList<>();
+        }
 
         // get DSAs for the publisher
         List<String> publisherDSAs = masterMappingRepository.getParentMappings(pubOrg.getUuid(),
