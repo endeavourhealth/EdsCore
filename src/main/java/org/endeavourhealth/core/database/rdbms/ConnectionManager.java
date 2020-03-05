@@ -51,8 +51,8 @@ public class ConnectionManager {
         SftpReader("db_sftp_reader", true, "SftpReaderDb"),
         Subscriber("db_subscriber", false, "SubscriberDb"), //this is used for Enterprise and Subscriber DBs
         KeyCloak("keycloak_db", true, "KeycloakDB"),
-        UserManager("user-manager", true, "UserManager"),
-        DataSharingManager("data-sharing-manager", true, "DataSharingManager");
+        UserManager("db_user_manager", true, "UserManager"),
+        DataSharingManager("db_data_sharing_manager", true, "DataSharingManager");
 
         private String configName;
         private boolean singleInstance;
