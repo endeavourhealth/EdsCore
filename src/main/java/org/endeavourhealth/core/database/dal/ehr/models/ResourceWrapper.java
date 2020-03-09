@@ -3,7 +3,6 @@ package org.endeavourhealth.core.database.dal.ehr.models;
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceCurrent;
-import org.endeavourhealth.core.database.rdbms.ehr.models.RdbmsResourceHistory;
 import org.endeavourhealth.core.fhirStorage.FhirSerializationHelper;
 import org.endeavourhealth.core.fhirStorage.exceptions.SerializationException;
 import org.hl7.fhir.instance.model.Reference;
@@ -27,7 +26,6 @@ public class ResourceWrapper {
     private String resourceData;
     private Long resourceChecksum;
     private UUID exchangeBatchId;
-    private UUID exchangeId;
     private boolean isDeleted;
 
     public ResourceWrapper() {}
@@ -87,28 +85,7 @@ public class ResourceWrapper {
         //this.version = UUID.fromString(proxy.getVersion()); //not present in proxy
     }
 
-    public ResourceWrapper(RdbmsResourceHistory proxy) {
-        this.serviceId = UUID.fromString(proxy.getServiceId());
-        this.systemId = UUID.fromString(proxy.getSystemId());
-        this.resourceId = UUID.fromString(proxy.getResourceId());
-        this.resourceType = proxy.getResourceType();
-        //this.version = proxy.getVersion(); //not present in proxy
 
-        //Hibernate returns a java.sql.Timestamp which isn't fully compatible with java.util.Date (equals fn doesn't work) so we need to convert
-        this.createdAt = new java.util.Date(proxy.getCreatedAt().getTime());
-        //this.createdAt = proxy.getCreatedAt();
-
-        if (!Strings.isNullOrEmpty(proxy.getPatientId())) {
-            this.patientId = UUID.fromString(proxy.getPatientId());
-        }
-        //this.resourceMetadata = proxy.getResourceMetadata(); //this proxy doesn't have this field
-        this.resourceData = proxy.getResourceData();
-        this.resourceChecksum = proxy.getResourceChecksum();
-        this.isDeleted = proxy.isDeleted();
-        this.exchangeBatchId = UUID.fromString(proxy.getExchangeBatchId());
-        //this.exchangeId = proxy.getExchangeId(); //this proxy doesn't have this field
-        this.version = UUID.fromString(proxy.getVersion());
-    }
 
     public UUID getServiceId() {
         return serviceId;
@@ -196,14 +173,6 @@ public class ResourceWrapper {
 
     public void setExchangeBatchId(UUID exchangeBatchId) {
         this.exchangeBatchId = exchangeBatchId;
-    }
-
-    public UUID getExchangeId() {
-        return exchangeId;
-    }
-
-    public void setExchangeId(UUID exchangeId) {
-        this.exchangeId = exchangeId;
     }
 
     public boolean isDeleted() {

@@ -497,7 +497,7 @@ public class FhirStorageService {
         entry.setResourceMetadata(""); //we never use the metadata so don't save to the DB
         entry.setResourceData(resourceJson);
         entry.setResourceChecksum(generateChecksum(resourceJson));
-        entry.setExchangeId(exchangeId);
+        //entry.setExchangeId(exchangeId); //never used or persisted, so removed
         entry.setExchangeBatchId(batchId);
 
         if (metadata instanceof PatientCompartment) {
