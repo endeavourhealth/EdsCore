@@ -861,8 +861,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "INSERT INTO cds_inpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
-                    " patient_pathway_identifier, spell_number, admission_method_code, admission_source_code, " +
-                    " patient_classification, spell_start_date, episode_number, " +
+                    " patient_pathway_identifier, spell_number, administrative_category_code, admission_method_code, "+
+                    " admission_source_code, patient_classification, spell_start_date, episode_number, " +
                     " episode_start_site_code, episode_start_ward_code, episode_start_date, " +
                     " episode_end_site_code, episode_end_ward_code, episode_end_date, " +
                     " discharge_date, discharge_destination_code, discharge_method, " +
@@ -870,7 +870,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
                     " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
                     " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -885,6 +885,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " consultant_code = VALUES(consultant_code),"
                     + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
                     + " spell_number = VALUES(spell_number),"
+                    + " administrative_category_code = VALUES(administrative_category_code),"
                     + " admission_method_code = VALUES(admission_method_code),"
                     + " admission_source_code = VALUES(admission_source_code),"
                     + " patient_classification = VALUES(patient_classification),"
@@ -943,6 +944,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
                 ps.setString(col++, cdsInpatient.getPatientPathwayIdentifier());
                 ps.setString(col++, cdsInpatient.getSpellNumber());
+                ps.setString(col++, cdsInpatient.getAdministrativeCategoryCode());
                 ps.setString(col++, cdsInpatient.getAdmissionMethodCode());
                 ps.setString(col++, cdsInpatient.getAdmissionSourceCode());
                 ps.setString(col++, cdsInpatient.getPatientClassification());
@@ -1077,12 +1079,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "INSERT INTO cds_outpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, " +
-                    " patient_pathway_identifier, appt_attendance_identifier, appt_attended_code, appt_outcome_code, " +
-                    " appt_date, appt_site_code, " +
+                    " patient_pathway_identifier, administrative_category_code, appt_attendance_identifier, " +
+                    " appt_attended_code, appt_outcome_code, appt_date, appt_site_code, " +
                     " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
                     " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
                     " lookup_person_id, lookup_consultant_personnel_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -1097,6 +1099,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " consultant_code = VALUES(consultant_code),"
                     + " patient_pathway_identifier = VALUES(patient_pathway_identifier),"
                     + " appt_attendance_identifier = VALUES(appt_attendance_identifier),"
+                    + " administrative_category_code = VALUES(administrative_category_code),"
                     + " appt_attended_code = VALUES(appt_attended_code),"
                     + " appt_outcome_code = VALUES(appt_outcome_code),"
                     + " appt_date = VALUES(appt_date),"
@@ -1144,6 +1147,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 ps.setString(col++, cdsOutpatient.getPatientPathwayIdentifier());
 
                 ps.setString(col++, cdsOutpatient.getApptAttendanceIdentifier());
+                ps.setString(col++, cdsOutpatient.getAdministrativeCategoryCode());
                 ps.setString(col++, cdsOutpatient.getApptAttendedCode());
                 ps.setString(col++, cdsOutpatient.getApptOutcomeCode());
 

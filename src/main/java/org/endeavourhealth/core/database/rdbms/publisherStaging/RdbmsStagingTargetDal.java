@@ -703,6 +703,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 }
                 stagingInpatientCdsTarget.setPatientPathwayIdentifier(rs.getString(col++));
                 stagingInpatientCdsTarget.setSpellNumber(rs.getString(col++));
+                stagingInpatientCdsTarget.setAdministrativeCategoryCode(rs.getString(col++));
                 stagingInpatientCdsTarget.setAdmissionMethodCode(rs.getString(col++));
                 stagingInpatientCdsTarget.setAdmissionSourceCode(rs.getString(col++));
                 stagingInpatientCdsTarget.setPatientClassification(rs.getString(col++));
@@ -821,6 +822,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 }
                 stagingOutpatientCdsTarget.setPatientPathwayIdentifier(rs.getString(col++));
                 stagingOutpatientCdsTarget.setApptAttendanceIdentifier(rs.getString(col++));
+                stagingOutpatientCdsTarget.setAdministrativeCategoryCode(rs.getString(col++));
                 stagingOutpatientCdsTarget.setApptAttendedCode(rs.getString(col++));
                 stagingOutpatientCdsTarget.setApptOutcomeCode(rs.getString(col++));
 

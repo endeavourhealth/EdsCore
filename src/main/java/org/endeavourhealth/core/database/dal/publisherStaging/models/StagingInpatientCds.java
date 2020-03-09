@@ -21,6 +21,7 @@ public class StagingInpatientCds implements Cloneable {
 
     private String patientPathwayIdentifier;
     private String spellNumber;
+    private String administrativeCategoryCode;
     private String admissionMethodCode;
     private String admissionSourceCode;
     private String patientClassification;
@@ -154,6 +155,14 @@ public class StagingInpatientCds implements Cloneable {
     }
 
     public void setSpellNumber(String spellNumber) { this.spellNumber = spellNumber; }
+
+    public String getAdministrativeCategoryCode() {
+        return administrativeCategoryCode;
+    }
+
+    public void setAdministrativeCategoryCode(String administrativeCategoryCode) {
+        this.administrativeCategoryCode = administrativeCategoryCode;
+    }
 
     public String getAdmissionMethodCode() {
         return admissionMethodCode;
@@ -390,6 +399,7 @@ public class StagingInpatientCds implements Cloneable {
                 consultantCode,
                 patientPathwayIdentifier,
                 spellNumber,
+                administrativeCategoryCode,
                 admissionMethodCode,
                 admissionSourceCode,
                 patientClassification,
@@ -434,6 +444,7 @@ public class StagingInpatientCds implements Cloneable {
                 ", consultantCode='" + consultantCode + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", spellNumber='" + spellNumber + '\'' +
+                ", administrativeCategoryCode='" + administrativeCategoryCode + '\'' +
                 ", admissionMethodCode='" + admissionMethodCode + '\'' +
                 ", admissionSourceCode='" + admissionSourceCode + '\'' +
                 ", patientClassification='" + patientClassification + '\'' +
@@ -463,4 +474,6 @@ public class StagingInpatientCds implements Cloneable {
                 ", audit=" + audit +
                 '}';
     }
+
+
 }

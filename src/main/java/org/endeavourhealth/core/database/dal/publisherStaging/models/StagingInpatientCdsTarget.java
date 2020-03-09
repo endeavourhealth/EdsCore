@@ -16,6 +16,7 @@ public class StagingInpatientCdsTarget {
 
     private String patientPathwayIdentifier;
     private String spellNumber;
+    private String administrativeCategoryCode;
     private String admissionMethodCode;
     private String admissionSourceCode;
     private String patientClassification;
@@ -118,6 +119,14 @@ public class StagingInpatientCdsTarget {
 
     public void setSpellNumber(String spellNumber) {
         this.spellNumber = spellNumber;
+    }
+
+    public String getAdministrativeCategoryCode() {
+        return administrativeCategoryCode;
+    }
+
+    public void setAdministrativeCategoryCode(String administrativeCategoryCode) {
+        this.administrativeCategoryCode = administrativeCategoryCode;
     }
 
     public String getAdmissionMethodCode() {
@@ -342,6 +351,7 @@ public class StagingInpatientCdsTarget {
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", spellNumber='" + spellNumber + '\'' +
+                ", administrativeCategoryCode='" + administrativeCategoryCode + '\'' +
                 ", admissionMethodCode='" + admissionMethodCode + '\'' +
                 ", admissionSourceCode='" + admissionSourceCode + '\'' +
                 ", patientClassification='" + patientClassification + '\'' +

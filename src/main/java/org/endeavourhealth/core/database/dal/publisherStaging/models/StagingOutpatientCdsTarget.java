@@ -16,6 +16,7 @@ public class StagingOutpatientCdsTarget {
 
     private String patientPathwayIdentifier;
     private String apptAttendanceIdentifier;
+    private String administrativeCategoryCode;
     private String apptAttendedCode;
     private String apptOutcomeCode;
     private Date apptDate;
@@ -105,6 +106,14 @@ public class StagingOutpatientCdsTarget {
 
     public void setApptAttendanceIdentifier(String apptAttendanceIdentifier) {
         this.apptAttendanceIdentifier = apptAttendanceIdentifier;
+    }
+
+    public String getAdministrativeCategoryCode() {
+        return administrativeCategoryCode;
+    }
+
+    public void setAdministrativeCategoryCode(String administrativeCategoryCode) {
+        this.administrativeCategoryCode = administrativeCategoryCode;
     }
 
     public String getApptAttendedCode() {
@@ -231,6 +240,7 @@ public class StagingOutpatientCdsTarget {
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", apptAttendanceIdentifier='" + apptAttendanceIdentifier + '\'' +
+                ", administrativeCategoryCode='" + administrativeCategoryCode + '\'' +
                 ", apptAttendedCode='" + apptAttendedCode + '\'' +
                 ", apptOutcomeCode='" + apptOutcomeCode + '\'' +
                 ", apptDate='" + apptDate + '\'' +
