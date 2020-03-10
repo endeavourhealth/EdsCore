@@ -14,6 +14,7 @@ public class StagingOutpatientCdsTarget {
     private Integer episodeId;
     private Integer performerPersonnelId;
 
+    private String referralSource;
     private String patientPathwayIdentifier;
     private String apptAttendanceIdentifier;
     private String administrativeCategoryCode;
@@ -90,6 +91,14 @@ public class StagingOutpatientCdsTarget {
 
     public void setPerformerPersonnelId(Integer performerPersonnelId) {
         this.performerPersonnelId = performerPersonnelId;
+    }
+
+    public String getReferralSource() {
+        return referralSource;
+    }
+
+    public void setReferralSource(String referralSource) {
+        this.referralSource = referralSource;
     }
 
     public String getPatientPathwayIdentifier() {
@@ -238,6 +247,7 @@ public class StagingOutpatientCdsTarget {
                 ", encounterId='" + encounterId + '\'' +
                 ", episodeId='" + episodeId + '\'' +
                 ", performerPersonnelId='" + performerPersonnelId + '\'' +
+                ", referralSource='" + referralSource + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", apptAttendanceIdentifier='" + apptAttendanceIdentifier + '\'' +
                 ", administrativeCategoryCode='" + administrativeCategoryCode + '\'' +

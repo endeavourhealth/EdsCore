@@ -820,6 +820,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 if (!rs.wasNull()) {
                     stagingOutpatientCdsTarget.setPerformerPersonnelId(performedPrsnlId);
                 }
+                stagingOutpatientCdsTarget.setReferralSource(rs.getString(col++));
                 stagingOutpatientCdsTarget.setPatientPathwayIdentifier(rs.getString(col++));
                 stagingOutpatientCdsTarget.setApptAttendanceIdentifier(rs.getString(col++));
                 stagingOutpatientCdsTarget.setAdministrativeCategoryCode(rs.getString(col++));

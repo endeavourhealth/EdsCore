@@ -19,6 +19,7 @@ public class StagingOutpatientCds implements Cloneable {
     private Date dateOfBirth;
     private String consultantCode;
 
+    private String referralSource;
     private String patientPathwayIdentifier;
     private String apptAttendanceIdentifier;
     private String administrativeCategoryCode;
@@ -129,6 +130,14 @@ public class StagingOutpatientCds implements Cloneable {
 
     public void setConsultantCode(String consultantCode) {
         this.consultantCode = consultantCode;
+    }
+
+    public String getReferralSource() {
+        return referralSource;
+    }
+
+    public void setReferralSource(String referralSource) {
+        this.referralSource = referralSource;
     }
 
     public String getPatientPathwayIdentifier() {
@@ -290,6 +299,7 @@ public class StagingOutpatientCds implements Cloneable {
                 withheld,
                 dateOfBirth,
                 consultantCode,
+                referralSource,
                 patientPathwayIdentifier,
                 apptAttendanceIdentifier,
                 administrativeCategoryCode,
@@ -323,6 +333,7 @@ public class StagingOutpatientCds implements Cloneable {
                 ", withheld='" + withheld + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
                 ", consultantCode='" + consultantCode + '\'' +
+                ", referralSource='" + referralSource + '\'' +
                 ", patientPathwayIdentifier='" + patientPathwayIdentifier + '\'' +
                 ", apptAttendanceIdentifier='" + apptAttendanceIdentifier + '\'' +
                 ", administrativeCategoryCode='" + administrativeCategoryCode + '\'' +
