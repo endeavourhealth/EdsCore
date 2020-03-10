@@ -1079,7 +1079,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             String sql = "INSERT INTO cds_outpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
                     " cds_update_type, mrn, nhs_number, withheld, date_of_birth, consultant_code, referral_source, " +
-                    " patient_pathway_identifier, administrative_category_code, appt_attendance_identifier, " +
+                    " patient_pathway_identifier, appt_attendance_identifier, administrative_category_code, " +
                     " appt_attended_code, appt_outcome_code, appt_date, appt_site_code, " +
                     " primary_diagnosis_ICD, secondary_diagnosis_ICD, other_diagnosis_ICD, primary_procedure_OPCS, " +
                     " primary_procedure_date, secondary_procedure_OPCS, secondary_procedure_date, other_procedures_OPCS, " +
