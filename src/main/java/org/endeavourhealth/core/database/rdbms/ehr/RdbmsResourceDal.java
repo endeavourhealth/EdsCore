@@ -736,7 +736,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 w.setSystemId(UUID.fromString(rs.getString(col++)));
                 w.setResourceType(rs.getString(col++));
                 w.setResourceId(UUID.fromString(rs.getString(col++)));
-                w.setCreatedAt(new java.util.Date(rs.getDate(col++).getTime()));
+                w.setCreatedAt(new java.util.Date(rs.getTimestamp(col++).getTime()));
 
                 //this field is an empty string for non-patient resources
                 String patientIdStr = rs.getString(col++);
