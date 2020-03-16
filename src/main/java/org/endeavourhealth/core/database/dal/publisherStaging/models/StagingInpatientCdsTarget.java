@@ -31,6 +31,7 @@ public class StagingInpatientCdsTarget {
     private Date dtDischarge;
     private String dischargeDestinationCode;
     private String dischargeMethod;
+    private String treatmentFunctionCode;
 
     private String maternityDataBirth;
     private String maternityDataDelivery;
@@ -239,6 +240,14 @@ public class StagingInpatientCdsTarget {
         return dischargeMethod;
     }
 
+    public String getTreatmentFunctionCode() {
+        return treatmentFunctionCode;
+    }
+
+    public void setTreatmentFunctionCode(String treatmentFunctionCode) {
+        this.treatmentFunctionCode = treatmentFunctionCode;
+    }
+
     public void setDischargeMethod(String dischargeMethod) {
         this.dischargeMethod = dischargeMethod;
     }
@@ -366,6 +375,7 @@ public class StagingInpatientCdsTarget {
                 ", dtDischarge='" + dtDischarge + '\'' +
                 ", dischargeDestinationCode='" + dischargeDestinationCode + '\'' +
                 ", dischargeMethod='" + dischargeMethod + '\'' +
+                ", treatmentFunctionCode='" + treatmentFunctionCode + '\'' +
                 ", maternityDataBirth='" + maternityDataBirth + '\'' +
                 ", maternityDataDelivery='" + maternityDataDelivery + '\'' +
                 ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +

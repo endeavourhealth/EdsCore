@@ -34,7 +34,6 @@ public class StagingEmergencyCds implements Cloneable {
     private String chiefComplaint;
     private Date seenForTreatmentDate;
     private Date decidedToAdmitDate;
-    private String treatmentFunctionCode;
     private String dischargeStatus;
     private String dischargeDestination;
     private String dischargeDestinationSiteId;
@@ -238,14 +237,6 @@ public class StagingEmergencyCds implements Cloneable {
         this.decidedToAdmitDate = decidedToAdmitDate;
     }
 
-    public String getTreatmentFunctionCode() {
-        return treatmentFunctionCode;
-    }
-
-    public void setTreatmentFunctionCode(String treatmentFunctionCode) {
-        this.treatmentFunctionCode = treatmentFunctionCode;
-    }
-
     public String getDischargeStatus() {
         return dischargeStatus;
     }
@@ -379,7 +370,6 @@ public class StagingEmergencyCds implements Cloneable {
                 chiefComplaint,
                 seenForTreatmentDate,
                 decidedToAdmitDate,
-                treatmentFunctionCode,
                 dischargeStatus,
                 dischargeDestination,
                 dischargeDestinationSiteId,
@@ -420,7 +410,6 @@ public class StagingEmergencyCds implements Cloneable {
                 ", chiefComplaint='" + chiefComplaint + '\'' +
                 ", seenForTreatmentDate='" + seenForTreatmentDate + '\'' +
                 ", decidedToAdmitDate='" + decidedToAdmitDate + '\'' +
-                ", treatmentFunctionCode='" + treatmentFunctionCode + '\'' +
                 ", dischargeStatus='" + dischargeStatus + '\'' +
                 ", dischargeDestination='" + dischargeDestination + '\'' +
                 ", dischargeDestinationSiteId='" + dischargeDestinationSiteId + '\'' +

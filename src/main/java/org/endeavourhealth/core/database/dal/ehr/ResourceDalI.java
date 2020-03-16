@@ -1,6 +1,5 @@
 package org.endeavourhealth.core.database.dal.ehr;
 
-import org.endeavourhealth.core.database.dal.ehr.models.Encounter;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.fhirStorage.metadata.ResourceMetadata;
 import org.hl7.fhir.instance.model.Resource;
@@ -19,7 +18,7 @@ public interface ResourceDalI {
     void delete(ResourceWrapper resourceEntry) throws Exception;
     void hardDeleteResourceAndAllHistory(ResourceWrapper resourceEntry) throws Exception;
 
-    void saveEncounter(ResourceWrapper wrapper, Encounter encounter) throws Exception;
+    //void saveEncounter(ResourceWrapper wrapper, Encounter encounter) throws Exception;
 
     Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception;
     ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) throws Exception;

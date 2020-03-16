@@ -4,106 +4,71 @@ import java.util.Date;
 
 public class Encounter {
 
-    private String encounterId;
-    private String patientId;
-    private String practitionerId;
-    private String appointmentId;
-    private Date effectiveDate;
-    private Date effectiveEndDate;
-    private String episodeOfCareId;
-    private String serviceProviderOrganisationId;
-    private String encounterType;
-    private String parentEncounterId;
-    private String additionalFieldsJson;
+    private int id;
+    private int organisationId;
+    private int patientId;
+    private Date clinicalEffectiveDate;
+    private int typeId;
+    private int parentEncounterId;
+    private String additionalData;
 
     public Encounter() {
     }
 
-    public String getEncounterId() {
-        return encounterId;
+
+    public int getId() {
+        return id;
     }
 
-    public void setEncounterId(String encounterId) {
-        this.encounterId = encounterId;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getPatientId() {
+    public int getOrganisationId() {
+        return organisationId;
+    }
+
+    public void setOrganisationId(int organisationId) {
+        this.organisationId = organisationId;
+    }
+
+    public int getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(String patientId) {
+    public void setPatientId(int patientId) {
         this.patientId = patientId;
     }
 
-    public String getPractitionerId() {
-        return practitionerId;
+    public Date getClinicalEffectiveDate() {
+        return clinicalEffectiveDate;
     }
 
-    public void setPractitionerId(String practitionerId) {
-        this.practitionerId = practitionerId;
+    public void setClinicalEffectiveDate(Date clinicalEffectiveDate) {
+        this.clinicalEffectiveDate = clinicalEffectiveDate;
     }
 
-    public String getAppointmentId() {
-        return appointmentId;
+    public int getTypeId() {
+        return typeId;
     }
 
-    public void setAppointmentId(String appointmentId) {
-        this.appointmentId = appointmentId;
+    public void setTypeId(int typeId) {
+        this.typeId = typeId;
     }
 
-    public Date getEffectiveDate() {
-        return effectiveDate;
-    }
-
-    public void setEffectiveDate(Date effectiveDate) {
-        this.effectiveDate = effectiveDate;
-    }
-
-    public Date getEffectiveEndDate() {
-        return effectiveEndDate;
-    }
-
-    public void setEffectiveEndDate(Date effectiveEndDate) {
-        this.effectiveEndDate = effectiveEndDate;
-    }
-
-    public String getEpisodeOfCareId() {
-        return episodeOfCareId;
-    }
-
-    public void setEpisodeOfCareId(String episodeOfCareId) {
-        this.episodeOfCareId = episodeOfCareId;
-    }
-
-    public String getServiceProviderOrganisationId() {
-        return serviceProviderOrganisationId;
-    }
-
-    public void setServiceProviderOrganisationId(String serviceProviderOrganisationId) {
-        this.serviceProviderOrganisationId = serviceProviderOrganisationId;
-    }
-
-    public String getEncounterType() {
-        return encounterType;
-    }
-
-    public void setEncounterType(String encounterType) {
-        this.encounterType = encounterType;
-    }
-
-    public String getParentEncounterId() {
+    public int getParentEncounterId() {
         return parentEncounterId;
     }
 
-    public void setParentEncounterId(String parentEncounterId) {
+    public void setParentEncounterId(int parentEncounterId) {
         this.parentEncounterId = parentEncounterId;
     }
 
-    public String getAdditionalFieldsJson() {
-        return additionalFieldsJson;
+    public String getAdditionalData() {
+        return additionalData;
     }
 
-    public void setAdditionalFieldsJson(String additionalFieldsJson) {
-        this.additionalFieldsJson = additionalFieldsJson;
+    public void setAdditionalData(String additionalData) {
+        this.additionalData = additionalData;
     }
 }

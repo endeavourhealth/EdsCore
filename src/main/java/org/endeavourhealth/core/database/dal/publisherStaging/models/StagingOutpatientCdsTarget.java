@@ -22,6 +22,7 @@ public class StagingOutpatientCdsTarget {
     private String apptOutcomeCode;
     private Date apptDate;
     private String apptSiteCode;
+    private String treatmentFunctionCode;
 
     private String primaryDiagnosisICD;
     private String secondaryDiagnosisICD;
@@ -157,6 +158,14 @@ public class StagingOutpatientCdsTarget {
         this.apptSiteCode = apptSiteCode;
     }
 
+    public String getTreatmentFunctionCode() {
+        return treatmentFunctionCode;
+    }
+
+    public void setTreatmentFunctionCode(String treatmentFunctionCode) {
+        this.treatmentFunctionCode = treatmentFunctionCode;
+    }
+
     public String getPrimaryDiagnosisICD() {
         return primaryDiagnosisICD;
     }
@@ -255,6 +264,7 @@ public class StagingOutpatientCdsTarget {
                 ", apptOutcomeCode='" + apptOutcomeCode + '\'' +
                 ", apptDate='" + apptDate + '\'' +
                 ", apptSiteCode='" + apptSiteCode + '\'' +
+                ", treatmentFunctionCode='" + treatmentFunctionCode + '\'' +
                 ", primaryDiagnosisICD='" + primaryDiagnosisICD + '\'' +
                 ", secondaryDiagnosisICD='" + secondaryDiagnosisICD + '\'' +
                 ", otherDiagnosisICD='" + otherDiagnosisICD + '\'' +

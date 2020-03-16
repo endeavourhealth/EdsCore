@@ -733,6 +733,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingInpatientCdsTarget.setDischargeDestinationCode(rs.getString(col++));
                 stagingInpatientCdsTarget.setDischargeMethod(rs.getString(col++));
 
+                stagingInpatientCdsTarget.setTreatmentFunctionCode(rs.getString(col++));
+
                 stagingInpatientCdsTarget.setMaternityDataBirth(rs.getString(col++));
                 stagingInpatientCdsTarget.setMaternityDataDelivery(rs.getString(col++));
 
@@ -832,6 +834,8 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     stagingOutpatientCdsTarget.setApptDate(new Date(tsApptDate.getTime()));
                 }
                 stagingOutpatientCdsTarget.setApptSiteCode(rs.getString(col++));
+
+                stagingOutpatientCdsTarget.setTreatmentFunctionCode(rs.getString(col++));
 
                 stagingOutpatientCdsTarget.setPrimaryDiagnosisICD(rs.getString(col++));
                 stagingOutpatientCdsTarget.setSecondaryDiagnosisICD(rs.getString(col++));
