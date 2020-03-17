@@ -664,7 +664,10 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " FROM resource_history"
                     + " WHERE resource_type = ?"
                     + " AND resource_id = ?"
-                    + " ORDER BY created_at ASC"; //explicitly sort so ordered most-recent-last
+                    + " ORDER BY created_at ASC, is_deleted"; //explicitly sort so ordered most-recent-last
+            //the is_deleted sorting is to get around data where we had an upsert and delete go through in the exact same
+            //second, one to delete and one to add the patient. This sorting means we get them in an order that doesn't mess
+            //up the findIndexOfHistoryChangeover(..) function
             ps = connection.prepareStatement(sql);
 
             int col = 1;
