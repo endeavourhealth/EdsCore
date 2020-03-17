@@ -681,18 +681,17 @@ public class RdbmsResourceDal implements ResourceDalI {
 
             //find a delete and upsert at the same time (the list is already sorted in date ASC)
             //need to make sure the upsert is BEFORE the delete
-            if (w1.getCreatedAt().equals(w2.getCreatedAt()) //same datetime
-                    && w1.isDeleted()
-                    && !w2.isDeleted()) { //one deleted, one not deleted
+            if (w1.getCreatedAt().equals(w2.getCreatedAt())) { //same datetime
 
-                history.set(i-1, w2);
-                history.set(i, w1);
+                if (w1.isDeleted() && !w2.isDeleted()) { //one deleted, one not deleted
+                    history.set(i - 1, w2);
+                    history.set(i, w1);
+                }
 
                 //we don't want to pick up either one of the ones we just swapped, so bump this up
                 i++;
             }
         }
-
     }
 
     private List<ResourceWrapper> getResourceHistoryRaw(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
