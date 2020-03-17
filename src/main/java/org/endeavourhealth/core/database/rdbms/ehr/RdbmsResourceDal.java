@@ -556,6 +556,9 @@ public class RdbmsResourceDal implements ResourceDalI {
         //get the history records from the DB
         List<ResourceWrapper> history = getResourceHistoryRaw(serviceId, resourceType, resourceId);
 
+        //sort to make sure a past bug with ADT doesn't cause a problem
+        sortResourceHistoryRaw(history);
+
         //go through history and work out where new way of auditing took over, then adjust from that point onwards
         int index = findIndexOfHistoryChangeover(history, current);
         adjustHistoryForChangeover(history, index, current);
@@ -656,6 +659,42 @@ public class RdbmsResourceDal implements ResourceDalI {
         return -1;
     }
 
+    /**
+     * due to a past bug in the ADT transform there are old history records for a resource where the resource was both
+     * deleted and upserted in the same second, and then upserted. Depending on how MySQL returns
+     * this we sometimes we UPSERT, DELETE, UPSERT, which is OK, but if we get DELETE, UPSERT, UPSERT then
+     * the findIndexOfHistoryChangeover function spots the two upserts adjacent to each other and incorrectly treats
+     * it as the point of the new auditing taking over.
+     *
+     * So this function spots the problem and reorders elements to avoid the problem
+     */
+    private void sortResourceHistoryRaw(List<ResourceWrapper> history) {
+
+        //this only applies if there are three or more history items
+        if (history.size() < 2) {
+            return;
+        }
+
+        for (int i=0; i<history.size()-1; i++) {
+            ResourceWrapper w1 = history.get(i);
+            ResourceWrapper w2 = history.get(i+1);
+
+            //find a delete and upsert at the same time (the list is already sorted in date ASC)
+            //need to make sure the upsert is BEFORE the delete
+            if (w1.getCreatedAt().equals(w2.getCreatedAt()) //same datetime
+                    && w1.isDeleted()
+                    && !w2.isDeleted()) { //one deleted, one not deleted
+
+                history.set(i-1, w2);
+                history.set(i, w1);
+
+                //we don't want to pick up either one of the ones we just swapped, so bump this up
+                i++;
+            }
+        }
+
+    }
+
     private List<ResourceWrapper> getResourceHistoryRaw(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
@@ -664,10 +703,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " FROM resource_history"
                     + " WHERE resource_type = ?"
                     + " AND resource_id = ?"
-                    + " ORDER BY created_at ASC, is_deleted"; //explicitly sort so ordered most-recent-last
-            //the is_deleted sorting is to get around data where we had an upsert and delete go through in the exact same
-            //second, one to delete and one to add the patient. This sorting means we get them in an order that doesn't mess
-            //up the findIndexOfHistoryChangeover(..) function
+                    + " ORDER BY created_at ASC"; //explicitly sort so ordered most-recent-last
             ps = connection.prepareStatement(sql);
 
             int col = 1;
