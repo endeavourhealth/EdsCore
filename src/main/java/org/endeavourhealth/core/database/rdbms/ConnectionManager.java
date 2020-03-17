@@ -662,10 +662,13 @@ public class ConnectionManager {
         return getEntityManager(Db.Subscriber, configName);
     }*/
 
-    public static EntityManager getEhrEntityManager(UUID serviceId) throws Exception {
+    /**
+     * no hibernate entities in EHR DB now
+     */
+    /*public static EntityManager getEhrEntityManager(UUID serviceId) throws Exception {
         String configName = findConfigNameForPublisherService(serviceId);
         return getEntityManager(Db.Ehr, configName);
-    }
+    }*/
 
     public static EntityManager getLogbackEntityManager() throws Exception {
         return getEntityManager(Db.Logback);

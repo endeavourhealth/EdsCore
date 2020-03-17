@@ -2,9 +2,6 @@ package org.endeavourhealth.core.fhirStorage.statistics;
 
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
-import org.endeavourhealth.core.database.dal.ehr.ResourceMetadataIterator;
-import org.endeavourhealth.core.fhirStorage.metadata.PatientMetadata;
-import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +34,9 @@ public class StorageStatisticsService {
         long activeCount = 0;
         long deceasedCount = 0;
 
-        ResourceMetadataIterator<PatientMetadata> patientMetadataIterator = repository.getMetadataByService(serviceId,
+        //metadata hasn't been populated for a long time, so this is not valid - adding exception for now
+        throw new Exception("Resource metadata not populated");
+        /*ResourceMetadataIterator<PatientMetadata> patientMetadataIterator = repository.getMetadataByService(serviceId,
                 ResourceType.Patient.toString(),
                 PatientMetadata.class);
 
@@ -60,7 +59,7 @@ public class StorageStatisticsService {
         statistics.setTotalCount(totalCount);
         statistics.setActiveCount(activeCount);
         statistics.setDeceasedCount(deceasedCount);
-        return statistics;
+        return statistics;*/
     }
 
     private ResourceStatistics createResourceStatistics(UUID serviceId, UUID systemId, String resourceType) throws Exception {

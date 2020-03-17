@@ -491,12 +491,8 @@ public class FhirStorageService {
         entry.setCreatedAt(new Date());
         entry.setServiceId(serviceId);
         entry.setSystemId(systemId);
-        //entry.setSchemaVersion(SCHEMA_VERSION);
-        //entry.setResourceMetadata(JsonSerializer.serialize(metadata));
-        entry.setResourceMetadata(""); //we never use the metadata so don't save to the DB
         entry.setResourceData(resourceJson);
         entry.setResourceChecksum(generateChecksum(resourceJson));
-        //entry.setExchangeId(exchangeId); //never used or persisted, so removed
         entry.setExchangeBatchId(batchId);
 
         if (metadata instanceof PatientCompartment) {

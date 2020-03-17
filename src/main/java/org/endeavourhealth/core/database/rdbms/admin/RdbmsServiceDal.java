@@ -37,7 +37,7 @@ public class RdbmsServiceDal implements ServiceDalI {
 
                 //if the above works, then the column is present
                 cachedHasNewCols = Boolean.TRUE;
-                LOG.debug("Alias column found");
+                //LOG.debug("Alias column found");
 
             } catch (Exception ex) {
                 //any exception with the above and the column isn't present
