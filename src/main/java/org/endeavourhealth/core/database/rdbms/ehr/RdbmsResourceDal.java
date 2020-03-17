@@ -646,6 +646,9 @@ public class RdbmsResourceDal implements ResourceDalI {
                         && checksum.equals(lastChecksum) //faster to check this than comparing strings, so do first
                         && json.equals(lastJson)) {
                     //if this one and previous one aren't deleted but have the same JSON content, then it's the changeover
+
+//if the one just BEFORE the last one (i-2) is a delete with the same datetime as i-1, then IGNORE this
+
                     return i;
                 }
             }
@@ -684,8 +687,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             if (w1.getCreatedAt().equals(w2.getCreatedAt())) { //same datetime
 
                 if (w1.isDeleted() && !w2.isDeleted()) { //one deleted, one not deleted
-                    history.set(i - 1, w2);
-                    history.set(i, w1);
+                    history.set(i, w2);
+                    history.set(i+1, w1);
                 }
 
                 //we don't want to pick up either one of the ones we just swapped, so bump this up
