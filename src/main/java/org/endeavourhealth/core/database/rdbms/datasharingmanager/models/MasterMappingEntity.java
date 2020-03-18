@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.datasharingmanager.models;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "master_mapping", schema = "data_sharing_manager")
@@ -11,6 +12,7 @@ public class MasterMappingEntity {
     private String parentUuid;
     private short parentMapTypeId;
     private byte isDefault;
+    private Timestamp insertedAt;
 
     public  MasterMappingEntity(){}
 
@@ -96,5 +98,15 @@ public class MasterMappingEntity {
         result = 31 * result + (int) parentMapTypeId;
         result = 31 * result + (int) isDefault;
         return result;
+    }
+
+    @Basic
+    @Column(name = "inserted_at")
+    public Timestamp getInsertedAt() {
+        return insertedAt;
+    }
+
+    public void setInsertedAt(Timestamp insertedAt) {
+        this.insertedAt = insertedAt;
     }
 }

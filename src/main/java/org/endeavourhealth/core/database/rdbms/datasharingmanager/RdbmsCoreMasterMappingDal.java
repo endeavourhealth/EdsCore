@@ -10,6 +10,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,5 +77,32 @@ public class RdbmsCoreMasterMappingDal implements MasterMappingDalI {
             entityManager.close();
         }
 
+    }
+
+    @Override
+    public List<MasterMappingEntity> getChildMappingsInLastXDays(Short parentMapTypeId, Short childMapTypeId, int days) throws Exception {
+        EntityManager entityManager = ConnectionManager.getDsmEntityManager();
+
+        LocalDate referenceDate = LocalDate.now().minusDays(days);
+        Date date = Date.valueOf(referenceDate);
+
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<MasterMappingEntity> cq = cb.createQuery(MasterMappingEntity.class);
+            Root<MasterMappingEntity> rootEntry = cq.from(MasterMappingEntity.class);
+
+            Predicate predicate = cb.and(cb.equal(rootEntry.get("parentMapTypeId"), parentMapTypeId),
+                    cb.equal(rootEntry.get("childMapTypeId"), childMapTypeId),
+                    cb.greaterThanOrEqualTo(rootEntry.get("insertedAt"), date));
+
+            cq.where(predicate);
+            cq.orderBy(cb.asc(rootEntry.get("parentUuid")));
+            TypedQuery<MasterMappingEntity> query = entityManager.createQuery(cq);
+            List<MasterMappingEntity> maps = query.getResultList();
+
+            return maps;
+        } finally {
+            entityManager.close();
+        }
     }
 }
