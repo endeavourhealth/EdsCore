@@ -9,17 +9,18 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class RdbmsCoreFilerDal implements CoreFilerDalI {
 
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsCoreFilerDal.class);
 
+    private static final String DUPLICATE_KEY_ERR = "Duplicate entry .* for key 'PRIMARY'";
+
     @Override
-    public void save(List<CoreFilerWrapper> wrappers) throws Exception {
+    public void save(UUID serviceId, List<CoreFilerWrapper> wrappers) throws Exception {
         //allow several attempts if it fails due to a deadlock
         DeadlockHandler h = new DeadlockHandler();
 
@@ -85,19 +86,149 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
     }
 
     @Override
-    public void delete(List<CoreFilerWrapper> wrappers) throws Exception {
+    public void delete(UUID serviceId, List<CoreFilerWrapper> wrappers) throws Exception {
         for (CoreFilerWrapper wrapper : wrappers) {
             wrapper.setDeleted(true);
         }
-        save(wrappers);
+        save(serviceId, wrappers);
     }
 
     @Override
-    public void save(CoreFilerWrapper wrapper) throws Exception {
+    public void save(UUID serviceId, CoreFilerWrapper wrapper) throws Exception {
         List<CoreFilerWrapper> l = new ArrayList<>();
         l.add(wrapper);
-        save(l);
+        save(serviceId, l);
     }
+
+    @Override
+    public CoreId findOrCreateCoreId(UUID serviceId, byte coreTable, String sourceId) throws Exception {
+
+        List<String> l = new ArrayList<>();
+        l.add(sourceId);
+
+        Map<String, CoreId> ids = findOrCreateCoreIds(serviceId, coreTable, l);
+        return ids.get(sourceId);
+    }
+
+    @Override
+    public Map<String, CoreId> findOrCreateCoreIds(UUID serviceId, byte coreTable, List<String> sourceIds) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
+        while (true) {
+            try {
+                return tryFindOrCreateSubscriberIds(serviceId, coreTable, sourceIds);
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    private Map<String, CoreId> tryFindOrCreateSubscriberIds(UUID serviceId, byte coreTable, List<String> sourceIds) throws Exception {
+
+        Map<String, CoreId> ret = new HashMap<>();
+
+        Connection connection = ConnectionManager.getEhrConnection(serviceId);
+
+        PreparedStatement psInsert = null;
+
+        try {
+            //look for any inserted already
+            findSubscriberIdsImpl(serviceId, coreTable, sourceIds, ret, connection);
+
+            //see which IDs weren't found
+            List<String> sourceIdsRemaining = new ArrayList<>();
+            for (String sourceId : sourceIds) {
+                if (!ret.containsKey(sourceId)) {
+                    sourceIdsRemaining.add(sourceId);
+                }
+            }
+
+            //now generate new IDs for any ones not found
+            if (!sourceIdsRemaining.isEmpty()) {
+
+                String sql = "INSERT INTO core_id_map (service_id, core_table, source_id) "
+                        + "VALUES (?, ?, ?)";
+
+                psInsert = connection.prepareStatement(sql);
+
+                for (String sourceId : sourceIdsRemaining) {
+                    int col = 1;
+                    psInsert.setString(col++, serviceId.toString());
+                    psInsert.setInt(col++, coreTable);
+                    psInsert.setString(col++, sourceId);
+
+                    psInsert.addBatch();
+                }
+
+                psInsert.executeBatch();
+
+                connection.commit();
+
+                //now retrieve the IDs we just generated
+                findSubscriberIdsImpl(serviceId, coreTable, sourceIdsRemaining, ret, connection);
+            }
+
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+
+        } finally {
+            if (psInsert != null) {
+                psInsert.close();
+            }
+            connection.close();
+        }
+
+        return ret;
+    }
+
+    private void findSubscriberIdsImpl(UUID serviceId, byte coreTable, List<String> sourceIds, Map<String, CoreId> map, Connection connection) throws Exception {
+
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT source_id, core_id "
+                    + "FROM core_id_map "
+                    + "WHERE service_id = ? "
+                    + "AND core_table = ? "
+                    + "AND source_id IN (";
+            for (int i=0; i<sourceIds.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            ps.setInt(col++, coreTable);
+            for (String sourceId: sourceIds) {
+                ps.setString(col++, sourceId);
+            }
+            //LOG.debug("" + ps);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                col = 1;
+                String sourceId = rs.getString(col++);
+                int coreId = rs.getInt(col++);
+
+                CoreId o = new CoreId(serviceId, coreTable, coreId, sourceId);
+                map.put(sourceId, o);
+            }
+
+            rs.close();
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
 
     private static PreparedStatement createAndPopulateUpsertPreparedStatement(Connection connection, CoreFilerWrapper wrapper) throws Exception {
 

@@ -11,7 +11,7 @@ public class CoreFilerWrapper {
     private Date createdAt;
     private String dataType;
     private Object data;
-    private UUID exchangeBatchId;
+    private UUID exchangeId;
     private boolean isDeleted;
 
     public CoreFilerWrapper() {}
@@ -48,12 +48,12 @@ public class CoreFilerWrapper {
         this.createdAt = createdAt;
     }
 
-    public UUID getExchangeBatchId() {
-        return exchangeBatchId;
+    public UUID getExchangeId() {
+        return exchangeId;
     }
 
-    public void setExchangeBatchId(UUID exchangeBatchId) {
-        this.exchangeBatchId = exchangeBatchId;
+    public void setExchangeId(UUID exchangeId) {
+        this.exchangeId = exchangeId;
     }
 
     public boolean isDeleted() {

@@ -7,6 +7,7 @@ import org.endeavourhealth.core.database.dal.datagenerator.SubscriberZipFileUUID
 import org.endeavourhealth.core.database.dal.datasharingmanager.*;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
+import org.endeavourhealth.core.database.dal.ehr.CoreFilerDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
@@ -23,6 +24,7 @@ import org.endeavourhealth.core.database.rdbms.datagenerator.RdbmsSubscriberZipF
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.*;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientLinkDal;
 import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
+import org.endeavourhealth.core.database.rdbms.ehr.RdbmsCoreFilerDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
 import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
@@ -555,4 +557,7 @@ public class DalProvider {
         return new RdbmsApplicationHeartbeatDal();
     }
 
+    public static CoreFilerDalI factoryCoreFilerDal() {
+        return new RdbmsCoreFilerDal();
+    }
 }
