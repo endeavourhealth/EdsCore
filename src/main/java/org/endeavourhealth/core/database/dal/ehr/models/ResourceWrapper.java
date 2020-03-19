@@ -8,6 +8,7 @@ import org.hl7.fhir.instance.model.Reference;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -42,6 +43,9 @@ public class ResourceWrapper {
 
         sb.append(", checksum ");
         sb.append(resourceChecksum);
+
+        sb.append(", ");
+        sb.append(new SimpleDateFormat("yyyy-MM-dd").format(createdAt));
 
         if (exchangeBatchId != null) {
             sb.append(", batch ID ");

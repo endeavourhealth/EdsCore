@@ -462,35 +462,29 @@ public class RdbmsResourceDal implements ResourceDalI {
         //the first new-way record where it audited what had been previously written
         String lastJson = null;
         Long lastChecksum = null;
-        Boolean lastWasDeleted = null;
 
         for (int i=0; i<history.size(); i++) {
             ResourceWrapper h = history.get(i);
 
             String json = h.getResourceData();
             Long checksum = h.getResourceChecksum();
-            Boolean deleted = new Boolean(h.isDeleted());
 
             //we've already checked the first history record above, so only check subsequent ones
             if (i > 0) {
-                if (deleted.booleanValue() && lastWasDeleted.booleanValue()) {
-                    //if this one is deleted and the previous one was, then it's the changeover
+                if (json == null && lastJson == null) {
+                    //if this has null JSON as does the previous then it's the change over
                     return i;
 
-                } else if (!deleted.booleanValue() && !lastWasDeleted.booleanValue()
+                } else if (json != null && lastJson != null
                         && checksum.equals(lastChecksum) //faster to check this than comparing strings, so do first
                         && json.equals(lastJson)) {
                     //if this one and previous one aren't deleted but have the same JSON content, then it's the changeover
-
-//if the one just BEFORE the last one (i-2) is a delete with the same datetime as i-1, then IGNORE this
-
                     return i;
                 }
             }
 
             lastJson = json;
             lastChecksum = checksum;
-            lastWasDeleted = deleted;
         }
 
         //if we make it here then the new auditing has never been used for this resource so return -1 to indicate this
