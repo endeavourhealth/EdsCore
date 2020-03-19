@@ -851,12 +851,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        //EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
+        Connection connection = ConnectionManager.getPublisherStagingConnection(serviceId);
 
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
+            //SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            //Connection connection = session.connection();
 
             String sql = "INSERT INTO cds_inpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
@@ -916,7 +917,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            //entityManager.getTransaction().begin();
 
             for (StagingInpatientCds cdsInpatient : toSave) {
 
@@ -1029,11 +1030,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             }
 
             ps.executeBatch();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
+            //entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            //entityManager.getTransaction().rollback();
+            connection.rollback();
 
             LOG.error("Error saving");
             for (StagingInpatientCds cdsInPatient: toSave) {
@@ -1045,7 +1047,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            //entityManager.close();
+            connection.close();
         }
     }
 
@@ -1069,12 +1072,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        //EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
+        Connection connection = ConnectionManager.getPublisherStagingConnection(serviceId);
 
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
+            //SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            //Connection connection = session.connection();
 
             String sql = "INSERT INTO cds_outpatient "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
@@ -1119,7 +1123,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            //entityManager.getTransaction().begin();
 
             for (StagingOutpatientCds cdsOutpatient : toSave) {
 
@@ -1200,11 +1204,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             }
 
             ps.executeBatch();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
+            //entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            //entityManager.getTransaction().rollback();
+            connection.rollback();
 
             LOG.error("Error saving");
             for (StagingOutpatientCds cdsOutpatient: toSave) {
@@ -1216,7 +1221,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            //entityManager.close();
+            connection.close();
         }
     }
 
@@ -1240,12 +1246,12 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        //EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
-
+        Connection connection = ConnectionManager.getPublisherStagingConnection(serviceId);
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
+            //SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            //Connection connection = session.connection();
 
             String sql = "INSERT INTO cds_emergency "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
@@ -1296,7 +1302,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            //entityManager.getTransaction().begin();
 
             for (StagingEmergencyCds cdsEmergency : toSave) {
 
@@ -1387,13 +1393,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
                 ps.addBatch();
             }
-
             ps.executeBatch();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
+            //entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            //entityManager.getTransaction().rollback();
+            connection.rollback();
 
             LOG.error("Error saving");
             for (StagingEmergencyCds cdsEmergency: toSave) {
@@ -1405,7 +1411,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            //entityManager.close();
+            connection.close();;
         }
     }
 
@@ -1429,12 +1436,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        //EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
+        Connection connection = ConnectionManager.getPublisherStagingConnection(serviceId);
 
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
+            //SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            //Connection connection = session.connection();
 
             String sql = "INSERT INTO cds_critical_care "
                     + " (exchange_id, dt_received, record_checksum, cds_unique_identifier, mrn, nhs_number, critical_care_type_id, " +
@@ -1487,7 +1495,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            //entityManager.getTransaction().begin();
 
             for (StagingCriticalCareCds cdsCriticalCare : toSave) {
 
@@ -1607,13 +1615,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
                 ps.addBatch();
             }
-
             ps.executeBatch();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
+            //entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            //entityManager.getTransaction().rollback();
+            connection.rollback();
 
             LOG.error("Error saving");
             for (StagingCriticalCareCds cdsCritical: toSave) {
@@ -1625,7 +1633,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            //entityManager.close();
+            connection.close();
         }
     }
 
@@ -1649,12 +1658,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             return;
         }
 
-        EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
+        //EntityManager entityManager = ConnectionManager.getPublisherStagingEntityManager(serviceId);
         PreparedStatement ps = null;
+        Connection connection = ConnectionManager.getPublisherStagingConnection(serviceId);
 
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
+            //SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            //Connection connection = session.connection();
 
             String sql = "INSERT INTO cds_home_delivery_birth  "
                     + " (exchange_id, dt_received, record_checksum, cds_activity_date, cds_unique_identifier, " +
@@ -1695,7 +1705,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            //entityManager.getTransaction().begin();
 
             for (StagingHomeDelBirthCds cdsHomeDelBirth : toSave) {
 
@@ -1763,13 +1773,13 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
 
                 ps.addBatch();
             }
-
             ps.executeBatch();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
+            //entityManager.getTransaction().commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            //entityManager.getTransaction().rollback();
+            connection.rollback();
 
             LOG.error("Error saving");
             for (StagingHomeDelBirthCds cdsHomeDelBirth: toSave) {
@@ -1781,7 +1791,8 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            //entityManager.close();
+            connection.close();
         }
     }
 }

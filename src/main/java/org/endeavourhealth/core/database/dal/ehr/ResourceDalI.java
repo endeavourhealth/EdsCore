@@ -17,8 +17,6 @@ public interface ResourceDalI {
     void delete(ResourceWrapper resourceEntry) throws Exception;
     void hardDeleteResourceAndAllHistory(ResourceWrapper resourceEntry) throws Exception;
 
-    //void saveEncounter(ResourceWrapper wrapper, Encounter encounter) throws Exception;
-
     Resource getCurrentVersionAsResource(UUID serviceId, ResourceType resourceType, String resourceIdStr) throws Exception;
     ResourceWrapper getCurrentVersion(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
     Map<String, ResourceWrapper> getCurrentVersionForReferences(UUID serviceId, List<String> references) throws Exception;
