@@ -503,9 +503,12 @@ public class RdbmsResourceDal implements ResourceDalI {
         ResourceWrapper first = history.get(0);
         String serviceIdStr = first.getServiceId().toString();
         if (!serviceIdStr.equalsIgnoreCase("b5a08769-cbbe-4093-93d6-b696cd1da483")
-                && !serviceIdStr.equals("962d6a9a-5950-47ac-9e16-ebee56f9507a")) {
+                && !serviceIdStr.equals("962d6a9a-5950-47ac-9e16-ebee56f9507a")
+                && !serviceIdStr.equals("3ec22b12-5b2e-4665-bc87-34072725ef21")) { //this last one just for testing
             return;
         }
+
+        //LOG.debug("Sorting history of size " + history.size());
 
         //this only applies if there are three or more history items
         if (history.size() < 2) {
@@ -544,6 +547,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             return;
         }
 
+        //LOG.debug("Found " + (range+1) + " with same date from " + dateStartIndex + " to " + dateEndIndex);
+
         //sort the wrappers for date so we have UPSERT, DELETE, UPSERT etc.
         boolean wantUpsert = true;
 
@@ -575,6 +580,9 @@ public class RdbmsResourceDal implements ResourceDalI {
                 history.set(i, replacement);
                 history.set(replacementIndex, w1);
             }
+
+            //we want the opposite state for the next element
+            wantUpsert = !wantUpsert;
         }
     }
 

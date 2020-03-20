@@ -45,7 +45,7 @@ public class ResourceWrapper {
         sb.append(resourceChecksum);
 
         sb.append(", ");
-        sb.append(new SimpleDateFormat("yyyy-MM-dd").format(createdAt));
+        sb.append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(createdAt));
 
         if (exchangeBatchId != null) {
             sb.append(", batch ID ");
