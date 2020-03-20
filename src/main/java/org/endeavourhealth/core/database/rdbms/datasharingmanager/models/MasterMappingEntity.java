@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.datasharingmanager.models;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Table(name = "master_mapping", schema = "data_sharing_manager")
@@ -22,6 +23,7 @@ public class MasterMappingEntity {
         this.childMapTypeId = childMapTypeId;
         this.parentUuid = parentUuid;
         this.parentMapTypeId = parentMapTypeId;
+        this.insertedAt = new Timestamp(new Date().getTime());
     }
 
     @Id
