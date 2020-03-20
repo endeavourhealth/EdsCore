@@ -413,15 +413,15 @@ public class RdbmsResourceDal implements ResourceDalI {
         return ret;
     }
 
-    private static void adjustHistoryForChangeover(List<ResourceWrapper> history, int index, ResourceWrapper current) {
+    private static void adjustHistoryForChangeover(List<ResourceWrapper> history, int indexFrom, ResourceWrapper current) {
 
         //if the index was -1, then it means the history has never been written to in the new
         //way so shouldn't be adjusted at all
-        if (index == -1) {
+        if (indexFrom == -1) {
             return;
         }
 
-        for (int i = index; i < history.size(); i++) {
+        for (int i = indexFrom; i < history.size(); i++) {
             ResourceWrapper h = history.get(i);
 
             ResourceWrapper copyFrom = null;
@@ -460,27 +460,24 @@ public class RdbmsResourceDal implements ResourceDalI {
         //when the changeover happened, we will have two adjacent history records with
         //the same JSON in - from the last old-way record where it audited what was written, and from
         //the first new-way record where it audited what had been previously written
-        String lastJson = null;
-        Long lastChecksum = null;
+        String lastJson = first.getResourceData();
+        Long lastChecksum = first.getResourceChecksum();
 
-        for (int i=0; i<history.size(); i++) {
+        for (int i=1; i<history.size(); i++) { //note starting at one
             ResourceWrapper h = history.get(i);
 
             String json = h.getResourceData();
             Long checksum = h.getResourceChecksum();
 
-            //we've already checked the first history record above, so only check subsequent ones
-            if (i > 0) {
-                if (json == null && lastJson == null) {
-                    //if this has null JSON as does the previous then it's the change over
-                    return i;
+            if (json == null && lastJson == null) {
+                //if this has null JSON as does the previous then it's the change over
+                return i;
 
-                } else if (json != null && lastJson != null
-                        && checksum.equals(lastChecksum) //faster to check this than comparing strings, so do first
-                        && json.equals(lastJson)) {
-                    //if this one and previous one aren't deleted but have the same JSON content, then it's the changeover
-                    return i;
-                }
+            } else if (json != null && lastJson != null
+                    && checksum.equals(lastChecksum) //faster to check this than comparing strings, so do first
+                    && json.equals(lastJson)) {
+                //if this one and previous one aren't deleted but have the same JSON content, then it's the changeover
+                return i;
             }
 
             lastJson = json;
@@ -493,35 +490,90 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     /**
      * due to a past bug in the ADT transform there are old history records for a resource where the resource was both
-     * deleted and upserted in the same second, and then upserted. Depending on how MySQL returns
-     * this we sometimes we UPSERT, DELETE, UPSERT, which is OK, but if we get DELETE, UPSERT, UPSERT then
-     * the findIndexOfHistoryChangeover function spots the two upserts adjacent to each other and incorrectly treats
-     * it as the point of the new auditing taking over.
+     * deleted and upserted in the same second, and then upserted again (either same second or just after).
+     * Depending on how MySQL returns this we sometimes we UPSERT, DELETE, UPSERT, which is OK, but if we get DELETE, UPSERT, UPSERT or
+     * UPSERT, UPSERT, DELETE then the findIndexOfHistoryChangeover function spots the two upserts adjacent to each
+     * other and incorrectly treats it as the point of the new auditing taking over.
      *
      * So this function spots the problem and reorders elements to avoid the problem
      */
-    private void sortResourceHistoryRaw(List<ResourceWrapper> history) {
+    private void sortResourceHistoryRaw(List<ResourceWrapper> history) throws Exception {
+
+        //this issue ONLY affected the two ADT feeds, so speed things up by returning out if not one of them
+        ResourceWrapper first = history.get(0);
+        String serviceIdStr = first.getServiceId().toString();
+        if (!serviceIdStr.equalsIgnoreCase("b5a08769-cbbe-4093-93d6-b696cd1da483")
+                && !serviceIdStr.equals("962d6a9a-5950-47ac-9e16-ebee56f9507a")) {
+            return;
+        }
 
         //this only applies if there are three or more history items
         if (history.size() < 2) {
             return;
         }
 
-        for (int i=0; i<history.size()-1; i++) {
+        Date date = null;
+        int dateStartIndex = -1;
+
+        for (int i=0; i<history.size(); i++) {
             ResourceWrapper w1 = history.get(i);
-            ResourceWrapper w2 = history.get(i+1);
+            Date d = w1.getCreatedAt();
 
-            //find a delete and upsert at the same time (the list is already sorted in date ASC)
-            //need to make sure the upsert is BEFORE the delete
-            if (w1.getCreatedAt().equals(w2.getCreatedAt())) { //same datetime
+            if (date == null
+                    || (date != null && !date.equals(d))) {
 
-                if (w1.isDeleted() && !w2.isDeleted()) { //one deleted, one not deleted
-                    history.set(i, w2);
-                    history.set(i+1, w1);
+                //if we've moved on to a different date we need to re-sort the subset we've found
+                if (date != null && !date.equals(d)) {
+                    sortResourceHistoryRawSubset(history, dateStartIndex, i-1);
                 }
 
-                //we don't want to pick up either one of the ones we just swapped, so bump this up
-                i++;
+                dateStartIndex = i;
+                date = d;
+            }
+        }
+
+        //do any remainder
+        sortResourceHistoryRawSubset(history, dateStartIndex, history.size()-1);
+    }
+
+    private void sortResourceHistoryRawSubset(List<ResourceWrapper> history, int dateStartIndex, int dateEndIndex) throws Exception {
+
+        //if the subset only contains one element, there's no sorting to do
+        int range = dateEndIndex - dateStartIndex;
+        if (range <= 1) {
+            return;
+        }
+
+        //sort the wrappers for date so we have UPSERT, DELETE, UPSERT etc.
+        boolean wantUpsert = true;
+
+        for (int i=dateStartIndex; i<=dateEndIndex; i++) {
+            ResourceWrapper w1 = history.get(i);
+
+            //if this wrapper matches the desired state, do nothing
+            boolean w1Matches = wantUpsert == !w1.isDeleted();
+            if (!w1Matches) {
+
+                int replacementIndex = -1;
+
+                //if the state is different to what we want, find the next one matching the desired state
+                for (int j=i+1; i<=dateEndIndex; j++) {
+                    ResourceWrapper w2 = history.get(j);
+                    boolean w2Matches = wantUpsert == !w2.isDeleted();
+                    if (w2Matches) {
+                        replacementIndex = j;
+                        break;
+                    }
+                }
+
+                if (replacementIndex == -1) {
+                    throw new Exception("Failed to sort history for " + w1.getResourceType() + " " + w1.getResourceId() + " from range " + dateStartIndex + " to " + dateEndIndex);
+                }
+
+                //swap the two items
+                ResourceWrapper replacement = history.get(replacementIndex);
+                history.set(i, replacement);
+                history.set(replacementIndex, w1);
             }
         }
     }
