@@ -134,7 +134,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
 
         try {
             //look for any inserted already
-            findSubscriberIdsImpl(serviceId, coreTable, sourceIds, ret, connection);
+            findCoreIdsImpl(serviceId, coreTable, sourceIds, ret, connection);
 
             //see which IDs weren't found
             List<String> sourceIdsRemaining = new ArrayList<>();
@@ -166,7 +166,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
                 connection.commit();
 
                 //now retrieve the IDs we just generated
-                findSubscriberIdsImpl(serviceId, coreTable, sourceIdsRemaining, ret, connection);
+                findCoreIdsImpl(serviceId, coreTable, sourceIdsRemaining, ret, connection);
             }
 
         } catch (Exception ex) {
@@ -208,7 +208,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         return id;
     }
 
-    private void findSubscriberIdsImpl(UUID serviceId, byte coreTable, List<String> sourceIds, Map<String, CoreId> map, Connection connection) throws Exception {
+    private void findCoreIdsImpl(UUID serviceId, byte coreTable, List<String> sourceIds, Map<String, CoreId> map, Connection connection) throws Exception {
 
         PreparedStatement ps = null;
         try {
@@ -260,6 +260,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         switch (wrapper.getDataType()) {
             case "organization"     :   return createUpsertOrganizationPreparedStatement(connection, wrapper);
             case "patient"          :   return createUpsertPatientPreparedStatement(connection, wrapper);
+            case "patient_address"  :   return createUpsertPatientAddressPreparedStatement(connection, wrapper);
             case "practitioner"     :   return createUpsertPractitionerPreparedStatement(connection, wrapper);
             case "encounter"        :   return createUpsertEncounterPreparedStatement(connection, wrapper);
             case "encounter_triple" :   return createUpsertEncounterTriplePreparedStatement(connection, wrapper);
@@ -343,6 +344,66 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         ps.setInt(col++, patient.getEthnicCodeTypeId());
         ps.setInt(col++, patient.getRegisteredPracticeOrganizationId());
         ps.setString(col++, patient.getMothersNHSNumber());
+
+        return ps;
+    }
+
+    private static PreparedStatement createUpsertPatientAddressPreparedStatement(Connection connection, CoreFilerWrapper wrapper) throws Exception {
+
+        String sql = "INSERT INTO patient_address"
+                + " (id, organization_id, patient_id, address_line_1, address_line_2, address_line_3, address_line_4, "
+                + " city, postcode, use_type_id, start_date, end_date, lsoa_2001_code, lsoa_2011_code, msoa_2001_code, "
+                + " msoa_2011_code, ward_code, local_authority_code)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " ON DUPLICATE KEY UPDATE"
+                + " organization_id = VALUES(organization_id),"
+                + " patient_id = VALUES(patient_id),"
+                + " address_line_1 = VALUES(address_line_1),"
+                + " address_line_2 = VALUES(address_line_2),"
+                + " address_line_3 = VALUES(address_line_3),"
+                + " address_line_4 = VALUES(address_line_4),"
+                + " city = VALUES(city),"
+                + " postcode = VALUES(postcode),"
+                + " use_type_id = VALUES(use_type_id),"
+                + " start_date = VALUES(start_date),"
+                + " end_date = VALUES(end_date),"
+                + " lsoa_2001_code = VALUES(lsoa_2001_code),"
+                + " lsoa_2011_code = VALUES(lsoa_2011_code), "
+                + " msoa_2001_code = VALUES(msoa_2001_code), "
+                + " msoa_2011_code = VALUES(msoa_2011_code), "
+                + " ward_code = VALUES(ward_code), "
+                + " local_authority_code = VALUES(local_authority_code) ";
+
+        PreparedStatement ps = connection.prepareStatement(sql);;
+
+        PatientAddress patientAddress = (PatientAddress) wrapper.getData();
+        int col = 1;
+        ps.setInt(col++, patientAddress.getId());
+        ps.setInt(col++, patientAddress.getOrganizationId());
+        ps.setInt(col++, patientAddress.getPatientId());
+        ps.setString(col++, patientAddress.getAddressLine1());
+        ps.setString(col++, patientAddress.getAddressLine2());
+        ps.setString(col++, patientAddress.getAddressLine3());
+        ps.setString(col++, patientAddress.getAddressLine4());
+        ps.setString(col++, patientAddress.getCity());
+        ps.setString(col++, patientAddress.getPostCode());
+        ps.setInt(col++, patientAddress.getUseTypeId());
+        if (patientAddress.getStartDate() != null) {
+            ps.setTimestamp(col++, new java.sql.Timestamp(patientAddress.getStartDate().getTime()));
+        } else {
+            ps.setNull(col++, Types.TIMESTAMP);
+        }
+        if (patientAddress.getEndDate() != null) {
+            ps.setTimestamp(col++, new java.sql.Timestamp(patientAddress.getEndDate().getTime()));
+        } else {
+            ps.setNull(col++, Types.TIMESTAMP);
+        }
+        ps.setString(col++, patientAddress.getLsoa2001Code());
+        ps.setString(col++, patientAddress.getLsoa2011Code());
+        ps.setString(col++, patientAddress.getMsoa2001Code());
+        ps.setString(col++, patientAddress.getMsoa2011Code());
+        ps.setString(col++, patientAddress.getWardCode());
+        ps.setString(col++, patientAddress.getLocalAutorityCode());
 
         return ps;
     }
