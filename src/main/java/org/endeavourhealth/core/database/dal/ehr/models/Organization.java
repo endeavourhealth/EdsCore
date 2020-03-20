@@ -7,7 +7,7 @@ public class Organization {
     private String name;
     private int typeId;
     private String postCode;
-    private int parentOrganizationId;
+    private Integer parentOrganizationId;
 
     public Organization() {
     }
@@ -53,11 +53,11 @@ public class Organization {
         this.postCode = postCode;
     }
 
-    public int getParentOrganizationId() {
+    public Integer getParentOrganizationId() {
         return parentOrganizationId;
     }
 
-    public void setParentOrganizationId(int parentOrganizationId) {
+    public void setParentOrganizationId(Integer parentOrganizationId) {
         this.parentOrganizationId = parentOrganizationId;
     }
 }

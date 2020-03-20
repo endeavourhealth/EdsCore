@@ -265,7 +265,11 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         ps.setString(col++, organization.getName());
         ps.setInt(col++, organization.getTypeId());
         ps.setString(col++, organization.getPostCode());
-        ps.setInt(col++, organization.getParentOrganizationId());
+        if (organization.getParentOrganizationId() != null) {
+            ps.setInt(col++, organization.getParentOrganizationId());
+        } else {
+            ps.setNull(col++, Types.INTEGER);
+        }
 
         return ps;
     }
