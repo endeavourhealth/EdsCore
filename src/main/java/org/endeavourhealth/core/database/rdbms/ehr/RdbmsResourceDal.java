@@ -543,7 +543,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         //if the subset only contains one element, there's no sorting to do
         int range = dateEndIndex - dateStartIndex;
-        if (range <= 1) {
+        if (range < 1) {
             return;
         }
 
@@ -579,6 +579,10 @@ public class RdbmsResourceDal implements ResourceDalI {
                 ResourceWrapper replacement = history.get(replacementIndex);
                 history.set(i, replacement);
                 history.set(replacementIndex, w1);
+
+                //LOG.debug("Index " + i + " is NOW OK, want upsert " + wantUpsert + " moved from " + replacementIndex);
+            } else {
+                //LOG.debug("Index " + i + " is OK, want upsert " + wantUpsert + " isUpsert = " + !w1.isDeleted());
             }
 
             //we want the opposite state for the next element
