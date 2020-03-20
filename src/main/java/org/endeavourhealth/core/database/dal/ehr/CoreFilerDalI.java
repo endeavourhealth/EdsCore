@@ -18,4 +18,6 @@ public interface CoreFilerDalI {
     CoreId findOrCreateCoreId(UUID serviceId,  byte coreTable, String sourceId) throws Exception;
 
     Map<String, CoreId> findOrCreateCoreIds(UUID serviceId, byte coreTable, List<String> sourceIds) throws Exception;
+
+    Integer findOrganizationIdFromOdsCode(UUID serviceId, String odsCode) throws Exception;
 }

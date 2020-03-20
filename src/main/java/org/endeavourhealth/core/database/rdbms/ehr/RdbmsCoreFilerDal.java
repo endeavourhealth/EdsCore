@@ -26,7 +26,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
 
         while (true) {
             try {
-                trySave(wrappers);
+                trySave(serviceId, wrappers);
                 break;
 
             } catch (Exception ex) {
@@ -52,9 +52,9 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         return serviceId;
     }
 
-    private void trySave(List<CoreFilerWrapper> wrappers) throws Exception {
+    private void trySave(UUID serviceId, List<CoreFilerWrapper> wrappers) throws Exception {
 
-        UUID serviceId = findServiceId(wrappers);
+        //UUID serviceId = findServiceId(wrappers);
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
 
@@ -181,6 +181,31 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         }
 
         return ret;
+    }
+
+    @Override
+    public Integer findOrganizationIdFromOdsCode(UUID serviceId, String odsCode) throws Exception {
+
+        Connection connection = ConnectionManager.getEhrConnection(serviceId);
+        PreparedStatement ps = null;
+        Integer id = null;
+
+        try {
+                String sql = "SELECT id from organization where ods_code = ? ";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, odsCode);
+                ResultSet rs = ps.executeQuery();
+                if (rs.next()) {
+                    id = rs.getInt(1);
+                }
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+
+        return id;
     }
 
     private void findSubscriberIdsImpl(UUID serviceId, byte coreTable, List<String> sourceIds, Map<String, CoreId> map, Connection connection) throws Exception {
