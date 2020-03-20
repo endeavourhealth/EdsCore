@@ -426,6 +426,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         int col = 1;
         ps.setInt(col++, practitioner.getId());
         ps.setInt(col++, practitioner.getOrganizationId());
+        ps.setString(col++, practitioner.getName());
         ps.setString(col++, practitioner.getRoleCode());
         ps.setString(col++, practitioner.getRoleDesc());
         ps.setInt(col++, practitioner.getTypeId());
