@@ -247,9 +247,10 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
     private static PreparedStatement createUpsertOrganizationPreparedStatement(Connection connection, CoreFilerWrapper wrapper) throws Exception {
 
         String sql = "INSERT INTO organization"
-                + " (id, name, type_id, postcode, parent_organization_id)"
-                + " VALUES (?, ?, ?, ?, ?)"
+                + " (id, ods_code, name, type_id, postcode, parent_organization_id)"
+                + " VALUES (?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
+                + " ods_code = VALUES(ods_code),"
                 + " name = VALUES(name),"
                 + " type_id = VALUES(type_id),"
                 + " postcode = VALUES(postcode),"
@@ -260,6 +261,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         Organization organization = (Organization) wrapper.getData();
         int col = 1;
         ps.setInt(col++, organization.getId());
+        ps.setString(col++, organization.getOdsCode());
         ps.setString(col++, organization.getName());
         ps.setInt(col++, organization.getTypeId());
         ps.setString(col++, organization.getPostCode());
