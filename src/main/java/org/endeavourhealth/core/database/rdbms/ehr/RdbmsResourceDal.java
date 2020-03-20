@@ -562,7 +562,7 @@ public class RdbmsResourceDal implements ResourceDalI {
                 int replacementIndex = -1;
 
                 //if the state is different to what we want, find the next one matching the desired state
-                for (int j=i+1; i<=dateEndIndex; j++) {
+                for (int j=i+1; j<=dateEndIndex; j++) {
                     ResourceWrapper w2 = history.get(j);
                     boolean w2Matches = wantUpsert == !w2.isDeleted();
                     if (w2Matches) {
