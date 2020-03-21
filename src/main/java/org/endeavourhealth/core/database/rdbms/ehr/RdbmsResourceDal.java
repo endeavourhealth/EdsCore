@@ -485,7 +485,9 @@ public class RdbmsResourceDal implements ResourceDalI {
                     + " FROM resource_history"
                     + " WHERE resource_type = ?"
                     + " AND resource_id = ?"
-                    + " ORDER BY created_at ASC"; //explicitly sort so ordered most-recent-last
+                    + " ORDER BY created_at ASC, resource_checksum"; //explicitly sort so ordered most-recent-last
+            //resource_checksum is included in the sorting so that if two history records have the same created_at
+            //one with a null checksum (i.e. deleted one or one from the initial insert) will be first
             ps = connection.prepareStatement(sql);
 
             int col = 1;
