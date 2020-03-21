@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RdbmsResourceDal implements ResourceDalI {
@@ -25,7 +26,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
     private static final ParserPool PARSER_POOL = new ParserPool();
 
-
+    private static Date cachedDtNewAuditStarted = null;
 
     @Override
     public void save(List<ResourceWrapper> wrappers) throws Exception {
@@ -391,9 +392,6 @@ public class RdbmsResourceDal implements ResourceDalI {
         //get the history records from the DB
         List<ResourceWrapper> history = getResourceHistoryRaw(serviceId, resourceType, resourceId);
 
-        //sort to make sure a past bug with ADT doesn't cause a problem
-        sortResourceHistoryRaw(history);
-
         //go through history and work out where new way of auditing took over, then adjust from that point onwards
         int index = findIndexOfHistoryChangeover(history, current);
         adjustHistoryForChangeover(history, index, current);
@@ -442,7 +440,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     /**
      * works out where in the history list the new-style of resource_history auditing took over (if at all)
      */
-    private static int findIndexOfHistoryChangeover(List<ResourceWrapper> history, ResourceWrapper current) {
+    private static int findIndexOfHistoryChangeover(List<ResourceWrapper> history, ResourceWrapper current) throws Exception {
 
         //if there's no current version it means that the resource was deleted from resource_current
         //which means that the resource has never been updated in the new way, so nothing needs modifying
@@ -457,137 +455,26 @@ public class RdbmsResourceDal implements ResourceDalI {
             return 0;
         }
 
-        //when the changeover happened, we will have two adjacent history records with
-        //the same JSON in - from the last old-way record where it audited what was written, and from
-        //the first new-way record where it audited what had been previously written
-        String lastJson = first.getResourceData();
-        Long lastChecksum = first.getResourceChecksum();
+        Date changeoverDate = getDtNewAuditStarted();
 
-        for (int i=1; i<history.size(); i++) { //note starting at one
+        for (int i=0; i<history.size(); i++) {
             ResourceWrapper h = history.get(i);
+            Date d = h.getCreatedAt();
 
-            String json = h.getResourceData();
-            Long checksum = h.getResourceChecksum();
-
-            if (json == null && lastJson == null) {
-                //if this has null JSON as does the previous then it's the change over
-                return i;
-
-            } else if (json != null && lastJson != null
-                    && checksum.equals(lastChecksum) //faster to check this than comparing strings, so do first
-                    && json.equals(lastJson)) {
-                //if this one and previous one aren't deleted but have the same JSON content, then it's the changeover
+            if (d.after(changeoverDate)) {
                 return i;
             }
-
-            lastJson = json;
-            lastChecksum = checksum;
         }
 
         //if we make it here then the new auditing has never been used for this resource so return -1 to indicate this
         return -1;
     }
 
-    /**
-     * due to a past bug in the ADT transform there are old history records for a resource where the resource was both
-     * deleted and upserted in the same second, and then upserted again (either same second or just after).
-     * Depending on how MySQL returns this we sometimes we UPSERT, DELETE, UPSERT, which is OK, but if we get DELETE, UPSERT, UPSERT or
-     * UPSERT, UPSERT, DELETE then the findIndexOfHistoryChangeover function spots the two upserts adjacent to each
-     * other and incorrectly treats it as the point of the new auditing taking over.
-     *
-     * So this function spots the problem and reorders elements to avoid the problem
-     */
-    private void sortResourceHistoryRaw(List<ResourceWrapper> history) throws Exception {
-
-        //this issue ONLY affected the two ADT feeds, so speed things up by returning out if not one of them
-        ResourceWrapper first = history.get(0);
-        String serviceIdStr = first.getServiceId().toString();
-        if (!serviceIdStr.equalsIgnoreCase("b5a08769-cbbe-4093-93d6-b696cd1da483")
-                && !serviceIdStr.equals("962d6a9a-5950-47ac-9e16-ebee56f9507a")
-                && !serviceIdStr.equals("3ec22b12-5b2e-4665-bc87-34072725ef21")) { //this last one just for testing
-            return;
+    private static Date getDtNewAuditStarted() throws Exception {
+        if (cachedDtNewAuditStarted == null) {
+            cachedDtNewAuditStarted = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("2020-03-17 16:00:00");
         }
-
-        //LOG.debug("Sorting history of size " + history.size());
-
-        //this only applies if there are three or more history items
-        if (history.size() < 2) {
-            return;
-        }
-
-        Date date = null;
-        int dateStartIndex = -1;
-
-        for (int i=0; i<history.size(); i++) {
-            ResourceWrapper w1 = history.get(i);
-            Date d = w1.getCreatedAt();
-
-            if (date == null
-                    || (date != null && !date.equals(d))) {
-
-                //if we've moved on to a different date we need to re-sort the subset we've found
-                if (date != null && !date.equals(d)) {
-                    sortResourceHistoryRawSubset(history, dateStartIndex, i-1);
-                }
-
-                dateStartIndex = i;
-                date = d;
-            }
-        }
-
-        //do any remainder
-        sortResourceHistoryRawSubset(history, dateStartIndex, history.size()-1);
-    }
-
-    private void sortResourceHistoryRawSubset(List<ResourceWrapper> history, int dateStartIndex, int dateEndIndex) throws Exception {
-
-        //if the subset only contains one element, there's no sorting to do
-        int range = dateEndIndex - dateStartIndex;
-        if (range < 1) {
-            return;
-        }
-
-        //LOG.debug("Found " + (range+1) + " with same date from " + dateStartIndex + " to " + dateEndIndex);
-
-        //sort the wrappers for date so we have UPSERT, DELETE, UPSERT etc.
-        boolean wantUpsert = true;
-
-        for (int i=dateStartIndex; i<=dateEndIndex; i++) {
-            ResourceWrapper w1 = history.get(i);
-
-            //if this wrapper matches the desired state, do nothing
-            boolean w1Matches = wantUpsert == !w1.isDeleted();
-            if (!w1Matches) {
-
-                int replacementIndex = -1;
-
-                //if the state is different to what we want, find the next one matching the desired state
-                for (int j=i+1; j<=dateEndIndex; j++) {
-                    ResourceWrapper w2 = history.get(j);
-                    boolean w2Matches = wantUpsert == !w2.isDeleted();
-                    if (w2Matches) {
-                        replacementIndex = j;
-                        break;
-                    }
-                }
-
-                if (replacementIndex == -1) {
-                    throw new Exception("Failed to sort history for " + w1.getResourceType() + " " + w1.getResourceId() + " from range " + dateStartIndex + " to " + dateEndIndex);
-                }
-
-                //swap the two items
-                ResourceWrapper replacement = history.get(replacementIndex);
-                history.set(i, replacement);
-                history.set(replacementIndex, w1);
-
-                //LOG.debug("Index " + i + " is NOW OK, want upsert " + wantUpsert + " moved from " + replacementIndex);
-            } else {
-                //LOG.debug("Index " + i + " is OK, want upsert " + wantUpsert + " isUpsert = " + !w1.isDeleted());
-            }
-
-            //we want the opposite state for the next element
-            wantUpsert = !wantUpsert;
-        }
+        return cachedDtNewAuditStarted;
     }
 
     private List<ResourceWrapper> getResourceHistoryRaw(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
