@@ -128,7 +128,7 @@ public class ApplicationHeartbeatHelper implements Runnable {
             } else if (protocol.equals("jar")) {
                 //if the protocol is a jar, then we're running from a jar, on a server
                 String fullPath = clsLoc.getPath(); //e.g. file:/C:/Users/drewl/.m2/repository/org/endeavourhealth/common/core/1.644-SNAPSHOT/core-1.644-SNAPSHOT.jar!/org/endeavourhealth/core/application/ApplicationHeartbeatHelper.class
-                String jarPath = fullPath.substring(6, fullPath.indexOf("!")); //e.g. C:/Users/drewl/.m2/repository/org/endeavourhealth/common/core/1.644-SNAPSHOT/core-1.644-SNAPSHOT.jar
+                String jarPath = fullPath.substring(5, fullPath.indexOf("!")); //e.g. C:/Users/drewl/.m2/repository/org/endeavourhealth/common/core/1.644-SNAPSHOT/core-1.644-SNAPSHOT.jar
                 File f = new File(jarPath);
                 return new Date(f.lastModified());
 
