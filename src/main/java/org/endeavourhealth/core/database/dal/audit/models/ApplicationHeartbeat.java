@@ -13,6 +13,8 @@ public class ApplicationHeartbeat {
     private Integer serverMemoryMb;
     private Integer serverCpuUsagePercent;
     private String isBusyDetail;
+    private Date dtStarted;
+    private Date dtJar;
 
     public ApplicationHeartbeat() {
     }
@@ -97,6 +99,22 @@ public class ApplicationHeartbeat {
         this.isBusyDetail = isBusyDetail;
     }
 
+    public Date getDtStarted() {
+        return dtStarted;
+    }
+
+    public void setDtStarted(Date dtStarted) {
+        this.dtStarted = dtStarted;
+    }
+
+    public Date getDtJar() {
+        return dtJar;
+    }
+
+    public void setDtJar(Date dtJar) {
+        this.dtJar = dtJar;
+    }
+
     @Override
     public String toString() {
         return "applicationName [" + applicationName + "], "
@@ -108,7 +126,9 @@ public class ApplicationHeartbeat {
                 + "maxHeapMb [" + maxHeapMb + "], "
                 + "currentHeapMb [" + currentHeapMb + "], "
                 + "serverMemoryMb [" + serverMemoryMb + "], "
-                + "serverCpuUsagePercent [" + serverCpuUsagePercent + "]";
+                + "serverCpuUsagePercent [" + serverCpuUsagePercent + "], "
+                + "dtStarted [" + dtStarted + "], "
+                + "dtJar [" + dtJar + "]";
     }
 
 

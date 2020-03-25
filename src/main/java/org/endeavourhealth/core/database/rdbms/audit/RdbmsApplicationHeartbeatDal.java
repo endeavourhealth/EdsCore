@@ -20,8 +20,9 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "INSERT INTO application_heartbeat"
-                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb, current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
+                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail, dt_started, dt_jar)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " timestmp = VALUES(timestmp),"
                     + " host_name = VALUES(host_name),"
@@ -30,7 +31,9 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                     + " current_heap_mb = VALUES(current_heap_mb),"
                     + " server_memory_mb = VALUES(server_memory_mb),"
                     + " server_cpu_usage_percent = VALUES(server_cpu_usage_percent),"
-                    + " is_busy_detail = VALUES(is_busy_detail)";
+                    + " is_busy_detail = VALUES(is_busy_detail),"
+                    + " dt_started = VALUES(dt_started),"
+                    + " dt_jar = VALUES(dt_jar)";
             ps = connection.prepareStatement(sql);
 
 
@@ -74,6 +77,16 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 }
                 ps.setString(col++, s);
             }
+            if (h.getDtStarted() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(h.getDtStarted().getTime()));
+            }
+            if (h.getDtJar() == null) {
+                ps.setNull(col++, Types.TIMESTAMP);
+            } else {
+                ps.setTimestamp(col++, new java.sql.Timestamp(h.getDtJar().getTime()));
+            }
 
             ps.executeUpdate();
             connection.commit();
@@ -96,7 +109,7 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "SELECT application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
-                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail"
+                    + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail, dt_started, dt_jar"
                     + " FROM application_heartbeat";
             ps = connection.prepareStatement(sql);
 
@@ -138,6 +151,16 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 }
 
                 h.setIsBusyDetail(rs.getString(col++));
+
+                java.sql.Timestamp ts = rs.getTimestamp(col++);
+                if (!rs.wasNull()) {
+                    h.setDtStarted(new java.util.Date(ts.getTime()));
+                }
+
+                ts = rs.getTimestamp(col++);
+                if (!rs.wasNull()) {
+                    h.setDtJar(new java.util.Date(ts.getTime()));
+                }
 
                 ret.add(h);
             }

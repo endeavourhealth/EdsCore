@@ -169,14 +169,7 @@ public class Exchange {
         }
     }
 
-    public Boolean getHeaderAsBoolean(String key) throws Exception {
-        String s = getHeader(key);
-        if (Strings.isNullOrEmpty(s)) {
-            return null;
-        } else {
-            return Boolean.valueOf(s);
-        }
-    }
+
 
     public void setHeaderAsDate(String key, Date d) throws Exception {
         if (d == null) {
@@ -184,6 +177,15 @@ public class Exchange {
         } else {
             SimpleDateFormat simpleDateFormat = new SimpleDateFormat(HeaderKeys.DATE_FORMAT);
             setHeader(key, simpleDateFormat.format(d));
+        }
+    }
+
+    public Boolean getHeaderAsBoolean(String key) {
+        String s = getHeader(key);
+        if (Strings.isNullOrEmpty(s)) {
+            return null;
+        } else {
+            return Boolean.valueOf(s);
         }
     }
 
@@ -213,4 +215,20 @@ public class Exchange {
     }
 
 
+    public Long getHeaderAsLong(String key) {
+        String s = getHeader(key);
+        if (Strings.isNullOrEmpty(s)) {
+            return null;
+        } else {
+            return Long.valueOf(s);
+        }
+    }
+
+    public void setHeaderAsLong(String key, Long l) {
+        if (l == null) {
+            setHeader(key, null);
+        } else {
+            setHeader(key, l.toString());
+        }
+    }
 }

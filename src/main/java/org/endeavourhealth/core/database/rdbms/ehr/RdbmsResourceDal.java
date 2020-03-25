@@ -437,7 +437,8 @@ public class RdbmsResourceDal implements ResourceDalI {
                 if (sameDate == null
                         || !sameDate.equals(d)) {
 
-                    if (!sameDate.equals(d)) {
+                    if (sameDate != null
+                            && !sameDate.equals(d)) {
                         sortWrappersOnSameDate(history, sameDateStart, i-1, w.getResourceData() != null);
                     }
 
