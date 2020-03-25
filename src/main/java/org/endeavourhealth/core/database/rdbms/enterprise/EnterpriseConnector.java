@@ -32,7 +32,7 @@ public class EnterpriseConnector {
         try {
             DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, subscriberConfigName);
             mainConnection = new ConnectionWrapper(dataSource, false);
-            LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " new way");
+            //LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " new way");
 
         } catch (Exception ex) {
             mainConnection = openSingleConnectionOldWay(config, false);
@@ -57,7 +57,7 @@ public class EnterpriseConnector {
                     String replicaName = replica.asText();
                     DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, replicaName);
                     replicaConnection = new ConnectionWrapper(dataSource, false);
-                    LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " new way");
+                    //LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " new way");
 
                 } catch (Exception ex) {
                     LOG.error("Failed to get replica enterprise connection new way", ex);
