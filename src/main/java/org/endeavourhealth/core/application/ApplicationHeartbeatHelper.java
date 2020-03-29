@@ -68,7 +68,8 @@ public class ApplicationHeartbeatHelper implements Runnable {
                 }
 
                 //get this fresh each time so we know if a jar has been deployed but a QR not restarted
-                Date dtJar = findJarDateTime();
+                //Date dtJar = findJarDateTime();
+                Date dtJar = null;
 
                 ApplicationHeartbeat h = new ApplicationHeartbeat();
                 h.setApplicationName(ConfigManager.getAppId()); //config manager is inited with app ID, so just use that
@@ -103,33 +104,49 @@ public class ApplicationHeartbeatHelper implements Runnable {
      */
     private Date findJarDateTime() {
 
+        //if we have a callback object then use the class for that since it will give us one of the top-level
+        //jars, which is really what we want to know. In the absense of that, use this class, which will only
+        //tell us the build date of the Core Jar, but is better than nothing
+        Class cls = null;
+        if (callback != null) {
+            cls = callback.getClass();
+        } else {
+            cls = ApplicationHeartbeatHelper.class;
+        }
+
+        return findJarDateTime(cls);
+    }
+
+    public static Date findJarDateTime(Class cls) {
+
         try {
-            //if we have a callback object then use the class for that since it will give us one of the top-level
-            //jars, which is really what we want to know. In the absense of that, use this class, which will only
-            //tell us the build date of the Core Jar, but is better than nothing
-            Class cls = null;
-            if (callback != null) {
-                cls = callback.getClass();
-            } else {
-                cls = ApplicationHeartbeatHelper.class;
-            }
 
             String clsName = cls.getSimpleName() + ".class";
+            LOG.debug("Cls name = [" + clsName + "]");
             URL clsLoc = cls.getResource(clsName);
+            LOG.debug("Cls URL = [" + clsLoc + "]");
             String protocol = clsLoc.getProtocol();
+            LOG.debug("Protocol = [" + protocol + "]");
 
             if (protocol.equals("file")) {
                 //if the protocol is a file then we're running outside of a jar, such as on a dev laptop
                 //e.g. file:/C:/Users/.m2/repository/org/endeavourhealth/core/application/ApplicationHeartbeatHelper.class
                 URI uri = clsLoc.toURI();
+                LOG.debug("uri = [" + uri + "]");
                 File f = new File(uri);
+                LOG.debug("f = [" + f + "]");
+                LOG.debug("lastModified = [" + f.lastModified() + "]");
                 return new Date(f.lastModified());
 
             } else if (protocol.equals("jar")) {
                 //if the protocol is a jar, then we're running from a jar, on a server
                 String fullPath = clsLoc.getPath(); //e.g. file:/C:/Users/drewl/.m2/repository/org/endeavourhealth/common/core/1.644-SNAPSHOT/core-1.644-SNAPSHOT.jar!/org/endeavourhealth/core/application/ApplicationHeartbeatHelper.class
+                LOG.debug("fullPath = [" + fullPath + "]");
                 String jarPath = fullPath.substring(5, fullPath.indexOf("!")); //e.g. C:/Users/drewl/.m2/repository/org/endeavourhealth/common/core/1.644-SNAPSHOT/core-1.644-SNAPSHOT.jar
+                LOG.debug("jarPath = [" + jarPath + "]");
                 File f = new File(jarPath);
+                LOG.debug("f = [" + f + "]");
+                LOG.debug("lastModified = [" + f.lastModified() + "]");
                 return new Date(f.lastModified());
 
             } else {
