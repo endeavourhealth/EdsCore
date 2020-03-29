@@ -29,6 +29,7 @@ public class StagingClinicalEventTarget {
     private String lookupEventResultsUnitsCode;
     private String lookupRecordStatusCode;
     private String lookupMrn;
+    private String eventResultTxt;
     private ResourceFieldMappingAudit auditJson;
     private Boolean isConfidential;
 
@@ -215,6 +216,10 @@ public class StagingClinicalEventTarget {
     public void setLookupMrn(String lookupMrn) {
         this.lookupMrn = lookupMrn;
     }
+
+    public String getEventResultTxt() {return eventResultTxt;}
+
+    public void setEventResultTxt(String eventResultTxt) {this.eventResultTxt = eventResultTxt;}
 
     public ResourceFieldMappingAudit getAuditJson() {
         return auditJson;
