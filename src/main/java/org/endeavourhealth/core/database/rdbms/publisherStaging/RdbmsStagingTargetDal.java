@@ -430,7 +430,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                     " lookup_event_code, lookup_event_term, clinically_significant_dt_tm,  "+
                     " processed_numeric_result, comparator, normalcy_cd, lookup_normalcy_code,  "+
                     " normal_range_low_value, normal_range_high_value, event_performed_dt_tm, event_performed_prsnl_id,  "+
-                    " event_title_txt, lookup_result_units_code, lookup_record_status_code, lookup_mrn, audit_json, is_confidential "+
+                    " event_title_txt, lookup_result_units_code, lookup_record_status_code, lookup_mrn, event_result_txt, audit_json, is_confidential "+
                     " from "+
                     " clinical_event_target "+
                     " where exchange_id = ?";
@@ -520,6 +520,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
 
                 stagingClinicalEventTarget.setLookupRecordStatusCode(rs.getString(col++));
                 stagingClinicalEventTarget.setLookupMrn(rs.getString(col++));
+                stagingClinicalEventTarget.setEventResultTxt(rs.getString(col++));
 
                 String auditJson = rs.getString(col++);
                 if (!Strings.isNullOrEmpty(auditJson)) {
