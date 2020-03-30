@@ -68,7 +68,7 @@ public class RdbmsCoreDataProcessingAgreementDal implements DataProcessingAgreem
                             "inner join OrganisationEntity o on o.uuid = mm.childUuid " +
                             "where o.odsCode = :ods " +
                             "and mm.childMapTypeId = :publisherType " +
-                            "and (dpa.startDate is not null and dpa.startDate <= current_date) " +
+                            "and (dpa.startDate is null or (dpa.startDate is not null and dpa.startDate <= current_date)) " +
                             "and (dpa.endDate is null or dpa.endDate >= current_date) " +
                             "and dpa.dsaStatusId = 0 ");
             query.setParameter("dpaType", MapType.DATAPROCESSINGAGREEMENT.getMapType());
