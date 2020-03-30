@@ -22,6 +22,7 @@ public class ProjectCache {
     private static Map<String, String> projectApplicationPolicyMap = new ConcurrentHashMap<>();
     private static Map<String, List<ProjectEntity>> allProjectsForAllChildRegion = new ConcurrentHashMap<>();
     private static Map<String, List<String>> allPublishersForProjectWithSubCheck = new ConcurrentHashMap<>();
+    private static Map<String, List<ProjectEntity>> allProjectsForSubscriberODS = new ConcurrentHashMap<>();
 
     private static ProjectDalI repository = DalProvider.factoryDSMProjectDal();
     private static ProjectApplicationPolicyDalI ProjectAppPolicyRepository = DalProvider.factoryDSMProjectApplicationPolicyDal();
@@ -121,6 +122,19 @@ public class ProjectCache {
         CacheManager.startScheduler();
 
         return pubOdsCodes;
+    }
+
+    public static List<ProjectEntity> getAllProjectsForSubscriberOrg(String odsCode) throws Exception {
+
+        List<ProjectEntity> projects = allProjectsForSubscriberODS.get(odsCode);
+        if (projects == null) {
+            projects = repository.getAllProjectsForSubscriber(odsCode);
+            allProjectsForSubscriberODS.put(odsCode, projects);
+        }
+
+        CacheManager.startScheduler();
+
+        return projects;
     }
 
     public static void clearProjectCache(String projectId) throws Exception {

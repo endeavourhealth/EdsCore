@@ -32,6 +32,7 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
     private static ProjectApplicationPolicyDalI projectAppPolicyRepository = DalProvider.factoryDSMProjectApplicationPolicyDal();
     private static ExtractTechnicalDetailsDalI extractRepository = DalProvider.factoryDSMExtractTechnicalDetailsDal();
     private static ProjectScheduleDalI scheduleRepository = DalProvider.factoryDSMProjectScheduleDal();
+    private static OrganisationDalI organisationRepository = DalProvider.factoryDSMOrganisationDal();
 
     public List<ProjectEntity> getProjectsFromList(List<String> projects) throws Exception {
         EntityManager entityManager = ConnectionManager.getDsmEntityManager();
@@ -334,6 +335,19 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
         pubOdsCodes = pubsInProject.stream().map(OrganisationEntity::getOdsCode).collect(Collectors.toList());
 
         return pubOdsCodes;
+    }
+
+    @Override
+    public List<ProjectEntity> getAllProjectsForSubscriber(String odsCode) throws Exception {
+
+        OrganisationEntity org = organisationRepository.getOrganisationsFromOdsCode(odsCode);
+
+        List<String> projectSubscribers = masterMappingRepository.getParentMappings(org.getUuid(),
+                MapType.SUBSCRIBER.getMapType(), MapType.PROJECT.getMapType());
+
+        List<ProjectEntity> projects = ProjectCache.getProjectDetails(projectSubscribers);
+
+        return projects;
     }
 
 }
