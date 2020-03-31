@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.dal.ehr;
 
 import org.endeavourhealth.core.database.dal.ehr.models.CoreFilerWrapper;
 import org.endeavourhealth.core.database.dal.ehr.models.CoreId;
+import org.endeavourhealth.core.database.dal.ehr.models.Patient;
 
 import java.util.List;
 import java.util.Map;
@@ -20,4 +21,6 @@ public interface CoreFilerDalI {
     Map<String, CoreId> findOrCreateCoreIds(UUID serviceId, byte coreTable, List<String> sourceIds) throws Exception;
 
     Integer findOrganizationIdFromOdsCode(UUID serviceId, String odsCode) throws Exception;
+
+    Patient findPatientFromCoreId(UUID serviceId, Integer id) throws Exception;
 }

@@ -10,13 +10,13 @@ public class Patient {
     private String title;
     private String firstNames;
     private String lastName;
-    private int genderTypeId;
+    private Integer genderTypeId;
     private String nhsNumber;
     private Date dateOfBirth;
     private Date dateOfDeath;
-    private int currentAddressId;
-    private int ethnicCodeTypeId;
-    private int registeredPracticeOrganizationId;
+    private Integer currentAddressId;
+    private Integer ethnicCodeTypeId;
+    private Integer registeredPracticeOrganizationId;
     private String mothersNHSNumber;
 
     public Patient() {
@@ -70,11 +70,11 @@ public class Patient {
         this.lastName = lastName;
     }
 
-    public int getGenderTypeId() {
+    public Integer getGenderTypeId() {
         return genderTypeId;
     }
 
-    public void setGenderTypeId(int genderTypeId) {
+    public void setGenderTypeId(Integer genderTypeId) {
         this.genderTypeId = genderTypeId;
     }
 
@@ -102,27 +102,27 @@ public class Patient {
         this.dateOfDeath = dateOfDeath;
     }
 
-    public int getCurrentAddressId() {
+    public Integer getCurrentAddressId() {
         return currentAddressId;
     }
 
-    public void setCurrentAddressId(int currentAddressId) {
+    public void setCurrentAddressId(Integer currentAddressId) {
         this.currentAddressId = currentAddressId;
     }
 
-    public int getEthnicCodeTypeId() {
+    public Integer getEthnicCodeTypeId() {
         return ethnicCodeTypeId;
     }
 
-    public void setEthnicCodeTypeId(int ethnicCodeTypeId) {
+    public void setEthnicCodeTypeId(Integer ethnicCodeTypeId) {
         this.ethnicCodeTypeId = ethnicCodeTypeId;
     }
 
-    public int getRegisteredPracticeOrganizationId() {
+    public Integer getRegisteredPracticeOrganizationId() {
         return registeredPracticeOrganizationId;
     }
 
-    public void setRegisteredPracticeOrganizationId(int registeredPracticeOrganizationId) {
+    public void setRegisteredPracticeOrganizationId(Integer registeredPracticeOrganizationId) {
         this.registeredPracticeOrganizationId = registeredPracticeOrganizationId;
     }
 

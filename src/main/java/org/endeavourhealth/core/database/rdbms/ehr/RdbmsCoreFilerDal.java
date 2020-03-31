@@ -208,6 +208,67 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         return id;
     }
 
+    @Override
+    public Patient findPatientFromCoreId(UUID serviceId, Integer id) throws Exception {
+
+        Connection connection = ConnectionManager.getEhrConnection(serviceId);
+        PreparedStatement ps = null;
+        Patient patient = new Patient();
+
+        try {
+            String sql = "select organization, person_id, title, first_names, last_name, gender_type_id, "
+                      + " nhs_number, date_of_birth, date_of_death, current_address_id, ethnic_code_type_id, "
+                      + " registered_practice_organization_id, mothers_nhs_number "
+                      + " from patient where id = ? ";
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+
+                patient.setId(id);
+                patient.setOrganizationId(rs.getInt(1));
+                patient.setPersonId(rs.getInt(2));
+                patient.setTitle(rs.getString(3));
+                patient.setFirstNames(rs.getString(4));
+                patient.setLastName(rs.getString(5));
+
+                int genderId = rs.getInt(6);
+                if (!rs.wasNull()) {
+                    patient.setGenderTypeId(genderId);
+                }
+                patient.setNhsNumber(rs.getString(7));
+                patient.setDateOfBirth(new java.util.Date(rs.getTimestamp(8).getTime()));
+                if (rs.getTimestamp(9) != null) {
+                    patient.setDateOfDeath(new java.util.Date(rs.getTimestamp(9).getTime()));
+                } else {
+                    patient.setDateOfDeath(null);
+                }
+                int currentAddressId = rs.getInt(10);
+                if (!rs.wasNull()) {
+                    patient.setCurrentAddressId(currentAddressId);
+                }
+                int ethnicCodeTypeId = rs.getInt(11);
+                if (!rs.wasNull()) {
+                    patient.setEthnicCodeTypeId(rs.getInt(11));
+                }
+                int registeredPracticeId = rs.getInt(12);
+                if (!rs.wasNull()) {
+                    patient.setRegisteredPracticeOrganizationId(registeredPracticeId);
+                }
+                patient.setMothersNHSNumber(rs.getString(13));
+
+                return patient;
+            } else {
+                return null;
+            }
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
     private void findCoreIdsImpl(UUID serviceId, byte coreTable, List<String> sourceIds, Map<String, CoreId> map, Connection connection) throws Exception {
 
         PreparedStatement ps = null;
@@ -331,7 +392,11 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         ps.setInt(col++, patient.getPersonId());
         ps.setString(col++, patient.getFirstNames());
         ps.setString(col++, patient.getLastName());
-        ps.setInt(col++, patient.getGenderTypeId());
+        if (patient.getGenderTypeId() != null) {
+            ps.setInt(col++, patient.getGenderTypeId());
+        } else {
+            ps.setNull(col++, Types.INTEGER);
+        }
         ps.setString(col++, patient.getNhsNumber());
         ps.setTimestamp(col++, new java.sql.Timestamp(patient.getDateOfBirth().getTime()));
 
@@ -340,9 +405,21 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
         } else {
             ps.setNull(col++, Types.TIMESTAMP);
         }
-        ps.setInt(col++, patient.getCurrentAddressId());
-        ps.setInt(col++, patient.getEthnicCodeTypeId());
-        ps.setInt(col++, patient.getRegisteredPracticeOrganizationId());
+        if (patient.getCurrentAddressId() != null) {
+            ps.setInt(col++, patient.getCurrentAddressId());
+        } else {
+            ps.setNull(col++, Types.INTEGER);
+        }
+        if (patient.getEthnicCodeTypeId() != null) {
+            ps.setInt(col++, patient.getEthnicCodeTypeId());
+        } else {
+            ps.setNull(col++, Types.INTEGER);
+        }
+        if (patient.getRegisteredPracticeOrganizationId() != null) {
+            ps.setInt(col++, patient.getRegisteredPracticeOrganizationId());
+        } else {
+            ps.setNull(col++, Types.INTEGER);
+        }
         ps.setString(col++, patient.getMothersNHSNumber());
 
         return ps;
