@@ -762,6 +762,14 @@ public class ConnectionManager {
         return getConnection(Db.DataGenerator);
     }
 
+    public static Connection getDataSharingManagerConnection() throws Exception {
+        return getConnection(Db.DataSharingManager);
+    }
+
+    public static Connection getUserManagerConnection() throws Exception {
+        return getConnection(Db.UserManager);
+    }
+
 
 
     /**
