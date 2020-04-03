@@ -1,4 +1,4 @@
-package org.endeavourhealth.core.database.dal.audit.models;
+    package org.endeavourhealth.core.database.dal.audit.models;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -17,6 +17,7 @@ public class Exchange {
     private UUID systemId = null;
     private String body = null;
     private Exception exception; //not persisted, but used as a holding variable for logback
+    private List<String> patientGuid = null;
 
     public Exchange() {}
 
@@ -230,5 +231,13 @@ public class Exchange {
         } else {
             setHeader(key, l.toString());
         }
+    }
+
+    public List<String> getPatientGuid() {
+        return patientGuid;
+    }
+
+    public void setPatientGuid(List<String> patientGuid) {
+        this.patientGuid = patientGuid;
     }
 }
