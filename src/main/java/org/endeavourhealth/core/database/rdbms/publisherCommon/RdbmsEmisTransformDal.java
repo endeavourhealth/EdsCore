@@ -1,8 +1,10 @@
 package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCodeType;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisMissingCodes;
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
@@ -19,8 +21,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.*;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisTransformDal.class);
@@ -810,5 +813,123 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
+    public List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes) throws Exception {
 
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        List<String> emisPatientGuids = new ArrayList<String>();
+        try {
+            LOG.info("retrieveEmisPatientGuids codes size :: " + emisMissingCodes.size());
+            String sql = "select distinct patient_guid from emis_missing_code_error  where code_id in (";
+            String joinEmisCodes = StringUtils.join(emisMissingCodes, ",");
+            sql += joinEmisCodes + ")";
+            sql += " and dt_fixed is null ";
+            LOG.info("retrieveEmisPatientGuids sql :: " + sql.toString());
+            ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                String patientGuid = rs.getString("patient_guid");
+                emisPatientGuids.add(patientGuid);
+                LOG.info("Retrieved EmisPatientGuids size :: " + emisPatientGuids.size());
+            }
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+        return emisPatientGuids;
+    }
+
+    public String retrieveEmisOldestExchangeId(List<String> emisMissingCodes) throws Exception {
+
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        String emisOldestExchangeId = null;
+
+        try {
+            LOG.info("retrieveEmisOldestExchangeId EmisMissing codes size :: " + emisMissingCodes.size());
+            String sql = "select exchange_id from emis_missing_code_error where timestmp=(select min(timestmp) from emis_missing_code_error where code_id in (";
+            String joinEmisCodes = StringUtils.join(emisMissingCodes,",");
+            sql += joinEmisCodes+")";
+            sql += " and dt_fixed is null)";
+            LOG.info("retrieveEmisOldestExchangeId sql query :: " + sql.toString());
+            ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                emisOldestExchangeId = rs.getString("exchange_id");
+                LOG.info("EmisOldest ExchangeId:: " + emisOldestExchangeId);
+            }
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+        return emisOldestExchangeId;
+    }
+
+    public List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType) throws Exception {
+
+        LOG.info("retrieveEmisMissingCodeList EmisCodeTypeValue:: " + emisCodeType.getCodeValue());
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        List<String> emisMissingCodeList = new ArrayList<String>();
+
+        try {
+            String sql = "SELECT  distinct code_id from emis_missing_code_error where dt_fixed is null and code_type= ?";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, emisCodeType.getCodeValue());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                emisMissingCodeList.add(String.valueOf(rs.getLong("code_id")));
+            }
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+        return emisMissingCodeList;
+    }
+
+    public void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes) throws Exception {
+
+        Connection connection = ConnectionManager.getAuditConnection();
+        Date now = new Date();
+        PreparedStatement ps = null;
+
+        try {
+            String sql = "update emis_missing_code_error SET dt_fixed =? where dt_fixed is null and code_id in (";
+            emisCombinedClinicalDrugCodes.stream().collect(Collectors.joining("','", "'", "'"));
+            String collectEmisCombinedClinicalDrugCodes = emisCombinedClinicalDrugCodes.stream().collect(Collectors.joining("','", "'", "'"));
+            String joinEmisCombinedClinicalDrugCodes = StringUtils.join(collectEmisCombinedClinicalDrugCodes);
+            sql += joinEmisCombinedClinicalDrugCodes + ")";
+            LOG.info("updateStatusInEmisErrorTable sql query :: " + sql.toString());
+            ps = connection.prepareStatement(sql);
+            int col = 1;
+            ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+            int i = ps.executeUpdate();
+            connection.commit();
+            LOG.info("updateStatusInEmisErrorTable Update Status :: " + i);
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
 }

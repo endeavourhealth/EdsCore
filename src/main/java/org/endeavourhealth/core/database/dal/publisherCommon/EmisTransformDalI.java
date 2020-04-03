@@ -1,13 +1,12 @@
 package org.endeavourhealth.core.database.dal.publisherCommon;
 
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCodeType;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeMap;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisMissingCodes;
 import org.hl7.fhir.instance.model.ResourceType;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public interface EmisTransformDalI {
 
@@ -33,4 +32,11 @@ public interface EmisTransformDalI {
 
     void saveErrorRecords(EmisMissingCodes emisMissingCodesVals) throws Exception;
 
+    List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType) throws Exception;
+
+    void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes) throws Exception;
+
+    String retrieveEmisOldestExchangeId(List<String> emisMissingCodes) throws Exception;
+
+    List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes) throws Exception;
 }
