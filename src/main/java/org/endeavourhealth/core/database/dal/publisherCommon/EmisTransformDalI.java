@@ -32,11 +32,11 @@ public interface EmisTransformDalI {
 
     void saveErrorRecords(EmisMissingCodes emisMissingCodesVals) throws Exception;
 
-    List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType) throws Exception;
+    List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, String serviceId) throws Exception;
 
-    void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes) throws Exception;
+    void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes, String serviceId) throws Exception;
 
-    String retrieveEmisOldestExchangeId(List<String> emisMissingCodes) throws Exception;
+    String retrieveEmisOldestExchangeId(List<String> emisMissingCodes, String serviceId) throws Exception;
 
-    List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes) throws Exception;
+    List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes, String serviceId) throws Exception;
 }
