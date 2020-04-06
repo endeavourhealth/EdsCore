@@ -1,7 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import com.google.common.base.Strings;
-import org.apache.commons.lang3.StringUtils;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisTransformDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisAdminResourceCache;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCodeType;
@@ -21,15 +20,14 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.sql.*;
-import java.util.Date;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Date;
 
 public class RdbmsEmisTransformDal implements EmisTransformDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisTransformDal.class);
 
     @Override
-    public void saveCodeMappings( List<EmisCsvCodeMap> mappings) throws Exception {
+    public void saveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
         if (mappings == null || mappings.isEmpty()) {
             throw new IllegalArgumentException("mappings is null or empty");
         }
@@ -56,7 +54,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         Boolean medication = null;
         Map<Long, EmisCsvCodeMap> hmMappings = new HashMap<>();
 
-        for (EmisCsvCodeMap mapping: mappings) {
+        for (EmisCsvCodeMap mapping : mappings) {
             if (medication == null) {
                 medication = new Boolean(mapping.isMedication());
             } else if (medication.booleanValue() != mapping.isMedication()) {
@@ -78,8 +76,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " FROM emis_csv_code_map"
                     + " WHERE medication = ?"
                     + " AND code_id IN (";
-            for (int i=0; i<mappings.size(); i++) {
-                if (i>0) {
+            for (int i = 0; i < mappings.size(); i++) {
+                if (i > 0) {
                     sql += ", ";
                 }
                 sql += "?";
@@ -89,7 +87,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             int col = 1;
             psSelect.setBoolean(col++, medication.booleanValue());
-            for (EmisCsvCodeMap mapping: mappings) {
+            for (EmisCsvCodeMap mapping : mappings) {
                 psSelect.setLong(col++, mapping.getCodeId());
             }
 
@@ -142,7 +140,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             entityManager.getTransaction().begin();
 
-            for (Long codeId: hmMappings.keySet()) {
+            for (Long codeId : hmMappings.keySet()) {
                 EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
 
                 col = 1;
@@ -247,7 +245,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             throw new IllegalArgumentException("mapping is null");
         }
 
-        List<EmisCsvCodeMap>l = new ArrayList<>();
+        List<EmisCsvCodeMap> l = new ArrayList<>();
         l.add(mapping);
         saveCodeMappings(l);
     }
@@ -262,11 +260,11 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             Connection connection = session.connection();
 
             String sql = "SELECT medication, code_id, code_type, read_term, read_code, snomed_concept_id, "
-                        + "snomed_description_id, snomed_term, national_code, national_code_category, "
-                        + "national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system "
-                        + "FROM emis_csv_code_map "
-                        + "WHERE medication = ? "
-                        + "AND code_id = ?";
+                    + "snomed_description_id, snomed_term, national_code, national_code_category, "
+                    + "national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system "
+                    + "FROM emis_csv_code_map "
+                    + "WHERE medication = ? "
+                    + "AND code_id = ?";
 
             ps = connection.prepareStatement(sql);
 
@@ -322,7 +320,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 return ret;
 
             } else {
-                  return null;
+                return null;
             }
 
 
@@ -475,7 +473,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             entityManager.getTransaction().begin();
 
-            for (EmisAdminResourceCache resource: resources) {
+            for (EmisAdminResourceCache resource : resources) {
 
                 int col = 1;
                 ps.setString(col++, resource.getDataSharingAgreementGuid());
@@ -532,7 +530,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
             entityManager.getTransaction().begin();
 
-            for (EmisAdminResourceCache resource: resources) {
+            for (EmisAdminResourceCache resource : resources) {
 
                 int col = 1;
                 ps.setString(col++, resource.getDataSharingAgreementGuid());
@@ -577,7 +575,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     .setParameter("emis_guid", sourceId);
 
             try {
-                RdbmsEmisAdminResourceCache result = (RdbmsEmisAdminResourceCache)query.getSingleResult();
+                RdbmsEmisAdminResourceCache result = (RdbmsEmisAdminResourceCache) query.getSingleResult();
                 return new EmisAdminResourceCache(result);
 
             } catch (NoResultException ex) {
@@ -606,8 +604,8 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     + " WHERE data_sharing_agreement_guid = ?"
                     + " AND resource_type = ?"
                     + " AND emis_guid IN (";
-            for (int i=0; i<sourceIds.size(); i++) {
-                if (i>0) {
+            for (int i = 0; i < sourceIds.size(); i++) {
+                if (i > 0) {
                     sql += ", ";
                 }
                 sql += "?";
@@ -619,7 +617,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             int col = 1;
             ps.setString(col++, dataSharingAgreementGuid);
             ps.setString(col++, resourceType.toString());
-            for (int i=0; i<sourceIds.size(); i++) {
+            for (int i = 0; i < sourceIds.size(); i++) {
                 ps.setString(col++, sourceIds.get(i));
             }
 
@@ -670,7 +668,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
 
         adminCacheRetrieveEntityManager = ConnectionManager.getPublisherCommonEntityManager();
 
-        SessionImpl session = (SessionImpl)adminCacheRetrieveEntityManager.getDelegate();
+        SessionImpl session = (SessionImpl) adminCacheRetrieveEntityManager.getDelegate();
         Connection connection = session.connection();
 
         String sql = "SELECT data_sharing_agreement_guid, emis_guid, resource_type, resource_data, audit_json"
@@ -737,7 +735,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                     .setParameter("service_id", serviceId.toString());
 
             try {
-                RdbmsEmisAdminResourceCacheApplied result = (RdbmsEmisAdminResourceCacheApplied)query.getSingleResult();
+                RdbmsEmisAdminResourceCacheApplied result = (RdbmsEmisAdminResourceCacheApplied) query.getSingleResult();
                 return true;
 
             } catch (NoResultException ex) {
@@ -773,7 +771,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     @Override
-    public void saveErrorRecords(EmisMissingCodes errorCodeVals) throws Exception {
+    public void saveMissingCodeErrors(EmisMissingCodes errorCodeVals) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement psInsert = null;
@@ -813,14 +811,52 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-    public List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes, String serviceId) throws Exception {
+    @Override
+    public List<Long> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, UUID serviceId) throws Exception {
 
-        Connection connection = ConnectionManager.getAuditConnection();
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
-        List<String> emisPatientGuids = new ArrayList<String>();
+
         try {
-            LOG.info("retrieveEmisPatientGuids codes size :: " + emisMissingCodes.size());
-            String sql = "select distinct patient_guid from emis_missing_code_error  where code_id in (";
+            String sql = "SELECT DISTINCT code_id"
+                    + " FROM emis_missing_code_error"
+                    + " WHERE dt_fixed IS NULL AND code_type= ? AND service_id= ?";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, emisCodeType.getCodeValue());
+            ps.setString(col++, serviceId.toString());
+
+            List<Long> ret = new ArrayList<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                long codeId = rs.getLong(1);
+                ret.add(new Long(codeId));
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
+    public List<String> retrieveEmisPatientGuids(List<Long> emisMissingCodes, UUID serviceId) throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+
+        try {
+            String sql = "SELECT DISTINCT patient_guid"
+                    + " FROM emis_missing_code_error"
+                    + " WHERE service_id=?"
+                    + " AND dt_fixed IS NULL"
+                    + " AND code_id IN (";
             for (int i = 0; i < emisMissingCodes.size(); i++) {
                 if (i > 0) {
                     sql += ", ";
@@ -828,99 +864,122 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 sql += "?";
             }
             sql += ")";
-            sql += " and service_id=? and dt_fixed is null";
-            LOG.info("retrieveEmisPatientGuids sql :: " + sql.toString());
+
             ps = connection.prepareStatement(sql);
 
             int col = 1;
+            ps.setString(col++, serviceId.toString());
             for (int i = 0; i < emisMissingCodes.size(); i++) {
-                ps.setLong(col++, Long.parseLong(emisMissingCodes.get(i)));
+                Long codeId = emisMissingCodes.get(i);
+                ps.setLong(col++, codeId.longValue());
             }
-            ps.setString(col++, serviceId);
+
+            List<String> ret = new ArrayList<>();
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                String patientGuid = rs.getString("patient_guid");
-                emisPatientGuids.add(patientGuid);
-                LOG.info("Retrieved EmisPatientGuids size :: " + emisPatientGuids.size());
+                String patientGuid = rs.getString(1);
+                ret.add(patientGuid);
             }
-        } catch (Exception ex) {
-            connection.rollback();
-            throw ex;
+
+            return ret;
+
         } finally {
             if (ps != null) {
                 ps.close();
             }
             connection.close();
         }
-        return emisPatientGuids;
     }
 
 
+    @Override
+    public void updateStatusInEmisErrorTable(List<Long> emisCodeIds, UUID serviceId) throws Exception {
 
-    public String retrieveEmisOldestExchangeId(List<String> emisMissingCodes, String serviceId) throws Exception {
-
-        Connection connection = ConnectionManager.getAuditConnection();
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        Date now = new Date();
         PreparedStatement ps = null;
-        String emisOldestExchangeId = null;
 
         try {
-            LOG.info("retrieveEmisOldestExchangeId EmisMissing codes size :: " + emisMissingCodes.size());
+            String sql = "UPDATE emis_missing_code_error"
+            + " SET dt_fixed = ?"
+            + " WHERE service_id= ?"
+            + " AND dt_fixed IS NULL"
+            + " AND code_id IN (";
+            for (int i = 0; i < emisCodeIds.size(); i++) {
+                if (i > 0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
 
-            String sql = "select exchange_id from emis_missing_code_error where timestmp=(select min(timestmp) from \n" +
-                    "emis_missing_code_error where \n" +
-                    "code_id in (";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+            ps.setString(col++, serviceId.toString());
+
+            for (int i = 0; i < emisCodeIds.size(); i++) {
+                Long codeId = emisCodeIds.get(i);
+                ps.setLong(col++, codeId.longValue());
+            }
+
+
+            ps.executeUpdate();
+            connection.commit();
+
+        } catch (Exception ex) {
+            connection.rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
+    public UUID retrieveOldestExchangeIdForMissingCodeErrors(List<Long> emisMissingCodes, UUID serviceId) throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+
+        try {
+            String sql = "SELECT exchange_id"
+                    + " FROM emis_missing_code_error"
+                    + " WHERE service_id = ?"
+                    + " AND dt_fixed IS NULL"
+                    + " AND code_id IN (";
+
             for (int i = 0; i < emisMissingCodes.size(); i++) {
                 if (i > 0) {
                     sql += ", ";
                 }
                 sql += "?";
             }
-            sql += ") and service_id=? and dt_fixed is null)";
-            LOG.info("retrieveEmisOldestExchangeId sql query:: " + sql.toString());
+            sql += ")"
+                    + " ORDER BY timestmp ASC"
+                    + " LIMIT 1";
+
             ps = connection.prepareStatement(sql);
 
             int col = 1;
+            ps.setString(col++, serviceId.toString());
             for (int i = 0; i < emisMissingCodes.size(); i++) {
-                ps.setLong(col++, Long.parseLong(emisMissingCodes.get(i)));
+                Long codeId = emisMissingCodes.get(i);
+                ps.setLong(col++, codeId.longValue());
             }
-            ps.setString(col++, serviceId);
+
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                emisOldestExchangeId = rs.getString("exchange_id");
-                LOG.info("EmisOldest ExchangeId:: " + emisOldestExchangeId);
+            if (!rs.next()) {
+                return null;
+            } else {
+                String s = rs.getString(1);
+                return UUID.fromString(s);
             }
-        } catch (Exception ex) {
-            connection.rollback();
-            throw ex;
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            connection.close();
-        }
-        return emisOldestExchangeId;
-    }
-
-    public List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, String serviceId) throws Exception {
-
-        LOG.info("retrieveEmisMissingCodeList EmisCodeTypeValue:: " + emisCodeType.getCodeValue());
-        Connection connection = ConnectionManager.getAuditConnection();
-        PreparedStatement ps = null;
-        List<String> emisMissingCodeList = new ArrayList<String>();
-
-        try {
-            String sql = "SELECT  distinct code_id from emis_missing_code_error where dt_fixed is null and code_type= ? and service_id=?";
-            ps = connection.prepareStatement(sql);
-            int col = 1;
-            ps.setString(col++, emisCodeType.getCodeValue());
-            ps.setString(col++, serviceId);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                emisMissingCodeList.add(String.valueOf(rs.getLong("code_id")));
-            }
-        } catch (Exception ex) {
-            connection.rollback();
-            throw ex;
 
         } finally {
             if (ps != null) {
@@ -928,44 +987,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             }
             connection.close();
         }
-        return emisMissingCodeList;
     }
 
-   public void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes, String serviceId) throws Exception {
-
-       Connection connection = ConnectionManager.getAuditConnection();
-       Date now = new Date();
-       PreparedStatement ps = null;
-
-       try {
-           String sql = "update emis_missing_code_error SET dt_fixed =? where dt_fixed is null and code_id in (";
-           for (int i = 0; i < emisCombinedClinicalDrugCodes.size(); i++) {
-               if (i > 0) {
-                   sql += ", ";
-               }
-               sql += "?";
-           }
-           sql += ") and service_id=?";
-           LOG.info("updateStatusInEmisErrorTable sql query:: " + sql.toString());
-           ps = connection.prepareStatement(sql);
-           int col = 1;
-           ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
-           for (int i = 0; i < emisCombinedClinicalDrugCodes.size(); i++) {
-               ps.setString(col++, emisCombinedClinicalDrugCodes.get(i));
-           }
-           ps.setString(col++, serviceId);
-
-           int i = ps.executeUpdate();
-           connection.commit();
-           LOG.info("updateStatusInEmisErrorTable Update Status :: " + i);
-       } catch (Exception ex) {
-           connection.rollback();
-           throw ex;
-       } finally {
-           if (ps != null) {
-               ps.close();
-           }
-           connection.close();
-       }
-   }
 }

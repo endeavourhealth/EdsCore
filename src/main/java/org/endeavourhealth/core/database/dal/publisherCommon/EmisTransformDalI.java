@@ -6,7 +6,9 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisCsvCodeM
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisMissingCodes;
 import org.hl7.fhir.instance.model.ResourceType;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public interface EmisTransformDalI {
 
@@ -30,13 +32,15 @@ public interface EmisTransformDalI {
     boolean wasAdminCacheApplied(UUID serviceId) throws Exception;
     void adminCacheWasApplied(UUID serviceId, String dataSharingAgreementGuid) throws Exception;
 
-    void saveErrorRecords(EmisMissingCodes emisMissingCodesVals) throws Exception;
+    void saveMissingCodeErrors(EmisMissingCodes emisMissingCodesVals) throws Exception;
 
-    List<String> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, String serviceId) throws Exception;
+    List<Long> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, UUID serviceId) throws Exception;
 
-    void updateStatusInEmisErrorTable(List<String> emisCombinedClinicalDrugCodes, String serviceId) throws Exception;
+    List<String> retrieveEmisPatientGuids(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
 
-    String retrieveEmisOldestExchangeId(List<String> emisMissingCodes, String serviceId) throws Exception;
+    void updateStatusInEmisErrorTable(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
 
-    List<String> retrieveEmisPatientGuids(List<String> emisMissingCodes, String serviceId) throws Exception;
+    UUID retrieveOldestExchangeIdForMissingCodeErrors(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
+
+
 }

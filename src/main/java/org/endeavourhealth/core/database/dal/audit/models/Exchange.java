@@ -17,7 +17,6 @@ public class Exchange {
     private UUID systemId = null;
     private String body = null;
     private Exception exception; //not persisted, but used as a holding variable for logback
-    private List<String> patientGuid = null;
 
     public Exchange() {}
 
@@ -231,13 +230,5 @@ public class Exchange {
         } else {
             setHeader(key, l.toString());
         }
-    }
-
-    public List<String> getPatientGuid() {
-        return patientGuid;
-    }
-
-    public void setPatientGuid(List<String> patientGuid) {
-        this.patientGuid = patientGuid;
     }
 }
