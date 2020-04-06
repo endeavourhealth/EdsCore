@@ -771,7 +771,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     @Override
-    public void saveMissingCodeErrors(EmisMissingCodes errorCodeVals) throws Exception {
+    public void saveMissingCodeError(EmisMissingCodes errorCodeVals) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement psInsert = null;
@@ -812,7 +812,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     @Override
-    public List<Long> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, UUID serviceId) throws Exception {
+    public Set<Long> retrieveMissingCodes(EmisCodeType emisCodeType, UUID serviceId) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
@@ -827,7 +827,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             ps.setString(col++, emisCodeType.getCodeValue());
             ps.setString(col++, serviceId.toString());
 
-            List<Long> ret = new ArrayList<>();
+            Set<Long> ret = new HashSet<>();
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -846,11 +846,12 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
     }
 
     @Override
-    public List<String> retrieveEmisPatientGuids(List<Long> emisMissingCodes, UUID serviceId) throws Exception {
+    public Set<String> retrievePatientGuidsForMissingCodes(Set<Long> hsEmisMissingCodes, UUID serviceId) throws Exception {
+
+        List<Long> emisMissingCodes = new ArrayList<>(hsEmisMissingCodes);
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
-
         try {
             String sql = "SELECT DISTINCT patient_guid"
                     + " FROM emis_missing_code_error"
@@ -874,7 +875,7 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
                 ps.setLong(col++, codeId.longValue());
             }
 
-            List<String> ret = new ArrayList<>();
+            Set<String> ret = new HashSet<>();
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -892,14 +893,15 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
-
     @Override
-    public void updateStatusInEmisErrorTable(List<Long> emisCodeIds, UUID serviceId) throws Exception {
+    public void setMissingCodesFixed(Set<Long> hsEmisMissingCodes, UUID serviceId) throws Exception {
+
+        Date now = new Date();
+
+        List<Long> emisCodeIds = new ArrayList<>(hsEmisMissingCodes);
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
-        Date now = new Date();
         PreparedStatement ps = null;
-
         try {
             String sql = "UPDATE emis_missing_code_error"
             + " SET dt_fixed = ?"
@@ -941,12 +943,16 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
         }
     }
 
+
+
+
     @Override
-    public UUID retrieveOldestExchangeIdForMissingCodeErrors(List<Long> emisMissingCodes, UUID serviceId) throws Exception {
+    public UUID retrieveOldestExchangeIdForMissingCodes(Set<Long> hsEmisMissingCodes, UUID serviceId) throws Exception {
+
+        List<Long> emisMissingCodes = new ArrayList<>(hsEmisMissingCodes);
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
-
         try {
             String sql = "SELECT exchange_id"
                     + " FROM emis_missing_code_error"
@@ -988,5 +994,6 @@ public class RdbmsEmisTransformDal implements EmisTransformDalI {
             connection.close();
         }
     }
+
 
 }

@@ -8,6 +8,7 @@ import org.hl7.fhir.instance.model.ResourceType;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public interface EmisTransformDalI {
@@ -32,15 +33,12 @@ public interface EmisTransformDalI {
     boolean wasAdminCacheApplied(UUID serviceId) throws Exception;
     void adminCacheWasApplied(UUID serviceId, String dataSharingAgreementGuid) throws Exception;
 
-    void saveMissingCodeErrors(EmisMissingCodes emisMissingCodesVals) throws Exception;
-
-    List<Long> retrieveEmisMissingCodeList(EmisCodeType emisCodeType, UUID serviceId) throws Exception;
-
-    List<String> retrieveEmisPatientGuids(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
-
-    void updateStatusInEmisErrorTable(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
-
-    UUID retrieveOldestExchangeIdForMissingCodeErrors(List<Long> emisMissingCodes, UUID serviceId) throws Exception;
+    //Emis missing code
+    void saveMissingCodeError(EmisMissingCodes emisMissingCodesVals) throws Exception;
+    Set<Long> retrieveMissingCodes(EmisCodeType emisCodeType, UUID serviceId) throws Exception;
+    Set<String> retrievePatientGuidsForMissingCodes(Set<Long> emisMissingCodes, UUID serviceId) throws Exception;
+    void setMissingCodesFixed(Set<Long> emisMissingCodes, UUID serviceId) throws Exception;
+    UUID retrieveOldestExchangeIdForMissingCodes(Set<Long> emisMissingCodes, UUID serviceId) throws Exception;
 
 
 }
