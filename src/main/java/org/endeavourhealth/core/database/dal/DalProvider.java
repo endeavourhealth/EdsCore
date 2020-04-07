@@ -560,4 +560,8 @@ public class DalProvider {
     public static CoreFilerDalI factoryCoreFilerDal() {
         return new RdbmsCoreFilerDal();
     }
+
+    public static TppStaffStagingDalI factoryTppStaffMemberDal() {
+        return new RdbmsTppStaffStagingDal();
+    }
 }

@@ -16,7 +16,7 @@ public class InternalIdMap {
     public static final String TYPE_FIN_NO_TO_EPISODE_UUID = "FINNOtoEPISODEUUID";
     public static final String TYPE_ENCOUNTER_ID_TO_EPISODE_UUID = "ENCOUNTERIDtoEPISODEUUID";
     public static final String TYPE_AE_ARRIVAL_DT_TM_TO_EPISODE_UUID = "AEARRIVALDTTMtoEPISODEUUID";
-    public static final String TYPE_TPP_STAFF_PROFILE_ID_TO_STAFF_MEMBER_ID = "STAFFPROFILEIDtoSTAFFMEMBERID";
+    //public static final String TYPE_TPP_STAFF_PROFILE_ID_TO_STAFF_MEMBER_ID = "STAFFPROFILEIDtoSTAFFMEMBERID"; -- replaced with staging table
     public static final String TYPE_CERNER_ODS_CODE_TO_ORG_ID = "CERNER_ODS_CODE_TO_ORD_ID";
 
     private UUID serviceId = null;
