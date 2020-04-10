@@ -1,96 +1,144 @@
 package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
+import org.apache.commons.io.FilenameUtils;
+import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.TppCtv3HierarchyRefDalI;
-import org.endeavourhealth.core.database.dal.publisherCommon.models.TppCtv3HierarchyRef;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3HierarchyRef;
-import org.hibernate.internal.SessionImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.List;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Date;
 
 public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
-    @Override
-    public boolean isChildCodeUnderParentCode(String childReadCode, String ParentReadCode) throws Exception {
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-
-        try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsTppCtv3HierarchyRef c"
-                    + " where c.ctv3ChildReadCode = :ctv3_child_read_code"
-                    + " and c.ctv3ParentReadCode = :ctv3_parent_read_code";
-
-            Query query = entityManager.createQuery(sql, RdbmsTppCtv3HierarchyRef.class)
-                    .setParameter("ctv3_child_read_code", childReadCode)
-                    .setParameter("ctv3_parent_read_code", ParentReadCode);
-
-            try {
-                List<RdbmsTppCtv3HierarchyRef> result = (List<RdbmsTppCtv3HierarchyRef>) query.getResultList();
-                return (result.size() > 0);
-
-            } catch (NoResultException ex) {
-                return false;
-            }
-
-        } finally {
-            entityManager.close();
-        }
-    }
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppCtv3HierarchyRefDal.class);
 
     @Override
-    public void save(TppCtv3HierarchyRef ref) throws Exception {
-        if (ref == null) {
-            throw new IllegalArgumentException("ref is null");
-        }
+    public boolean isChildCodeUnderParentCode(String childReadCode, String parentReadCode) throws Exception {
 
-        RdbmsTppCtv3HierarchyRef ctv3HierarchyRef = new RdbmsTppCtv3HierarchyRef(ref);
-
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
-
         try {
-            entityManager.getTransaction().begin();
-
-            //have to use prepared statement as JPA doesn't support upserts
-            //entityManager.persist(emisMapping);
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "INSERT INTO tpp_ctv3_hierarchy_ref "
-                    + " (row_id, ctv3_parent_read_code, ctv3_child_read_code, child_level)"
-                    + " VALUES (?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " ctv3_parent_read_code = VALUES(ctv3_parent_read_code),"
-                    + " ctv3_child_read_code = VALUES(ctv3_child_read_code),"
-                    + " child_level = VALUES(child_level)";
-
+            String sql = "SELECT 1"
+                    + " FROM tpp_ctv3_hierarchy_ref_2"
+                    + " WHERE child_code = ?"
+                    + " AND parent_code = ?";
             ps = connection.prepareStatement(sql);
 
-            ps.setLong(1, ctv3HierarchyRef.getRowId());
-            ps.setString(2, ctv3HierarchyRef.getCtv3ParentReadCode());
-            ps.setString(3, ctv3HierarchyRef.getCtv3ChildReadCode());
-            ps.setInt(4, ctv3HierarchyRef.getChildLevel());
+            int col = 1;
+            ps.setString(col++, childReadCode);
+            ps.setString(col++, parentReadCode);
 
-            ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
 
         } finally {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            connection.close();
         }
+    }
+
+    /**
+     * new-style approach to load data into reference and stating tables using bulk operations
+     * - copy file from S3 to local temp dir
+     * - use MySQL bulk load command to get into temp table
+     * - use SQL to update reference table
+     * - drop temp table
+     * - delete temp file
+     *
+     * NOTE: the RowIdentifier on the TPP file is inconsistent. Each copy of the file has completely
+     * new identifiers, so this field cannot be used as a unique ID to handle new records and updated
+     */
+    @Override
+    public void updateHierarchyTable(String filePath, Date dataDate) throws Exception {
+
+        long msStart = System.currentTimeMillis();
+
+        //copy the file from S3 to local disk
+        File f = FileHelper.copyFileFromStorageToTempDirIfNecessary(filePath);
+
+        Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        try {
+            //turn on auto commit so we don't need to separately commit these large SQL operations
+            connection.setAutoCommit(true);
+
+            //create a temporary table to load the data into
+            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
+            LOG.debug("Loading " + f + " into " + tempTableName);
+            String sql = "CREATE TABLE " + tempTableName + " ("
+                    + "RowIdentifier int, "
+                    + "IDOrganisationVisibleTo varchar(255), "
+                    + "Ctv3CodeParent varchar(255) binary, "
+                    + "Ctv3CodeChild varchar(255) binary, "
+                    + "ChildLevel int, "
+                    + "RemovedData int, "
+                    + "CONSTRAINT pk PRIMARY KEY (Ctv3CodeChild, Ctv3CodeParent))";
+            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //bulk load temp table
+            LOG.debug("Starting bulk load into " + tempTableName);
+            sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
+                    + " INTO TABLE " + tempTableName
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " LINES TERMINATED BY '\\r\\n'"
+                    + " IGNORE 1 LINES";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //insert records into the target table where the staging
+            LOG.debug("Copying into target table tpp_ctv3_hierarchy_ref_2");
+            sql = "INSERT IGNORE INTO tpp_ctv3_hierarchy_ref_2 (parent_code, child_code, child_level, dt_last_updated)"
+                    + " SELECT Ctv3CodeParent, Ctv3CodeChild, ChildLevel, " + ConnectionManager.formatDateString(dataDate, true)
+                    + " FROM " + tempTableName;
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //unlike similar bulk load routines, there's no UPDATE statement
+            //because this file has no unique ID we can use for updates
+
+            //delete the temp table
+            LOG.debug("Deleting temp table");
+            sql = "DROP TABLE " + tempTableName;
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            long msEnd = System.currentTimeMillis();
+            LOG.debug("Update of tpp_ctv3_hierarchy_ref_2 Completed in " + ((msEnd-msStart)/1000) + "s");
+
+        } finally {
+            //MUST change this back to false
+            connection.setAutoCommit(false);
+            connection.close();
+
+            //delete the temp file
+            FileHelper.deleteFileFromTempDirIfNecessary(f);
+        }
+    }
+
+    /*@Override
+    public void save(TppCtv3HierarchyRef ref) throws Exception {
+        if (ref == null) {
+            throw new IllegalArgumentException("ref is null");
+        }
+
+        List<TppCtv3HierarchyRef> l = new ArrayList<>();
+        l.add(ref);
+        save(l);
     }
 
     @Override
@@ -143,5 +191,5 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
             }
             entityManager.close();
         }
-    }
+    }*/
 }

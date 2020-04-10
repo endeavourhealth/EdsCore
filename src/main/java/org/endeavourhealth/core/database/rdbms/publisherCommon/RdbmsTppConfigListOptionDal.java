@@ -2,8 +2,8 @@ package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
-import org.endeavourhealth.core.database.dal.publisherCommon.TppMappingRefDalI;
-import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMappingRef;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppConfigListOptionDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppConfigListOption;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,17 +15,18 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
-public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMappingRefDal.class);
+public class RdbmsTppConfigListOptionDal implements TppConfigListOptionDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppConfigListOptionDal.class);
+
 
     @Override
-    public TppMappingRef getMappingFromRowId(int rowId) throws Exception {
+    public TppConfigListOption getListOptionFromRowId(int rowId) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT row_id, group_id, mapped_term"
-                    + " FROM tpp_mapping_ref_2"
+            String sql = "SELECT row_id, config_list_id, list_option_name"
+                    + " FROM tpp_config_list_option_2"
                     + " WHERE row_id = ?";
             ps = connection.prepareStatement(sql);
 
@@ -34,10 +35,11 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 int col = 1;
-                TppMappingRef ret = new TppMappingRef();
+
+                TppConfigListOption ret = new TppConfigListOption();
                 ret.setRowId(rs.getInt(col++));
-                ret.setGroupId(rs.getInt(col++));
-                ret.setMappedTerm(rs.getString(col++));
+                ret.setConfigListId(rs.getInt(col++));
+                ret.setListOptionName(rs.getString(col++));
                 return ret;
 
             } else {
@@ -51,8 +53,6 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             connection.close();
         }
     }
-
-
 
     /**
      * new-style approach to load data into reference and stating tables using bulk operations
@@ -83,8 +83,13 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier int, "
-                    + "IdMappingGroup int, "
-                    + "Mapping varchar(255), "
+                    + "ConfiguredList varchar(255), "
+                    + "ConfiguredListOption varchar(255), "
+                    + "CDSCode varchar(255), "
+                    + "MHLDDSCode varchar(255), "
+                    + "CAMHSCode varchar(255), "
+                    + "MHSDSCode varchar(255), "
+                    + "RemovedData int, "
                     + "CONSTRAINT pk PRIMARY KEY (RowIdentifier))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
@@ -102,21 +107,21 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             statement.close();
 
             //insert records into the target table where the staging has new records
-            LOG.debug("Copying new records into target table tpp_mapping_ref_2");
-            sql = "INSERT IGNORE INTO tpp_mapping_ref_2 (row_id, group_id, mapped_term, dt_last_updated)"
-                    + " SELECT RowIdentifier, IdMappingGroup, Mapping, " + ConnectionManager.formatDateString(dataDate, true)
+            LOG.debug("Copying new records into target table tpp_config_list_option_2");
+            sql = "INSERT IGNORE INTO tpp_config_list_option_2 (row_id, config_list_id, list_option_name, dt_last_updated)"
+                    + " SELECT RowIdentifier, ConfiguredList, ConfiguredListOption, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //update any records that previously existed, but have a changed term
-            LOG.debug("Updating existing records in target table tpp_mapping_ref_2");
-            sql = "UPDATE tpp_mapping_ref_2 t"
+            LOG.debug("Updating existing records in target table tpp_config_list_option_2");
+            sql = "UPDATE tpp_config_list_option_2 t"
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.row_id = s.RowIdentifier"
-                    + " SET t.group_id = s.IdMappingGroup,"
-                    + " t.mapped_term = s.Mapping,"
+                    + " SET t.config_list_id = s.ConfiguredList,"
+                    + " t.list_option_name = s.ConfiguredListOption,"
                     + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
                     + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true);
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
@@ -131,7 +136,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             statement.close();
 
             long msEnd = System.currentTimeMillis();
-            LOG.debug("Update of tpp_mapping_ref_2 Completed in " + ((msEnd-msStart)/1000) + "s");
+            LOG.debug("Update of tpp_config_list_option_2 Completed in " + ((msEnd-msStart)/1000) + "s");
 
         } finally {
             //MUST change this back to false
@@ -143,28 +148,29 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
         }
     }
 
-   /* @Override
-    public TppMappingRef getMappingFromRowAndGroupId(Long rowId, Long groupId) throws Exception {
+    /*@Override
+    public TppConfigListOption getListOptionFromRowAndListId(Long rowId, Long configListId, UUID serviceId) throws Exception {
 
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             String sql = "select c"
                     + " from "
-                    + " RdbmsTppMappingRef c"
-                    + " where c.groupId = :group_id"
+                    + " RdbmsTppConfigListOption c"
+                    + " where c.serviceId = :service_id"
+                    + " and c.configListId = :config_list_id"
                     + " and c.rowId = :row_id";
 
-            Query query = entityManager.createQuery(sql, RdbmsTppMappingRef.class)
+            Query query = entityManager.createQuery(sql, RdbmsTppConfigListOption.class)
+                    .setParameter("service_id", serviceId.toString())
+                    .setParameter("config_list_id", configListId)
                     .setParameter("row_id", rowId)
-                    .setParameter("group_id", groupId)
                     .setMaxResults(1);
 
             try {
-                RdbmsTppMappingRef result = (RdbmsTppMappingRef)query.getSingleResult();
-                return new TppMappingRef(result);
-            }
-            catch (NoResultException e) {
-                LOG.error("No mapping code found for rowId " + rowId + ", groupId " + groupId);
+                RdbmsTppConfigListOption result = (RdbmsTppConfigListOption) query.getSingleResult();
+                return new TppConfigListOption(result);
+            } catch (NoResultException e) {
+                LOG.error("No code found for rowId " + rowId + ", configListId " + configListId + ", service " + serviceId);
                 return null;
             }
         } finally {
@@ -174,15 +180,14 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
         }
     }
 
-    public void save(TppMappingRef mapping) throws Exception
-    {
-        if (mapping == null) {
-            throw new IllegalArgumentException("mapping is null");
+    public void save(UUID serviceId, TppConfigListOption configListOption) throws Exception {
+        if (configListOption == null) {
+            throw new IllegalArgumentException("configListOption is null");
         }
 
-        RdbmsTppMappingRef tppMapping = new RdbmsTppMappingRef(mapping);
+        RdbmsTppConfigListOption tppConfigListOption = new RdbmsTppConfigListOption(configListOption);
 
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         PreparedStatement ps = null;
 
         try {
@@ -194,27 +199,88 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
-            String sql = "INSERT INTO tpp_mapping_ref "
-                    + " (row_id, group_id, mapped_term, audit_json)"
-                    + " VALUES (?, ?, ?, ?)"
+            String sql = "INSERT INTO tpp_config_list_option "
+                    + " (row_id, config_list_id, list_option_name, service_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
-                    + " row_id = VALUES(row_id),"
-                    + " group_id = VALUES(group_id),"
-                    + " mapped_term = VALUES(mapped_term),"
+                    + " list_option_name = VALUES(list_option_name),"
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
             // Only JSON audit field is nullable
-            ps.setLong(1, tppMapping.getRowId());
-            ps.setLong(2, tppMapping.getGroupId());
-            ps.setString(3,tppMapping.getMappedTerm());
-            if (tppMapping.getAuditJson() == null) {
-                ps.setNull(4, Types.VARCHAR);
+            ps.setLong(1, tppConfigListOption.getRowId());
+            ps.setLong(2, tppConfigListOption.getConfigListId());
+            ps.setString(3, tppConfigListOption.getListOptionName());
+            ps.setString(4, tppConfigListOption.getServiceId());
+            if (tppConfigListOption.getAuditJson() == null) {
+                ps.setNull(5, Types.VARCHAR);
             } else {
-                ps.setString(4, tppMapping.getAuditJson());
+                ps.setString(5, tppConfigListOption.getAuditJson());
             }
 
             ps.executeUpdate();
+
+            //transaction.commit();
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public void save(UUID serviceId, List<TppConfigListOption> mappings) throws Exception {
+        if (mappings == null || mappings.isEmpty()) {
+            throw new IllegalArgumentException("configListOption is null or empty");
+        }
+
+        EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        PreparedStatement ps = null;
+
+        try {
+            //have to use prepared statement as JPA doesn't support upserts
+            //entityManager.persist(emisMapping);
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "INSERT INTO tpp_config_list_option "
+                    + " (row_id, config_list_id, list_option_name, service_id, audit_json)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " list_option_name = VALUES(list_option_name),"
+                    + " audit_json = VALUES(audit_json)";
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (TppConfigListOption mapping: mappings) {
+
+                int col = 1;
+
+                // Only JSON audit field is nullable
+                ps.setLong(col++, mapping.getRowId());
+                ps.setLong(col++, mapping.getConfigListId());
+                ps.setString(col++, mapping.getListOptionName());
+                ps.setString(col++, mapping.getServiceId());
+                if (mapping.getAudit() == null) {
+                    ps.setNull(col++, Types.VARCHAR);
+                } else {
+                    ps.setString(col++, mapping.getAudit().writeToJson());
+                }
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
 
             //transaction.commit();
             entityManager.getTransaction().commit();

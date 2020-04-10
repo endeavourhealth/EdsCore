@@ -2,9 +2,11 @@ package org.endeavourhealth.core.database.dal.publisherCommon;
 
 import org.endeavourhealth.core.database.dal.publisherCommon.models.TppImmunisationContent;
 
+import java.util.Date;
+
 public interface TppImmunisationContentDalI {
 
-    TppImmunisationContent getContentFromRowId(Long rowId) throws Exception;
+    TppImmunisationContent getContentFromRowId(int rowId) throws Exception;
 
-    void save(TppImmunisationContent mapping) throws Exception;
+    void updateLookupTable(String s3FilePath, Date dataDate) throws Exception;
 }

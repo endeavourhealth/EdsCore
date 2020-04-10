@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -902,6 +903,26 @@ public class ConnectionManager {
 
     public static Connection getDataGeneratorNonPooledConnection() throws Exception {
         return getConnectionNonPooled(Db.DataGenerator);
+    }
+
+
+    /**
+     * utility fn to generate a unique name for a temp table
+     * note that we use the "tmp" database for these tables and avoid the use of actual
+     * TEMPORARY tables, since they are automatically dropped when the connection is closed making
+     * it hard to trace bugs
+     */
+    public static String generateTempTableName(String baseName) {
+        return "tmp.`" + baseName + "_" + UUID.randomUUID().toString() + "`";
+    }
+
+    public static String formatDateString(Date d, boolean addQuotes) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        if (addQuotes) {
+            return "'" + simpleDateFormat.format(d) + "'";
+        } else {
+            return simpleDateFormat.format(d);
+        }
     }
 
 }

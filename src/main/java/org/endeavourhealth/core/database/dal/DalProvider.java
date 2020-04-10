@@ -561,7 +561,7 @@ public class DalProvider {
         return new RdbmsCoreFilerDal();
     }
 
-    public static TppStaffStagingDalI factoryTppStaffMemberDal() {
-        return new RdbmsTppStaffStagingDal();
+    public static TppStaffDalI factoryTppStaffMemberDal() {
+        return new RdbmsTppStaffDal();
     }
 }

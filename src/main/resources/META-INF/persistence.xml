@@ -166,7 +166,6 @@
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerCodeValueRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsCernerNomenclatureRef</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsInternalIdMap</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsTppConfigListOption</class>
 
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
@@ -188,9 +187,6 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCache</class>
         <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsEmisAdminResourceCacheApplied</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppCtv3HierarchyRef</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppImmunisationContent</class>
-        <class>org.endeavourhealth.core.database.rdbms.publisherCommon.models.RdbmsTppMappingRef</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.show_sql" value="false" />
