@@ -66,6 +66,7 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
 
         //copy the file from S3 to local disk
         File f = FileHelper.copyFileFromStorageToTempDirIfNecessary(filePath);
+        filePath = f.getAbsolutePath();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
         try {

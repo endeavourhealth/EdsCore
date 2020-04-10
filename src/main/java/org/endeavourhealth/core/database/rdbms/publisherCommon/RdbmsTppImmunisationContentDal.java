@@ -71,6 +71,7 @@ public class RdbmsTppImmunisationContentDal implements TppImmunisationContentDal
 
         //copy the file from S3 to local disk
         File f = FileHelper.copyFileFromStorageToTempDirIfNecessary(filePath);
+        filePath = f.getAbsolutePath();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
         try {
