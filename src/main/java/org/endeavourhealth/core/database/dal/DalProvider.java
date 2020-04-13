@@ -52,8 +52,8 @@ public class DalProvider {
         return new RdbmsVitruCareTransformDal(subscriberConfigName);
     }
 
-    public static EmisTransformDalI factoryEmisTransformDal() {
-        return new RdbmsEmisTransformDal();
+    public static EmisAdminCacheDalI factoryEmisTransformDal() {
+        return new RdbmsEmisAdminCacheDal();
     }
 
     public static TppCtv3LookupDalI factoryTppCtv3LookupDal() {
@@ -156,7 +156,9 @@ public class DalProvider {
         return new RdbmsSubscriberApiAuditDal();
     }
 
-    public static CernerProcedureMapDalI factoryCernerProcedureMapDal() { return new CernerProcedureMapDal();}
+    public static CernerProcedureMapDalI factoryCernerProcedureMapDal() {
+        return new CernerProcedureMapDal();
+    }
 
 
     public static CohortDalI factoryDSMCohortDal() {
@@ -174,6 +176,7 @@ public class DalProvider {
     public static DataSharingAgreementDalI factoryDSMDataSharingAgreementDal() {
         return new RdbmsCoreDataSharingAgreementDal();
     }
+
     public static DocumentationDalI factoryDSMDocumentationDal() {
         return new RdbmsCoreDocumentationDal();
     }
@@ -185,9 +188,11 @@ public class DalProvider {
     public static MasterMappingDalI factoryDSMMasterMappingDal() {
         return new RdbmsCoreMasterMappingDal();
     }
+
     public static OrganisationDalI factoryDSMOrganisationDal() {
         return new RdbmsCoreOrganisationDal();
     }
+
     public static ProjectApplicationPolicyDalI factoryDSMProjectApplicationPolicyDal() {
         return new RdbmsCoreProjectApplicationPolicyDal();
     }
@@ -195,15 +200,19 @@ public class DalProvider {
     public static ProjectDalI factoryDSMProjectDal() {
         return new RdbmsCoreProjectDal();
     }
+
     public static ProjectScheduleDalI factoryDSMProjectScheduleDal() {
         return new RdbmsCoreProjectScheduleDal();
     }
+
     public static PurposeDalI factoryDSMPurposeDal() {
         return new RdbmsCorePurposeDal();
     }
+
     public static RegionDalI factoryDSMRegionDal() {
         return new RdbmsCoreRegionDal();
     }
+
     public static ValueSetsDalI factoryDSMValueSetsDal() {
         return new RdbmsCoreValueSetsDal();
     }
@@ -212,27 +221,35 @@ public class DalProvider {
     public static ApplicationAccessProfileDalI factoryUMApplicationAccessProfileDal() {
         return new RdbmsCoreApplicationAccessProfileDal();
     }
+
     public static ApplicationDalI factoryUMApplicationDal() {
         return new RdbmsCoreApplicationDal();
     }
+
     public static ApplicationPolicyAttributeDalI factoryUMApplicationPolicyAttributeDal() {
         return new RdbmsCoreApplicationPolicyAttributeDal();
     }
+
     public static ApplicationPolicyDalI factoryUMApplicationPolicyDal() {
         return new RdbmsCoreApplicationPolicyDal();
     }
+
     public static DelegationDalI factoryUMDelegationDal() {
         return new RdbmsCoreDelegationDal();
     }
+
     public static DelegationRelationshipDalI factoryUMDelegationRelationshipDal() {
         return new RdbmsCoreDelegationRelationshipDal();
     }
+
     public static UserApplicationPolicyDalI factoryUMUserApplicationPolicyDal() {
         return new RdbmsCoreUserApplicationPolicyDal();
     }
+
     public static UserProjectDalI factoryUMUserProjectDal() {
         return new RdbmsCoreUserProjectDal();
     }
+
     public static UserRegionDalI factoryUMUserRegionDal() {
         return new RdbmsCoreUserRegionDal();
     }
@@ -523,11 +540,17 @@ public class DalProvider {
         return new RdbmsStagingSURCPDal();
     }
 
-    public static StagingDiagnosisDalI factoryBartsStagingDiagnosisDalI() { return new RdbmsStagingDiagnosisDal(); }
+    public static StagingDiagnosisDalI factoryBartsStagingDiagnosisDalI() {
+        return new RdbmsStagingDiagnosisDal();
+    }
 
-    public static StagingDIAGNDalI factoryBartsStagingDIAGNDalI() { return new RdbmsStagingDIAGNDal(); }
+    public static StagingDIAGNDalI factoryBartsStagingDIAGNDalI() {
+        return new RdbmsStagingDIAGNDal();
+    }
 
-    public static StagingProblemDalI factoryBartsStagingProblemDalI() { return new RdbmsStagingProblemDal(); }
+    public static StagingProblemDalI factoryBartsStagingProblemDalI() {
+        return new RdbmsStagingProblemDal();
+    }
 
     public static StagingTargetDalI factoryStagingTargetDalI() {
         return new RdbmsStagingTargetDal();
@@ -563,5 +586,25 @@ public class DalProvider {
 
     public static TppStaffDalI factoryTppStaffMemberDal() {
         return new RdbmsTppStaffDal();
+    }
+
+    public static EmisLocationDalI factoryEmisLocationDal() {
+        return new RdbmsEmisLocationDal();
+    }
+
+    public static EmisOrganisationDalI factoryEmisOrganisationDal() {
+        return new RdbmsEmisOrganisationDal();
+    }
+
+    public static EmisUserInRoleDalI factoryEmisUserInRoleDal() {
+        return new RdbmsEmisUserInRoleDal();
+    }
+
+    public static EmisMissingCodeDalI factoryEmisMissingCodeDal() {
+        return new RdbmsEmisMissingCodeDal();
+    }
+
+    public static EmisCodeDalI factoryEmisCodeDal() {
+        return new RdbmsEmisCodeDal();
     }
 }

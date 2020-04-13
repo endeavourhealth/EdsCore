@@ -913,6 +913,11 @@ public class ConnectionManager {
      * it hard to trace bugs
      */
     public static String generateTempTableName(String baseName) {
+
+        //MySQL has a limit of 64 chars for table names, so just trim down to fit, counting for the UUID we'll append
+        if (baseName.length() > 27) {
+            baseName = baseName.substring(0, 27);
+        }
         return "tmp.`" + baseName + "_" + UUID.randomUUID().toString() + "`";
     }
 
