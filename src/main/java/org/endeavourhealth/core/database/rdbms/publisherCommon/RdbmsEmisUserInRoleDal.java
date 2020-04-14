@@ -175,14 +175,14 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
                     + " surname, job_category_code, job_category_name, contract_start_date, contract_end_date,"
                     + " published_file_id, published_file_record_number, dt_last_updated)"
                     + " SELECT UserInRoleGuid,"
-                    + " IF(OrganisationGuid != '', OrganisationGuid, null),"
-                    + " IF(Title != '', Title, null),"
-                    + " IF(GivenName != '', GivenName, null),"
-                    + " IF(Surname != '', Surname, null),"
-                    + " IF(JobCategoryCode != '', JobCategoryCode, null),"
-                    + " IF(JobCategoryName != '', JobCategoryName, null),"
-                    + " IF(ContractStartDate != '', ContractStartDate, null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(ContractEndDate != '', ContractEndDate, null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " IF(OrganisationGuid != '', TRIM(OrganisationGuid), null),"
+                    + " IF(Title != '', TRIM(Title), null),"
+                    + " IF(GivenName != '', TRIM(GivenName), null),"
+                    + " IF(Surname != '', TRIM(Surname), null),"
+                    + " IF(JobCategoryCode != '', TRIM(JobCategoryCode), null),"
+                    + " IF(JobCategoryName != '', TRIM(JobCategoryName), null),"
+                    + " IF(ContractStartDate != '' AND ContractStartDate != '1899-12-31', TRIM(ContractStartDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " IF(ContractEndDate != '' AND ContractEndDate != '1899-12-31', TRIM(ContractEndDate), null)," //Emis data are in SQL format, so this will auto convert from string
                     + publishedFileId + ", record_number, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
@@ -197,13 +197,13 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
                     + " ON t.user_in_role_guid = s.UserInRoleGuid"
                     + " SET"
                     + " t.organisation_guid = IF(s.OrganisationGuid != '', s.OrganisationGuid, null),"
-                    + " t.title = IF(s.Title != '', s.Title, null),"
-                    + " t.given_name = IF(s.GivenName != '', s.GivenName, null),"
-                    + " t.surname = IF(s.Surname != '', s.Surname, null),"
-                    + " t.job_category_code = IF(s.JobCategoryCode != '', s.JobCategoryCode, null),"
-                    + " t.job_category_name = IF(s.JobCategoryName != '', s.JobCategoryName, null),"
-                    + " t.contract_start_date = IF(s.ContractStartDate != '', s.ContractStartDate, null),"
-                    + " t.contract_end_date = IF(s.ContractEndDate != '', s.ContractEndDate, null),"
+                    + " t.title = IF(s.Title != '', TRIM(s.Title), null),"
+                    + " t.given_name = IF(s.GivenName != '', TRIM(s.GivenName), null),"
+                    + " t.surname = IF(s.Surname != '', TRIM(s.Surname), null),"
+                    + " t.job_category_code = IF(s.JobCategoryCode != '', TRIM(s.JobCategoryCode), null),"
+                    + " t.job_category_name = IF(s.JobCategoryName != '', TRIM(s.JobCategoryName), null),"
+                    + " t.contract_start_date = IF(s.ContractStartDate != '' AND ContractStartDate != '1899-12-31', TRIM(s.ContractStartDate), null),"
+                    + " t.contract_end_date = IF(s.ContractEndDate != '' AND ContractEndDate != '1899-12-31', TRIM(s.ContractEndDate), null),"
                     + " t.published_file_id = " + publishedFileId + ","
                     + " t.published_file_record_number = s.record_number,"
                     + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)

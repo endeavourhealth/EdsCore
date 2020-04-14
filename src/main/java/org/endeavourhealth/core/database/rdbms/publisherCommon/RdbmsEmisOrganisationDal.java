@@ -175,15 +175,15 @@ public class RdbmsEmisOrganisationDal implements EmisOrganisationDalI {
                     + " parent_organisation_guid, ccg_organisation_guid, organisation_type, open_date, close_date,"
                     + " main_location_guid, published_file_id, published_file_record_number, dt_last_updated)"
                     + " SELECT OrganisationGuid,"
-                    + " IF(CDB != '', CDB, null),"
-                    + " IF(OrganisationName != '', OrganisationName, null),"
-                    + " IF(ODSCode != '', ODSCode, null),"
-                    + " IF(ParentOrganisationGuid != '', ParentOrganisationGuid, null),"
-                    + " IF(CCGOrganisationGuid != '', CCGOrganisationGuid, null),"
-                    + " IF(OrganisationType != '', OrganisationType, null),"
-                    + " IF(OpenDate != '', OpenDate, null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(CloseDate != '', CloseDate, null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(MainLocationGuid != '', MainLocationGuid, null),"
+                    + " IF(CDB != '', TRIM(CDB), null),"
+                    + " IF(OrganisationName != '', TRIM(OrganisationName), null),"
+                    + " IF(ODSCode != '', TRIM(ODSCode), null),"
+                    + " IF(ParentOrganisationGuid != '', TRIM(ParentOrganisationGuid), null),"
+                    + " IF(CCGOrganisationGuid != '', TRIM(CCGOrganisationGuid), null),"
+                    + " IF(OrganisationType != '', TRIM(OrganisationType), null),"
+                    + " IF(OpenDate != '', TRIM(OpenDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " IF(CloseDate != '', TRIM(CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " IF(MainLocationGuid != '', TRIM(MainLocationGuid), null),"
                     + publishedFileId + ", record_number, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
@@ -197,15 +197,15 @@ public class RdbmsEmisOrganisationDal implements EmisOrganisationDalI {
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.organisation_guid = s.OrganisationGuid"
                     + " SET"
-                    + " t.cdb = IF(s.CDB != '', s.CDB, null),"
-                    + " t.organisation_name = IF(s.OrganisationName != '', s.OrganisationName, null),"
-                    + " t.ods_code = IF(s.ODSCode != '', s.ODSCode, null),"
-                    + " t.parent_organisation_guid = IF(s.ParentOrganisationGuid != '', s.ParentOrganisationGuid, null),"
-                    + " t.ccg_organisation_guid = IF(s.CCGOrganisationGuid != '', s.CCGOrganisationGuid, null),"
-                    + " t.organisation_type = IF(s.OrganisationType != '', s.OrganisationType, null),"
-                    + " t.open_date = IF(s.OpenDate != '', s.OpenDate, null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " t.close_date = IF(s.CloseDate != '', s.CloseDate, null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " t.main_location_guid = IF(s.MainLocationGuid != '', s.MainLocationGuid, null),"
+                    + " t.cdb = IF(s.CDB != '', TRIM(s.CDB), null),"
+                    + " t.organisation_name = IF(s.OrganisationName != '', TRIM(s.OrganisationName), null),"
+                    + " t.ods_code = IF(s.ODSCode != '', TRIM(s.ODSCode), null),"
+                    + " t.parent_organisation_guid = IF(s.ParentOrganisationGuid != '', TRIM(s.ParentOrganisationGuid), null),"
+                    + " t.ccg_organisation_guid = IF(s.CCGOrganisationGuid != '', TRIM(s.CCGOrganisationGuid), null),"
+                    + " t.organisation_type = IF(s.OrganisationType != '', TRIM(s.OrganisationType), null),"
+                    + " t.open_date = IF(s.OpenDate != '', TRIM(s.OpenDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " t.close_date = IF(s.CloseDate != '', TRIM(s.CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " t.main_location_guid = IF(s.MainLocationGuid != '', TRIM(s.MainLocationGuid), null),"
                     + " t.published_file_id = " + publishedFileId + ","
                     + " t.published_file_record_number = s.record_number,"
                     + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
