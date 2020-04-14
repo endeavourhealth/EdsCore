@@ -161,7 +161,7 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
             statement.executeUpdate(sql);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES"
                     + " SET record_number = @row:=@row+1";
@@ -181,8 +181,8 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
                     + " IF(Surname != '', TRIM(Surname), null),"
                     + " IF(JobCategoryCode != '', TRIM(JobCategoryCode), null),"
                     + " IF(JobCategoryName != '', TRIM(JobCategoryName), null),"
-                    + " IF(ContractStartDate != '' AND ContractStartDate != '1899-12-31', TRIM(ContractStartDate), null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(ContractEndDate != '' AND ContractEndDate != '1899-12-31', TRIM(ContractEndDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " " + RdbmsEmisLocationDal.getSqlForEmisDates("ContractStartDate") + ","
+                    + " " + RdbmsEmisLocationDal.getSqlForEmisDates("ContractEndDate") + ","
                     + publishedFileId + ", record_number, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
@@ -202,8 +202,8 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
                     + " t.surname = IF(s.Surname != '', TRIM(s.Surname), null),"
                     + " t.job_category_code = IF(s.JobCategoryCode != '', TRIM(s.JobCategoryCode), null),"
                     + " t.job_category_name = IF(s.JobCategoryName != '', TRIM(s.JobCategoryName), null),"
-                    + " t.contract_start_date = IF(s.ContractStartDate != '' AND ContractStartDate != '1899-12-31', TRIM(s.ContractStartDate), null),"
-                    + " t.contract_end_date = IF(s.ContractEndDate != '' AND ContractEndDate != '1899-12-31', TRIM(s.ContractEndDate), null),"
+                    + " t.contract_start_date = " + RdbmsEmisLocationDal.getSqlForEmisDates("s.ContractStartDate") + ","
+                    + " t.contract_end_date = " + RdbmsEmisLocationDal.getSqlForEmisDates("s.ContractEndDate") + ","
                     + " t.published_file_id = " + publishedFileId + ","
                     + " t.published_file_record_number = s.record_number,"
                     + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)

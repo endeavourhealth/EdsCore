@@ -62,7 +62,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES";
             statement.executeUpdate(sql);
@@ -87,7 +87,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + validReadCodesFile.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + extraTempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES";
             statement.executeUpdate(sql);
@@ -205,7 +205,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES";
             statement.executeUpdate(sql);

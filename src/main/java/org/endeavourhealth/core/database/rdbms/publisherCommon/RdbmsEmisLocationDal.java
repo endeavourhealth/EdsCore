@@ -256,7 +256,7 @@ public class RdbmsEmisLocationDal implements EmisLocationDalI {
             statement.executeUpdate(sql);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES"
                     + " SET record_number = @row:=@row+1";
@@ -274,8 +274,8 @@ public class RdbmsEmisLocationDal implements EmisLocationDalI {
                     + " IF(LocationName != '', TRIM(LocationName), null),"
                     + " IF(LocationTypeDescription != '', TRIM(LocationTypeDescription), null),"
                     + " IF(ParentLocationGuid != '', TRIM(ParentLocationGuid), null),"
-                    + " IF(OpenDate != '', TRIM(OpenDate), null),"  //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(CloseDate != '', TRIM(CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " " + getSqlForEmisDates("OpenDate") + ","
+                    + " " + getSqlForEmisDates("CloseDate") + ","
                     + " IF(MainContactName != '', TRIM(MainContactName), null),"
                     + " IF(FaxNumber != '', TRIM(FaxNumber), null),"
                     + " IF(EmailAddress != '', TRIM(EmailAddress), null),"
@@ -303,8 +303,8 @@ public class RdbmsEmisLocationDal implements EmisLocationDalI {
                     + " t.location_name = IF(s.LocationName != '', TRIM(s.LocationName), null),"
                     + " t.location_type_description = IF(s.LocationTypeDescription != '', TRIM(s.LocationTypeDescription), null),"
                     + " t.parent_location_guid = IF(s.ParentLocationGuid != '', TRIM(s.ParentLocationGuid), null),"
-                    + " t.open_date = IF(s.OpenDate != '', TRIM(s.OpenDate), null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " t.close_date = IF(s.CloseDate != '', TRIM(s.CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " t.open_date = " + getSqlForEmisDates("s.OpenDate") + ","
+                    + " t.close_date = " + getSqlForEmisDates("s.CloseDate") + ","
                     + " t.main_contact_name = IF(s.MainContactName != '', TRIM(s.MainContactName), null),"
                     + " t.fax_number = IF(s.FaxNumber != '', TRIM(s.FaxNumber), null),"
                     + " t.email_address = IF(s.EmailAddress != '', TRIM(s.EmailAddress), null),"
@@ -380,7 +380,7 @@ public class RdbmsEmisLocationDal implements EmisLocationDalI {
             statement.executeUpdate(sql);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES"
                     + " SET record_number = @row:=@row+1";
@@ -448,5 +448,14 @@ public class RdbmsEmisLocationDal implements EmisLocationDalI {
                     + "IF(" + columnName + "='true', 1, "
                     + "IF(" + columnName + "='false', 0, " + columnName + ")))";
         //return "IF(Deleted != '', Deleted, null)";
+    }
+
+    /**
+     * Emis sent various bad dates, so we need some logic to handle them
+     * 1899-01-01
+     * 1899-12-31
+     */
+    public static String getSqlForEmisDates(String columnName) {
+        return "IF(" + columnName + " != '' AND " + columnName + " NOT LIKE '1899%', TRIM(" + columnName + "), null)";
     }
 }

@@ -161,7 +161,7 @@ public class RdbmsEmisOrganisationDal implements EmisOrganisationDalI {
             statement.executeUpdate(sql);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
-                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
                     + " LINES TERMINATED BY '\\r\\n'"
                     + " IGNORE 1 LINES"
                     + " SET record_number = @row:=@row+1";
@@ -181,8 +181,8 @@ public class RdbmsEmisOrganisationDal implements EmisOrganisationDalI {
                     + " IF(ParentOrganisationGuid != '', TRIM(ParentOrganisationGuid), null),"
                     + " IF(CCGOrganisationGuid != '', TRIM(CCGOrganisationGuid), null),"
                     + " IF(OrganisationType != '', TRIM(OrganisationType), null),"
-                    + " IF(OpenDate != '', TRIM(OpenDate), null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " IF(CloseDate != '', TRIM(CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " " + RdbmsEmisLocationDal.getSqlForEmisDates("OpenDate") + ","
+                    + " " + RdbmsEmisLocationDal.getSqlForEmisDates("CloseDate") + ","
                     + " IF(MainLocationGuid != '', TRIM(MainLocationGuid), null),"
                     + publishedFileId + ", record_number, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName;
@@ -203,8 +203,8 @@ public class RdbmsEmisOrganisationDal implements EmisOrganisationDalI {
                     + " t.parent_organisation_guid = IF(s.ParentOrganisationGuid != '', TRIM(s.ParentOrganisationGuid), null),"
                     + " t.ccg_organisation_guid = IF(s.CCGOrganisationGuid != '', TRIM(s.CCGOrganisationGuid), null),"
                     + " t.organisation_type = IF(s.OrganisationType != '', TRIM(s.OrganisationType), null),"
-                    + " t.open_date = IF(s.OpenDate != '', TRIM(s.OpenDate), null)," //Emis data are in SQL format, so this will auto convert from string
-                    + " t.close_date = IF(s.CloseDate != '', TRIM(s.CloseDate), null)," //Emis data are in SQL format, so this will auto convert from string
+                    + " t.open_date = " + RdbmsEmisLocationDal.getSqlForEmisDates("s.OpenDate") + ","
+                    + " t.close_date = " + RdbmsEmisLocationDal.getSqlForEmisDates("s.CloseDate") + ","
                     + " t.main_location_guid = IF(s.MainLocationGuid != '', TRIM(s.MainLocationGuid), null),"
                     + " t.published_file_id = " + publishedFileId + ","
                     + " t.published_file_record_number = s.record_number,"
