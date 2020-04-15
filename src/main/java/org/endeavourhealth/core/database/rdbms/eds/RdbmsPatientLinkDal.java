@@ -5,6 +5,7 @@ import org.endeavourhealth.common.fhir.IdentifierHelper;
 import org.endeavourhealth.core.database.dal.eds.PatientLinkDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientLinkPair;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLink;
 import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkHistory;
 import org.endeavourhealth.core.database.rdbms.eds.models.RdbmsPatientLinkPerson;
@@ -20,6 +21,26 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
 
     @Override
     public PatientLinkPair updatePersonId(UUID serviceId, Patient fhirPatient) throws Exception {
+
+        DeadlockHandler h = new DeadlockHandler();
+
+        //due to speed of HL7 message processing, we occasionally get errors
+        //because we try to insert a duplicate key into patient_link_history, so just
+        //give it a few attempts
+        h.addOtherErrorMessageToHandler("could not execute statement");
+
+        while (true) {
+            try {
+                return tryUpdatePersonId(serviceId, fhirPatient);
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+
+    }
+
+    private PatientLinkPair tryUpdatePersonId(UUID serviceId, Patient fhirPatient) throws Exception {
 
         String patientId = fhirPatient.getId();
         String newPersonId = null;

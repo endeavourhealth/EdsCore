@@ -26,32 +26,39 @@ public class DeadlockHandler {
         this.errorMessages.add(p);
     }
 
-    public void handleError(Exception ex) throws Exception {
+    public void handleError(Exception exc) throws Exception {
 
         //if we're out of lives, then throw the exception
         if (attemptsRemaining <= 0) {
-            throw ex;
+            throw exc;
         }
 
         boolean throwException = true;
 
-        String msg = ex.getMessage();
-        if (msg != null) {
-            for (Pattern p: errorMessages) {
-                Matcher m = p.matcher(msg);
-                if (m.matches()) {
-                    throwException = false;
-                    break;
+        //check the messages against the ones we're filtering out, making sure to check
+        //nested exceptions too
+        Throwable t = exc;
+        while (t != null && throwException) {
+            String msg = t.getMessage();
+            if (msg != null) {
+                for (Pattern p : errorMessages) {
+                    Matcher m = p.matcher(msg);
+                    if (m.matches()) {
+                        throwException = false;
+                        break;
+                    }
                 }
             }
+
+            t = t.getCause();
         }
 
         if (throwException) {
-            throw ex;
+            throw exc;
         }
 
         //if it's a deadlock error, decrease our lives and let it try again
-        LOG.error("Error [" + msg + "] when writing to DB - will try again (" + attemptsRemaining + " remaining)");
+        LOG.error("Error [" + exc.getMessage() + "] when writing to DB - will try again (" + attemptsRemaining + " remaining)");
         Thread.sleep(1000);
         attemptsRemaining--;
     }
