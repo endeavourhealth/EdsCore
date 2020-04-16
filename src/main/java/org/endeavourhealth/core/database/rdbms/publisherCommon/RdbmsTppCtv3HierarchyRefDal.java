@@ -75,7 +75,7 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            LOG.debug("Loading " + f + " into " + tempTableName);
+            //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier int, "
                     + "IDOrganisationVisibleTo varchar(255), "
@@ -83,13 +83,15 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
                     + "Ctv3CodeChild varchar(255) binary, "
                     + "ChildLevel int, "
                     + "RemovedData int, "
-                    + "CONSTRAINT pk PRIMARY KEY (Ctv3CodeChild, Ctv3CodeParent))";
+                    + "key_exists boolean DEFAULT FALSE, "
+                    + "CONSTRAINT pk PRIMARY KEY (Ctv3CodeChild, Ctv3CodeParent), "
+                    + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //bulk load temp table
-            LOG.debug("Starting bulk load into " + tempTableName);
+            //LOG.debug("Starting bulk load into " + tempTableName);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
                     + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
@@ -99,11 +101,23 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //work out which records already exist in the target table
+            //LOG.debug("Finding records that exist in tpp_ctv3_hierarchy_ref_2");
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN tpp_ctv3_hierarchy_ref_2 t"
+                    + " ON t.child_code = s.Ctv3CodeChild"
+                    + " AND t.parent_code = s.Ctv3CodeParent"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
             //insert records into the target table where the staging
-            LOG.debug("Copying into target table tpp_ctv3_hierarchy_ref_2");
+            //LOG.debug("Copying into target table tpp_ctv3_hierarchy_ref_2");
             sql = "INSERT IGNORE INTO tpp_ctv3_hierarchy_ref_2 (parent_code, child_code, child_level, dt_last_updated)"
                     + " SELECT Ctv3CodeParent, Ctv3CodeChild, ChildLevel, " + ConnectionManager.formatDateString(dataDate, true)
-                    + " FROM " + tempTableName;
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
@@ -112,7 +126,7 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
             //because this file has no unique ID we can use for updates
 
             //delete the temp table
-            LOG.debug("Deleting temp table");
+            //LOG.debug("Deleting temp table");
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);

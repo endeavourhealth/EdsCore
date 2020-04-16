@@ -38,7 +38,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            LOG.debug("Loading " + f + " into " + tempTableName);
+            //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "CodeId bigint, "
                     + "Term varchar(500), "
@@ -51,14 +51,15 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                     + "EmisCodeCategoryDescription varchar(255), "
                     + "ProcessingId int, "
                     + "ParentCodeId bigint, "
-                    + "CONSTRAINT pk PRIMARY KEY (CodeId))";
+                    + "key_exists boolean DEFAULT FALSE, "
+                    + "CONSTRAINT pk PRIMARY KEY (CodeId), "
+                    + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //bulk load temp table, adding record number as we go
-            LOG.debug("Starting bulk load into " + tempTableName);
-
+            //LOG.debug("Starting bulk load into " + tempTableName);
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
@@ -70,7 +71,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
 
             //we also have a second file, containing additional columns that we've generated in the code
             String extraTempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(validReadCodesFile));
-            LOG.debug("Loading " + validReadCodesFile + " into " + extraTempTableName);
+            //LOG.debug("Loading " + validReadCodesFile + " into " + extraTempTableName);
             sql = "CREATE TABLE " + extraTempTableName + " ("
                     + "CodeId bigint, "
                     + "AdjustedCode varchar(255), "
@@ -82,8 +83,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.close();
 
             //bulk load temp table, adding record number as we go
-            LOG.debug("Starting bulk load into " + extraTempTableName);
-
+            //LOG.debug("Starting bulk load into " + extraTempTableName);
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + validReadCodesFile.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + extraTempTableName
@@ -93,9 +93,18 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //work out which records already exist in the target table
+            //LOG.debug("Finding records that exist in emis_clinical_code");
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN emis_clinical_code t"
+                    + " ON t.code_id = s.CodeId"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
 
             //insert records into the target table where the staging has new records
-            LOG.debug("Copying new records into target table emis_clinical_code");
+            //LOG.debug("Copying new records into target table emis_clinical_code");
             sql = "INSERT IGNORE INTO emis_clinical_code (code_id, code_type, read_term, read_code, snomed_concept_id,"
                     + " snomed_description_id, snomed_term, national_code, national_code_category,"
                     + " national_code_description, parent_code_id, adjusted_code, is_emis_code, dt_last_updated)"
@@ -115,13 +124,14 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                     + " " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName + " s "
                     + " LEFT OUTER JOIN " + extraTempTableName + " x"
-                    + " ON s.CodeId = x.CodeId";
+                    + " ON s.CodeId = x.CodeId"
+                    + " WHERE key_exists = false";
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //update any records that previously existed, but have a changed term
-            LOG.debug("Updating existing records in target table emis_clinical_code");
+            //LOG.debug("Updating existing records in target table emis_clinical_code");
             sql = "UPDATE emis_clinical_code t"
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.code_id = s.CodeId"
@@ -147,20 +157,20 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.close();
 
             //delete the temp table
-            LOG.debug("Deleting temp table");
+            //LOG.debug("Deleting temp table");
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
-            LOG.debug("Deleting extra temp table");
+            //LOG.debug("Deleting extra temp table");
             sql = "DROP TABLE " + extraTempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             long msEnd = System.currentTimeMillis();
-            LOG.debug("Update of emis_drug_code Completed in " + ((msEnd-msStart)/1000) + "s");
+            LOG.debug("Update of emis_clinical_code Completed in " + ((msEnd-msStart)/1000) + "s");
 
         } finally {
             //MUST change this back to false
@@ -187,21 +197,21 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            LOG.debug("Loading " + f + " into " + tempTableName);
+            //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "CodeId bigint, "
                     + "Term varchar(500), "
                     + "DmdProductCodeId varchar(255), "
                     + "ProcessingId int, "
-                    + "CONSTRAINT pk PRIMARY KEY (CodeId))";
+                    + "key_exists boolean DEFAULT FALSE, "
+                    + "CONSTRAINT pk PRIMARY KEY (CodeId), "
+                    + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
-
             //bulk load temp table, adding record number as we go
-            LOG.debug("Starting bulk load into " + tempTableName);
-
+            //LOG.debug("Starting bulk load into " + tempTableName);
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
@@ -211,21 +221,31 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //work out which records already exist in the target table
+            //LOG.debug("Finding records that exist in emis_drug_code");
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN emis_drug_code t"
+                    + " ON t.code_id = s.CodeId"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
 
             //insert records into the target table where the staging has new records
-            LOG.debug("Copying new records into target table emis_drug_code");
+            //LOG.debug("Copying new records into target table emis_drug_code");
             sql = "INSERT IGNORE INTO emis_drug_code (code_id, dmd_concept_id, dmd_term, dt_last_updated)"
                     + " SELECT CodeId,"
                     + " IF(DmdProductCodeId != '', DmdProductCodeId, null),"
                     + " IF(Term != '', Term, null),"
                     + " " + ConnectionManager.formatDateString(dataDate, true)
-                    + " FROM " + tempTableName;
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //update any records that previously existed, but have a changed term
-            LOG.debug("Updating existing records in target table emis_drug_code");
+            //LOG.debug("Updating existing records in target table emis_drug_code");
             sql = "UPDATE emis_drug_code t"
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.code_id = s.CodeId"
@@ -239,7 +259,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.close();
 
             //delete the temp table
-            LOG.debug("Deleting temp table");
+            //LOG.debug("Deleting temp table");
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);

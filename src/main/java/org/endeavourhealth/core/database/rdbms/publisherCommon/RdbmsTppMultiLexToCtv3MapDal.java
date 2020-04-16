@@ -80,20 +80,22 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            LOG.debug("Loading " + f + " into " + tempTableName);
+            //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier int, "
                     + "IDMultiLexProduct int, "
                     + "DrugReadCode varchar(255), "
                     + "DrugReadCodeDesc varchar(255), "
                     + "RemovedData int, "
-                    + "CONSTRAINT pk PRIMARY KEY (IDMultiLexProduct))";
+                    + "key_exists boolean DEFAULT FALSE, "
+                    + "CONSTRAINT pk PRIMARY KEY (IDMultiLexProduct), "
+                    + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //bulk load temp table
-            LOG.debug("Starting bulk load into " + tempTableName);
+            //LOG.debug("Starting bulk load into " + tempTableName);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
                     + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
@@ -103,17 +105,29 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //work out which records already exist in the target table
+            //LOG.debug("Finding records that exist in tpp_multilex_to_ctv3_map_2");
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN tpp_multilex_to_ctv3_map_2 t"
+                    + " ON t.multilex_product_id = s.IDMultiLexProduct"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+
             //insert records into the target table where the staging has new records
-            LOG.debug("Copying new records into target table tpp_multilex_to_ctv3_map_2");
+            //LOG.debug("Copying new records into target table tpp_multilex_to_ctv3_map_2");
             sql = "INSERT IGNORE INTO tpp_multilex_to_ctv3_map_2 (multilex_product_id, ctv3_code, ctv3_term, dt_last_updated)"
                     + " SELECT IDMultiLexProduct, DrugReadCode, DrugReadCodeDesc, " + ConnectionManager.formatDateString(dataDate, true)
-                    + " FROM " + tempTableName;
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //update any records that previously existed, but have a changed term
-            LOG.debug("Updating existing records in target table tpp_multilex_to_ctv3_map_2");
+            //LOG.debug("Updating existing records in target table tpp_multilex_to_ctv3_map_2");
             sql = "UPDATE tpp_multilex_to_ctv3_map_2 t"
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.multilex_product_id = s.IDMultiLexProduct"
@@ -126,7 +140,7 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
             statement.close();
 
             //delete the temp table
-            LOG.debug("Deleting temp table");
+            //LOG.debug("Deleting temp table");
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);

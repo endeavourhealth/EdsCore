@@ -81,18 +81,20 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            LOG.debug("Loading " + f + " into " + tempTableName);
+            //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier int, "
                     + "IdMappingGroup int, "
                     + "Mapping varchar(255), "
-                    + "CONSTRAINT pk PRIMARY KEY (RowIdentifier))";
+                    + "key_exists boolean DEFAULT FALSE, "
+                    + "CONSTRAINT pk PRIMARY KEY (RowIdentifier), "
+                    + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //bulk load temp table
-            LOG.debug("Starting bulk load into " + tempTableName);
+            //LOG.debug("Starting bulk load into " + tempTableName);
             sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
                     + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"'"
@@ -102,17 +104,28 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //work out which records already exist in the target table
+            //LOG.debug("Finding records that exist in tpp_mapping_ref_2");
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN tpp_mapping_ref_2 t"
+                    + " ON t.row_id = s.RowIdentifier"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
             //insert records into the target table where the staging has new records
-            LOG.debug("Copying new records into target table tpp_mapping_ref_2");
+            //LOG.debug("Copying new records into target table tpp_mapping_ref_2");
             sql = "INSERT IGNORE INTO tpp_mapping_ref_2 (row_id, group_id, mapped_term, dt_last_updated)"
                     + " SELECT RowIdentifier, IdMappingGroup, Mapping, " + ConnectionManager.formatDateString(dataDate, true)
-                    + " FROM " + tempTableName;
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
             //update any records that previously existed, but have a changed term
-            LOG.debug("Updating existing records in target table tpp_mapping_ref_2");
+            //LOG.debug("Updating existing records in target table tpp_mapping_ref_2");
             sql = "UPDATE tpp_mapping_ref_2 t"
                     + " INNER JOIN " + tempTableName + " s"
                     + " ON t.row_id = s.RowIdentifier"
@@ -125,7 +138,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             statement.close();
 
             //delete the temp table
-            LOG.debug("Deleting temp table");
+            //LOG.debug("Deleting temp table");
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
