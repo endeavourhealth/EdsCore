@@ -16,6 +16,7 @@ public class DeadlockHandler {
 
     private int attemptsRemaining = NUM_ATTEMPTS;
     private List<Pattern> errorMessages = new ArrayList<>();
+    private long retryDelaySeconds = 1; //default to 1s between attempts
 
     public DeadlockHandler() {
         addOtherErrorMessageToHandler(DEADLOCK_ERR);
@@ -24,6 +25,14 @@ public class DeadlockHandler {
     public void addOtherErrorMessageToHandler(String regex) {
         Pattern p = Pattern.compile(regex);
         this.errorMessages.add(p);
+    }
+
+    public long getRetryDelaySeconds() {
+        return retryDelaySeconds;
+    }
+
+    public void setRetryDelaySeconds(long retryDelaySeconds) {
+        this.retryDelaySeconds = retryDelaySeconds;
     }
 
     public void handleError(Exception exc) throws Exception {
@@ -58,8 +67,8 @@ public class DeadlockHandler {
         }
 
         //if it's a deadlock error, decrease our lives and let it try again
-        LOG.error("Error [" + exc.getMessage() + "] when writing to DB - will try again (" + attemptsRemaining + " remaining)");
-        Thread.sleep(1000);
+        LOG.error("Error [" + exc.getMessage() + "] when writing to DB - will try again in " + retryDelaySeconds + "s (" + attemptsRemaining + " remaining)");
+        Thread.sleep(retryDelaySeconds * 1000);
         attemptsRemaining--;
     }
 }

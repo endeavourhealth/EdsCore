@@ -5,6 +5,7 @@ import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisUserInRoleDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisUserInRole;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,6 +123,25 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
 
     @Override
     public void updateStagingTable(String filePath, Date dataDate, int publishedFileId) throws Exception {
+
+        //if we get an exchange with a large update to this table, it can lock it for long enough for other apps
+        //to timeout, so give them another go
+        DeadlockHandler h = new DeadlockHandler();
+        h.addOtherErrorMessageToHandler("Lock wait timeout exceeded; try restarting transaction");
+        h.setRetryDelaySeconds(30); //give it long enough for the other thing to finish
+
+        while (true) {
+            try {
+                tryUpdateStagingTable(filePath, dataDate, publishedFileId);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    private void tryUpdateStagingTable(String filePath, Date dataDate, int publishedFileId) throws Exception {
         long msStart = System.currentTimeMillis();
 
         //copy the file from S3 to local disk
