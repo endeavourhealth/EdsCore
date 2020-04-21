@@ -733,7 +733,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             } else {
                 ps.setNull(7, Types.INTEGER);
             }
-            if (!Strings.isNullOrEmpty(audit.getQueuedMessageId().toString())) {
+            if (audit.getQueuedMessageId() != null) {
                 ps.setString(8, audit.getQueuedMessageId().toString());
             } else {
                 ps.setNull(8, Types.VARCHAR);
