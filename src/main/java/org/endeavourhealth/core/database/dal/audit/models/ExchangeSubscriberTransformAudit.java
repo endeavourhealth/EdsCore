@@ -1,8 +1,5 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import com.google.common.base.Strings;
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsExchangeSubscriberTransformAudit;
-
 import java.util.Date;
 import java.util.UUID;
 
@@ -19,7 +16,7 @@ public class ExchangeSubscriberTransformAudit {
 
     public ExchangeSubscriberTransformAudit() {}
 
-    public ExchangeSubscriberTransformAudit(RdbmsExchangeSubscriberTransformAudit proxy) {
+    /*public ExchangeSubscriberTransformAudit(RdbmsExchangeSubscriberTransformAudit proxy) {
         this.exchangeId = UUID.fromString(proxy.getExchangeId());
         this.exchangeBatchId = UUID.fromString(proxy.getExchangeBatchId());
         this.subscriberConfigName = proxy.getSubscriberConfigName();
@@ -30,7 +27,7 @@ public class ExchangeSubscriberTransformAudit {
         if (!Strings.isNullOrEmpty(proxy.getQueuedMessageId())) {
             this.queuedMessageId = UUID.fromString(proxy.getQueuedMessageId());
         }
-    }
+    }*/
 
     public UUID getExchangeId() {
         return exchangeId;

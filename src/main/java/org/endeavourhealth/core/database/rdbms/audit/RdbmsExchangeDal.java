@@ -696,56 +696,13 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    /*@Override
-    public List<ExchangeTransformAudit> getAllExchangeTransformAuditsForService(UUID serviceId, UUID systemId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
-        try {
-            String sql = "select c.exchangeId, c.numberBatchesCreated"
-                    + " from"
-                    + " RdbmsExchangeTransformAudit c"
-                    + " where c.serviceId = :service_id"
-                    + " and c.systemId = :system_id"
-                    + " order by c.started asc";
-
-            Query query = entityManager.createQuery(sql, Object[].class)
-                    .setParameter("service_id", serviceId.toString())
-                    .setParameter("system_id", systemId.toString());
-
-            List<Object[]> results = query.getResultList();
-
-            List<ExchangeTransformAudit> ret = new ArrayList<>();
-            for (Object[] result : results) {
-                String resultExchangeId = (String) result[0];
-                Integer resultNumberBatches = (Integer) result[1];
-
-                ExchangeTransformAudit audit = new ExchangeTransformAudit();
-                audit.setExchangeId(UUID.fromString(resultExchangeId));
-                audit.setNumberBatchesCreated(resultNumberBatches);
-                ret.add(audit);
-            }
-            return ret;
-
-        } finally {
-            entityManager.close();
-        }
-    }*/
 
     @Override
-    public void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception {
+    public void save(ExchangeSubscriberTransformAudit audit) throws Exception {
 
-        RdbmsExchangeSubscriberTransformAudit dbObj = new RdbmsExchangeSubscriberTransformAudit(subscriberTransformAudit);
-
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
-
         try {
-            //have to use prepared statement as JPA doesn't support upserts
-            //entityManager.persist(dbObj);
-
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "INSERT INTO exchange_subscriber_transform_audit"
                     + " (exchange_id, exchange_batch_id, subscriber_config_name, started, ended, error_xml, number_resources_transformed, queued_message_id)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -757,100 +714,139 @@ public class RdbmsExchangeDal implements ExchangeDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
-
-            ps.setString(1, dbObj.getExchangeId());
-            ps.setString(2, dbObj.getExchangeBatchId());
-            ps.setString(3, dbObj.getSubscriberConfigName());
-            ps.setTimestamp(4, new java.sql.Timestamp(dbObj.getStarted().getTime()));
-            if (dbObj.getEnded() != null) {
-                ps.setTimestamp(5, new java.sql.Timestamp(dbObj.getEnded().getTime()));
+            ps.setString(1, audit.getExchangeId().toString());
+            ps.setString(2, audit.getExchangeBatchId().toString());
+            ps.setString(3, audit.getSubscriberConfigName());
+            ps.setTimestamp(4, new java.sql.Timestamp(audit.getStarted().getTime()));
+            if (audit.getEnded() != null) {
+                ps.setTimestamp(5, new java.sql.Timestamp(audit.getEnded().getTime()));
             } else {
                 ps.setNull(5, Types.TIMESTAMP);
             }
-            if (!Strings.isNullOrEmpty(dbObj.getErrorXml())) {
-                ps.setString(6, dbObj.getErrorXml());
+            if (!Strings.isNullOrEmpty(audit.getErrorXml())) {
+                ps.setString(6, audit.getErrorXml());
             } else {
                 ps.setNull(6, Types.VARCHAR);
             }
-            if (dbObj.getNumberResourcesTransformed() != null) {
-                ps.setInt(7, dbObj.getNumberResourcesTransformed());
+            if (audit.getNumberResourcesTransformed() != null) {
+                ps.setInt(7, audit.getNumberResourcesTransformed());
             } else {
                 ps.setNull(7, Types.INTEGER);
             }
-            if (!Strings.isNullOrEmpty(dbObj.getQueuedMessageId())) {
-                ps.setString(8, dbObj.getQueuedMessageId());
+            if (!Strings.isNullOrEmpty(audit.getQueuedMessageId().toString())) {
+                ps.setString(8, audit.getQueuedMessageId().toString());
             } else {
                 ps.setNull(8, Types.VARCHAR);
             }
 
             ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
     @Override
     public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsExchangeSubscriberTransformAudit c"
-                    + " where c.exchangeId = :exchange_id"
-                    + " order by c.started";
+            String sql = "SELECT exchange_id, exchange_batch_id, subscriber_config_name, started, ended, error_xml, number_resources_transformed, queued_message_id"
+                    + " FROM exchange_subscriber_transform_audit"
+                    + " WHERE exchange_id = ?"
+                    + " ORDER BY started";
+            ps = connection.prepareStatement(sql);
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeSubscriberTransformAudit.class)
-                    .setParameter("exchange_id", exchangeId.toString());
+            ps.setString(1, exchangeId.toString());
 
-            List<RdbmsExchangeSubscriberTransformAudit> ret = query.getResultList();
+            List<ExchangeSubscriberTransformAudit> ret = new ArrayList<>();
 
-            return ret
-                    .stream()
-                    .map(T -> new ExchangeSubscriberTransformAudit(T))
-                    .collect(Collectors.toList());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                ExchangeSubscriberTransformAudit a = readSubscriberTransformAuditFromResultSet(rs);
+                ret.add(a);
+            }
+
+            return ret;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
+    private static ExchangeSubscriberTransformAudit readSubscriberTransformAuditFromResultSet(ResultSet rs) throws Exception {
+        int col = 1;
+
+        ExchangeSubscriberTransformAudit a = new ExchangeSubscriberTransformAudit();
+        a.setExchangeId(UUID.fromString(rs.getString(col++)));
+        a.setExchangeBatchId(UUID.fromString(rs.getString(col++)));
+        a.setSubscriberConfigName(rs.getString(col++));
+        java.sql.Timestamp ts = rs.getTimestamp(col++);
+        if (!rs.wasNull()) {
+            a.setStarted(new java.util.Date(ts.getTime()));
+        }
+        ts = rs.getTimestamp(col++);
+        if (!rs.wasNull()) {
+            a.setEnded(new java.util.Date(ts.getTime()));
+        }
+        a.setErrorXml(rs.getString(col++));
+        int countResources = rs.getInt(col++);
+        if (!rs.wasNull()) {
+            a.setNumberResourcesTransformed(new Integer(countResources));
+        }
+        String queuedMessageId = rs.getString(col++);
+        if (!rs.wasNull()) {
+            a.setQueuedMessageId(UUID.fromString(queuedMessageId));
+        }
+
+        return a;
+    }
+
+
     @Override
     public List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
-
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsExchangeSubscriberTransformAudit c"
-                    + " where c.exchangeId = :exchange_id"
-                    + " and c.exchangeBatchId = :exchange_batch_id"
-                    + " order by c.started";
+            String sql = "SELECT exchange_id, exchange_batch_id, subscriber_config_name, started, ended, error_xml, number_resources_transformed, queued_message_id"
+                    + " FROM exchange_subscriber_transform_audit"
+                    + " WHERE exchange_id = ?"
+                    + " AND exchange_batch_id = ?"
+                    + " ORDER BY started";
+            ps = connection.prepareStatement(sql);
 
-            Query query = entityManager.createQuery(sql, RdbmsExchangeSubscriberTransformAudit.class)
-                    .setParameter("exchange_id", exchangeId.toString())
-                    .setParameter("exchange_batch_id", exchangeBatchId.toString());
+            int col = 1;
+            ps.setString(col++, exchangeId.toString());
+            ps.setString(col++, exchangeBatchId.toString());
 
-            List<RdbmsExchangeSubscriberTransformAudit> ret = query.getResultList();
+            List<ExchangeSubscriberTransformAudit> ret = new ArrayList<>();
 
-            return ret
-                    .stream()
-                    .map(T -> new ExchangeSubscriberTransformAudit(T))
-                    .collect(Collectors.toList());
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                ExchangeSubscriberTransformAudit a = readSubscriberTransformAuditFromResultSet(rs);
+                ret.add(a);
+            }
+
+            return ret;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
