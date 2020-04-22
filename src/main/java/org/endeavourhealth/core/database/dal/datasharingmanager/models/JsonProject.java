@@ -29,6 +29,7 @@ public class JsonProject {
     private Short projectStatusId = null;
     private String startDate = null;
     private String endDate = null;
+    private String configName = null;
     private Map<UUID, String> publishers = null;
     private Map<UUID, String> subscribers = null;
     private Map<UUID, String> cohorts = null;
@@ -61,6 +62,7 @@ public class JsonProject {
         this.securityArchitectureId = projectEntity.getSecurityArchitectureId();
         this.storageProtocolId = projectEntity.getStorageProtocolId();
         this.projectStatusId = projectEntity.getProjectStatusId();
+        this.configName = projectEntity.getConfigName();
         if (projectEntity.getStartDate() != null) {
             this.startDate = projectEntity.getStartDate().toString();
         }
@@ -316,4 +318,12 @@ public class JsonProject {
     public Map<UUID, String> getSchedules() { return schedules; }
 
     public void setSchedules(Map<UUID, String> schedules) { this.schedules = schedules; }
+
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
+    }
 }

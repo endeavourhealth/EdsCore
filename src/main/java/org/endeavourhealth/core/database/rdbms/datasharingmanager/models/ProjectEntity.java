@@ -44,12 +44,13 @@ public class ProjectEntity {
     @Transient private List<String> documentations;
     @Transient private ProjectScheduleEntity schedule;
     @Transient private ExtractTechnicalDetailsEntity extractTechnicalDetails;
+    private String configName;
 
     public ProjectEntity() {
     }
 
     public ProjectEntity(JsonProject project) {   updateFromJson(project);   }
-
+    
     public void updateFromJson(JsonProject project) {
         this.uuid = project.getUuid();
         this.name = project.getName();
@@ -68,6 +69,7 @@ public class ProjectEntity {
         this.businessCaseStatus = project.getBusinessCaseStatus();
         this.flowScheduleId = project.getFlowScheduleId();
         this.projectStatusId = project.getProjectStatusId();
+        this.configName = project.getConfigName();
         if (project.getStartDate() != null) {
             this.startDate = Date.valueOf(project.getStartDate());
         }
@@ -164,7 +166,7 @@ public class ProjectEntity {
             }
         }
     }
-    
+
     public void setMappingsFromDAL () throws Exception {
 
         MasterMappingDalI masterMappingRepository = DalProvider.factoryDSMMasterMappingDal();
@@ -471,5 +473,15 @@ public class ProjectEntity {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
+    }
+
+    @Basic
+    @Column(name = "config_name")
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
     }
 }
