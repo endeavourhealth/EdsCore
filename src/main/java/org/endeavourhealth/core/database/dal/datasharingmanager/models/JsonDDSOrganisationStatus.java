@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.dal.datasharingmanager.models;
 public class JsonDDSOrganisationStatus {
     private String practiceName = null;
     private String odsCode = null;
+    private String orgUUID = null;
     private String ccg = null;
     private String referenceAgreement = null;
     private String lastReceived;
@@ -20,6 +21,14 @@ public class JsonDDSOrganisationStatus {
 
     public void setOdsCode(String odsCode) {
         this.odsCode = odsCode;
+    }
+
+    public String getOrgUUID() {
+        return orgUUID;
+    }
+
+    public void setOrgUUID(String orgUUID) {
+        this.orgUUID = orgUUID;
     }
 
     public String getLastReceived() {

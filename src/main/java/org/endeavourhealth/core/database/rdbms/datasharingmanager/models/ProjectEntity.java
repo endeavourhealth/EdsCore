@@ -3,13 +3,13 @@ package org.endeavourhealth.core.database.rdbms.datasharingmanager.models;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.datasharingmanager.MasterMappingDalI;
 import org.endeavourhealth.core.database.dal.datasharingmanager.ProjectDalI;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreMasterMappingDal;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreProjectDal;
 import org.endeavourhealth.core.database.dal.datasharingmanager.enums.MapType;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonProject;
 
 import javax.persistence.*;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -45,12 +45,14 @@ public class ProjectEntity {
     @Transient private ProjectScheduleEntity schedule;
     @Transient private ExtractTechnicalDetailsEntity extractTechnicalDetails;
     private String configName;
+    private String authorisedBy;
+    private Timestamp authorisedDate;
 
     public ProjectEntity() {
     }
 
     public ProjectEntity(JsonProject project) {   updateFromJson(project);   }
-    
+
     public void updateFromJson(JsonProject project) {
         this.uuid = project.getUuid();
         this.name = project.getName();
@@ -70,6 +72,16 @@ public class ProjectEntity {
         this.flowScheduleId = project.getFlowScheduleId();
         this.projectStatusId = project.getProjectStatusId();
         this.configName = project.getConfigName();
+        this.authorisedBy = project.getAuthorisedBy();
+        if (project.getAuthorisedDate() != null) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                java.util.Date parsedDate = format.parse(project.getAuthorisedDate());
+                this.authorisedDate = new java.sql.Timestamp(parsedDate.getTime());
+            } catch (Exception e) {
+                this.authorisedDate = null;
+            }
+        }
         if (project.getStartDate() != null) {
             this.startDate = Date.valueOf(project.getStartDate());
         }
@@ -483,5 +495,25 @@ public class ProjectEntity {
 
     public void setConfigName(String configName) {
         this.configName = configName;
+    }
+
+    @Basic
+    @Column(name = "authorised_by")
+    public String getAuthorisedBy() {
+        return authorisedBy;
+    }
+
+    public void setAuthorisedBy(String authorisedBy) {
+        this.authorisedBy = authorisedBy;
+    }
+
+    @Basic
+    @Column(name = "authorised_date")
+    public Timestamp getAuthorisedDate() {
+        return authorisedDate;
+    }
+
+    public void setAuthorisedDate(Timestamp authorisedDate) {
+        this.authorisedDate = authorisedDate;
     }
 }

@@ -30,6 +30,8 @@ public class JsonProject {
     private String startDate = null;
     private String endDate = null;
     private String configName = null;
+    private String authorisedBy;
+    private String authorisedDate;
     private Map<UUID, String> publishers = null;
     private Map<UUID, String> subscribers = null;
     private Map<UUID, String> cohorts = null;
@@ -63,6 +65,10 @@ public class JsonProject {
         this.storageProtocolId = projectEntity.getStorageProtocolId();
         this.projectStatusId = projectEntity.getProjectStatusId();
         this.configName = projectEntity.getConfigName();
+        this.authorisedBy = projectEntity.getAuthorisedBy();
+        if (projectEntity.getAuthorisedDate() != null) {
+            this.authorisedDate = projectEntity.getAuthorisedDate().toString();
+        }
         if (projectEntity.getStartDate() != null) {
             this.startDate = projectEntity.getStartDate().toString();
         }
@@ -325,5 +331,21 @@ public class JsonProject {
 
     public void setConfigName(String configName) {
         this.configName = configName;
+    }
+
+    public String getAuthorisedBy() {
+        return authorisedBy;
+    }
+
+    public void setAuthorisedBy(String authorisedBy) {
+        this.authorisedBy = authorisedBy;
+    }
+
+    public String getAuthorisedDate() {
+        return authorisedDate;
+    }
+
+    public void setAuthorisedDate(String authorisedDate) {
+        this.authorisedDate = authorisedDate;
     }
 }

@@ -1318,6 +1318,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
 
             if (organisationEntity != null) {
                 org.setPracticeName(organisationEntity.getName());
+                org.setOrgUUID(organisationEntity.getUuid());
                 org.setSystemSupplierType(
                         organisationEntity.getSystemSupplierSystemId() != null ? organisationEntity.getSystemSupplierSystemId() : 0);
                 org.setSystemSupplierReference(organisationEntity.getSystemSupplierReference());
