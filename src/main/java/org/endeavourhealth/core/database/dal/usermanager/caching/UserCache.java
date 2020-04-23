@@ -100,8 +100,10 @@ public class UserCache {
         UserApplicationPolicyEntity foundPolicy = userApplicationPolicyMap.get(userId);
         if (foundPolicy == null) {
             UserApplicationPolicyEntity userApp = userAppPolicyRepository.getUserApplicationPolicy(userId);
-            foundPolicy = userApp;
-            userApplicationPolicyMap.put(userId, userApp);
+            if (userApp != null) {
+                foundPolicy = userApp;
+                userApplicationPolicyMap.put(userId, userApp);
+            }
         }
 
         CacheManager.startScheduler();
@@ -128,8 +130,10 @@ public class UserCache {
         UserRegionEntity foundRegion = userRegionMap.get(userId);
         if (foundRegion == null) {
             UserRegionEntity userRegion = userRegionRepository.getUserRegion(userId);
-            foundRegion = userRegion;
-            userRegionMap.put(userId, userRegion);
+            if (userRegion != null) {
+                foundRegion = userRegion;
+                userRegionMap.put(userId, userRegion);
+            }
         }
 
         CacheManager.startScheduler();
