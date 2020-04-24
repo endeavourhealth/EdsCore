@@ -1049,4 +1049,37 @@ public class RdbmsResourceDal implements ResourceDalI {
             connection.close();
         }
     }
+
+    @Override
+    public List<ResourceWrapper> getMedicationOrderResourcesForPatientAndMedicationStatement(UUID serviceId, UUID patientId, UUID medicationStatementId) throws Exception {
+
+        String reference = ReferenceHelper.createResourceReference(ResourceType.MedicationStatement, medicationStatementId.toString());
+
+        Connection connection = ConnectionManager.getEhrConnection(serviceId);
+        PreparedStatement ps = null;
+        try {
+            String sql = getResourceCurrentSelectPrefix()
+                    + " WHERE service_id = ?"
+                    + " AND patient_id = ?"
+                    + " AND resource_type = ?"
+                    + " AND resource_data LIKE ?";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, serviceId.toString());
+            ps.setString(col++, patientId.toString());
+            ps.setString(col++, ResourceType.MedicationOrder.toString());
+            ps.setString(col++, "%" + reference + "%");
+
+            ResultSet rs = ps.executeQuery();
+            return readResourceWrappersFromResourceCurrentResultSet(rs, false);
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+
+    }
 }

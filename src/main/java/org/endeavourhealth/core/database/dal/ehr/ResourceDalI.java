@@ -33,5 +33,8 @@ public interface ResourceDalI {
     List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType) throws Exception;
     long getResourceCountByService(UUID serviceId, String resourceType) throws Exception;
 
-
+    //breaking the pattern of having fairly generic functions, this has been added to speed up the Emis transform
+    //which needs to retrieve all MedicationOrders for a specific MedicationStatement, which is currently very slow
+    //because it has to retrieve all MedicationOrders and then filter down
+    List<ResourceWrapper> getMedicationOrderResourcesForPatientAndMedicationStatement(UUID serviceId, UUID patientId, UUID medicationStatement) throws Exception;
 }
