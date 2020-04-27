@@ -69,88 +69,99 @@ public class ResourceWrapper {
         return serviceId;
     }
 
-    public void setServiceId(UUID serviceId) {
+    public ResourceWrapper setServiceId(UUID serviceId) {
         this.serviceId = serviceId;
+        return this;
     }
 
     public UUID getSystemId() {
         return systemId;
     }
 
-    public void setSystemId(UUID systemId) {
+    public ResourceWrapper setSystemId(UUID systemId) {
         this.systemId = systemId;
+        return this;
     }
 
     public UUID getResourceId() {
         return resourceId;
     }
 
-    public void setResourceId(UUID resourceId) {
+    public ResourceWrapper setResourceId(UUID resourceId) {
         this.resourceId = resourceId;
+        return this;
     }
 
     public String getResourceType() {
         return resourceType;
     }
 
-    public void setResourceType(String resourceType) {
+    public ResourceWrapper setResourceType(String resourceType) {
         this.resourceType = resourceType;
+        return this;
     }
 
     public UUID getVersion() {
         return version;
     }
 
-    public void setVersion(UUID version) {
+    public ResourceWrapper setVersion(UUID version) {
         this.version = version;
+        return this;
     }
 
     public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public ResourceWrapper setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+        return this;
     }
 
     public UUID getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(UUID patientId) {
+    public ResourceWrapper setPatientId(UUID patientId) {
         this.patientId = patientId;
+        return this;
     }
 
     public String getResourceData() {
         return resourceData;
     }
 
-    public void setResourceData(String resourceData) {
+    public ResourceWrapper setResourceData(String resourceData) {
         this.resourceData = resourceData;
+        return this;
     }
 
     public Long getResourceChecksum() {
         return resourceChecksum;
     }
 
-    public void setResourceChecksum(Long resourceChecksum) {
+    public ResourceWrapper setResourceChecksum(Long resourceChecksum) {
         this.resourceChecksum = resourceChecksum;
+        return this;
     }
 
     public UUID getExchangeBatchId() {
         return exchangeBatchId;
     }
 
-    public void setExchangeBatchId(UUID exchangeBatchId) {
+    public ResourceWrapper setExchangeBatchId(UUID exchangeBatchId) {
         this.exchangeBatchId = exchangeBatchId;
+        return this;
     }
 
     public boolean isDeleted() {
         return isDeleted;
     }
 
-    public void setDeleted(boolean deleted) {
+    public ResourceWrapper setDeleted(boolean deleted) {
         isDeleted = deleted;
+        return this;
     }
 
     public String getReferenceString() {
@@ -171,12 +182,13 @@ public class ResourceWrapper {
         return ResourceType.valueOf(resourceType);
     }
 
-    public void setResourceTypeObj(ResourceType o) {
+    public ResourceWrapper setResourceTypeObj(ResourceType o) {
         if (o == null) {
             this.resourceType = null;
         } else {
             this.resourceType = o.toString();
         }
+        return this;
     }
 
     public String getResourceIdStr() {
@@ -187,12 +199,13 @@ public class ResourceWrapper {
         }
     }
 
-    public void setResourceIdStr(String s) {
+    public ResourceWrapper setResourceIdStr(String s) {
         if (Strings.isNullOrEmpty(s)) {
             this.resourceId = null;
         } else {
             this.resourceId = UUID.fromString(s);
         }
+        return this;
     }
 
     public <T extends Resource> T getResourceAs(T cls) throws SerializationException {
