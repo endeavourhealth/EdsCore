@@ -4,6 +4,8 @@ import com.google.common.base.Strings;
 import org.endeavourhealth.common.cache.ParserPool;
 import org.endeavourhealth.common.fhir.ReferenceComponents;
 import org.endeavourhealth.common.fhir.ReferenceHelper;
+import org.endeavourhealth.common.utility.MetricsHelper;
+import org.endeavourhealth.common.utility.MetricsTimer;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
@@ -67,7 +69,7 @@ public class RdbmsResourceDal implements ResourceDalI {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
 
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.saveFhirResources")) {
 
             //we only need to write to resource_current as the trigger will sort resource_history for us
             ps = createUpsertResourceCurrentPreparedStatement(connection);
@@ -185,7 +187,8 @@ public class RdbmsResourceDal implements ResourceDalI {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
 
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.hardDeleteFhirResource")) {
+
             String sql = "DELETE FROM resource_current"
                     + " WHERE service_id = ?"
                     + " AND patient_id = ?"
@@ -248,7 +251,8 @@ public class RdbmsResourceDal implements ResourceDalI {
     private ResourceWrapper getCurrentVersionImpl(UUID serviceId, String resourceType, UUID resourceId, boolean returnDeletedResourceCurrent) throws Exception {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResource")) {
+
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE resource_type = ?"
                     + " AND resource_id = ?"
@@ -333,7 +337,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResources")) {
+
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE (";
             for (int i=0; i<references.size(); i++) {
@@ -556,7 +561,8 @@ public class RdbmsResourceDal implements ResourceDalI {
     private List<ResourceWrapper> getResourceHistoryRaw(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourceHistory")) {
+
             String sql = "SELECT service_id, system_id, resource_type, resource_id, created_at, patient_id, resource_data, resource_checksum, is_deleted, exchange_batch_id, version"
                     + " FROM resource_history"
                     + " WHERE resource_type = ?"
@@ -612,7 +618,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourcesForPatient")) {
+
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND patient_id = ?";
@@ -644,7 +651,7 @@ public class RdbmsResourceDal implements ResourceDalI {
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourcesForPatientAndType")) {
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND patient_id = ?"
@@ -676,7 +683,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourcesForServiceAndId")) {
+
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND resource_type = ?"
@@ -721,7 +729,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourcesForBatch")) {
+
             //deleted resources are removed from resource_current, so we need a left outer join
             //and have to select enough columns from resource_history to be able to spot the deleted
             //resources and create resource wrappers for them
@@ -821,43 +830,15 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-
+    @Override
     public Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId) throws Exception {
 
-        Connection connection = ConnectionManager.getEhrConnection(serviceId);
-        PreparedStatement ps = null;
-        try {
-            String sql = "SELECT resource_checksum"
-                    + " FROM resource_current"
-                    + " WHERE resource_type = ?"
-                    + " AND resource_id = ?"
-                    + " LIMIT 1";
+        String resourceReference = ReferenceHelper.createResourceReference(resourceType, resourceId.toString());
+        List<String> l = new ArrayList<>();
+        l.add(resourceReference);
 
-            ps = connection.prepareStatement(sql);
-
-            int col = 1;
-            ps.setString(col++, resourceType);
-            ps.setString(col++, resourceId.toString());
-
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                return null;
-            } else {
-                long l = rs.getLong(1);
-
-                //resource checksum will be null for deleted resources so skip it
-                if (rs.wasNull()) {
-                    return null;
-                }
-                return new Long(l);
-            }
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            connection.close();
-        }
+        Map<String, Long> map = getResourceChecksumsForReferences(serviceId, l);
+        return map.get(resourceReference);
     }
 
     @Override
@@ -869,7 +850,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourceChecksums")) {
 
             String sql = "SELECT resource_type, resource_id, resource_checksum"
                     + " FROM resource_current"
@@ -933,7 +914,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.checkDataExistsForService")) {
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " LIMIT 1";
@@ -958,7 +939,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourceForService")) {
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND resource_type = ?"
@@ -992,7 +973,7 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourcesForService")) {
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND resource_type = ?";
@@ -1023,7 +1004,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirResourceCountForService")) {
+
             String sql = "SELECT COUNT(1)"
                     + " FROM resource_current"
                     + " WHERE service_id = ?"
@@ -1057,7 +1039,8 @@ public class RdbmsResourceDal implements ResourceDalI {
 
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
-        try {
+        try (MetricsTimer timer = MetricsHelper.recordTime("Database.getFhirMedicationOrdersForPatientAndStatement")) {
+
             String sql = getResourceCurrentSelectPrefix()
                     + " WHERE service_id = ?"
                     + " AND patient_id = ?"
