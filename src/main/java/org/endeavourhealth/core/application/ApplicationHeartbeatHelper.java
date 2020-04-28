@@ -86,6 +86,7 @@ public class ApplicationHeartbeatHelper implements Runnable {
                 //and if we have a callback, then use it to work out if our app is "busy"
                 if (callback != null) {
                     callback.populateIsBusy(h);
+                    callback.populateInstanceNumber(h);
                 }
 
                 ApplicationHeartbeatDalI dal = DalProvider.factoryApplicationHeartbeatDal();

@@ -20,9 +20,9 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         PreparedStatement ps = null;
         try {
             String sql = "INSERT INTO application_heartbeat"
-                    + " (application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
+                    + " (application_name, application_instance_name, application_instance_number, timestmp, host_name, is_busy, max_heap_mb,"
                     + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail, dt_started, dt_jar)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " timestmp = VALUES(timestmp),"
                     + " host_name = VALUES(host_name),"
@@ -33,13 +33,15 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                     + " server_cpu_usage_percent = VALUES(server_cpu_usage_percent),"
                     + " is_busy_detail = VALUES(is_busy_detail),"
                     + " dt_started = VALUES(dt_started),"
-                    + " dt_jar = VALUES(dt_jar)";
+                    + " dt_jar = VALUES(dt_jar),"
+                    + " application_instance_number = VALUES(application_instance_number)"; //this last can be removed once primary key is changed
             ps = connection.prepareStatement(sql);
 
 
             int col = 1;
             ps.setString(col++, h.getApplicationName());
             ps.setString(col++, h.getApplicationInstanceName());
+            ps.setInt(col++, h.getApplicationInstanceNumber());
             ps.setTimestamp(col++, new java.sql.Timestamp(h.getTimestmp().getTime()));
             ps.setString(col++, h.getHostName());
             if (h.getBusy() == null) {
@@ -108,7 +110,7 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
         Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT application_name, application_instance_name, timestmp, host_name, is_busy, max_heap_mb,"
+            String sql = "SELECT application_name, application_instance_name, application_instance_number, timestmp, host_name, is_busy, max_heap_mb,"
                     + " current_heap_mb, server_memory_mb, server_cpu_usage_percent, is_busy_detail, dt_started, dt_jar"
                     + " FROM application_heartbeat";
             ps = connection.prepareStatement(sql);
@@ -122,6 +124,7 @@ public class RdbmsApplicationHeartbeatDal implements ApplicationHeartbeatDalI {
                 int col = 1;
                 h.setApplicationName(rs.getString(col++));
                 h.setApplicationInstanceName(rs.getString(col++));
+                h.setApplicationInstanceNumber(rs.getInt(col++));
                 h.setTimestmp(new java.util.Date(rs.getTimestamp(col++).getTime()));
                 h.setHostName(rs.getString(col++));
 

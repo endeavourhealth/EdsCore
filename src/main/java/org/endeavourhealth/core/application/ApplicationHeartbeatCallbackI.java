@@ -8,4 +8,5 @@ public interface ApplicationHeartbeatCallbackI {
      * callback function to provide the application-specific "busy" state
      */
     void populateIsBusy(ApplicationHeartbeat h);
+    void populateInstanceNumber(ApplicationHeartbeat h);
 }

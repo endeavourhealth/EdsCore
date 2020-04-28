@@ -5,6 +5,7 @@ import java.util.Date;
 public class ApplicationHeartbeat {
     private String applicationName;
     private String applicationInstanceName;
+    private int applicationInstanceNumber;
     private Date timestmp;
     private String hostName;
     private Boolean isBusy;
@@ -17,6 +18,7 @@ public class ApplicationHeartbeat {
     private Date dtJar;
 
     public ApplicationHeartbeat() {
+        this.applicationInstanceNumber = 1; //default to one
     }
 
     public String getApplicationName() {
@@ -33,6 +35,14 @@ public class ApplicationHeartbeat {
 
     public void setApplicationInstanceName(String applicationInstanceName) {
         this.applicationInstanceName = applicationInstanceName;
+    }
+
+    public Integer getApplicationInstanceNumber() {
+        return applicationInstanceNumber;
+    }
+
+    public void setApplicationInstanceNumber(Integer applicationInstanceNumber) {
+        this.applicationInstanceNumber = applicationInstanceNumber;
     }
 
     public Date getTimestmp() {
