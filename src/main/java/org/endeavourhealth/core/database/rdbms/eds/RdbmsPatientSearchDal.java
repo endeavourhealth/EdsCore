@@ -1271,18 +1271,32 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     }
 
     @Override
-    public List<UUID> getPatientIds(UUID serviceId) throws Exception {
+    public List<UUID> getPatientIds(UUID serviceId, boolean includeDeleted) throws Exception {
+        return getPatientIdsImpl(serviceId, includeDeleted, null);
+    }
 
-        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
+    @Override
+    public List<UUID> getPatientIds(UUID serviceId, boolean includeDeleted, int max) throws Exception {
+        return getPatientIdsImpl(serviceId, includeDeleted, new Integer(max));
+    }
+
+
+    private List<UUID> getPatientIdsImpl(UUID serviceId, boolean includeDeleted, Integer maxRecords) throws Exception {
+
+        Connection connection = ConnectionManager.getEdsConnection();
         PreparedStatement ps = null;
         try {
 
             String sql = "SELECT patient_id"
                     + " FROM patient_search"
                     + " WHERE service_id = ?";
+            if (!includeDeleted) {
+                sql += " AND dt_deleted IS NULL";
+            }
+            if (maxRecords != null) {
+                sql += " LIMIT " + maxRecords;
+            }
 
-            SessionImpl session = (SessionImpl)entityManager.getDelegate();
-            Connection connection = session.connection();
             ps = connection.prepareStatement(sql);
             ps.setFetchSize(1000); //no need to load full result set at once
 
@@ -1305,79 +1319,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            connection.close();
         }
 
     }
-
-    /*@Override
-    public UUID findBestPatientRecord(List<UUID> patientIds) throws Exception {
-
-        if (patientIds.isEmpty()) {
-            throw new Exception("Can't find patient IDs with list of zero IDs");
-        }
-
-        EntityManager entityManager = ConnectionManager.getEdsEntityManager();
-        PreparedStatement ps = null;
-        try {
-            String sql = "SELECT ps.patient_id,"
-                    + " IF (e.registration_type_code = '" + RegistrationType.REGULAR_GMS + "', 1, 0) as `registration_type_rank`," //if reg type = GMS then up-rank
-                    + " IF (e.registration_status_code is null or e.registration_status_code not in ('"
-                    + RegistrationStatus.PRE_REGISTERED_FP1_SUBMITTED.getCode() + "', '"
-                    + RegistrationStatus.PRE_REGISTERED_MEDICAL_CARD_RECEIVED.getCode() + "', '"
-                    + RegistrationStatus.PRE_REGISTERED_PRESENTED.getCode() + "'), 1, 0) as `registration_status_rank`," //if pre-registered status, then down-rank
-                    + " IF (ps.date_of_death is not null, 1, 0) as `death_rank`," //records is a date of death more likely to be actively used, so up-vote
-                    + " IF (e.registration_end is null, '9999-12-31', e.registration_end) as `registration_end_sortable`" //up-vote non-ended ones
-                    + " FROM patient_search ps"
-                    + " LEFT OUTER JOIN eds.patient_search_episode e"
-                    + " ON e.service_id = ps.service_id"
-                    + " AND e.patient_id = ps.patient_id"
-                    + " AND e.dt_deleted is null" //inside the join, so deleted episodes don't mean we never get at least one result back
-                    + " WHERE ps.dt_deleted is null"
-                    + " AND ps.patient_id IN (";
-
-            //MySQL JDBC driver doesn't support the ps.setArray(..) feature, so we need to explicitly define each of the options in the IN statement
-            for (int i=0; i<patientIds.size(); i++) {
-                if (i>0) {
-                    sql += ", ";
-                }
-                sql += "?";
-            }
-            sql += ")"
-                    + " ORDER BY"
-                    + " registration_status_rank desc," //avoid pre-registered records if possible
-                    + " death_rank desc," //records marked as deceased are more likely to be used than ones not
-                    + " registration_type_rank desc," //prefer GMS registrations over others
-                    + " registration_start desc," //want the most recent registration
-                    + " registration_end_sortable desc"
-                    + " LIMIT 1";
-
-            SessionImpl session = (SessionImpl)entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            ps = connection.prepareStatement(sql);
-
-            for (int i=0; i<patientIds.size(); i++) {
-                UUID patientId = patientIds.get(i);
-                ps.setString(i+1, patientId.toString());
-            }
-
-            ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                throw new Exception("Failed to find best patient record ID for from patient IDs " + patientIds);
-            }
-
-            String bestIdStr = rs.getString(1);
-            return UUID.fromString(bestIdStr);
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
-    }*/
-
 }
 
 class PatientSearchLocalIdentifier {

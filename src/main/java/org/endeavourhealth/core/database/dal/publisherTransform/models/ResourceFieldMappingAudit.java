@@ -69,7 +69,7 @@ public class ResourceFieldMappingAudit {
     /**
      * audits that a file/record/column was transformed to a specific FHIR field
      */
-    public void auditValue(int publishedFileId, int recordNumber, int colIndex, String jsonField) {
+    public void auditValue(int publishedFileId, int recordNumber, short colIndex, String jsonField) {
         ResourceFieldMappingAuditRow audit = auditRecordImpl(publishedFileId, recordNumber);
         audit.addColumnMapping(colIndex, jsonField);
     }
@@ -103,7 +103,7 @@ public class ResourceFieldMappingAudit {
         return audit;
     }
 
-    public void auditValueOldStyle(Long oldStyleAuditId, int colIndex, String jsonField) {
+    public void auditValueOldStyle(Long oldStyleAuditId, short colIndex, String jsonField) {
 
         if (oldStyleAudits == null) {
             oldStyleAudits = new ArrayList<>();
@@ -169,7 +169,7 @@ public class ResourceFieldMappingAudit {
 
         public ResourceFieldMappingAuditRow() {}
 
-        public void addColumnMapping(int col, String field) {
+        public void addColumnMapping(short col, String field) {
             ResourceFieldMappingAuditCol obj = new ResourceFieldMappingAuditCol();
             obj.setCol(col);
             obj.setField(field);
@@ -219,16 +219,16 @@ public class ResourceFieldMappingAudit {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class ResourceFieldMappingAuditCol {
         //variable names kept short as this object is persisted to JSON and I want to avoid using excessive storage space
-        private int col;
+        private short col; //changed from int to short as max column count is only about 600
         private String field;
 
         public ResourceFieldMappingAuditCol() { }
 
-        public int getCol() {
+        public short getCol() {
             return col;
         }
 
-        public void setCol(int col) {
+        public void setCol(short col) {
             this.col = col;
         }
 

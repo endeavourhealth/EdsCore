@@ -63,8 +63,13 @@ public class StorageStatisticsService {
     }
 
     private ResourceStatistics createResourceStatistics(UUID serviceId, UUID systemId, String resourceType) throws Exception {
-        ResourceStatistics statistics = new ResourceStatistics(resourceType);
+
+        //this is the only place where we query the DB for resources by service and type so doesn't justify
+        //having an index on all that data just for this one purpose. So index dropped and this removed.
+        throw new Exception("Resource metadata not populated");
+
+        /*ResourceStatistics statistics = new ResourceStatistics(resourceType);
         statistics.setTotalCount(repository.getResourceCountByService(serviceId, resourceType));
-        return statistics;
+        return statistics;*/
     }
 }

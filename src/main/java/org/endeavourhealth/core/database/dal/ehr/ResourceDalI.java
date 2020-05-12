@@ -24,14 +24,11 @@ public interface ResourceDalI {
     List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
     List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception;
     List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception;
-    List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType, List<UUID> resourceIds) throws Exception;
+
     List<ResourceWrapper> getCurrentVersionOfResourcesForBatch(UUID serviceId, UUID batchId) throws Exception;
     Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
     Map<String, Long> getResourceChecksumsForReferences(UUID serviceId, List<String> references) throws Exception;
     boolean dataExists(UUID serviceId) throws Exception;
-    ResourceWrapper getFirstResourceByService(UUID serviceId, ResourceType resourceType) throws Exception;
-    List<ResourceWrapper> getResourcesByService(UUID serviceId, String resourceType) throws Exception;
-    long getResourceCountByService(UUID serviceId, String resourceType) throws Exception;
 
     //breaking the pattern of having fairly generic functions, this has been added to speed up the Emis transform
     //which needs to retrieve all MedicationOrders for a specific MedicationStatement, which is currently very slow
