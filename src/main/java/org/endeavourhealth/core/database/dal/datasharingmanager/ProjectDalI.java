@@ -26,5 +26,6 @@ public interface ProjectDalI {
     public List<ProjectEntity> getProjectsForRegion(String regionUUID) throws Exception;
     public List<String> getPublishersForProject(String projectId, String requesterOdsCode) throws Exception;
     public List<ProjectEntity> getAllProjectsForSubscriber(String odsCode) throws Exception;
+    public List<ProjectEntity> getValidDistributionProjectsForPublisher(String publisherOdsCode) throws Exception;
 
 }

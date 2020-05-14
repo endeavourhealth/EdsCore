@@ -23,6 +23,7 @@ public class ProjectCache {
     private static Map<String, List<ProjectEntity>> allProjectsForAllChildRegion = new ConcurrentHashMap<>();
     private static Map<String, List<String>> allPublishersForProjectWithSubCheck = new ConcurrentHashMap<>();
     private static Map<String, List<ProjectEntity>> allProjectsForSubscriberODS = new ConcurrentHashMap<>();
+    private static Map<String, List<ProjectEntity>> validDistributionProjectsForPublisher = new ConcurrentHashMap<>();
 
     private static ProjectDalI repository = DalProvider.factoryDSMProjectDal();
     private static ProjectApplicationPolicyDalI ProjectAppPolicyRepository = DalProvider.factoryDSMProjectApplicationPolicyDal();
@@ -135,6 +136,19 @@ public class ProjectCache {
         CacheManager.startScheduler();
 
         return projects;
+    }
+
+    public static List<ProjectEntity> getValidDistributionProjectsForPublisher(String publisherOdsCode) throws Exception {
+
+        List<ProjectEntity> validProjects = validDistributionProjectsForPublisher.get(publisherOdsCode);
+        if (validProjects == null) {
+            validProjects = repository.getValidDistributionProjectsForPublisher(publisherOdsCode);
+            validDistributionProjectsForPublisher.put(publisherOdsCode, validProjects);
+        }
+
+        CacheManager.startScheduler();
+
+        return validProjects;
     }
 
     public static void clearProjectCache(String projectId) throws Exception {

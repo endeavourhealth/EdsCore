@@ -23,6 +23,8 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -348,6 +350,31 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
         List<ProjectEntity> projects = ProjectCache.getProjectDetails(projectSubscribers);
 
         return projects;
+    }
+
+    @Override
+    public List<ProjectEntity> getValidDistributionProjectsForPublisher(String publisherOdsCode) throws Exception {
+
+        OrganisationEntity org = organisationRepository.getOrganisationsFromOdsCode(publisherOdsCode);
+
+        List<String> projectPublishers = masterMappingRepository.getParentMappings(org.getUuid(),
+                MapType.PUBLISHER.getMapType(), MapType.PROJECT.getMapType());
+
+        List<ProjectEntity> projects = ProjectCache.getProjectDetails(projectPublishers);
+
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+
+        java.sql.Date sqlTomorrow = java.sql.Date.valueOf(today.plusDays(1)); // for before comparison below
+        java.sql.Date sqlToday = java.sql.Date.valueOf(today);
+
+        List<ProjectEntity> validProjects = projects.stream()
+                .filter(p -> p.getProjectTypeId() == 4 // Distribution project
+                    && p.getProjectStatusId() == 0 // Active
+                    && (p.getStartDate().before(sqlTomorrow) && (p.getEndDate() == null || p.getEndDate().after(sqlToday)))
+                    && p.getAuthorisedBy() != null && p.getAuthorisedDate() != null)
+                .collect(Collectors.toList());
+
+        return validProjects;
     }
 
 }
