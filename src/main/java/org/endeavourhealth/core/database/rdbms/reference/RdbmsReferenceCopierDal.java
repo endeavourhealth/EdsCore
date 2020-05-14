@@ -25,10 +25,16 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
 
         EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
-        List<EnterpriseConnector.ConnectionWrapper> connectionWrappers = EnterpriseConnector.openConnection(enterpriseConfigName);
+        List<EnterpriseConnector.ConnectionWrapper> connectionWrappers = EnterpriseConnector.openSubscriberConnections(enterpriseConfigName);
 
         try {
             for (EnterpriseConnector.ConnectionWrapper connectionWrapper: connectionWrappers) {
+
+                //if this wrapper is for a remote subscriber WITHOUT a local database, then we skip
+                //as we can't write anything to a DB we can't connect to
+                if (!connectionWrapper.hasDatabaseConnection()) {
+                    continue;
+                }
 
                 Connection enterpriseConnection = connectionWrapper.getConnection();
                 try {
@@ -37,6 +43,7 @@ public class RdbmsReferenceCopierDal implements ReferenceCopierDalI {
                     copyDeprivation(enterpriseConnection, entityManager); //this must be done AFTER the LSOAs
                     copyWards(enterpriseConnection, entityManager);
                     copyLocalAuthorities(enterpriseConnection, entityManager);
+
                 } finally {
                     enterpriseConnection.close();
                 }

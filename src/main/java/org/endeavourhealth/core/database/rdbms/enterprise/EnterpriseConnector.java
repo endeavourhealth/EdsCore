@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,61 +16,24 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EnterpriseConnector {
     private static final Logger LOG = LoggerFactory.getLogger(EnterpriseConnector.class);
 
-    private static ConcurrentHashMap<String, ConnectionWrapper> cache = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, DataSource> cache = new ConcurrentHashMap<>();
 
     /**
-     * returns list of connections to main subscriber DB and any replicas
+     * returns list of connection wrappers/remote IDs to subscriber DB and any replicas
      */
-    public static List<ConnectionWrapper> openConnection(String subscriberConfigName) throws Exception {
+    public static List<ConnectionWrapper> openSubscriberConnections(String subscriberConfigName) throws Exception {
+
         JsonNode config = ConfigManager.getConfigurationAsJson(subscriberConfigName, "db_subscriber");
 
-        List<ConnectionWrapper> ret = new ArrayList<>();
-
-        //see if we can connect using the new-style config records
-        ConnectionWrapper mainConnection = null;
-        try {
-            DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, subscriberConfigName);
-            mainConnection = new ConnectionWrapper(dataSource, false);
-            //LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " new way");
-
-        } catch (Exception ex) {
-            mainConnection = openSingleConnectionOldWay(config, false);
-            LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " old way");
-        }
-
+        //find out if we have a remote subscriber ID
+        Integer remoteSubscriberId = null;
         if (config.has("remote_subscriber_id")) {
-            String value = config.get("remote_subscriber_id").asText();
-            mainConnection.setRemoteSubscriberId(value);
+            int value = config.get("remote_subscriber_id").asInt();
+            remoteSubscriberId = new Integer(value);
         }
 
-        ret.add(mainConnection);
-
-        if (config.has("replicas")) {
-            JsonNode replicas = config.get("replicas");
-            for (int i = 0; i < replicas.size(); i++) {
-                JsonNode replica = replicas.get(i);
-
-                //see if we can connect to the replica using the new-style config records
-                ConnectionWrapper replicaConnection = null;
-                try {
-                    String replicaName = replica.asText();
-                    DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, replicaName);
-                    replicaConnection = new ConnectionWrapper(dataSource, false);
-                    //LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " new way");
-
-                } catch (Exception ex) {
-                    LOG.error("Failed to get replica enterprise connection new way", ex);
-                    replicaConnection = openSingleConnectionOldWay(replica, true);
-                    LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " old way");
-                }
-
-                ret.add(replicaConnection);
-            }
-        }
-
-        //and set the batch size if specified
+        //find the batch size if specified
         int batchSize = 50;
-
         if (config.has("batch_size")) {
             batchSize = config.get("batch_size").asInt();
             if (batchSize <= 0) {
@@ -79,18 +41,71 @@ public class EnterpriseConnector {
             }
         }
 
-        for (ConnectionWrapper w : ret) {
-            w.setBatchSize(batchSize);
+        List<ConnectionWrapper> ret = new ArrayList<>();
+
+        //see if we can connect using the new-style config records
+        ConnectionWrapper mainConnection = null;
+        try {
+            //in the new DB connection architecture, the database credentials are held separately, so we just need to pass through the config name
+            DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, subscriberConfigName);
+            mainConnection = new ConnectionWrapper(dataSource, remoteSubscriberId, false, batchSize);
+
+        } catch (Exception ex) {
+
+            //if no new-style config record can be found, then fall back and check for the database credentials being
+            //in the subscriber config JSON itself
+            if (config.has("enterprise_url")) {
+                DataSource dataSource = openConnectionOldWay(config);
+                mainConnection = new ConnectionWrapper(dataSource, remoteSubscriberId, false, batchSize);
+                LOG.debug("Got enterprise/subscriber dataSource " + subscriberConfigName + " old way");
+
+            } else if (remoteSubscriberId != null) {
+                //if we've not found any DB credentials, but we have a remote subscriber ID, that's fine
+                mainConnection = new ConnectionWrapper(null, remoteSubscriberId, false, batchSize);
+
+            } else {
+                //if we've no subscriber DB credentials and no remote subscriber ID then something is wrong
+                throw new Exception("No subscriber database credentials or remote subscriber ID found for config [" + subscriberConfigName + "]");
+            }
+        }
+
+        ret.add(mainConnection);
+
+        if (config.has("replicas")) {
+            JsonNode replicas = config.get("replicas");
+            for (int i = 0; i < replicas.size(); i++) {
+                JsonNode replicaNode = replicas.get(i);
+
+                //see if we can connect to the replica using the new-style config records
+                ConnectionWrapper replicaConnection = null;
+                try {
+                    String replicaName = replicaNode.asText();
+                    DataSource dataSource = ConnectionManager.getDataSourceNewWay(ConnectionManager.Db.Subscriber, replicaName);
+                    replicaConnection = new ConnectionWrapper(dataSource, null, true, batchSize);
+                    //LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " new way");
+
+                } catch (Exception ex) {
+                    DataSource dataSource = openConnectionOldWay(replicaNode);
+                    replicaConnection = new ConnectionWrapper(dataSource, null, true, batchSize);
+                    LOG.debug("Got replica enterprise/subscriber dataSource " + subscriberConfigName + " old way");
+                }
+
+                ret.add(replicaConnection);
+            }
         }
 
         return ret;
     }
 
-    private static ConnectionWrapper openSingleConnectionOldWay(JsonNode config, boolean isReplica) throws Exception {
+    /**
+     * opens a DB connection using the old-style config record where the subscriber config JSON
+     * contains the DB credentials directly
+     */
+    private static DataSource openConnectionOldWay(JsonNode config) throws Exception {
 
         String url = config.get("enterprise_url").asText();
 
-        ConnectionWrapper cached = cache.get(url);
+        DataSource cached = cache.get(url);
         if (cached == null) {
 
             //sync and check again, just in case
@@ -115,8 +130,8 @@ public class EnterpriseConnector {
                     pool.setPoolName("EnterpriseFilerConnectionPool" + url);
                     pool.setAutoCommit(false);
 
-                    cached = new ConnectionWrapper(pool, isReplica);
-                    cache.put(url, cached);
+                    cached = pool;
+                    cache.put(url, pool);
                 }
             }
         }
@@ -125,21 +140,29 @@ public class EnterpriseConnector {
     }
 
 
+    /**
+     * object to wrap up a DB connection source and/or a remote subscriber ID (will always have one or BOTH)
+     */
     public static class ConnectionWrapper {
         private final DataSource dataSource;
-        private final String keywordEscapeChar;
         private final boolean isReplica;
-        private int batchSize;
-        private String remoteSubscriberId;
+        private final Integer remoteSubscriberId;
+        private final int batchSize;
+        private String keywordEscapeChar;
 
-        public ConnectionWrapper(DataSource dataSource, boolean isReplica) throws Exception {
+        public ConnectionWrapper(DataSource dataSource, Integer remoteSubscriberId, boolean isReplica, int batchSize) throws Exception {
             this.dataSource = dataSource;
             this.isReplica = isReplica;
+            this.remoteSubscriberId = remoteSubscriberId;
+            this.batchSize = batchSize;
 
             //work out the escape char for whatever DB engine we're connected to
-            Connection conn = dataSource.getConnection();
-            this.keywordEscapeChar = conn.getMetaData().getIdentifierQuoteString();
-            conn.close();
+            //the dataSource may be null if we have a remote subscriber only
+            if (dataSource != null) {
+                Connection conn = dataSource.getConnection();
+                this.keywordEscapeChar = conn.getMetaData().getIdentifierQuoteString();
+                conn.close();
+            }
         }
 
 
@@ -151,24 +174,27 @@ public class EnterpriseConnector {
             return keywordEscapeChar;
         }
 
-        public Connection getConnection() throws SQLException {
+        public Connection getConnection() throws Exception {
+            if (dataSource == null) {
+                throw new Exception("Trying to get connection for remote subscriber");
+            }
             return dataSource.getConnection();
+        }
+
+        public boolean hasDatabaseConnection() {
+            return this.dataSource != null;
+        }
+
+        public boolean hasRemoteSubscriberId() {
+            return this.remoteSubscriberId != null;
         }
 
         public int getBatchSize() {
             return batchSize;
         }
 
-        public void setBatchSize(int batchSize) {
-            this.batchSize = batchSize;
-        }
-
-        public String getRemoteSubscriberId() {
+        public Integer getRemoteSubscriberId() {
             return remoteSubscriberId;
-        }
-
-        public void setRemoteSubscriberId(String remoteSubscriberId) {
-            this.remoteSubscriberId = remoteSubscriberId;
         }
 
         public String toString() {
@@ -180,21 +206,27 @@ public class EnterpriseConnector {
                 sb.append("<<REPLICA>> ");
             }
 
-            //the connection pool should ALWAYS be a Hikari pool, but just handle it not being the case
-            if (dataSource instanceof HikariDataSource) {
-                HikariDataSource hds = (HikariDataSource) dataSource;
-                String url = hds.getJdbcUrl();
-                //remove the connection string properties, so we're not logging out username, password etc.
-                int paramsIndex = url.indexOf("?");
-                if (paramsIndex == -1) {
-                    sb.append(url);
-                } else {
-                    sb.append(url.substring(0, paramsIndex));
-                }
+            if (remoteSubscriberId != null) {
+                sb.append("[Remote Subscriber ID " + remoteSubscriberId + "] ");
+            }
 
-            } else {
-                //if a different dataSource, then just log something
-                sb.append("Unexpected data source class " + dataSource.getClass());
+            //the connection pool should ALWAYS be a Hikari pool, but just handle it not being the case
+            if (dataSource != null) {
+                if (dataSource instanceof HikariDataSource) {
+                    HikariDataSource hds = (HikariDataSource) dataSource;
+                    String url = hds.getJdbcUrl();
+                    //remove the connection string properties, so we're not logging out username, password etc.
+                    int paramsIndex = url.indexOf("?");
+                    if (paramsIndex == -1) {
+                        sb.append(url);
+                    } else {
+                        sb.append(url.substring(0, paramsIndex));
+                    }
+
+                } else {
+                    //if a different dataSource, then just log something
+                    sb.append("Unexpected data source class " + dataSource.getClass());
+                }
             }
 
             return sb.toString();
