@@ -2,18 +2,17 @@ package org.endeavourhealth.core.database.rdbms.datasharingmanager;
 
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.datasharingmanager.*;
-import org.endeavourhealth.core.database.dal.usermanager.UserProjectDalI;
-import org.endeavourhealth.core.database.dal.usermanager.caching.*;
-import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.*;
 import org.endeavourhealth.core.database.dal.datasharingmanager.enums.MapType;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonAuthorityToShare;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonExtractTechnicalDetails;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonProject;
 import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonProjectSchedule;
-import org.endeavourhealth.core.database.rdbms.usermanager.RdbmsCoreUserProjectDal;
-import org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity;
+import org.endeavourhealth.core.database.dal.usermanager.UserProjectDalI;
+import org.endeavourhealth.core.database.dal.usermanager.caching.*;
 import org.endeavourhealth.core.database.dal.usermanager.models.JsonUser;
+import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.*;
+import org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import javax.persistence.EntityManager;
@@ -356,6 +355,9 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
     public List<ProjectEntity> getValidDistributionProjectsForPublisher(String publisherOdsCode) throws Exception {
 
         OrganisationEntity org = organisationRepository.getOrganisationsFromOdsCode(publisherOdsCode);
+        if (org == null) {
+            return null;
+        }
 
         List<String> projectPublishers = masterMappingRepository.getParentMappings(org.getUuid(),
                 MapType.PUBLISHER.getMapType(), MapType.PROJECT.getMapType());

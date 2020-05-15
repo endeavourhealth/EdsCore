@@ -4,11 +4,9 @@ package org.endeavourhealth.core.database.dal.usermanager.caching;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.datasharingmanager.ProjectApplicationPolicyDalI;
 import org.endeavourhealth.core.database.dal.datasharingmanager.ProjectDalI;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreProjectApplicationPolicyDal;
-import org.endeavourhealth.core.database.rdbms.datasharingmanager.RdbmsCoreProjectDal;
+import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonProject;
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectApplicationPolicyEntity;
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.models.ProjectEntity;
-import org.endeavourhealth.core.database.dal.datasharingmanager.models.JsonProject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -143,7 +141,9 @@ public class ProjectCache {
         List<ProjectEntity> validProjects = validDistributionProjectsForPublisher.get(publisherOdsCode);
         if (validProjects == null) {
             validProjects = repository.getValidDistributionProjectsForPublisher(publisherOdsCode);
-            validDistributionProjectsForPublisher.put(publisherOdsCode, validProjects);
+            if (validProjects != null) { //null will be returned for an unknown ODS code
+                validDistributionProjectsForPublisher.put(publisherOdsCode, validProjects);
+            }
         }
 
         CacheManager.startScheduler();
