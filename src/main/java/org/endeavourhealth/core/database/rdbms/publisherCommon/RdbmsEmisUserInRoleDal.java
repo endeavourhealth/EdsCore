@@ -127,7 +127,6 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
         //if we get an exchange with a large update to this table, it can lock it for long enough for other apps
         //to timeout, so give them another go
         DeadlockHandler h = new DeadlockHandler();
-        h.addOtherErrorMessageToHandler("Lock wait timeout exceeded; try restarting transaction");
         h.setRetryDelaySeconds(30); //give it long enough for the other thing to finish
 
         while (true) {

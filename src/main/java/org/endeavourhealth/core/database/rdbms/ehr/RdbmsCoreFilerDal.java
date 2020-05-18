@@ -113,7 +113,7 @@ public class RdbmsCoreFilerDal implements CoreFilerDalI {
     @Override
     public Map<String, CoreId> findOrCreateCoreIds(UUID serviceId, byte coreTable, List<String> sourceIds) throws Exception {
         DeadlockHandler h = new DeadlockHandler();
-        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
+        h.addErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
         while (true) {
             try {
                 return tryFindOrCreateSubscriberIds(serviceId, coreTable, sourceIds);

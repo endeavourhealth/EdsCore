@@ -27,7 +27,7 @@ public class RdbmsPatientLinkDal implements PatientLinkDalI {
         //due to speed of HL7 message processing, we occasionally get errors
         //because we try to insert a duplicate key into patient_link_history, so just
         //give it a few attempts
-        h.addOtherErrorMessageToHandler("could not execute statement");
+        h.addErrorMessageToHandler("could not execute statement");
 
         while (true) {
             try {

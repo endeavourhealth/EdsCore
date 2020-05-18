@@ -82,7 +82,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     public void findOrCreateEnterpriseIdsOldWay(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids) throws Exception {
         //allow several attempts if it fails due to a deadlock
         DeadlockHandler h = new DeadlockHandler();
-        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
+        h.addErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
         while (true) {
             try {
                 tryFindOrCreateEnterpriseIdsOldWay(resources, ids);
@@ -259,7 +259,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     public Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception {
         //allow several attempts if it fails due to a deadlock
         DeadlockHandler h = new DeadlockHandler();
-        h.addOtherErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
+        h.addErrorMessageToHandler(DUPLICATE_KEY_ERR); //due to multi-threading, we may get duplicate key errors, so just try again
         while (true) {
             try {
                 return tryFindOrCreateSubscriberIds(subscriberTable, sourceIds);
