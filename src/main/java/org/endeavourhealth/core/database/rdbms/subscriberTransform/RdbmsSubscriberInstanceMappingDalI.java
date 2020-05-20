@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
 import com.google.common.base.Strings;
+import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.subscriberTransform.SubscriberInstanceMappingDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseInstanceMap;
@@ -105,8 +106,10 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
     public void takeOverInstanceMapping(ResourceType resourceType, UUID oldMappedResourceId, UUID newMappedResourceId) throws Exception {
         Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
         PreparedStatement psInstanceMap = null;
-        PreparedStatement psIdMap = null;
-        PreparedStatement psIdMap3 = null;
+        PreparedStatement psEnterpriseIdMap = null;
+        PreparedStatement psEnterpriseIdMap3 = null;
+        PreparedStatement psSubscriberIdMap = null;
+        PreparedStatement psSubscriberIdMap3 = null;
         try {
             //we need to update BOTH the instance mapping table, to map everything to our new resource
             //but also the resource_id_map so that the new resource ID links to the same enterprise ID
@@ -127,26 +130,47 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
                     + " set resource_id = ?"
                     + " where resource_type = ?"
                     + " and resource_id = ?";
-            psIdMap = connection.prepareStatement(sql);
+            psEnterpriseIdMap = connection.prepareStatement(sql);
 
             col = 1;
-            psIdMap.setString(col++, newMappedResourceId.toString());
-            psIdMap.setString(col++, resourceType.toString());
-            psIdMap.setString(col++, oldMappedResourceId.toString());
-            psIdMap.executeUpdate();
+            psEnterpriseIdMap.setString(col++, newMappedResourceId.toString());
+            psEnterpriseIdMap.setString(col++, resourceType.toString());
+            psEnterpriseIdMap.setString(col++, oldMappedResourceId.toString());
+            psEnterpriseIdMap.executeUpdate();
 
-            //TODO - remove the below when this table is dropped
             sql = "update enterprise_id_map_3"
                     + " set resource_id = ?"
                     + " where resource_type = ?"
                     + " and resource_id = ?";
-            psIdMap3 = connection.prepareStatement(sql);
+            psEnterpriseIdMap3 = connection.prepareStatement(sql);
 
             col = 1;
-            psIdMap3.setString(col++, newMappedResourceId.toString());
-            psIdMap3.setString(col++, resourceType.toString());
-            psIdMap3.setString(col++, oldMappedResourceId.toString());
-            psIdMap3.executeUpdate();
+            psEnterpriseIdMap3.setString(col++, newMappedResourceId.toString());
+            psEnterpriseIdMap3.setString(col++, resourceType.toString());
+            psEnterpriseIdMap3.setString(col++, oldMappedResourceId.toString());
+            psEnterpriseIdMap3.executeUpdate();
+
+            //this same instance mapping architecture is used for Compass v2
+            //so we need to update the tables used for that
+            sql = "update subscriber_id_map"
+                    + " set source_id = ?"
+                    + " where source_id = ?";
+            psSubscriberIdMap = connection.prepareStatement(sql);
+
+            col = 1;
+            psSubscriberIdMap.setString(col++, ReferenceHelper.createResourceReference(resourceType, newMappedResourceId.toString()));
+            psSubscriberIdMap.setString(col++, ReferenceHelper.createResourceReference(resourceType, oldMappedResourceId.toString()));
+            psSubscriberIdMap.executeUpdate();
+
+            sql = "update subscriber_id_map_3"
+                    + " set source_id = ?"
+                    + " where source_id = ?";
+            psSubscriberIdMap3 = connection.prepareStatement(sql);
+
+            col = 1;
+            psSubscriberIdMap3.setString(col++, ReferenceHelper.createResourceReference(resourceType, newMappedResourceId.toString()));
+            psSubscriberIdMap3.setString(col++, ReferenceHelper.createResourceReference(resourceType, oldMappedResourceId.toString()));
+            psSubscriberIdMap3.executeUpdate();
 
             connection.commit();
 
@@ -158,57 +182,22 @@ public class RdbmsSubscriberInstanceMappingDalI implements SubscriberInstanceMap
             if (psInstanceMap != null) {
                 psInstanceMap.close();
             }
-            if (psIdMap != null) {
-                psIdMap.close();
+            if (psEnterpriseIdMap != null) {
+                psEnterpriseIdMap.close();
             }
-            if (psIdMap3 != null) {
-                psIdMap3.close();
+            if (psEnterpriseIdMap3 != null) {
+                psEnterpriseIdMap3.close();
+            }
+            if (psSubscriberIdMap != null) {
+                psSubscriberIdMap.close();
+            }
+            if (psSubscriberIdMap3 != null) {
+                psSubscriberIdMap3.close();
             }
             connection.close();
         }
     }
 
-    /*@Override
-    public void takeOverInstanceMapping(ResourceType resourceType, UUID oldMappedResourceId, UUID newMappedResourceId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-
-        try {
-            //we need to update BOTH the instance mapping table, to map everything to our new resource
-            //but also the resource_id_map so that the new resource ID links to the same enterprise ID
-            entityManager.getTransaction().begin();
-
-            String sql = "update RdbmsEnterpriseInstanceMap c"
-                    + " set c.resourceIdTo = :new_resource_id"
-                    + " where c.resourceType = :resourceType"
-                    + " and c.resourceIdTo = :old_resource_id";
-
-            Query query = entityManager.createQuery(sql)
-                    .setParameter("resourceType", resourceType.toString())
-                    .setParameter("old_resource_id", oldMappedResourceId.toString())
-                    .setParameter("new_resource_id", newMappedResourceId.toString());
-            query.executeUpdate();
-
-            sql = "update RdbmsEnterpriseIdMap c"
-                    + " set c.resourceId = :new_resource_id"
-                    + " where c.resourceType = :resourceType"
-                    + " and c.resourceId = :old_resource_id";
-
-            query = entityManager.createQuery(sql)
-                    .setParameter("resourceType", resourceType.toString())
-                    .setParameter("old_resource_id", oldMappedResourceId.toString())
-                    .setParameter("new_resource_id", newMappedResourceId.toString());
-            query.executeUpdate();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            entityManager.close();
-        }
-    }*/
 
     @Override
     public UUID findResourceIdFromInstanceMapping(ResourceType resourceType, String mappingValue) throws Exception {
