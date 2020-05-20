@@ -32,7 +32,8 @@ public interface ExchangeDalI {
     List<ExchangeTransformErrorState> getErrorStatesForService(UUID serviceId, UUID systemId) throws Exception;
     List<ExchangeTransformErrorState> getAllErrorStates() throws Exception;
 
-    UUID getFirstExchangeId(UUID serviceId, UUID systemId) throws Exception;
+    //the first exchange is often useless, so exposing this method implies something other
+    //UUID getFirstExchangeId(UUID serviceId, UUID systemId) throws Exception;
 
     void save(ExchangeSubscriberTransformAudit subscriberTransformAudit) throws Exception;
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception;

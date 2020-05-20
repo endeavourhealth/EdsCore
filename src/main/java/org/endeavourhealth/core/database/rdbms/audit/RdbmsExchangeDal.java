@@ -395,7 +395,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         }
     }
 
-    @Override
+    /*@Override
     public UUID getFirstExchangeId(UUID serviceId, UUID systemId) throws Exception {
 
         //we assume a service is started if we've previously processed an exchange without error
@@ -423,7 +423,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         } finally {
             entityManager.close();
         }
-    }
+    }*/
 
 
     /*public boolean hasProcessedExchangeOk(UUID serviceId, UUID systemId) throws Exception {
