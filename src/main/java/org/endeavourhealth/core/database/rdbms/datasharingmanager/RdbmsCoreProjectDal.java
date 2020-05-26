@@ -370,9 +370,9 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
         java.sql.Date sqlToday = java.sql.Date.valueOf(today);
 
         List<ProjectEntity> validProjects = projects.stream()
-                .filter(p -> p.getProjectTypeId() == 4 // Distribution project
-                    && p.getProjectStatusId() == 0 // Active
-                    && (p.getStartDate().before(sqlTomorrow) && (p.getEndDate() == null || p.getEndDate().after(sqlToday)))
+                .filter(p -> (p.getProjectTypeId() != null && p.getProjectTypeId() == 4) // Distribution project
+                    && (p.getProjectStatusId() != null && p.getProjectStatusId() == 0) // Active
+                    && (p.getStartDate() != null && p.getStartDate().before(sqlTomorrow) && (p.getEndDate() == null || p.getEndDate().after(sqlToday)))
                     && p.getAuthorisedBy() != null && p.getAuthorisedDate() != null)
                 .collect(Collectors.toList());
 
