@@ -33,13 +33,18 @@ public class RdbmsCTV3ToSnomedMapDal implements CTV3ToSnomedMapDalI {
                     //.setParameter("is_assured", 1);
 
             try {
-                List<RdbmsCTV3ToSnomedMap> result = (List<RdbmsCTV3ToSnomedMap>) query.getResultList();
+                List<RdbmsCTV3ToSnomedMap> results = (List<RdbmsCTV3ToSnomedMap>) query.getResultList();
+                for (RdbmsCTV3ToSnomedMap result: results) {
 
-                if (result.size() > 0) {
-                    return new CTV3ToSnomedMap(result.get(0));
-                } else {
-                    return null;
+                    //there are thousands of CTV3->Snomed mappings where the snomed concept is _DRUG
+                    //which I can't explain. But ignore those and return ones with proper snomed concept IDs
+                    if (!result.getSctConceptId().equals("_DRUG")) {
+                        return new CTV3ToSnomedMap(result);
+                    }
                 }
+
+                return null;
+
             } catch (NoResultException ex) {
                 return null;
             }
