@@ -53,7 +53,8 @@ public class ConnectionManager {
         Subscriber("db_subscriber", false, "SubscriberDb"), //this is used for Enterprise and Subscriber DBs
         KeyCloak("keycloak_db", true, "KeycloakDB"),
         UserManager("db_user_manager", true, "UserManager"),
-        DataSharingManager("db_data_sharing_manager", true, "DataSharingManager");
+        DataSharingManager("db_data_sharing_manager", true, "DataSharingManager"),
+        HL7v2Inbound("db_hl7v2_inbound", true, "HL7v2InboundDb");
 
         private String configName;
         private boolean singleInstance;
@@ -449,6 +450,8 @@ public class ConnectionManager {
                 configName = "data_generator";
             } else if (dbName == Db.SftpReader) {
                 configName = "sftp_reader";
+            } else if (dbName == Db.HL7v2Inbound) {
+                configName = "hl7v2_inbound";
             }
             else {
                 throw new RuntimeException("Unknown database " + dbName);
@@ -635,6 +638,10 @@ public class ConnectionManager {
         return getEntityManager(Db.Audit);
     }
 
+    public static EntityManager getHL7v2InboundEntityManager() throws Exception {
+        return getEntityManager(Db.HL7v2Inbound);
+    }
+
     public static EntityManager getFhirAuditEntityManager() throws Exception {
         return getEntityManager(Db.FhirAudit);
     }
@@ -718,6 +725,10 @@ public class ConnectionManager {
 
     public static Connection getAuditConnection() throws Exception {
         return getConnection(Db.Audit);
+    }
+
+    public static Connection getHL7v2InboundConnection() throws Exception {
+        return getConnection(Db.HL7v2Inbound);
     }
 
     public static Connection getFhirAuditConnection() throws Exception {
@@ -860,6 +871,10 @@ public class ConnectionManager {
 
     public static Connection getAuditNonPooledConnection() throws Exception {
         return getConnectionNonPooled(Db.Audit);
+    }
+
+    public static Connection getHL7v2InboundNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.HL7v2Inbound);
     }
 
     public static Connection getFhirAuditNonPooledConnection() throws Exception {
