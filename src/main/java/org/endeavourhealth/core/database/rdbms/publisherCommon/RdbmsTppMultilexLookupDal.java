@@ -2,8 +2,8 @@ package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
-import org.endeavourhealth.core.database.dal.publisherCommon.TppMultiLexToCtv3MapDalI;
-import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMultiLexToCtv3Map;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppMultilexLookupDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMultilexProductToCtv3Map;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +15,11 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
-public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMultiLexToCtv3MapDal.class);
+public class RdbmsTppMultilexLookupDal implements TppMultilexLookupDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMultilexLookupDal.class);
 
     @Override
-    public TppMultiLexToCtv3Map getMultiLexToCTV3Map(int multiLexProductId) throws Exception {
+    public TppMultilexProductToCtv3Map getMultilexToCtv3MapForProductId(int multiLexProductId) throws Exception {
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
         try {
@@ -34,7 +34,7 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
             if (rs.next()) {
                 int col = 1;
 
-                TppMultiLexToCtv3Map ret = new TppMultiLexToCtv3Map();
+                TppMultilexProductToCtv3Map ret = new TppMultilexProductToCtv3Map();
                 ret.setMultiLexProductId(rs.getInt(col++));
                 ret.setCtv3ReadCode(rs.getString(col++));
                 ret.setCtv3ReadTerm(rs.getString(col++));
@@ -65,7 +65,7 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
      * new identifiers, so this field cannot be used as a unique ID to handle new records and updated
      */
     @Override
-    public void updateLookupTable(String filePath, Date dataDate) throws Exception {
+    public void updateProductIdToCtv3LookupTable(String filePath, Date dataDate) throws Exception {
 
         long msStart = System.currentTimeMillis();
 
@@ -159,74 +159,27 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
         }
     }
 
-    /*@Override
-    public void save(TppMultiLexToCtv3Map mapping) throws Exception {
-        if (mapping == null) {
-            throw new IllegalArgumentException("mapping is null");
-        }
-
-        List<TppMultiLexToCtv3Map> l = new ArrayList<>();
-        l.add(mapping);
-        save(l);
-    }
-
     @Override
-    public void save(List<TppMultiLexToCtv3Map> mappings) throws Exception {
-        if (mappings == null || mappings.isEmpty()) {
-            throw new IllegalArgumentException("mappings is null or empty");
-        }
-
-        DeadlockHandler h = new DeadlockHandler();
-        while (true) {
-            try {
-                trySaveCodeMappings(mappings);
-                break;
-
-            } catch (Exception ex) {
-                h.handleError(ex);
-            }
-        }
-    }
-
-    private void trySaveCodeMappings(List<TppMultiLexToCtv3Map> mappings) throws Exception {
+    public String getMultilexActionGroupNameForId(int actionGroupId) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "INSERT INTO tpp_multilex_to_ctv3_map "
-                    + " (row_id, multilex_product_id, ctv3_read_code, ctv3_read_term, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " multilex_product_id = VALUES(multilex_product_id),"
-                    + " ctv3_read_code = VALUES(ctv3_read_code),"
-                    + " ctv3_read_term = VALUES(ctv3_read_term),"
-                    + " audit_json = VALUES(audit_json)";
+            String sql = "SELECT action_group_name"
+                    + " FROM tpp_multilex_action_group_lookup"
+                    + " WHERE action_group_id = ?";
             ps = connection.prepareStatement(sql);
 
-            for (TppMultiLexToCtv3Map mapping: mappings) {
+            ps.setInt(1, actionGroupId);
 
-                int col = 1;
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                String name = rs.getString(1);
+                return name;
 
-                ps.setLong(col++, mapping.getRowId());
-                ps.setLong(col++, mapping.getMultiLexProductId());
-                ps.setString(col++, mapping.getCtv3ReadCode());
-                ps.setString(col++, mapping.getCtv3ReadTerm());
-                ResourceFieldMappingAudit audit = mapping.getAudit();
-                if (audit != null) {
-                    ps.setString(col++, audit.writeToJson());
-                } else {
-                    ps.setNull(col++, Types.VARCHAR);
-                }
-
-                ps.addBatch();
+            } else {
+                return null;
             }
-
-            ps.executeBatch();
-            connection.commit();
-
-        } catch (Exception ex) {
-            connection.rollback();
-            throw ex;
 
         } finally {
             if (ps != null) {
@@ -234,6 +187,7 @@ public class RdbmsTppMultiLexToCtv3MapDal implements TppMultiLexToCtv3MapDalI {
             }
             connection.close();
         }
+    }
 
-    }*/
+
 }

@@ -1,12 +1,12 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
-public class TppMultiLexToCtv3Map {
+public class TppMultilexProductToCtv3Map {
 
     private int multiLexProductId;
     private String ctv3ReadCode;
     private String ctv3ReadTerm;
 
-    public TppMultiLexToCtv3Map() {
+    public TppMultilexProductToCtv3Map() {
     }
 
     public int getMultiLexProductId() {
