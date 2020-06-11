@@ -140,8 +140,8 @@ public class DalProvider {
         return new RdbmsTransformWarningDal();
     }
 
-    public static TppMultiLexToCtv3MapDalI factoryTppMultiLexToCtv3MapDal() {
-        return new RdbmsTppMultiLexToCtv3MapDal();
+    public static TppMultilexDalI factoryTppMultiLexDal() {
+        return new RdbmsTppMultilexDal();
     }
 
     public static TppCtv3HierarchyRefDalI factoryTppCtv3HierarchyRefDal() {
