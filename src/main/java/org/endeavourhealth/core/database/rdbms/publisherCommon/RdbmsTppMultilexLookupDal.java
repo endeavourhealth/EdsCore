@@ -2,7 +2,7 @@ package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
-import org.endeavourhealth.core.database.dal.publisherCommon.TppMultilexDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.TppMultilexLookupDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMultilexProductToCtv3Map;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
@@ -15,8 +15,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
 
-public class RdbmsTppMultilexDal implements TppMultilexDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMultilexDal.class);
+public class RdbmsTppMultilexLookupDal implements TppMultilexLookupDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppMultilexLookupDal.class);
 
     @Override
     public TppMultilexProductToCtv3Map getMultilexToCtv3MapForProductId(int multiLexProductId) throws Exception {

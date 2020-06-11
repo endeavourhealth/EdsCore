@@ -4,7 +4,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.models.TppMultilexP
 
 import java.util.Date;
 
-public interface TppMultilexDalI {
+public interface TppMultilexLookupDalI {
 
     TppMultilexProductToCtv3Map getMultilexToCtv3MapForProductId(int multiLexProductId) throws Exception;
     void updateProductIdToCtv3LookupTable(String s3FilePath, Date dataDate) throws Exception;
