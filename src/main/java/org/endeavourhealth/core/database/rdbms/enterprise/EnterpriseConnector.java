@@ -65,7 +65,7 @@ public class EnterpriseConnector {
 
             } else {
                 //if we've no subscriber DB credentials and no remote subscriber ID then something is wrong
-                throw new Exception("No subscriber database credentials or remote subscriber ID found for config [" + subscriberConfigName + "]");
+                throw new Exception("No subscriber database credentials or remote subscriber ID found for config [" + subscriberConfigName + "]", ex);
             }
         }
 
