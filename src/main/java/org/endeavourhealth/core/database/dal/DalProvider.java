@@ -607,4 +607,8 @@ public class DalProvider {
     public static EmisCodeDalI factoryEmisCodeDal() {
         return new RdbmsEmisCodeDal();
     }
+
+    public static SubscriberPatientDateDalI factorySubscriberDateDal() {
+        return new RdbmsSubscriberPatientDateDal();
+    }
 }

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Types;
 import java.util.*;
 
 public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMappingDalI {
@@ -197,10 +196,14 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
 
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT source_id, subscriber_id, dt_previously_sent "
+            String sql = "SELECT source_id, subscriber_id "
                     + "FROM " + table + " "
                     + "WHERE subscriber_table = ? "
                     + "AND source_id IN (";
+            /*String sql = "SELECT source_id, subscriber_id, dt_previously_sent "
+                    + "FROM " + table + " "
+                    + "WHERE subscriber_table = ? "
+                    + "AND source_id IN (";*/
             for (int i=0; i<sourceIdsRemaining.size(); i++) {
                 if (i>0) {
                     sql += ", ";
@@ -223,14 +226,15 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
                 col = 1;
                 String sourceId = rs.getString(col++);
                 long subscriberId = rs.getLong(col++);
+                SubscriberId o = new SubscriberId(subscriberTable, subscriberId, sourceId);
 
-                java.util.Date dtUpdated = null;
+                /*java.util.Date dtUpdated = null;
                 java.sql.Timestamp ts = rs.getTimestamp(col++);
                 if (ts != null) {
                     dtUpdated = new java.util.Date(ts.getTime());
                 }
 
-                SubscriberId o = new SubscriberId(subscriberTable, subscriberId, sourceId, dtUpdated);
+                SubscriberId o = new SubscriberId(subscriberTable, subscriberId, sourceId, dtUpdated);*/
                 map.put(sourceId, o);
             }
 
@@ -342,7 +346,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
     }
 
 
-    @Override
+    /*@Override
     public void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception {
 
         Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
@@ -392,7 +396,7 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
                 ps.close();
             }
         }
-    }
+    }*/
 
     private static void findEnterpriseIdsOldWayGivenTable(List<ResourceWrapper> resources, Map<ResourceWrapper, Long> ids, Connection connection, String tableName) throws Exception {
 

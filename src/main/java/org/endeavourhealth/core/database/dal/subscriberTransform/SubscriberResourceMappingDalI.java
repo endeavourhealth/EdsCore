@@ -20,5 +20,5 @@ public interface SubscriberResourceMappingDalI {
     SubscriberId findOrCreateSubscriberId(byte subscriberTable, String sourceId) throws Exception;
     Map<String, SubscriberId> findOrCreateSubscriberIds(byte subscriberTable, List<String> sourceIds) throws Exception;
 
-    void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception;
+    //void updateDtUpdatedForSubscriber(List<SubscriberId> subscriberIds) throws Exception;
 }

@@ -7,11 +7,10 @@ import java.util.UUID;
 
 public interface ExchangeBatchDalI {
 
-    public List<ExchangeBatch> retrieveForExchangeId(UUID exchangeId) throws Exception;
-    public ExchangeBatch retrieveFirstForExchangeId(UUID exchangeId) throws Exception;
-    public ExchangeBatch getForExchangeAndBatchId(UUID exchangeId, UUID batchId) throws Exception;
+    List<ExchangeBatch> retrieveForExchangeId(UUID exchangeId) throws Exception;
+    ExchangeBatch retrieveFirstForExchangeId(UUID exchangeId) throws Exception;
+    ExchangeBatch getForExchangeAndBatchId(UUID exchangeId, UUID batchId) throws Exception;
+    ExchangeBatch getForBatchId(UUID batchId) throws Exception;
 
-    public void save(List<ExchangeBatch> exchangeBatches) throws Exception;
-    /*public void save(ExchangeBatch exchangeBatch) throws Exception;
-    public void delete(ExchangeBatch exchangeBatch) throws Exception;*/
+    void save(List<ExchangeBatch> exchangeBatches) throws Exception;
 }

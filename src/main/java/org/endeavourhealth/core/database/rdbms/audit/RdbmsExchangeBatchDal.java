@@ -18,9 +18,7 @@ import java.util.UUID;
 
 public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
 
-
-
-
+    @Override
     public List<ExchangeBatch> retrieveForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
@@ -49,6 +47,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         }
     }
 
+    @Override
     public ExchangeBatch retrieveFirstForExchangeId(UUID exchangeId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
@@ -83,6 +82,56 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         }
     }
 
+    @Override
+    public ExchangeBatch getForBatchId(UUID batchId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getAuditEntityManager();
+        PreparedStatement ps = null;
+        try {
+
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+
+            String sql = "SELECT exchange_id, inserted_at, eds_patient_id"
+                    + " FROM exchange_batch"
+                    + " WHERE batch_id = ?"
+                    + " LIMIT 1";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, batchId.toString());
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                col = 1;
+
+                String exhangeIdStr = rs.getString(col++);
+                java.sql.Timestamp ts = rs.getTimestamp(col++);
+                String patientIdStr = rs.getString(col++);
+
+                ExchangeBatch b = new ExchangeBatch();
+                b.setExchangeId(UUID.fromString(exhangeIdStr));
+                b.setBatchId(batchId);
+                b.setInsertedAt(new Date(ts.getTime()));
+                if (!Strings.isNullOrEmpty(patientIdStr)) {
+                    b.setEdsPatientId(UUID.fromString(patientIdStr));
+                }
+                return b;
+
+            } else {
+                return null;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
     public ExchangeBatch getForExchangeAndBatchId(UUID exchangeId, UUID batchId) throws Exception {
         EntityManager entityManager = ConnectionManager.getAuditEntityManager();
         PreparedStatement ps = null;
@@ -119,6 +168,7 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         }
     }
 
+
     private static List<ExchangeBatch> readFromResultSet(ResultSet rs, UUID exchangeId) throws Exception{
         List<ExchangeBatch> ret = new ArrayList<>();
 
@@ -141,7 +191,6 @@ public class RdbmsExchangeBatchDal implements ExchangeBatchDalI {
         }
 
         return ret;
-
     }
 
     @Override

@@ -127,6 +127,7 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
     /**
      * unlike other DALs we want explicit separate insert and update functions, rather than a general-purpose upsert one
      */
+    /*@Override
     public void updateResourceId(ResourceId resourceId)  throws Exception {
 
         EntityManager entityManager = ConnectionManager.getHl7ReceiverEntityManager();
@@ -172,5 +173,5 @@ public class RdbmsHl7ResourceIdDal implements Hl7ResourceIdDalI {
             }
             entityManager.close();
         }
-    }
+    }*/
 }

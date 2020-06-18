@@ -6,7 +6,7 @@ public interface Hl7ResourceIdDalI {
 
     ResourceId getResourceId(String scope, String resource, String uniqueId) throws Exception;
     void saveResourceId(ResourceId resourceId)  throws Exception;
-    void updateResourceId(ResourceId resourceId)  throws Exception;
+    //void updateResourceId(ResourceId resourceId)  throws Exception;
 
 
 }
