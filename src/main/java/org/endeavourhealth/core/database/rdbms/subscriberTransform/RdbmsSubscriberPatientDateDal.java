@@ -1,9 +1,7 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
-import org.endeavourhealth.common.fhir.ReferenceHelper;
 import org.endeavourhealth.core.database.dal.subscriberTransform.SubscriberPatientDateDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.hl7.fhir.instance.model.ResourceType;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -39,13 +37,15 @@ public class RdbmsSubscriberPatientDateDal implements SubscriberPatientDateDalI 
                 }
 
             } else {
-                //if not found in the proper table, check the subscriber ID map table(s) which is where this
+                return null;
+
+                /*//if not found in the proper table, check the subscriber ID map table(s) which is where this
                 //concept used to be stored
                 Date d = getDateLastTransformedPatientFromOldTable(connection, "subscriber_id_map", patientId);
                 if (d == null) {
                     d = getDateLastTransformedPatientFromOldTable(connection, "subscriber_id_map_3", patientId);
                 }
-                return d;
+                return d;*/
             }
 
         } finally {
@@ -56,7 +56,7 @@ public class RdbmsSubscriberPatientDateDal implements SubscriberPatientDateDalI 
         }
     }
 
-    private static Date getDateLastTransformedPatientFromOldTable(Connection connection, String tableName, UUID patientId) throws Exception {
+    /*private static Date getDateLastTransformedPatientFromOldTable(Connection connection, String tableName, UUID patientId) throws Exception {
 
         PreparedStatement ps = null;
         try {
@@ -88,7 +88,7 @@ public class RdbmsSubscriberPatientDateDal implements SubscriberPatientDateDalI 
                 ps.close();
             }
         }
-    }
+    }*/
 
     @Override
     public void saveDateLastTransformedPatient(String subscriberConfigName, UUID patientId, long subscriberId, Date dtVersion) throws Exception {

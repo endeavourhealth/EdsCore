@@ -611,4 +611,9 @@ public class DalProvider {
     public static SubscriberPatientDateDalI factorySubscriberDateDal() {
         return new RdbmsSubscriberPatientDateDal();
     }
+
+    public static SubscriberCohortDalI factorySubscriberCohortDal() {
+        return new RdbmsSubscriberCohortDal();
+    }
+
 }
