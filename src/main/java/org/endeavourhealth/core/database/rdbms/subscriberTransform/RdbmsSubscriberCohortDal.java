@@ -79,7 +79,7 @@ public class RdbmsSubscriberCohortDal implements SubscriberCohortDalI {
             ps.setBoolean(col++, record.isInCohort());
             ps.setString(col++, record.getReason());
             ps.setTimestamp(col++, new java.sql.Timestamp(record.getDtUpdated().getTime()));
-LOG.debug("Saving with timestamp " + record.getDtUpdated().getTime());
+
             ps.executeUpdate();
             connection.commit();
 
