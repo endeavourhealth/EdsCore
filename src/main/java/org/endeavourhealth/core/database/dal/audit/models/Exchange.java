@@ -124,6 +124,10 @@ public class Exchange {
         return headers.get(key);
     }
 
+    public boolean hasHeader(String key) {
+        return headers.containsKey(key);
+    }
+
     public UUID getHeaderAsUuid(String key) {
         String s = getHeader(key);
         if (Strings.isNullOrEmpty(s)) {
