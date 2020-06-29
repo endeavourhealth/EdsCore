@@ -11,11 +11,14 @@ public class SubscriberCohortRecord {
     private boolean inCohort;
     private String reason;
     private Date dtUpdated;
+    private UUID batchIdUpdated;
 
-    public SubscriberCohortRecord(String subscriberConfigName, UUID patientId) {
+    public SubscriberCohortRecord(String subscriberConfigName, UUID serviceId, UUID batchIdUpdated, Date dtUpdated, UUID patientId) {
         this.subscriberConfigName = subscriberConfigName;
+        this.serviceId = serviceId;
+        this.batchIdUpdated = batchIdUpdated;
+        this.dtUpdated = dtUpdated;
         this.patientId = patientId;
-        this.dtUpdated = new Date();
     }
 
     public String getSubscriberConfigName() {
@@ -30,9 +33,14 @@ public class SubscriberCohortRecord {
         return serviceId;
     }
 
-    public void setServiceId(UUID serviceId) {
-        this.serviceId = serviceId;
+    public Date getDtUpdated() {
+        return dtUpdated;
     }
+
+    public UUID getBatchIdUpdated() {
+        return batchIdUpdated;
+    }
+
 
     public boolean isInCohort() {
         return inCohort;
@@ -50,13 +58,6 @@ public class SubscriberCohortRecord {
         this.reason = reason;
     }
 
-    public Date getDtUpdated() {
-        return dtUpdated;
-    }
-
-    public void setDtUpdated(Date dtUpdated) {
-        this.dtUpdated = dtUpdated;
-    }
 
     @Override
     public String toString() {

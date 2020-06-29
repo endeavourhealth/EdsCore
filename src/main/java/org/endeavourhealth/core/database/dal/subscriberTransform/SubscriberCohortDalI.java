@@ -6,6 +6,11 @@ import java.util.UUID;
 
 public interface SubscriberCohortDalI {
 
-    SubscriberCohortRecord getCohortRecord(String subscriberConfigName, UUID patientId) throws Exception;
     void saveCohortRecord(SubscriberCohortRecord record) throws Exception;
+    SubscriberCohortRecord getLatestCohortRecord(String subscriberConfigName, UUID patientId, UUID batchId) throws Exception;
+
+
+    void saveInExplicitCohort(String subscriberConfigName, String nhsNumber, boolean inCohort) throws Exception;
+    boolean isInExplicitCohort(String subscriberConfigName, String nhsNumber) throws Exception;
+
 }

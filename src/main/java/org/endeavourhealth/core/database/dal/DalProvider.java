@@ -1,6 +1,9 @@
 package org.endeavourhealth.core.database.dal;
 
-import org.endeavourhealth.core.database.dal.admin.*;
+import org.endeavourhealth.core.database.dal.admin.LibraryDalI;
+import org.endeavourhealth.core.database.dal.admin.LinkDistributorPopulatorDalI;
+import org.endeavourhealth.core.database.dal.admin.LinkDistributorTaskListDalI;
+import org.endeavourhealth.core.database.dal.admin.ServiceDalI;
 import org.endeavourhealth.core.database.dal.audit.*;
 import org.endeavourhealth.core.database.dal.audit.models.IAuditModule;
 import org.endeavourhealth.core.database.dal.datagenerator.SubscriberZipFileUUIDsDalI;
@@ -18,7 +21,10 @@ import org.endeavourhealth.core.database.dal.publisherTransform.*;
 import org.endeavourhealth.core.database.dal.reference.*;
 import org.endeavourhealth.core.database.dal.subscriberTransform.*;
 import org.endeavourhealth.core.database.dal.usermanager.*;
-import org.endeavourhealth.core.database.rdbms.admin.*;
+import org.endeavourhealth.core.database.rdbms.admin.RdbmsLibraryDal;
+import org.endeavourhealth.core.database.rdbms.admin.RdbmsLinkDistributorPopulatorDal;
+import org.endeavourhealth.core.database.rdbms.admin.RdbmsLinkDistributorTaskListDal;
+import org.endeavourhealth.core.database.rdbms.admin.RdbmsServiceDal;
 import org.endeavourhealth.core.database.rdbms.audit.*;
 import org.endeavourhealth.core.database.rdbms.datagenerator.RdbmsSubscriberZipFileUUIDsDal;
 import org.endeavourhealth.core.database.rdbms.datasharingmanager.*;
@@ -124,10 +130,6 @@ public class DalProvider {
         return new RdbmsSnomedDal();
     }
 
-    public static PatientCohortDalI factoryPatientCohortDal() {
-        return new RdbmsPatientCohortDal();
-    }
-
     public static LinkDistributorTaskListDalI factoryLinkDistributorTaskListDal() {
         return new RdbmsLinkDistributorTaskListDal();
     }
@@ -159,7 +161,6 @@ public class DalProvider {
     public static CernerProcedureMapDalI factoryCernerProcedureMapDal() {
         return new CernerProcedureMapDal();
     }
-
 
     public static CohortDalI factoryDSMCohortDal() {
         return new RdbmsCoreCohortDal();
@@ -216,7 +217,6 @@ public class DalProvider {
     public static ValueSetsDalI factoryDSMValueSetsDal() {
         return new RdbmsCoreValueSetsDal();
     }
-
 
     public static ApplicationAccessProfileDalI factoryUMApplicationAccessProfileDal() {
         return new RdbmsCoreApplicationAccessProfileDal();
