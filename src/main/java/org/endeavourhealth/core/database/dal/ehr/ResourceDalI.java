@@ -1,6 +1,7 @@
 package org.endeavourhealth.core.database.dal.ehr;
 
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
+import org.endeavourhealth.core.database.rdbms.ehr.models.AdminResourceRetrieverI;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
 
@@ -34,4 +35,6 @@ public interface ResourceDalI {
     //which needs to retrieve all MedicationOrders for a specific MedicationStatement, which is currently very slow
     //because it has to retrieve all MedicationOrders and then filter down
     List<ResourceWrapper> getMedicationOrderResourcesForPatientAndMedicationStatement(UUID serviceId, UUID patientId, UUID medicationStatement) throws Exception;
+
+    AdminResourceRetrieverI startRetrievingAdminResources(UUID serviceId, int batchSize) throws Exception;
 }

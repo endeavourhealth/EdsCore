@@ -10,6 +10,7 @@ import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.ehr.models.ResourceWrapper;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
+import org.endeavourhealth.core.database.rdbms.ehr.models.AdminResourceRetrieverI;
 import org.hl7.fhir.instance.model.Reference;
 import org.hl7.fhir.instance.model.Resource;
 import org.hl7.fhir.instance.model.ResourceType;
@@ -280,10 +281,17 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
-    private List<ResourceWrapper> readResourceWrappersFromResourceCurrentResultSet(ResultSet rs, boolean returnDeletedResources) throws Exception {
+    private static List<ResourceWrapper> readResourceWrappersFromResourceCurrentResultSet(ResultSet rs, boolean returnDeletedResources) throws Exception {
+        return readResourceWrappersFromResourceCurrentResultSet(rs, returnDeletedResources, Integer.MAX_VALUE);
+    }
+
+    private static List<ResourceWrapper> readResourceWrappersFromResourceCurrentResultSet(ResultSet rs, boolean returnDeletedResources, int maxResources) throws Exception {
         List<ResourceWrapper> ret = new ArrayList<>();
 
-        while (rs.next()) {
+        //MUST check the size before calling next() otherwise we advance in the result set
+        //before we know we want to, and end up missing resources
+        //while (rs.next() && ret.size() < maxResources) {
+        while (ret.size() < maxResources && rs.next()) {
             int col = 1;
 
             ResourceWrapper w = new ResourceWrapper();
@@ -924,5 +932,67 @@ public class RdbmsResourceDal implements ResourceDalI {
             connection.close();
         }
 
+    }
+
+    @Override
+    public AdminResourceRetrieverI startRetrievingAdminResources(UUID serviceId, int batchSize) throws Exception {
+
+        Connection connection = ConnectionManager.getEhrNonPooledConnection(serviceId); //don't want a pooled conncetion
+
+        String sql = getResourceCurrentSelectPrefix()
+                + " WHERE service_id = ?"
+                + " AND patient_id = ''";
+        PreparedStatement ps = connection.prepareStatement(sql);
+
+        int col = 1;
+        ps.setString(col++, serviceId.toString());
+        ps.setFetchSize(batchSize);
+
+        ResultSet rs = ps.executeQuery();
+        return new AdminResourceRetrieverImpl(connection, rs, ps);
+    }
+
+
+    static class AdminResourceRetrieverImpl implements AdminResourceRetrieverI {
+
+        private Connection connection;
+        private ResultSet rs;
+        private PreparedStatement ps;
+
+        public AdminResourceRetrieverImpl(Connection connection, ResultSet rs, PreparedStatement ps) {
+            this.connection = connection;
+            this.rs = rs;
+            this.ps = ps;
+        }
+
+        @Override
+        public List<ResourceWrapper> getNextBatch() throws Exception {
+
+            //if our previous batch was the last, this will be null
+            if (connection == null) {
+                return null;
+            }
+
+            int batchSize = ps.getFetchSize();
+            List<ResourceWrapper> resourceWrappers = readResourceWrappersFromResourceCurrentResultSet(rs, false, batchSize);
+
+            //if we've reached the end, close everything down
+            if (resourceWrappers.size() < batchSize) {
+                close();
+            }
+
+            return resourceWrappers;
+        }
+
+        @Override
+        public void close() throws Exception {
+            if (connection != null) {
+                rs.close();
+                ps.close();
+                connection.close();
+
+                connection = null; //just set to null so nothing goes wrong if we try to close twice
+            }
+        }
     }
 }
