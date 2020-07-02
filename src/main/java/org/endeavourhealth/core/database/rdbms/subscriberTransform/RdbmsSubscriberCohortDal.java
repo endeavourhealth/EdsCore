@@ -103,6 +103,41 @@ public class RdbmsSubscriberCohortDal implements SubscriberCohortDalI {
     }
 
     @Override
+    public boolean wasEverInCohort(String subscriberConfigName, UUID patientId) throws Exception {
+
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT 1"
+                    + " FROM subscriber_cohort"
+                    + " WHERE subscriber_config_name = ?"
+                    + " AND patient_id = ?"
+                    + " AND in_cohort = ?"
+                    + " LIMIT 1";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, subscriberConfigName);
+            ps.setString(col++, patientId.toString());
+            ps.setBoolean(col++, true);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return true;
+
+            } else {
+                return false;
+            }
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
     public void saveInExplicitCohort(String subscriberConfigName, String nhsNumber, boolean inCohort) throws Exception {
 
         Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
