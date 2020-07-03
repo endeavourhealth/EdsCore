@@ -618,6 +618,7 @@ public class RdbmsStagingTargetDal implements StagingTargetDalI {
                 stagingEmergencyCdsTarget.setTreatmentFunctionCode(rs.getString(col++));
                 stagingEmergencyCdsTarget.setDischargeStatus(rs.getString(col++));
                 stagingEmergencyCdsTarget.setDischargeDestination(rs.getString(col++));
+                stagingEmergencyCdsTarget.setDischargeFollowUp(rs.getString(col++));
 
                 java.sql.Timestamp tsConclusion = rs.getTimestamp(col++);
                 if (tsConclusion != null) {
