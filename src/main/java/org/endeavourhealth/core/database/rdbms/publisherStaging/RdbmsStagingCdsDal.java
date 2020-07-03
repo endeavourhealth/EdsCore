@@ -1259,10 +1259,10 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     " department_type, ambulance_incident_number, treatment_organisation_code, " +
                     " attendance_identifier, arrival_mode, attendance_category, attendance_source, " +
                     " arrival_date, initial_assessment_date, chief_complaint, seen_for_treatment_date, "+
-                    " decided_to_admit_date, discharge_status, discharge_destination, discharge_destination_site_id, " +
+                    " decided_to_admit_date, discharge_status, discharge_destination, discharge_destination_site_id, discharge_follow_up, " +
                     " conclusion_date, departure_date, mh_classifications, diagnosis, investigations, treatments, " +
                     " referred_to_services, safeguarding_concerns, lookup_person_id, audit_json)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " exchange_id = VALUES(exchange_id),"
                     + " dt_received = VALUES(dt_received),"
@@ -1289,6 +1289,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " decided_to_admit_date = VALUES(decided_to_admit_date),"
                     + " discharge_status = VALUES(discharge_status),"
                     + " discharge_destination = VALUES(discharge_destination),"
+                    + " discharge_follow_up = VALUES(discharge_follow_up),"
                     + " conclusion_date = VALUES(conclusion_date),"
                     + " departure_date = VALUES(departure_date),"
                     + " mh_classifications = VALUES(mh_classifications),"
@@ -1301,8 +1302,6 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                     + " audit_json = VALUES(audit_json)";
 
             ps = connection.prepareStatement(sql);
-
-            //entityManager.getTransaction().begin();
 
             for (StagingEmergencyCds cdsEmergency : toSave) {
 
@@ -1361,6 +1360,7 @@ public class RdbmsStagingCdsDal implements StagingCdsDalI {
                 ps.setString(col++, cdsEmergency.getDischargeStatus());
                 ps.setString(col++, cdsEmergency.getDischargeDestination());
                 ps.setString(col++, cdsEmergency.getDischargeDestinationSiteId());
+                ps.setString(col++, cdsEmergency.getDischargeFollowUp());
 
                 if (cdsEmergency.getConclusionDate() == null) {
                     ps.setNull(col++, Types.NULL);

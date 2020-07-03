@@ -29,6 +29,7 @@ public class StagingEmergencyCdsTarget {
     private String treatmentFunctionCode;
     private String dischargeStatus;
     private String dischargeDestination;
+    private String dischargeFollowUp;
     private Date dtConclusion;
     private Date dtDeparture;
     private String diagnosis;
@@ -218,6 +219,14 @@ public class StagingEmergencyCdsTarget {
         this.dischargeDestination = dischargeDestination;
     }
 
+    public String getDischargeFollowUp() {
+        return dischargeFollowUp;
+    }
+
+    public void setDischargeFollowUp(String dischargeFollowUp) {
+        this.dischargeFollowUp = dischargeFollowUp;
+    }
+
     public Date getDtConclusion() {
         return dtConclusion;
     }
@@ -315,6 +324,7 @@ public class StagingEmergencyCdsTarget {
                 ", treatmentFunctionCode='" + treatmentFunctionCode + '\'' +
                 ", dischargeStatus='" + dischargeStatus + '\'' +
                 ", dischargeDestination='" + dischargeDestination + '\'' +
+                ", dischargeFollowUp='" + dischargeFollowUp + '\'' +
                 ", dtConclusion='" + dtConclusion + '\'' +
                 ", dtDeparture='" + dtDeparture + '\'' +
                 ", diagnosis='" + diagnosis + '\'' +

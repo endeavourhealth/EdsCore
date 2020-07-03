@@ -37,6 +37,7 @@ public class StagingEmergencyCds implements Cloneable {
     private String dischargeStatus;
     private String dischargeDestination;
     private String dischargeDestinationSiteId;
+    private String dischargeFollowUp;
     private Date conclusionDate;
     private Date departureDate;
     private String mhClassifications;
@@ -261,6 +262,14 @@ public class StagingEmergencyCds implements Cloneable {
         this.dischargeDestinationSiteId = dischargeDestinationSiteId;
     }
 
+    public String getDischargeFollowUp() {
+        return dischargeFollowUp;
+    }
+
+    public void setDischargeFollowUp(String dischargeFollowUp) {
+        this.dischargeFollowUp = dischargeFollowUp;
+    }
+
     public Date getConclusionDate() {
         return conclusionDate;
     }
@@ -373,6 +382,7 @@ public class StagingEmergencyCds implements Cloneable {
                 dischargeStatus,
                 dischargeDestination,
                 dischargeDestinationSiteId,
+                dischargeFollowUp,
                 conclusionDate,
                 departureDate,
                 mhClassifications,
@@ -413,6 +423,7 @@ public class StagingEmergencyCds implements Cloneable {
                 ", dischargeStatus='" + dischargeStatus + '\'' +
                 ", dischargeDestination='" + dischargeDestination + '\'' +
                 ", dischargeDestinationSiteId='" + dischargeDestinationSiteId + '\'' +
+                ", dischargeFollowUp='" + dischargeFollowUp + '\'' +
                 ", conclusionDate='" + conclusionDate + '\'' +
                 ", departureDate='" + departureDate + '\'' +
                 ", mhClassifications='" + mhClassifications + '\'' +
