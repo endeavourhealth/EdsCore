@@ -54,9 +54,9 @@ public class DalProvider {
         return new RdbmsResourceDal();
     }
 
-    public static VitruCareTransformDalI factoryVitruCareTransformDal(String subscriberConfigName) {
+    /*public static VitruCareTransformDalI factoryVitruCareTransformDal(String subscriberConfigName) {
         return new RdbmsVitruCareTransformDal(subscriberConfigName);
-    }
+    }*/
 
     public static EmisAdminCacheDalI factoryEmisTransformDal() {
         return new RdbmsEmisAdminCacheDal();
@@ -428,7 +428,7 @@ public class DalProvider {
         return new RdbmsEnterpriseAgeUpdaterDal(subscriberConfigName);
     }
 
-    public static PcrPersonUpdaterHistoryDalI factoryPcrPersonUpdateHistoryDal(String subscriberConfigName) {
+    /*public static PcrPersonUpdaterHistoryDalI factoryPcrPersonUpdateHistoryDal(String subscriberConfigName) {
         return new RdbmsPcrPersonUpdaterHistoryDal(subscriberConfigName);
     }
 
@@ -438,7 +438,7 @@ public class DalProvider {
 
     public static PcrAgeUpdaterlDalI factoryPcrAgeUpdaterlDal(String subscriberConfigName) {
         return new RdbmsPcrAgeUpdaterDal(subscriberConfigName);
-    }
+    }*/
 
     public static PostcodeDalI factoryPostcodeDal() {
         return new RdbmsPostcodeDal();
