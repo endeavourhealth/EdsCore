@@ -4,6 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.TppCtv3HierarchyRefDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,20 @@ public class RdbmsTppCtv3HierarchyRefDal implements TppCtv3HierarchyRefDalI {
      */
     @Override
     public void updateHierarchyTable(String filePath, Date dataDate) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.setRetryDelaySeconds(60);
+        while (true) {
+            try {
+                tryUpdateHierarchyTable(filePath, dataDate);
+                return;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    private void tryUpdateHierarchyTable(String filePath, Date dataDate) throws Exception {
 
         long msStart = System.currentTimeMillis();
 
