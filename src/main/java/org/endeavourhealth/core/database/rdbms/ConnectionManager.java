@@ -54,7 +54,8 @@ public class ConnectionManager {
         KeyCloak("keycloak_db", true, "KeycloakDB"),
         UserManager("db_user_manager", true, "UserManager"),
         DataSharingManager("db_data_sharing_manager", true, "DataSharingManager"),
-        HL7v2Inbound("db_hl7v2_inbound", true, "HL7v2InboundDb");
+        HL7v2Inbound("db_hl7v2_inbound", true, "HL7v2InboundDb"),
+        SftpReaderHashes("db_sftp_reader_hashes", true, "SftpReaderHashesDb");
 
         private String configName;
         private boolean singleInstance;
@@ -452,6 +453,8 @@ public class ConnectionManager {
                 configName = "sftp_reader";
             } else if (dbName == Db.HL7v2Inbound) {
                 configName = "hl7v2_inbound";
+            } else if (dbName == Db.SftpReaderHashes) {
+                configName = "sftp_reader_hashes";
             }
             else {
                 throw new RuntimeException("Unknown database " + dbName);
@@ -662,7 +665,9 @@ public class ConnectionManager {
     public static EntityManager getUmEntityManager() throws Exception {
         return getEntityManager(Db.UserManager);
     }
-
+    public static EntityManager getSftpReaderHashesEntityManager() throws Exception {
+        return getEntityManager(Db.SftpReaderHashes);
+    }
     /**
      * no hibernate entities on subscriber/enterprise DBs
      */
@@ -782,7 +787,9 @@ public class ConnectionManager {
         return getConnection(Db.UserManager);
     }
 
-
+    public static Connection getSftpReaderHashesConnection() throws Exception {
+        return getConnection(Db.SftpReaderHashes);
+    }
 
     /**
      * returns a DB connection that isn't from a connection pool. Useful if the connection will be kept open
@@ -920,6 +927,9 @@ public class ConnectionManager {
         return getConnectionNonPooled(Db.DataGenerator);
     }
 
+    public static Connection getSftpReaderHashesNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.SftpReaderHashes);
+    }
 
     /**
      * utility fn to generate a unique name for a temp table
