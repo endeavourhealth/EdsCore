@@ -58,6 +58,19 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
         return false;
     }
 
+    @Override
+    public Boolean checkExternalUserApplicationAccess(String userId, String applicationName) throws Exception {
+
+        String userAppPolicy = UserCache.getUserApplicationPolicyId(userId);
+        List<JsonApplicationPolicyAttribute> attributeList = ApplicationPolicyCache.getApplicationPolicyAttributes(userAppPolicy);
+
+        if (attributeList.stream().anyMatch(a -> a.getApplication().equals(applicationName))) {
+            return true;
+        }
+
+        return false;
+    }
+
     public List<UserProjectEntity> getUserProjectEntitiesForProject(String projectId) throws Exception {
         EntityManager entityManager = ConnectionManager.getUmEntityManager();
 

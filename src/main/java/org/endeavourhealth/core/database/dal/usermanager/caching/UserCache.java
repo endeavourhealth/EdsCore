@@ -25,6 +25,7 @@ public class UserCache {
     private static Map<String, String> userApplicationPolicyIdMap = new ConcurrentHashMap<>();
     private static Map<String, UserApplicationPolicyEntity> userApplicationPolicyMap = new ConcurrentHashMap<>();
     private static Map<String, Boolean> userProjectApplicationAccessMap = new ConcurrentHashMap<>();
+    private static Map<String, Boolean> externalUserApplicationAccessMap = new ConcurrentHashMap<>();
     private static Map<String, UserRegionEntity> userRegionMap = new ConcurrentHashMap<>();
     private static Map<String, UserProjectEntity> userProjectMap = new ConcurrentHashMap<>();
 
@@ -155,10 +156,25 @@ public class UserCache {
         return accessToApp;
     }
 
+    public static Boolean getExternalUserApplicationAccess(String userId, String appName) throws Exception {
+        String upa = userId + "|" + appName;
+
+        Boolean accessToApp = externalUserApplicationAccessMap.get(upa);
+        if (accessToApp == null) {
+            accessToApp = userProjectRepository.checkExternalUserApplicationAccess(userId, appName);
+            userProjectApplicationAccessMap.put(upa, accessToApp);
+        }
+
+        CacheManager.startScheduler();
+
+        return accessToApp;
+    }
+
     public static void clearUserCache(String userId) throws Exception {
         userApplicationPolicyMap.remove(userId);
         userApplicationPolicyIdMap.remove(userId);
         userProjectApplicationAccessMap.remove(userId);
+        externalUserApplicationAccessMap.remove(userId);
         userMap.remove(userId);
         userRegionMap.remove(userId);
         userProjectMap.clear();
@@ -171,5 +187,6 @@ public class UserCache {
         userApplicationPolicyMap.clear();
         userRegionMap.clear();
         userProjectMap.clear();
+        externalUserApplicationAccessMap.clear();
     }
 }

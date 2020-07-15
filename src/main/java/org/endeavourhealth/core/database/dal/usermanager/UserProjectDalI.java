@@ -9,6 +9,8 @@ public interface UserProjectDalI {
     public Boolean checkUserProjectApplicationAccess(String userId,
                                                      String projectId,
                                                      String applicationName) throws Exception;
+    public Boolean checkExternalUserApplicationAccess(String userId,
+                                                     String applicationPolicyName) throws Exception;
 
     public List<UserProjectEntity> getUserProjectEntitiesForProject(String projectId) throws Exception;
     public List<Object[]> getUserProjects(String userId) throws Exception;
