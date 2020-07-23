@@ -616,4 +616,7 @@ public class DalProvider {
         return new RdbmsSubscriberCohortDal();
     }
 
+    public static VisionCodeDalI factoryVisionCodeDal() {
+        return new RdbmsVisionCodeDal();
+    }
 }
