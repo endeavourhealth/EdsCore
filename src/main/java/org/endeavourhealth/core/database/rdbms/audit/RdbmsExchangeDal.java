@@ -1274,7 +1274,7 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             JsonDDSOrganisationStatus orgStatus = new JsonDDSOrganisationStatus();
             orgStatus.setOdsCode((String)row[0]);
 
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+            DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
             orgStatus.setLastReceived(df.format((Date)row[1]));
             orgStatus.setInError((Integer)row[2] == 1 ? true : false);
             orgStatus.setReferenceAgreement(agreementName);
