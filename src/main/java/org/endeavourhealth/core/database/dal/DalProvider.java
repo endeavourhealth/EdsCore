@@ -616,8 +616,7 @@ public class DalProvider {
         return new RdbmsSubscriberCohortDal();
     }
 
-    public static TppCtv3SnomedRefDalI factoryTppCtv3SnomedRefDal() {
-        return new RdbmsTppCtv3SnomedRefDal();
+    public static VisionCodeDalI factoryVisionCodeDal() {
+        return new RdbmsVisionCodeDal();
     }
-
 }
