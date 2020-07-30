@@ -619,4 +619,8 @@ public class DalProvider {
     public static VisionCodeDalI factoryVisionCodeDal() {
         return new RdbmsVisionCodeDal();
     }
+
+    public static TppCtv3SnomedRefDalI factoryTppCtv3SnomedRefDal() {
+        return new RdbmsTppCtv3SnomedRefDal();
+    }
 }
