@@ -57,7 +57,7 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
 
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
-            //LOG.debug("Loading " + f + " into " + tempTableName);
+            LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier varchar(20), "
                     + "IDOrganisationVisibleTo varchar(20), "
@@ -73,8 +73,9 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             statement.close();
 
             //bulk load temp table
-            //LOG.debug("Starting bulk load into " + tempTableName);
-            sql = "LOAD DATA  INFILE '" + filePath.replace("\\", "\\\\") + "'"
+            //LOAD DATA LOCAL INFILE for earlier versions of SQL
+            LOG.debug("Starting bulk load into " + tempTableName);
+            sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
                     + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\\\\'"
                     + " LINES TERMINATED BY '\\r\\n'"
@@ -84,7 +85,7 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             statement.close();
 
             //work out which records already exist in the target table
-            //LOG.debug("Finding records that exist in tpp_ctv3_hierarchy_ref_2");
+            LOG.debug("Finding records that exist in tpp_ctv3_to_snomed");
             sql = "UPDATE " + tempTableName + " s"
                     + " INNER JOIN tpp_ctv3_to_snomed t"
                     + " ON t.ctv3_code = s.Ctv3Code"
@@ -95,7 +96,7 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             statement.close();
 
             //insert records into the target table where the staging
-            //LOG.debug("Copying into target table tpp_ctv3_hierarchy_ref_2");
+            LOG.debug("Copying into target table tpp_ctv3_to_snomed");
             sql = "INSERT IGNORE INTO tpp_ctv3_to_snomed (ctv3_code, snomed_concept_id, dt_last_updated)"
                     + " SELECT Ctv3Code, SnomedCode, " + ConnectionManager.formatDateString(dataDate, true)
                     + " FROM " + tempTableName
@@ -104,8 +105,16 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //unlike similar bulk load routines, there's no UPDATE statement
-            //because this file has no unique ID we can use for updates
+            //update any records that previously existed, but have a changed term
+            LOG.debug("Updating existing records in target table tpp_ctv3_to_snomed");
+            sql = "UPDATE tpp_ctv3_to_snomed t"
+                    + " INNER JOIN " + tempTableName + " s"
+                    + " ON t.ctv3_code = s.Ctv3Code"
+                    + " SET t.snomed_concept_id = s.SnomedCode, t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
+                    + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true);
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
 
             //delete the temp table
             //LOG.debug("Deleting temp table");
