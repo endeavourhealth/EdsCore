@@ -623,4 +623,13 @@ public class DalProvider {
     public static TppCtv3SnomedRefDalI factoryTppCtv3SnomedRefDal() {
         return new RdbmsTppCtv3SnomedRefDal();
     }
+
+    public static ServiceSubscriberAuditDalI factoryServiceSubscriberAuditDal() {
+        return new RdbmsServiceSubscriberAuditDal();
+    }
+
+    public static ServicePublisherAuditDalI factoryServicePublisherAuditDal() {
+        return new RdbmsPublisherAuditDal();
+    }
+
 }
