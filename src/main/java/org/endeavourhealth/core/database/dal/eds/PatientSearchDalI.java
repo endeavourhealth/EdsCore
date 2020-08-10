@@ -21,14 +21,8 @@ public interface PatientSearchDalI {
     List<PatientSearch> searchByNames(Set<String> serviceIds, List<String> names) throws Exception;
     PatientSearch searchByPatientId(UUID patientId) throws Exception;
 
-    Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception;
+    Map<UUID, UUID> findPatientIdsForNhsNumber(Set<UUID> serviceIds, String nhsNumber) throws Exception;
 
     List<UUID> getPatientIds(UUID serviceId, boolean includeDeleted) throws Exception;
     List<UUID> getPatientIds(UUID serviceId, boolean includeDeleted, int max) throws Exception;
-
-    /**
-     * returns the "best" patient record from the UUIDs supplied for identifying the one most likely
-     * to represent the true state of the patients demographics
-     */
-    //UUID findBestPatientRecord(List<UUID> patientIds) throws Exception;
 }

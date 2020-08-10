@@ -1230,7 +1230,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
      * faster way to look up patient (and service ID) for an NHS number, without the join to patient_search_episode
      * or the SQL filtering on a long list of service IDs
      */
-    public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<String> serviceIds, String nhsNumber) throws Exception {
+    public Map<UUID, UUID> findPatientIdsForNhsNumber(Set<UUID> serviceIds, String nhsNumber) throws Exception {
 
         String sql = "SELECT ps.service_id, ps.patient_id"
                 + " FROM patient_search ps"
@@ -1255,7 +1255,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 UUID serviceId = UUID.fromString(rs.getString(col++));
                 UUID patientId = UUID.fromString(rs.getString(col++));
 
-                if (serviceIds.contains(serviceId.toString())) {
+                if (serviceIds.contains(serviceId)) {
                     ret.put(patientId, serviceId);
                 }
             }
