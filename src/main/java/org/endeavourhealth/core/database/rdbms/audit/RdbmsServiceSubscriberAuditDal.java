@@ -80,7 +80,7 @@ public class RdbmsServiceSubscriberAuditDal implements ServiceSubscriberAuditDal
     }
 
     @Override
-    public Map<Date, String> getSubscriberHistory(UUID serviceId) throws Exception {
+    public Map<Date, List<String>> getSubscriberHistory(UUID serviceId) throws Exception {
 
         Connection conn = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
@@ -92,13 +92,16 @@ public class RdbmsServiceSubscriberAuditDal implements ServiceSubscriberAuditDal
 
             ps.setString(1, serviceId.toString());
 
-            Map<Date, String> ret = new HashMap<>();
+            Map<Date, List<String>> ret = new HashMap<>();
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Date d = new java.util.Date(rs.getTimestamp(1).getTime());
                 String subscriberConfigNames = rs.getString(2);
-                ret.put(d, subscriberConfigNames);
+
+                String[] toks = subscriberConfigNames.split(Pattern.quote(DELIM)); //use the Pattern.quote fn to make it NOT use regex
+                List<String> l = Arrays.asList(toks);
+                ret.put(d, l);
             }
             return ret;
 

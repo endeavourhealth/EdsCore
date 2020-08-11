@@ -9,5 +9,5 @@ public interface ServiceSubscriberAuditDalI {
 
     List<String> getLatestSubscribers(UUID serviceId) throws Exception;
     void saveSubscribers(UUID serviceId, List<String> subscriberConfigNames) throws Exception;
-    Map<Date, String> getSubscriberHistory(UUID serviceId) throws Exception;
+    Map<Date, List<String>> getSubscriberHistory(UUID serviceId) throws Exception;
 }
