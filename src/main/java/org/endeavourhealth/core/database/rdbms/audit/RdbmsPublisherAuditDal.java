@@ -7,6 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 public class RdbmsPublisherAuditDal implements ServicePublisherAuditDalI {
@@ -73,5 +75,41 @@ public class RdbmsPublisherAuditDal implements ServicePublisherAuditDalI {
             }
             conn.close();
         }
+    }
+
+    @Override
+    public Map<Date, Boolean> getDpaHistory(UUID serviceId) throws Exception {
+        Connection conn = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT dt_changed, has_dpa"
+                    + " FROM service_publisher_audit"
+                    + " WHERE service_id = ?";
+            ps = conn.prepareStatement(sql);
+
+            ps.setString(1, serviceId.toString());
+
+            Map<Date, Boolean> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Date d = new java.util.Date(rs.getTimestamp(1).getTime());
+                boolean hasDpa = rs.getBoolean(2);
+                if (rs.wasNull()) {
+                    ret.put(d, null);
+                } else {
+                    ret.put(d, Boolean.valueOf(hasDpa));
+                }
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            conn.close();
+        }
+
     }
 }

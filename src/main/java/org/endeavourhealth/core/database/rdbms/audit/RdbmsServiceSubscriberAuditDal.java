@@ -78,4 +78,35 @@ public class RdbmsServiceSubscriberAuditDal implements ServiceSubscriberAuditDal
             conn.close();
         }
     }
+
+    @Override
+    public Map<Date, String> getSubscriberHistory(UUID serviceId) throws Exception {
+
+        Connection conn = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT dt_changed, subscriber_config_names"
+                    + " FROM service_subscriber_audit"
+                    + " WHERE service_id = ?";
+            ps = conn.prepareStatement(sql);
+
+            ps.setString(1, serviceId.toString());
+
+            Map<Date, String> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Date d = new java.util.Date(rs.getTimestamp(1).getTime());
+                String subscriberConfigNames = rs.getString(2);
+                ret.put(d, subscriberConfigNames);
+            }
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            conn.close();
+        }
+    }
 }
