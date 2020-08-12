@@ -153,11 +153,8 @@ public class ProjectCache {
 
     public static void clearProjectCache(String projectId) throws Exception {
         projectMap.remove(projectId);
-
         jsonProjectMap.remove(projectId);
-
         projectApplicationPolicyMap.remove(projectId);
-
         allProjectsForAllChildRegion.clear();
         allPublishersForProjectWithSubCheck.clear();
     }
@@ -167,5 +164,8 @@ public class ProjectCache {
         jsonProjectMap.clear();
         projectApplicationPolicyMap.clear();
         allProjectsForAllChildRegion.clear();
+        allPublishersForProjectWithSubCheck.clear();
+        allProjectsForSubscriberODS.clear();
+        validDistributionProjectsForPublisher.clear();
     }
 }
