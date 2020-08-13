@@ -435,34 +435,36 @@ public class RdbmsResourceDal implements ResourceDalI {
         //for Barts and Homerton, there are resources where we have a delete and upsert in the same second,
         //due to ADT merges. So we need to potentially correct the sorting of these (since the sorting is only to the second)
         //to make sure that the history makes sense.
-        ResourceWrapper first = history.get(0);
+        //affected TPP too, so removing service-specific code
+        /*ResourceWrapper first = history.get(0);
         String serviceIdStr = first.getServiceId().toString();
         if (serviceIdStr.equalsIgnoreCase("b5a08769-cbbe-4093-93d6-b696cd1da483") //barts
                 || serviceIdStr.equalsIgnoreCase("962d6a9a-5950-47ac-9e16-ebee56f9507a") //homerton
-                || serviceIdStr.equalsIgnoreCase("3ec22b12-5b2e-4665-bc87-34072725ef21")) { //last one is for testing
+                || serviceIdStr.equalsIgnoreCase("3ec22b12-5b2e-4665-bc87-34072725ef21")) { //last one is for testing*/
 
-            Date sameDate = null;
-            int sameDateStart = -1;
+        Date sameDate = null;
+        int sameDateStart = -1;
 
-            for (int i=indexFrom; i<history.size(); i++) {
-                ResourceWrapper w = history.get(i);
-                Date d = w.getCreatedAt();
-                if (sameDate == null
-                        || !sameDate.equals(d)) {
+        for (int i=indexFrom; i<history.size(); i++) {
+            ResourceWrapper w = history.get(i);
+            Date d = w.getCreatedAt();
+            if (sameDate == null
+                    || !sameDate.equals(d)) {
 
-                    if (sameDate != null
-                            && !sameDate.equals(d)) {
-                        sortWrappersOnSameDate(history, sameDateStart, i-1, w.getResourceData() != null);
-                    }
-
-                    sameDate = d;
-                    sameDateStart = i;
+                if (sameDate != null
+                        && !sameDate.equals(d)) {
+                    sortWrappersOnSameDate(history, sameDateStart, i-1, w.getResourceData() != null);
                 }
-            }
 
-            //once we've reached the end, make sure to sort the last ones
-            sortWrappersOnSameDate(history, sameDateStart, history.size()-1, current.getResourceData() != null);
+                sameDate = d;
+                sameDateStart = i;
+            }
         }
+
+        //once we've reached the end, make sure to sort the last ones
+        sortWrappersOnSameDate(history, sameDateStart, history.size()-1, current.getResourceData() != null);
+
+        //}
 
         //now we've got them in the right order, we can move the JSON around so it looks like the old-style auditing
         for (int i = indexFrom; i < history.size(); i++) {
