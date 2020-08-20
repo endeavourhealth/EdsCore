@@ -26,6 +26,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -955,4 +957,12 @@ public class ConnectionManager {
         }
     }
 
+    public static String formatDateString(LocalDateTime d, boolean addQuotes) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        if (addQuotes) {
+            return "'" + d.format(formatter) + "'";
+        } else {
+            return d.format(formatter);
+        }
+    }
 }
