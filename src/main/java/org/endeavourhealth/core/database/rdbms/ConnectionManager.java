@@ -457,8 +457,8 @@ public class ConnectionManager {
                 configName = "hl7v2_inbound";
             } else if (dbName == Db.SftpReaderHashes) {
                 configName = "sftp_reader_hashes";
-            }
-            else {
+
+            } else {
                 throw new RuntimeException("Unknown database " + dbName);
             }
 
@@ -472,7 +472,7 @@ public class ConnectionManager {
         }
 
         if (json == null) {
-            throw new Exception("No config JSON for " + dbName + " and config " + configName);
+            throw new Exception("No config JSON record found for database " + dbName);
         }
 
         return json;
@@ -806,6 +806,7 @@ public class ConnectionManager {
             return openNonPooledConnectionNewWay(dbName, instanceName);
 
         } catch (Exception e) {
+            LOG.error("Failed to get DB connection using new way so will fall back to old way - to stop this exception, change to use new style DB config", e);
             return openNonPooledConnectionOldWay(dbName, instanceName);
         }
     }
