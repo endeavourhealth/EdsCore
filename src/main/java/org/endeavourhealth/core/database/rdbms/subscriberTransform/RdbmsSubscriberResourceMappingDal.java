@@ -169,10 +169,8 @@ public class RdbmsSubscriberResourceMappingDal implements SubscriberResourceMapp
             Map<String, SubscriberId> ret = new HashMap<>();
 
             //check both tables if necessary
+            findSubscriberIdsImpl(subscriberTable, sourceIds, ret, connection, SUBSCRIBER_ID_MAP_LARGE);
             findSubscriberIdsImpl(subscriberTable, sourceIds, ret, connection, SUBSCRIBER_ID_MAP_SMALL);
-            if (ret.size() < sourceIds.size()) {
-                findSubscriberIdsImpl(subscriberTable, sourceIds, ret, connection, SUBSCRIBER_ID_MAP_LARGE);
-            }
 
             return ret;
 
