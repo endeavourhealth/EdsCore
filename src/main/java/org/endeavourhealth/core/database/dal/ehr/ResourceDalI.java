@@ -25,6 +25,7 @@ public interface ResourceDalI {
     List<ResourceWrapper> getResourceHistory(UUID serviceId, String resourceType, UUID resourceId) throws Exception;
     List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception;
     List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception;
+    List<ResourceWrapper> getResourcesByPatientIncludingDeleted(UUID serviceId, UUID patientId) throws Exception;
 
     List<ResourceWrapper> getCurrentVersionOfResourcesForBatch(UUID serviceId, UUID batchId) throws Exception;
     Long getResourceChecksum(UUID serviceId, String resourceType, UUID resourceId) throws Exception;

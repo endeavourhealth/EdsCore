@@ -624,8 +624,17 @@ public class RdbmsResourceDal implements ResourceDalI {
         }
     }
 
+    @Override
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId) throws Exception {
+        return getResourcesByPatientImpl(serviceId, patientId, false);
+    }
 
+    @Override
+    public List<ResourceWrapper> getResourcesByPatientIncludingDeleted(UUID serviceId, UUID patientId) throws Exception {
+        return getResourcesByPatientImpl(serviceId, patientId, true);
+    }
+
+    private List<ResourceWrapper> getResourcesByPatientImpl(UUID serviceId, UUID patientId, boolean includeDeleted) throws Exception {
         Connection connection = ConnectionManager.getEhrConnection(serviceId);
         PreparedStatement ps = null;
         try (MetricsTimer timer = MetricsHelper.recordTime("database.ehr.get.getFhirResourcesForPatient")) {
@@ -646,7 +655,7 @@ public class RdbmsResourceDal implements ResourceDalI {
             }
 
             ResultSet rs = ps.executeQuery();
-            return readResourceWrappersFromResourceCurrentResultSet(rs, false);
+            return readResourceWrappersFromResourceCurrentResultSet(rs, includeDeleted);
 
         } finally {
             if (ps != null) {
@@ -654,8 +663,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             }
             connection.close();
         }
-
     }
+
 
     @Override
     public List<ResourceWrapper> getResourcesByPatient(UUID serviceId, UUID patientId, String resourceType) throws Exception {
@@ -683,6 +692,8 @@ public class RdbmsResourceDal implements ResourceDalI {
             connection.close();
         }
     }
+
+
 
 
     /**
