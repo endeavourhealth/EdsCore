@@ -179,6 +179,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String orgName = managingOrg.getName();
         String orgTypeCode = managingOrg.getTypeCode();
         String nhsNumberVerificationCode = findNhsNumberVerificationCode(fhirPatient);
+        boolean testPatient = findTestPatientFlag(fhirPatient);
 
         PreparedStatement psPatient = null;
         try {
@@ -275,6 +276,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 psPatient.setNull(col++, Types.VARCHAR);
             }
             psPatient.setTimestamp(col++, new java.sql.Timestamp(now.getTime())); //dt_creation
+            psPatient.setBoolean(col++, testPatient);
 
             psPatient.executeUpdate();
 
@@ -282,6 +284,16 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             if (psPatient != null) {
                 psPatient.close();
             }
+        }
+    }
+
+    private boolean findTestPatientFlag(Patient fhirPatient) {
+        BooleanType isTestPatient = (BooleanType) ExtensionConverter.findExtensionValue(fhirPatient, FhirExtensionUri.PATIENT_IS_TEST_PATIENT);
+        if (isTestPatient != null
+                && isTestPatient.hasValue()) {
+            return isTestPatient.getValue().booleanValue();
+        } else {
+            return false;
         }
     }
 
@@ -641,8 +653,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String sql = "INSERT INTO patient_search"
                 + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2,"
                 + " address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted, ods_code,"
-                + " organisation_name, organisation_type_code, nhs_number_verification_status, dt_created)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " organisation_name, organisation_type_code, nhs_number_verification_status, dt_created, test_patient)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " nhs_number = VALUES(nhs_number),"
                 + " forenames = VALUES(forenames),"
@@ -662,8 +674,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " ods_code = VALUES(ods_code),"
                 + " organisation_name = VALUES(organisation_name),"
                 + " organisation_type_code = VALUES(organisation_type_code),"
-                + " nhs_number_verification_status = VALUES(nhs_number_verification_status)";
+                + " nhs_number_verification_status = VALUES(nhs_number_verification_status),"
                 //note - the "update" part does not update the dt_created field - this is purposefully left out
+                + " test_patient = VALUES(test_patient)";
 
         return connection.prepareStatement(sql);
     }
