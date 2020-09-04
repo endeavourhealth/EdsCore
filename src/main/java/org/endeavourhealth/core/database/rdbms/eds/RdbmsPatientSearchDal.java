@@ -2,6 +2,7 @@ package org.endeavourhealth.core.database.rdbms.eds;
 
 import com.google.common.base.Strings;
 import org.endeavourhealth.common.fhir.*;
+import org.endeavourhealth.common.fhir.schema.NhsNumberVerificationStatus;
 import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.eds.models.PatientSearch;
@@ -177,6 +178,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
         String orgOdsCode = managingOrg.getOdsCode();
         String orgName = managingOrg.getName();
         String orgTypeCode = managingOrg.getTypeCode();
+        String nhsNumberVerificationCode = findNhsNumberVerificationCode(fhirPatient);
 
         PreparedStatement psPatient = null;
         try {
@@ -245,7 +247,7 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             } else {
                 psPatient.setNull(col++, Types.VARCHAR);
             }
-            psPatient.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
+            psPatient.setTimestamp(col++, new java.sql.Timestamp(now.getTime())); //last updated
             if (!Strings.isNullOrEmpty(registeredPracticeOdsCode)) {
                 psPatient.setString(col++, registeredPracticeOdsCode);
             } else {
@@ -267,6 +269,12 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             } else {
                 psPatient.setNull(col++, Types.VARCHAR);
             }
+            if (!Strings.isNullOrEmpty(nhsNumberVerificationCode)) {
+                psPatient.setString(col++, nhsNumberVerificationCode);
+            } else {
+                psPatient.setNull(col++, Types.VARCHAR);
+            }
+            psPatient.setTimestamp(col++, new java.sql.Timestamp(now.getTime())); //dt_creation
 
             psPatient.executeUpdate();
 
@@ -274,6 +282,15 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             if (psPatient != null) {
                 psPatient.close();
             }
+        }
+    }
+
+    private String findNhsNumberVerificationCode(Patient fhirPatient) {
+        NhsNumberVerificationStatus s = IdentifierHelper.findNhsNumberVerificationStatus(fhirPatient);
+        if (s != null) {
+            return s.getCode();
+        } else {
+            return null;
         }
     }
 
@@ -622,8 +639,10 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
     private static PreparedStatement createUpsertPatientPreparedStatement(Connection connection) throws Exception {
 
         String sql = "INSERT INTO patient_search"
-                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2, address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted, ods_code, organisation_name, organisation_type_code)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                + " (service_id, patient_id, nhs_number, forenames, surname, date_of_birth, date_of_death, address_line_1, address_line_2,"
+                + " address_line_3, city, district, postcode, gender, last_updated, registered_practice_ods_code, dt_deleted, ods_code,"
+                + " organisation_name, organisation_type_code, nhs_number_verification_status, dt_created)"
+                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                 + " ON DUPLICATE KEY UPDATE"
                 + " nhs_number = VALUES(nhs_number),"
                 + " forenames = VALUES(forenames),"
@@ -642,7 +661,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
                 + " dt_deleted = VALUES(dt_deleted),"
                 + " ods_code = VALUES(ods_code),"
                 + " organisation_name = VALUES(organisation_name),"
-                + " organisation_type_code = VALUES(organisation_type_code)";
+                + " organisation_type_code = VALUES(organisation_type_code),"
+                + " nhs_number_verification_status = VALUES(nhs_number_verification_status)";
+                //note - the "update" part does not update the dt_created field - this is purposefully left out
 
         return connection.prepareStatement(sql);
     }
