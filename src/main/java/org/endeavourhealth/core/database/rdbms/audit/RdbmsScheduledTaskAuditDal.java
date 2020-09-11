@@ -23,7 +23,7 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
     }
 
     @Override
-    public void auditTaskFailure(String taskName, Exception ex) throws Exception {
+    public void auditTaskFailure(String taskName, Throwable ex) throws Exception {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
