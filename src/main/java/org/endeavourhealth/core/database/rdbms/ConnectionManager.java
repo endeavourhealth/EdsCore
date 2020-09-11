@@ -69,7 +69,7 @@ public class ConnectionManager {
             this.hibernatePersistenceUnitName = hibernatePersistenceUnitName;
         }
 
-        public String getConfigName(String instanceName) {
+        public String getConfigNameIncludingInstance(String instanceName) {
             //validate we have an instance name when we should and don't when we shouldn't
             if (singleInstance) {
                 if (!Strings.isNullOrEmpty(instanceName)) {
@@ -87,6 +87,14 @@ public class ConnectionManager {
 
         public String getHibernatePersistenceUnitName() {
             return hibernatePersistenceUnitName;
+        }
+
+        public String getConfigName() {
+            return configName;
+        }
+
+        public boolean isSingleInstance() {
+            return singleInstance;
         }
     }
 
@@ -137,7 +145,7 @@ public class ConnectionManager {
 
     public static EntityManagerFactory getEntityManagerFactory(Db dbName, String instanceName) throws Exception {
 
-        String cacheKey = dbName.getConfigName(instanceName);
+        String cacheKey = dbName.getConfigNameIncludingInstance(instanceName);
         EntityManagerFactory factory = entityManagerFactoryMap.get(cacheKey);
 
         if (factory == null
@@ -197,7 +205,7 @@ public class ConnectionManager {
     public static DataSource getDataSourceNewWay(Db dbName, String instanceName) throws Exception {
 
 
-        String cacheKey = dbName.getConfigName(instanceName);
+        String cacheKey = dbName.getConfigNameIncludingInstance(instanceName);
         DataSource ret = dataSourceMap.get(cacheKey);
         if (ret == null) {
             synchronized (dataSourceMap) {
@@ -217,7 +225,7 @@ public class ConnectionManager {
      */
     private static DataSource createDataSourceNewWay(Db dbName, String instanceName) throws Exception {
 
-        String configName = dbName.getConfigName(instanceName);
+        String configName = dbName.getConfigNameIncludingInstance(instanceName);
 
         //adding this line to force compile-time checking for this class. Spent far too long investigating
         //why this wasn't being found when it turned out to be that it had been removed from POM.xml,
@@ -801,7 +809,7 @@ public class ConnectionManager {
         return getConnectionNonPooled(dbName, null);
     }
 
-    private static Connection getConnectionNonPooled(Db dbName, String instanceName) throws Exception {
+    public static Connection getConnectionNonPooled(Db dbName, String instanceName) throws Exception {
         try {
             return openNonPooledConnectionNewWay(dbName, instanceName);
 
@@ -815,7 +823,7 @@ public class ConnectionManager {
 
     private static Connection openNonPooledConnectionNewWay(Db dbName, String instanceName) throws Exception {
         //load the config record from the DB (including URL, username and password) into a properties map, then apply to the pool
-        String configName = dbName.getConfigName(instanceName);
+        String configName = dbName.getConfigNameIncludingInstance(instanceName);
         Properties properties = new Properties();
         populateConnectionPropertiesNewWay(configName, properties);
 

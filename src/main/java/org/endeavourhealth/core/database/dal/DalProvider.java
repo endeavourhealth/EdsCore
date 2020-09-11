@@ -632,4 +632,10 @@ public class DalProvider {
         return new RdbmsPublisherAuditDal();
     }
 
+    public static ScheduledTaskAuditDalI factoryScheduledTaskAuditDal() {
+        return new RdbmsScheduledTaskAuditDal();
+    }
+
+
+
 }
