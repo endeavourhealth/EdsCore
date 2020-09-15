@@ -11,6 +11,7 @@ public interface ScheduledTaskAuditDalI {
     void auditTaskFailure(String taskName, String[] taskParameters, String error) throws Exception;
 
     List<ScheduledTaskAudit> getLatestAudits() throws Exception;
+    List<ScheduledTaskAudit> getHistory(String applicationName, String taskName) throws Exception;
 
 
 }

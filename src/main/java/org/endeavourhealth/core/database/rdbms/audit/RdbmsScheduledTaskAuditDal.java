@@ -144,4 +144,50 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
             connection.close();
         }
     }
+
+    @Override
+    public List<ScheduledTaskAudit> getHistory(String applicationName, String taskName) throws Exception {
+
+        Connection connection = ConnectionManager.getAuditConnection();
+        PreparedStatement ps = null;
+        try {
+            //this table just stores the latest instance for an application and task name
+            String sql = "SELECT application_name, task_name, task_parameters, timestmp, host_name, success, error_message"
+                    + " FROM scheduled_task_audit_history"
+                    + " WHERE application_name = ?"
+                    + " AND task_name = ?"
+                    + " ORDER BY timestmp DESC";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, applicationName);
+            ps.setString(col++, taskName);
+
+            List<ScheduledTaskAudit> ret = new ArrayList<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+
+                col = 1;
+                ScheduledTaskAudit a = new ScheduledTaskAudit();
+                a.setApplicationName(rs.getString(col++));
+                a.setTaskName(rs.getString(col++));
+                a.setTaskParameters(rs.getString(col++));
+                a.setTimestamp(new java.util.Date(rs.getTimestamp(col++).getTime()));
+                a.setHostName(rs.getString(col++));
+                a.setSuccess(rs.getBoolean(col++));
+                a.setErrorMessage(rs.getString(col++));
+                ret.add(a);
+            }
+
+            return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+
+    }
 }
