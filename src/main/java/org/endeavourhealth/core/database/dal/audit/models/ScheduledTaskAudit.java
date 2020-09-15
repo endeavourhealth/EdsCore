@@ -6,10 +6,12 @@ public class ScheduledTaskAudit {
 
     private String applicationName;
     private String taskName;
+    private String taskParameters;
     private Date timestamp;
     private String hostName;
     private boolean success;
     private String errorMessage;
+
 
     public String getApplicationName() {
         return applicationName;
@@ -25,6 +27,14 @@ public class ScheduledTaskAudit {
 
     public void setTaskName(String taskName) {
         this.taskName = taskName;
+    }
+
+    public String getTaskParameters() {
+        return taskParameters;
+    }
+
+    public void setTaskParameters(String taskParameters) {
+        this.taskParameters = taskParameters;
     }
 
     public Date getTimestamp() {
@@ -64,6 +74,7 @@ public class ScheduledTaskAudit {
         StringBuilder sb = new StringBuilder();
         sb.append("App [" + applicationName + "], ");
         sb.append("Task [" + taskName + "], ");
+        sb.append("Params [" + taskParameters + "], ");
         sb.append("Dt [" + timestamp + "], ");
         sb.append("Host [" + hostName + "], ");
         sb.append("Success [" + success + "], ");

@@ -18,38 +18,44 @@ import java.util.List;
 public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
 
     @Override
-    public void auditTaskSuccess(String taskName) throws Exception {
-        auditImpl(taskName, true, null);
+    public void auditTaskSuccess(String taskName, String[] taskParameters) throws Exception {
+        auditImpl(taskName, taskParameters, true, null);
     }
 
     @Override
-    public void auditTaskFailure(String taskName, Throwable ex) throws Exception {
+    public void auditTaskFailure(String taskName, String[] taskParameters, Throwable ex) throws Exception {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);
         String err = sw.toString();
 
-        auditTaskFailure(taskName, err);
+        auditTaskFailure(taskName, taskParameters, err);
     }
 
     @Override
-    public void auditTaskFailure(String taskName, String error) throws Exception {
-        auditImpl(taskName, false, error);
+    public void auditTaskFailure(String taskName, String[] taskParameters, String error) throws Exception {
+        auditImpl(taskName, taskParameters, false, error);
     }
 
-    private void auditImpl(String taskName, boolean success, String error) throws Exception {
+    private void auditImpl(String taskName, String[] taskParameters, boolean success, String error) throws Exception {
 
         Date now = new Date();
+
+        String parameterStr = null;
+        if (taskParameters != null && taskParameters.length > 0) {
+            parameterStr = String.join(", ", taskParameters);
+        }
 
         Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
         try {
             //this table just stores the latest instance for an application and task name
             String sql = "INSERT INTO scheduled_task_audit_latest"
-                    + " (application_name, task_name, timestmp, host_name, success, error_message)"
+                    + " (application_name, task_name, task_parameters, timestmp, host_name, success, error_message)"
                     + " VALUES"
-                    + " (?, ?, ?, ?, ?, ?)"
+                    + " (?, ?, ?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
+                    + " task_parameters = VALUES(task_parameters),"
                     + " timestmp = VALUES(timestmp),"
                     + " host_name = VALUES(host_name),"
                     + " success = VALUES(success),"
@@ -59,6 +65,7 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
             int col = 1;
             ps.setString(col++, ConfigManager.getAppId());
             ps.setString(col++, taskName);
+            ps.setString(col++, parameterStr);
             ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
             ps.setString(col++, MetricsHelper.getHostName());
             ps.setBoolean(col++, success);
@@ -69,14 +76,15 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
 
             //could use a trigger to update the history table, but no more difficult to just do this second insert
             sql = "INSERT INTO scheduled_task_audit_history"
-                    + " (application_name, task_name, timestmp, host_name, success, error_message)"
+                    + " (application_name, task_name, task_parameters, timestmp, host_name, success, error_message)"
                     + " VALUES"
-                    + " (?, ?, ?, ?, ?, ?)";
+                    + " (?, ?, ?, ?, ?, ?, ?)";
             ps = connection.prepareStatement(sql);
 
             col = 1;
             ps.setString(col++, ConfigManager.getAppId());
             ps.setString(col++, taskName);
+            ps.setString(col++, parameterStr);
             ps.setTimestamp(col++, new java.sql.Timestamp(now.getTime()));
             ps.setString(col++, MetricsHelper.getHostName());
             ps.setBoolean(col++, success);
@@ -106,7 +114,7 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
         PreparedStatement ps = null;
         try {
             //this table just stores the latest instance for an application and task name
-            String sql = "SELECT application_name, task_name, timestmp, host_name, success, error_message"
+            String sql = "SELECT application_name, task_name, task_parameters, timestmp, host_name, success, error_message"
                     + " FROM scheduled_task_audit_latest";
             ps = connection.prepareStatement(sql);
 
@@ -119,6 +127,7 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
                 ScheduledTaskAudit a = new ScheduledTaskAudit();
                 a.setApplicationName(rs.getString(col++));
                 a.setTaskName(rs.getString(col++));
+                a.setTaskParameters(rs.getString(col++));
                 a.setTimestamp(new java.util.Date(rs.getTimestamp(col++).getTime()));
                 a.setHostName(rs.getString(col++));
                 a.setSuccess(rs.getBoolean(col++));
