@@ -282,8 +282,6 @@
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseOrganisationIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterprisePersonIdMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterprisePersonUpdateHistory</class>
-        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPseudoIdMap</class>
-        <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsSubscriberPseudoId</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsEnterpriseInstanceMap</class>
         <class>org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsExchangeBatchExtraResources</class>
         <properties>

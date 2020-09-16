@@ -1,19 +1,16 @@
 package org.endeavourhealth.core.database.rdbms.subscriberTransform;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.endeavourhealth.core.database.dal.subscriberTransform.PseudoIdDalI;
+import org.endeavourhealth.core.database.dal.subscriberTransform.models.PseudoIdAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsPseudoIdMap;
-import org.endeavourhealth.core.database.rdbms.subscriberTransform.models.RdbmsSubscriberPseudoId;
-import org.hibernate.internal.SessionImpl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.UUID;
 
 public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
@@ -25,28 +22,18 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
     @Override
     public void auditPseudoId(String saltName, TreeMap<String, String> keys, String pseudoId) throws Exception {
+        PseudoIdAudit audit = new PseudoIdAudit(saltName, keys, pseudoId);
+        List<PseudoIdAudit> l = new ArrayList<>();
+        l.add(audit);
+        auditPseudoIds(l);
+    }
 
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode root = new ObjectNode(mapper.getNodeFactory());
+    @Override
+    public void auditPseudoIds(List<PseudoIdAudit> audits) throws Exception {
 
-        List<String> values = new ArrayList<>();
-        Set set = keys.entrySet();
-        Iterator i = set.iterator();
-        while(i.hasNext()) {
-            Map.Entry me = (Map.Entry)i.next();
-            String key = (String)me.getKey();
-            String val = (String)me.getValue();
-            root.put(key, val);
-        }
-        String sourceValueStr = mapper.writeValueAsString(root);
-
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
         PreparedStatement ps = null;
-
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
             String sql = "INSERT INTO pseudo_id_audit (salt_key_name, source_values, pseudo_id)"
                     + " VALUES (?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
@@ -54,155 +41,135 @@ public class RdbmsPseudoIdDal implements PseudoIdDalI {
 
             ps = connection.prepareStatement(sql);
 
-            entityManager.getTransaction().begin();
+            for (PseudoIdAudit audit: audits) {
 
-            int col = 1;
-            ps.setString(col++, saltName);
-            ps.setString(col++, sourceValueStr);
-            ps.setString(col++, pseudoId);
+                int col = 1;
+                ps.setString(col++, audit.getSaltName());
+                ps.setString(col++, audit.getKeysAsJson());
+                ps.setString(col++, audit.getPseudoId());
+                ps.addBatch();
+            }
 
-            ps.executeUpdate();
-
-            entityManager.getTransaction().commit();
+            ps.executeBatch();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
     @Override
     public void storePseudoIdOldWay(String patientId, String pseudoId) throws Exception {
 
-
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
+        PreparedStatement ps = null;
         try {
-            RdbmsPseudoIdMap map = findIdMapOldWay(patientId, entityManager);
-            if (map == null) {
-                map = new RdbmsPseudoIdMap();
-                map.setPatientId(patientId);
-            }
-            map.setPseudoId(pseudoId);
 
-            entityManager.getTransaction().begin();
-            entityManager.persist(map);
-            entityManager.getTransaction().commit();
+            String sql = "INSERT INTO pseudo_id_map (patient_id, pseudo_id)"
+                        + " VALUES (?, ?)"
+                        + " ON DUPLICATE KEY UPDATE"
+                        + " pseudo_id = VALUES(pseudo_id)";
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, patientId);
+            ps.setString(col++, pseudoId);
+            ps.executeUpdate();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
-            entityManager.close();
-        }
-    }
-
-    /*@Override
-    public String findPseudoIdOldWay(String patientId) throws Exception {
-
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
-
-        try {
-            RdbmsPseudoIdMap result = findIdMapOldWay(patientId, entityManager);
-
-            if (result != null) {
-                return result.getPseudoId();
-            } else {
-                return null;
+            if (ps != null) {
+                ps.close();
             }
-
-        } finally {
-            entityManager.close();
-        }
-    }*/
-
-    private RdbmsPseudoIdMap findIdMapOldWay(String patientId, EntityManager entityManager) throws Exception {
-
-        String sql = "select c"
-                + " from"
-                + " RdbmsPseudoIdMap c"
-                + " where c.patientId = :patientId";
-
-
-        Query query = entityManager.createQuery(sql, RdbmsPseudoIdMap.class)
-                .setParameter("patientId", patientId);
-
-        try {
-            return (RdbmsPseudoIdMap)query.getSingleResult();
-
-        } catch (NoResultException ex) {
-            return null;
+            connection.close();
         }
     }
-
 
     @Override
     public void saveSubscriberPseudoId(UUID patientId, long subscriberPatientId, String saltKeyName, String pseudoId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
+        PseudoIdAudit audit = new PseudoIdAudit(saltKeyName, null, pseudoId);
+        List<PseudoIdAudit> l = new ArrayList<>();
+        l.add(audit);
+        saveSubscriberPseudoIds(patientId, subscriberPatientId, l);
+    }
 
+    @Override
+    public void saveSubscriberPseudoIds(UUID patientId, long subscriberPatientId, List<PseudoIdAudit> audits) throws Exception {
+
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
+        PreparedStatement ps = null;
         try {
-            RdbmsSubscriberPseudoId map = findSubscriberPseudoId(patientId, saltKeyName, entityManager);
-            if (map == null) {
-                map = new RdbmsSubscriberPseudoId();
-                map.setPatientId(patientId.toString());
-                map.setSubscriberPatientId(subscriberPatientId);
-                map.setSaltKeyName(saltKeyName);
-            }
-            map.setPseudoId(pseudoId);
+            String sql = "INSERT INTO subscriber_pseudo_id_map (patient_id, subscriber_patient_id, salt_key_name, pseudo_id)"
+                    + " VALUES (?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " pseudo_id = VALUES(pseudo_id)";
 
-            entityManager.getTransaction().begin();
-            entityManager.persist(map);
-            entityManager.getTransaction().commit();
+            ps = connection.prepareStatement(sql);
+
+            for (PseudoIdAudit audit: audits) {
+
+                int col = 1;
+                ps.setString(col++, patientId.toString());
+                ps.setLong(col++, subscriberPatientId);
+                ps.setString(col++, audit.getSaltName());
+                ps.setString(col++, audit.getPseudoId());
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
     @Override
     public String findSubscriberPseudoId(UUID patientId, String saltKeyName) throws Exception {
-        EntityManager entityManager = ConnectionManager.getSubscriberTransformEntityManager(subscriberConfigName);
 
+        Connection connection = ConnectionManager.getSubscriberTransformConnection(subscriberConfigName);
+        PreparedStatement ps = null;
         try {
-            RdbmsSubscriberPseudoId result = findSubscriberPseudoId(patientId, saltKeyName, entityManager);
+            String sql = "SELECT pseudo_id"
+                    + " FROM subscriber_pseudo_id_map"
+                    + " WHERE patient_id = ? AND salt_key_name = ?";
 
-            if (result != null) {
-                return result.getPseudoId();
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setString(col++, patientId.toString());
+            ps.setString(col++, saltKeyName);
+
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getString(1);
             } else {
                 return null;
             }
 
         } finally {
-            entityManager.close();
-        }
-    }
-
-    private RdbmsSubscriberPseudoId findSubscriberPseudoId(UUID patientId, String saltKeyName, EntityManager entityManager) throws Exception {
-
-        String sql = "select c"
-                + " from"
-                + " RdbmsSubscriberPseudoId c"
-                + " where c.patientId = :patientId"
-                + " and c.saltKeyName = :saltKeyName";
-
-
-        Query query = entityManager.createQuery(sql, RdbmsSubscriberPseudoId.class)
-                .setParameter("patientId", patientId.toString())
-                .setParameter("saltKeyName", saltKeyName);
-
-        try {
-            return (RdbmsSubscriberPseudoId)query.getSingleResult();
-
-        } catch (NoResultException ex) {
-            return null;
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 }
