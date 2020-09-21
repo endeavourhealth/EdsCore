@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +21,7 @@ public class DeadlockHandler {
     private List<Pattern> errorMessages = new ArrayList<>();
     private int retryDelaySeconds;
     private boolean delayBackOff = false; //whether to increase the delay between attempts as the number of attempts goes up
+    private Set<String> matchedMessages = new HashSet<>();
 
     public DeadlockHandler() {
         this.attempts = 0;
@@ -88,6 +91,7 @@ public class DeadlockHandler {
         }
 
         boolean throwException = true;
+        String matchingMessage = null;
 
         //check the messages against the ones we're filtering out, making sure to check
         //nested exceptions too
@@ -99,6 +103,7 @@ public class DeadlockHandler {
                     Matcher m = p.matcher(msg);
                     if (m.matches()) {
                         throwException = false;
+                        matchingMessage = msg;
                         break;
                     }
                 }
@@ -111,7 +116,16 @@ public class DeadlockHandler {
             return false;
         }
 
-        //if it's a deadlock error, decrease our lives and let it try again
+        //if the error message has changed since we last tried (e.g. changed from one handled error message
+        //to another) then we want to reset the number of attempts
+        if (!matchedMessages.isEmpty()
+            && !matchedMessages.contains(matchingMessage)) {
+            this.attempts = 0;
+            LOG.debug("Matching error message has changed since last attempt so resetting lives [" + matchingMessage + "]");
+        }
+        this.matchedMessages.add(matchingMessage);
+
+        //if it's a matching error, decrease our lives and let it try again
         int delaySec = getNextDelaySeconds();
         LOG.error("Error [" + exc.getMessage() + "] when writing to DB - will try again in " + delaySec + "s (" + (maxAttempts-attempts) + " remaining)");
         attempts++;

@@ -146,7 +146,7 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
     }
 
     @Override
-    public List<ScheduledTaskAudit> getHistory(String applicationName, String taskName) throws Exception {
+    public List<ScheduledTaskAudit> getHistory(String applicationName, String taskName, Date dFrom, Date dTo) throws Exception {
 
         Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
@@ -156,12 +156,16 @@ public class RdbmsScheduledTaskAuditDal implements ScheduledTaskAuditDalI {
                     + " FROM scheduled_task_audit_history"
                     + " WHERE application_name = ?"
                     + " AND task_name = ?"
+                    + " AND timestmp >= ?"
+                    + " AND timestmp <= ?"
                     + " ORDER BY timestmp DESC";
             ps = connection.prepareStatement(sql);
 
             int col = 1;
             ps.setString(col++, applicationName);
             ps.setString(col++, taskName);
+            ps.setTimestamp(col++, new java.sql.Timestamp(dFrom.getTime()));
+            ps.setTimestamp(col++, new java.sql.Timestamp(dTo.getTime()));
 
             List<ScheduledTaskAudit> ret = new ArrayList<>();
 
