@@ -1,5 +1,6 @@
 package org.endeavourhealth.core.database.rdbms.audit;
 
+import com.google.common.base.Strings;
 import org.endeavourhealth.core.database.dal.audit.ServiceSubscriberAuditDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 
@@ -30,12 +31,13 @@ public class RdbmsServiceSubscriberAuditDal implements ServiceSubscriberAuditDal
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 String subscriberConfigNames = rs.getString(1);
-                String[] toks = subscriberConfigNames.split(Pattern.quote(DELIM)); //use the Pattern.quote fn to make it NOT use regex
-                return Arrays.asList(toks);
-
-            } else {
-                return null;
+                if (!Strings.isNullOrEmpty(subscriberConfigNames)) {
+                    String[] toks = subscriberConfigNames.split(Pattern.quote(DELIM)); //use the Pattern.quote fn to make it NOT use regex
+                    return new ArrayList<>(Arrays.asList(toks));
+                }
             }
+
+            return null;
 
         } finally {
             if (ps != null) {
@@ -99,9 +101,14 @@ public class RdbmsServiceSubscriberAuditDal implements ServiceSubscriberAuditDal
                 Date d = new java.util.Date(rs.getTimestamp(1).getTime());
                 String subscriberConfigNames = rs.getString(2);
 
-                String[] toks = subscriberConfigNames.split(Pattern.quote(DELIM)); //use the Pattern.quote fn to make it NOT use regex
-                List<String> l = Arrays.asList(toks);
-                ret.put(d, l);
+                if (Strings.isNullOrEmpty(subscriberConfigNames)) {
+                    ret.put(d, new ArrayList<>());
+
+                } else {
+                    String[] toks = subscriberConfigNames.split(Pattern.quote(DELIM)); //use the Pattern.quote fn to make it NOT use regex
+                    List<String> l = new ArrayList(Arrays.asList(toks));
+                    ret.put(d, l);
+                }
             }
             return ret;
 
