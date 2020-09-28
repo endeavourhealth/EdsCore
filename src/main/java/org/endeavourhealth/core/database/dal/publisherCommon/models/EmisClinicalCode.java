@@ -1,5 +1,8 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EmisClinicalCode {
 
     private long codeId;
@@ -12,7 +15,7 @@ public class EmisClinicalCode {
     private String nationalCode;
     private String nationalCodeCategory;
     private String nationalCodeDescription;
-    private Long parentCode;
+    private List<Long> parentCodes = new ArrayList<>();
     private String adjustedCode;
     private boolean isEmisCode;
 
@@ -99,12 +102,12 @@ public class EmisClinicalCode {
         this.nationalCodeDescription = nationalCodeDescription;
     }
 
-    public Long getParentCode() {
-        return parentCode;
+    public List<Long> getParentCodes() {
+        return parentCodes;
     }
 
-    public void setParentCode(Long parentCode) {
-        this.parentCode = parentCode;
+    public void setParentCodes(List<Long> parentCodes) {
+        this.parentCodes = parentCodes;
     }
 
     public String getAdjustedCode() {

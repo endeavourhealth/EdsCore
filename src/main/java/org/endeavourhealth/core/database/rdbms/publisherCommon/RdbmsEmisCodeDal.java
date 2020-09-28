@@ -52,7 +52,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                     + "ProcessingId int, "
                     + "ParentCodeId bigint, "
                     + "key_exists boolean DEFAULT FALSE, "
-                    + "CONSTRAINT pk PRIMARY KEY (CodeId), "
+                    + "CONSTRAINT pk PRIMARY KEY (CodeId, ParentCodeId), "
                     + "KEY ix_key_exists (key_exists))";
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
@@ -107,7 +107,8 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             //LOG.debug("Copying new records into target table emis_clinical_code");
             sql = "INSERT IGNORE INTO emis_clinical_code (code_id, code_type, read_term, read_code, snomed_concept_id,"
                     + " snomed_description_id, snomed_term, national_code, national_code_category,"
-                    + " national_code_description, parent_code_id, adjusted_code, is_emis_code, dt_last_updated)"
+                    //+ " national_code_description, parent_code_id, adjusted_code, is_emis_code, dt_last_updated)"
+                    + " national_code_description, adjusted_code, is_emis_code, dt_last_updated)"
                     + " SELECT s.CodeId,"
                     + " IF(s.EmisCodeCategoryDescription != '', TRIM(EmisCodeCategoryDescription), null),"
                     + " IF(s.Term != '', TRIM(s.Term), null),"
@@ -118,7 +119,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                     + " IF(s.NationalCode != '', TRIM(s.NationalCode), null),"
                     + " IF(s.NationalCodeCategory != '', TRIM(s.NationalCodeCategory), null),"
                     + " IF(s.NationalDescription != '', TRIM(s.NationalDescription), null),"
-                    + " IF(s.ParentCodeId != '', s.ParentCodeId, null),"
+                    //+ " IF(s.ParentCodeId != '', s.ParentCodeId, null),"
                     + " IF(x.AdjustedCode != '', TRIM(x.AdjustedCode), null),"
                     + " x.IsEmisCode,"
                     + " " + ConnectionManager.formatDateString(dataDate, true)
@@ -147,10 +148,34 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                     + " t.national_code = IF(s.NationalCode != '', TRIM(s.NationalCode), null),"
                     + " t.national_code_category = IF(s.NationalCodeCategory != '', TRIM(s.NationalCodeCategory), null),"
                     + " t.national_code_description = IF(s.NationalDescription != '', TRIM(s.NationalDescription), null),"
-                    + " t.parent_code_id = IF(s.ParentCodeId != '', s.ParentCodeId, null),"
+                    //+ " t.parent_code_id = IF(s.ParentCodeId != '', s.ParentCodeId, null),"
                     + " t.adjusted_code = IF(x.AdjustedCode != '', TRIM(x.AdjustedCode), null),"
                     + " t.is_emis_code = x.IsEmisCode,"
                     + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
+                    + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true);
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //insert any new codes into the hierarchy table
+            //and replace any existing ones with a new version with the latest date
+            sql = "REPLACE INTO emis_clinical_code_hiearchy (code_id, parent_code_id, dt_last_updated)"
+                    + " SELECT"
+                    + " s.CodeId,"
+                    + " s.ParentCodeId,"
+                    + " " + ConnectionManager.formatDateString(dataDate, true)
+                    + " FROM " + tempTableName + " s "
+                    + " WHERE s.ParentCodeId != ''"; //all known ones have parents, but this will stop ones without parents causing problems
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //delete any existing records from the hierarchy table in case a code has been moved
+            //since the above SQL updates the dt_last_updated for any codes in the extract, if there's any code ID
+            //in the hierarchy table with an older timestamp, then it should be deleted
+            sql = "DELETE t FROM emis_clinical_code_hiearchy t"
+                    + " INNER JOIN " + tempTableName + " s"
+                    + " ON t.code_id = s.CodeId"
                     + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true);
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
@@ -324,53 +349,62 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT code_id, code_type, read_term, read_code, snomed_concept_id,"
-                    + " snomed_description_id, snomed_term, national_code, national_code_category,"
-                    + " national_code_description, parent_code_id, adjusted_code, is_emis_code, dt_last_updated"
-                    + " FROM emis_clinical_code"
-                    + " WHERE code_id = ?";
+            String sql = "SELECT c.code_type, c.read_term, c.read_code, c.snomed_concept_id,"
+                    + " c.snomed_description_id, c.snomed_term, c.national_code, c.national_code_category,"
+                    + " c.national_code_description, c.adjusted_code, c.is_emis_code, h.parent_code_id"
+                    + " FROM emis_clinical_code c"
+                    + " LEFT OUTER JOIN emis_clinical_code_hiearchy h"
+                    + " ON h.code_id = c.code_id"
+                    + " WHERE c.code_id = ?";
             ps = connection.prepareStatement(sql);
 
             ps.setLong(1, codeId);
 
+            EmisClinicalCode ret = null;
+
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
+            while (rs.next()) {
                 int col = 1;
-                EmisClinicalCode ret = new EmisClinicalCode();
-                ret.setCodeId(rs.getLong(col++));
-                ret.setCodeType(rs.getString(col++));
-                ret.setReadTerm(rs.getString(col++));
-                ret.setReadCode(rs.getString(col++));
+
+                EmisClinicalCode c = new EmisClinicalCode();
+                c.setCodeId(codeId);
+                c.setCodeType(rs.getString(col++));
+                c.setReadTerm(rs.getString(col++));
+                c.setReadCode(rs.getString(col++));
 
                 long l = rs.getLong(col++);
                 if (!rs.wasNull()) {
-                    ret.setSnomedConceptId(l);
+                    c.setSnomedConceptId(l);
                 }
 
                 l = rs.getLong(col++);
                 if (!rs.wasNull()) {
-                    ret.setSnomedDescriptionId(l);
+                    c.setSnomedDescriptionId(l);
                 }
 
-                ret.setSnomedTerm(rs.getString(col++));
-                ret.setNationalCode(rs.getString(col++));
-                ret.setNationalCodeCategory(rs.getString(col++));
-                ret.setNationalCodeDescription(rs.getString(col++));
+                c.setSnomedTerm(rs.getString(col++));
+                c.setNationalCode(rs.getString(col++));
+                c.setNationalCodeCategory(rs.getString(col++));
+                c.setNationalCodeDescription(rs.getString(col++));
+                c.setAdjustedCode(rs.getString(col++));
+                c.setEmisCode(rs.getBoolean(col++));
 
+                //due to each code potentially having multiple parents, we may get multiple records
+                //back from the above SQL with the same details duplicated (except for the parent ID)
+                if (ret == null) {
+                    ret = c;
+                }
+
+                //add any parent codes to the object instance to be returned
                 l = rs.getLong(col++);
                 if (!rs.wasNull()) {
-                    ret.setParentCode(l);
+                    ret.getParentCodes().add(new Long(l));
                 }
 
-                ret.setAdjustedCode(rs.getString(col++));
-                ret.setEmisCode(rs.getBoolean(col++));
 
-                rs.getTimestamp(col++);
-                return ret;
-
-            } else {
-                return null;
             }
+
+            return ret;
 
         } finally {
             if (ps != null) {
@@ -380,313 +414,4 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
         }
     }
 
-    /*
-
-    @Override
-    public void saveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
-        if (mappings == null || mappings.isEmpty()) {
-            throw new IllegalArgumentException("mappings is null or empty");
-        }
-
-        DeadlockHandler h = new DeadlockHandler();
-        while (true) {
-            try {
-                trySaveCodeMappings(mappings);
-                break;
-
-
-            } catch (Exception ex) {
-                h.handleError(ex);
-            }
-        }
-
-    }
-
-    public void trySaveCodeMappings(List<EmisCsvCodeMap> mappings) throws Exception {
-        if (mappings == null || mappings.isEmpty()) {
-            throw new IllegalArgumentException("Trying to save null or empty mappings");
-        }
-
-        //ensure all mappings are meds or not
-        Boolean medication = null;
-        Map<Long, EmisCsvCodeMap> hmMappings = new HashMap<>();
-
-        for (EmisCsvCodeMap mapping : mappings) {
-            if (medication == null) {
-                medication = new Boolean(mapping.isMedication());
-            } else if (medication.booleanValue() != mapping.isMedication()) {
-                throw new Exception("Must be saving all medications or all non-medications");
-            }
-
-            hmMappings.put(new Long(mapping.getCodeId()), mapping);
-        }
-
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-        PreparedStatement psSelect = null;
-        PreparedStatement psInsert = null;
-
-        try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "SELECT code_id, dt_last_received"
-                    + " FROM emis_csv_code_map"
-                    + " WHERE medication = ?"
-                    + " AND code_id IN (";
-            for (int i = 0; i < mappings.size(); i++) {
-                if (i > 0) {
-                    sql += ", ";
-                }
-                sql += "?";
-            }
-            sql += ")";
-            psSelect = connection.prepareStatement(sql);
-
-            int col = 1;
-            psSelect.setBoolean(col++, medication.booleanValue());
-            for (EmisCsvCodeMap mapping : mappings) {
-                psSelect.setLong(col++, mapping.getCodeId());
-            }
-
-            ResultSet rs = psSelect.executeQuery();
-            while (rs.next()) {
-                col = 1;
-                long codeId = rs.getLong(col++);
-                Date dtLastReceived = null;
-                Timestamp ts = rs.getTimestamp(col++);
-                if (!rs.wasNull()) {
-                    dtLastReceived = new Date(ts.getTime());
-                }
-
-                EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
-
-                //if the one already on the DB has a date and that date is the same or
-                //later than the one we're trying to save, then SKIP the one we're saving
-                if (dtLastReceived != null
-                        && !mapping.getDtLastReceived().after(dtLastReceived)) {
-
-                    hmMappings.remove(new Long(codeId));
-                }
-            }
-
-            //if there's nothing new to save, return out
-            if (hmMappings.isEmpty()) {
-                return;
-            }
-
-            sql = "INSERT INTO emis_csv_code_map"
-                    + " (medication, code_id, code_type, read_term, read_code, snomed_concept_id, snomed_description_id, snomed_term, national_code, national_code_category, national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system)"
-                    + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-                    + " ON DUPLICATE KEY UPDATE"
-                    + " code_type = VALUES(code_type),"
-                    + " read_term = VALUES(read_term),"
-                    + " read_code = VALUES(read_code),"
-                    + " snomed_concept_id = VALUES(snomed_concept_id),"
-                    + " snomed_description_id = VALUES(snomed_description_id),"
-                    + " snomed_term = VALUES(snomed_term),"
-                    + " national_code = VALUES(national_code),"
-                    + " national_code_category = VALUES(national_code_category),"
-                    + " national_code_description = VALUES(national_code_description),"
-                    + " parent_code_id = VALUES(parent_code_id),"
-                    + " audit_json = VALUES(audit_json),"
-                    + " dt_last_received = VALUES(dt_last_received),"
-                    + " adjusted_code = VALUES(adjusted_code),"
-                    + " codeable_concept_system = VALUES(codeable_concept_system)";
-
-            psInsert = connection.prepareStatement(sql);
-
-            entityManager.getTransaction().begin();
-
-            for (Long codeId : hmMappings.keySet()) {
-                EmisCsvCodeMap mapping = hmMappings.get(new Long(codeId));
-
-                col = 1;
-                psInsert.setBoolean(col++, mapping.isMedication());
-                psInsert.setLong(col++, mapping.getCodeId());
-                if (Strings.isNullOrEmpty(mapping.getCodeType())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getCodeType());
-                }
-                if (Strings.isNullOrEmpty(mapping.getReadTerm())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getReadTerm());
-                }
-                if (Strings.isNullOrEmpty(mapping.getReadCode())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getReadCode());
-                }
-                if (mapping.getSnomedConceptId() == null) {
-                    psInsert.setNull(col++, Types.BIGINT);
-                } else {
-                    psInsert.setLong(col++, mapping.getSnomedConceptId());
-                }
-                if (mapping.getSnomedDescriptionId() == null) {
-                    psInsert.setNull(col++, Types.BIGINT);
-                } else {
-                    psInsert.setLong(col++, mapping.getSnomedDescriptionId());
-                }
-                if (Strings.isNullOrEmpty(mapping.getSnomedTerm())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getSnomedTerm());
-                }
-                if (Strings.isNullOrEmpty(mapping.getNationalCode())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getNationalCode());
-                }
-                if (Strings.isNullOrEmpty(mapping.getNationalCodeCategory())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getNationalCodeCategory());
-                }
-                if (Strings.isNullOrEmpty(mapping.getNationalCodeDescription())) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getNationalCodeDescription());
-                }
-                if (mapping.getParentCodeId() == null) {
-                    psInsert.setNull(col++, Types.BIGINT);
-                } else {
-                    psInsert.setLong(col++, mapping.getParentCodeId());
-                }
-                if (mapping.getAudit() == null) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getAudit().writeToJson());
-                }
-                if (mapping.getDtLastReceived() == null) {
-                    psInsert.setNull(col++, Types.TIMESTAMP);
-                } else {
-                    psInsert.setTimestamp(col++, new Timestamp(mapping.getDtLastReceived().getTime()));
-                }
-                if (mapping.getAdjustedCode() == null) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getAdjustedCode());
-                }
-                if (mapping.getCodeableConceptSystem() == null) {
-                    psInsert.setNull(col++, Types.VARCHAR);
-                } else {
-                    psInsert.setString(col++, mapping.getCodeableConceptSystem());
-                }
-
-                psInsert.addBatch();
-            }
-
-            psInsert.executeBatch();
-
-            entityManager.getTransaction().commit();
-
-        } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
-            throw ex;
-
-        } finally {
-            if (psSelect != null) {
-                psSelect.close();
-            }
-            if (psInsert != null) {
-                psInsert.close();
-            }
-            entityManager.close();
-        }
-    }
-
-    @Override
-    public void saveCodeMapping(EmisCsvCodeMap mapping) throws Exception {
-        if (mapping == null) {
-            throw new IllegalArgumentException("mapping is null");
-        }
-
-        List<EmisCsvCodeMap> l = new ArrayList<>();
-        l.add(mapping);
-        saveCodeMappings(l);
-    }
-
-    @Override
-    public EmisCsvCodeMap getCodeMapping(boolean medication, Long codeId) throws Exception {
-
-        EntityManager entityManager = ConnectionManager.getPublisherCommonEntityManager();
-        PreparedStatement ps = null;
-        try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
-
-            String sql = "SELECT medication, code_id, code_type, read_term, read_code, snomed_concept_id, "
-                    + "snomed_description_id, snomed_term, national_code, national_code_category, "
-                    + "national_code_description, parent_code_id, audit_json, dt_last_received, adjusted_code, codeable_concept_system "
-                    + "FROM emis_csv_code_map "
-                    + "WHERE medication = ? "
-                    + "AND code_id = ?";
-
-            ps = connection.prepareStatement(sql);
-
-            int col = 1;
-            ps.setBoolean(col++, medication);
-            ps.setLong(col++, codeId.longValue());
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                EmisCsvCodeMap ret = new EmisCsvCodeMap();
-
-                col = 1;
-                ret.setMedication(rs.getBoolean(col++));
-                ret.setCodeId(rs.getLong(col++));
-                ret.setCodeType(rs.getString(col++));
-                ret.setReadTerm(rs.getString(col++));
-                ret.setReadCode(rs.getString(col++));
-
-                //have to use isNull for this field because it returns a primitive long
-                long snomedConceptId = rs.getLong(col++);
-                if (!rs.wasNull()) {
-                    ret.setSnomedConceptId(new Long(snomedConceptId));
-                }
-
-                long snomedDescriptionId = rs.getLong(col++);
-                if (!rs.wasNull()) {
-                    ret.setSnomedDescriptionId(new Long(snomedDescriptionId));
-                }
-
-                ret.setSnomedTerm(rs.getString(col++));
-                ret.setNationalCode(rs.getString(col++));
-                ret.setNationalCodeCategory(rs.getString(col++));
-                ret.setNationalCodeDescription(rs.getString(col++));
-
-                long parentCodeId = rs.getLong(col++);
-                if (!rs.wasNull()) {
-                    ret.setParentCodeId(new Long(parentCodeId));
-                }
-
-                String auditJson = rs.getString(col++);
-                if (!rs.wasNull()) {
-                    ret.setAudit(ResourceFieldMappingAudit.readFromJson(auditJson));
-                }
-
-                Timestamp ts = rs.getTimestamp(col++);
-                if (!rs.wasNull()) {
-                    ret.setDtLastReceived(new Date(ts.getTime()));
-                }
-
-                ret.setAdjustedCode(rs.getString(col++));
-                ret.setCodeableConceptSystem(rs.getString(col++));
-
-                return ret;
-
-            } else {
-                return null;
-            }
-
-
-        } finally {
-            if (ps != null) {
-                ps.close();
-            }
-            entityManager.close();
-        }
-    }
-     */
 }
