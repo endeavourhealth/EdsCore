@@ -636,6 +636,10 @@ public class DalProvider {
         return new RdbmsScheduledTaskAuditDal();
     }
 
+    public static SimplePropertyDalI factorySimplePropertyDal() {
+        return new RdbmsSimplePropertyDal();
+    }
+
 
 
 }
