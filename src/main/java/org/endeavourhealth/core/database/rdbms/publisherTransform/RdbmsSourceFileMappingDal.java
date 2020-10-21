@@ -8,6 +8,7 @@ import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.config.ConfigManager;
 import org.endeavourhealth.common.utility.FileHelper;
+import org.endeavourhealth.common.utility.FileInfo;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFile;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileColumn;
 import org.endeavourhealth.core.database.dal.audit.models.PublishedFileRecord;
@@ -18,6 +19,7 @@ import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceF
 import org.endeavourhealth.core.database.dal.publisherTransform.models.ResourceFieldMappingAudit;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappings;
+import org.endeavourhealth.core.database.rdbms.publisherTransform.models.RdbmsResourceFieldMappingsS3;
 import org.hibernate.internal.SessionImpl;
 import org.hl7.fhir.instance.model.ResourceType;
 import org.slf4j.Logger;
@@ -25,9 +27,12 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
@@ -38,6 +43,9 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
     private final Random random = new Random(System.currentTimeMillis());
     private static Integer cachedPercentageToSendToFhirAudit = null;
     private static long cachedPercentageExpiry = -1;
+    private static String s3BucketPath = "s3://discovery-antar/"; //TODO this should be read from property file
+    //private static final FHIRAuditUtil propertyUtil = new FHIRAuditUtil();
+    //private static final String propFileName = "fhir_audit.properties";
 
 
     public List<ResourceFieldMapping> findFieldMappings(UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception {
@@ -481,8 +489,23 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
         try {
             findResourceMappingsFromDatabase(ret, entityManager, serviceId, resourceType, resourceId);
+
+            //get the mappings from  publisher_transform_a.resource_field_mappings_s3
+            findResourceMappingsFromNewDatabase(ret, entityManager, serviceId, resourceType, resourceId);
         } finally {
             entityManager.close();
+        }
+
+        //get the mappings from AWS S3
+        try {
+            try {
+                findResourceMappingsFromS3(ret, entityManager, serviceId, resourceType, resourceId);
+            } finally {
+                entityManager.close();
+            }
+
+        } catch (Exception ex) {
+            //if the DB isn't configured, we'll get an exception
         }
 
         //we always need the mappings in date order, since we only need to retrieve the most recent audit for each JSON field in the resource
@@ -515,7 +538,84 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         }
     }
 
+    private void findResourceMappingsFromNewDatabase(List<AuditWrapper> wrappers, EntityManager entityManager, UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception {
+        String sql = "select c"
+                + " from"
+                + " RdbmsResourceFieldMappingsS3 c"
+                + " where c.resourceId = :resource_id"
+                + " and c.resourceType = :resource_type";
 
+        Query query = entityManager.createQuery(sql, RdbmsResourceFieldMappingsS3.class)
+                .setParameter("resource_id", resourceId.toString())
+                .setParameter("resource_type", resourceType.toString());
+
+        List<RdbmsResourceFieldMappingsS3> dbObjs = query.getResultList();
+        for (RdbmsResourceFieldMappingsS3 dbObj: dbObjs) {
+
+            Date d = dbObj.getCreatedAt();
+            String json = dbObj.getMappingsJson();
+            ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
+            String version = dbObj.getVersion();
+
+            AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(version), d);
+            wrappers.add(wrapper);
+        }
+    }
+    /*
+     * Read all files from S3 bucket and search content
+     */
+    private void findResourceMappingsFromS3(List<AuditWrapper> wrappers, EntityManager entityManager, UUID serviceId, ResourceType resourceType, UUID resourceId) throws Exception {
+
+        //List<FileInfo> s3Files = FileHelper.listFilesInSharedStorageWithInfo(propertyUtil.getProperty(
+                //propFileName, FHIRAuditConstants.S3_PATH);
+
+        List<FileInfo> s3Files = FileHelper.listFilesInSharedStorageWithInfo(s3BucketPath);
+
+        for (FileInfo s3Info : s3Files) {
+            String s3Path = s3Info.getFilePath();
+            searchMappingRecordsInS3( wrappers, s3Path, resourceId, resourceType);
+
+        }
+    }
+
+    public void searchMappingRecordsInS3(List<AuditWrapper> wrappers, String s3Path, UUID resourceIdIn, ResourceType resourceTypeIn) throws IOException {
+        try {
+            LOG.info("searchMappingRecordsInS3 s3Path " + s3Path);
+            InputStreamReader reader = FileHelper.readFileReaderFromSharedStorage(s3Path);
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader());
+
+            String serviceId = null;
+            Date d = null;
+            String json = null;
+            String version = null;
+            StringBuffer sb = new StringBuffer();
+            Iterator<CSVRecord> iterator = csvParser.iterator();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String resourceId = resourceIdIn != null ? resourceIdIn.toString() : "";
+            String resourceType = resourceTypeIn != null ? resourceTypeIn.toString() : "";
+            LOG.info("Search parameters: resourceId " + resourceId + " resourceType " + resourceType);
+            // CSV header service_id,resource_id,resource_type,version,created_at,mappings_json
+            while (iterator.hasNext()) {
+                CSVRecord record = iterator.next();
+                if (record.toString().contains(resourceId) || record.toString().contains(resourceType)) {
+                    serviceId = record.get(0); //service_id
+                    version = record.get(3); //version
+                    d = sdf.parse(record.get(4)); //createdAt
+                    if (record != null && record.size() >= 5) {
+                        for (int i = 5; i < record.size(); i++) {
+                            sb.append(record.get(i));
+                        }
+                    }
+                    json = sb.toString();
+                    ResourceFieldMappingAudit audit = ResourceFieldMappingAudit.readFromJson(json);
+                    AuditWrapper wrapper = new AuditWrapper(audit, UUID.fromString(version), d);
+                    wrappers.add(wrapper);
+                }
+            }
+        } catch (Exception e) {
+            LOG.error(" Error " + e.getMessage());
+        }
+    }
     /*private Map<Long, RdbmsSourceFileRecord> findOldStyleSourceFileRecords(UUID serviceId, Set<Long> oldStyleRecordAuditIds) throws Exception {
 
         EntityManager entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
@@ -713,7 +813,7 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
         saveResourceMappingsToDatabase(audits, true);
     }
 
-    private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, boolean useFhirAuditDb) throws Exception {
+    private void saveResourceMappingsToDatabaseOld(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, boolean useFhirAuditDb) throws Exception {
 
         UUID serviceId = null;
         for (ResourceWrapper wrapper : audits.keySet()) {
@@ -752,6 +852,73 @@ public class RdbmsSourceFileMappingDal implements SourceFileMappingDalI {
 
                 int col = 1;
                 ps.setString(col++, wrapper.getResourceId().toString());
+                ps.setString(col++, wrapper.getResourceType());
+                ps.setTimestamp(col++, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
+                ps.setString(col++, wrapper.getVersion().toString());
+                ps.setString(col++, mappingJson);
+
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+
+            entityManager.getTransaction().commit();
+
+        } catch (Exception ex) {
+            entityManager.getTransaction().rollback();
+            throw ex;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    private void saveResourceMappingsToDatabase(Map<ResourceWrapper, ResourceFieldMappingAudit> audits, boolean useFhirAuditDb) throws Exception {
+
+        UUID serviceId = null;
+        for (ResourceWrapper wrapper : audits.keySet()) {
+            if (serviceId == null) {
+                serviceId = wrapper.getServiceId();
+            } else if (!serviceId.equals(wrapper.getServiceId())) {
+                throw new IllegalArgumentException("Can't save audits for multiple services at once");
+            }
+        }
+        // Changes to write audit mappings to new table publisher_transform_a.resource_field_mappings_s3
+        EntityManager entityManager = null;
+        entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+
+  /*      if (useFhirAuditDb) {
+            entityManager = ConnectionManager.getFhirAuditEntityManager();
+        } else {
+            entityManager = ConnectionManager.getPublisherTransformEntityManager(serviceId);
+        }
+*/
+        SessionImpl session = (SessionImpl) entityManager.getDelegate();
+        Connection connection = session.connection();
+
+        PreparedStatement ps = null;
+        try {
+
+            //String sql = "INSERT INTO resource_field_mappings"
+            String sql = "INSERT INTO resource_field_mappings_s3"
+                    + " (resource_id, service_id, resource_type, created_at, version, mappings_json)"
+                    + " VALUES (?, ?, ?, ?, ?, ?)";
+            //note this entity is always inserted, never updated, so there's no handler for errors with an insert, like resource_current
+
+            ps = connection.prepareStatement(sql);
+
+            entityManager.getTransaction().begin();
+
+            for (ResourceWrapper wrapper : audits.keySet()) {
+                ResourceFieldMappingAudit audit = audits.get(wrapper);
+                String mappingJson = audit.writeToJson();
+
+                int col = 1;
+                ps.setString(col++, wrapper.getResourceId().toString());
+                ps.setString(col++, wrapper.getServiceId().toString());
                 ps.setString(col++, wrapper.getResourceType());
                 ps.setTimestamp(col++, new java.sql.Timestamp(wrapper.getCreatedAt().getTime()));
                 ps.setString(col++, wrapper.getVersion().toString());
