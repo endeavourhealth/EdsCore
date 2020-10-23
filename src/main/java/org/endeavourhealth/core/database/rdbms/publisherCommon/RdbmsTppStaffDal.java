@@ -156,6 +156,8 @@ public class RdbmsTppStaffDal implements TppStaffDalI {
         //if we get an exchange with a large update to this table, it can lock it for long enough for other apps
         //to timeout, so give them another go
         DeadlockHandler h = new DeadlockHandler();
+        h.setDelayBackOff(true);
+        h.setMaxAttempts(10);
         h.setRetryDelaySeconds(30); //give it long enough for the other thing to finish
 
         while (true) {
@@ -181,6 +183,10 @@ public class RdbmsTppStaffDal implements TppStaffDalI {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
+            Statement statement = connection.createStatement();
+            statement.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
+            statement.close();
+
             //create a temporary table to load the data into
             String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             //LOG.debug("Loading " + f + " into " + tempTableName);
@@ -202,7 +208,7 @@ public class RdbmsTppStaffDal implements TppStaffDalI {
                     + "key_exists boolean DEFAULT FALSE, "
                     + "CONSTRAINT pk PRIMARY KEY (RowIdentifier), "
                     + "KEY ix_key_exists (key_exists))";
-            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
