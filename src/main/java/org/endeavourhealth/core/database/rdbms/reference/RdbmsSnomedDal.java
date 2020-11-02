@@ -3,84 +3,117 @@ package org.endeavourhealth.core.database.rdbms.reference;
 import org.endeavourhealth.core.database.dal.reference.SnomedDalI;
 import org.endeavourhealth.core.database.dal.reference.models.SnomedLookup;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedLookup;
-import org.hibernate.internal.SessionImpl;
 
-import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.List;
-import java.util.Map;
+import java.sql.ResultSet;
+import java.util.*;
 
 public class RdbmsSnomedDal implements SnomedDalI {
 
     public SnomedLookup getSnomedLookup(String conceptId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        Set<String> s = new HashSet<>();
+        s.add(conceptId);
+        Map<String, SnomedLookup> map = getSnomedLookups(s);
+        return map.get(conceptId);
+    }
 
+    @Override
+    public Map<String, SnomedLookup> getSnomedLookups(Collection<String> conceptIds) throws Exception {
+
+        if (conceptIds == null || conceptIds.isEmpty()) {
+            return new HashMap<>();
+        }
+
+        Connection connection = ConnectionManager.getReferenceConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsSnomedLookup c"
-                    + " where c.conceptId = :concept_id";
+            String sql = "SELECT concept_id, type_id, term"
+                    + " FROM snomed_lookup"
+                    + " WHERE concept_id IN (";
+            for (int i=0; i<conceptIds.size(); i++) {
+                if (i>0) {
+                    sql += ", ";
+                }
+                sql += "?";
+            }
+            sql += ")";
 
-            Query query = entityManager.createQuery(sql, RdbmsSnomedLookup.class)
-                    .setParameter("concept_id", conceptId);
+            ps = connection.prepareStatement(sql);
 
-            try {
-                RdbmsSnomedLookup result = (RdbmsSnomedLookup) query.getSingleResult();
-                return new SnomedLookup(result);
-
-            } catch (NoResultException ex) {
-                return null;
+            int col = 1;
+            for (String conceptId: conceptIds) {
+                ps.setString(col++, conceptId);
             }
 
+            Map<String, SnomedLookup> ret = new HashMap<>();
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                col = 1;
+                SnomedLookup l = new SnomedLookup();
+                l.setConceptId(rs.getString(col++));
+                l.setTypeId(rs.getString(col++));
+                l.setTerm(rs.getString(col++));
+                ret.put(l.getConceptId(), l);
+            }
+
+            return ret;
+
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
+
+
     }
 
     public SnomedLookup getSnomedLookupForDescId(String descriptionId) throws Exception {
-        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
 
+        Connection connection = ConnectionManager.getReferenceConnection();
+        PreparedStatement ps = null;
         try {
-            String sql = "select c"
-                    + " from"
-                    + " RdbmsSnomedLookup c"
-                    + " left join RdbmsSnomedDescriptionLink l"
-                    + " on c.conceptId = l.conceptId"
-                    + " where l.descriptionId = :description_id";
+            String sql = "SELECT l.concept_id, l.type_id, l.term"
+                    + " FROM snomed_lookup l"
+                    + " INNER JOIN snomed_description_link d"
+                    + " ON l.concept_id = d.concept_id"
+                    + " WHERE d.description_id = ?";
+            ps = connection.prepareStatement(sql);
 
-            Query query = entityManager.createQuery(sql, RdbmsSnomedLookup.class)
-                    .setParameter("description_id", descriptionId);
+            ps.setString(1, descriptionId);
 
-            try {
-                RdbmsSnomedLookup result = (RdbmsSnomedLookup) query.getSingleResult();
-                return new SnomedLookup(result);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                int col = 1;
+                SnomedLookup l = new SnomedLookup();
+                l.setConceptId(rs.getString(col++));
+                l.setTypeId(rs.getString(col++));
+                l.setTerm(rs.getString(col++));
+                return l;
 
-            } catch (NoResultException ex) {
+            } else {
                 return null;
             }
 
         } finally {
-            entityManager.close();
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 
     @Override
     public void saveSnomedDescriptionToConceptMappings(Map<String, String> mappings) throws Exception {
-        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        Connection connection = ConnectionManager.getReferenceConnection();
         PreparedStatement ps = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
             String sql = "INSERT IGNORE INTO snomed_description_link "
                     + " (description_id, concept_id)"
                     + " VALUES (?, ?)";
             ps = connection.prepareStatement(sql);
-
-            entityManager.getTransaction().begin();
 
             for (String descId : mappings.keySet()) {
                 String conceptId = mappings.get(descId);
@@ -94,27 +127,25 @@ public class RdbmsSnomedDal implements SnomedDalI {
 
             ps.executeBatch();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 
     @Override
     public void saveSnomedConcepts(List<SnomedLookup> lookups) throws Exception {
-        EntityManager entityManager = ConnectionManager.getReferenceEntityManager();
+        Connection connection = ConnectionManager.getReferenceConnection();
         PreparedStatement ps = null;
         try {
-            SessionImpl session = (SessionImpl) entityManager.getDelegate();
-            Connection connection = session.connection();
             String sql = "INSERT INTO snomed_lookup "
                     + " (concept_id, type_id, term)"
                     + " VALUES (?, ?, ?)"
@@ -122,8 +153,6 @@ public class RdbmsSnomedDal implements SnomedDalI {
                     + " type_id = VALUES(type_id),"
                     + " term = VALUES(term)";
             ps = connection.prepareStatement(sql);
-
-            entityManager.getTransaction().begin();
 
             for (SnomedLookup lookup: lookups) {
 
@@ -137,17 +166,17 @@ public class RdbmsSnomedDal implements SnomedDalI {
 
             ps.executeBatch();
 
-            entityManager.getTransaction().commit();
+            connection.commit();
 
         } catch (Exception ex) {
-            entityManager.getTransaction().rollback();
+            connection.rollback();
             throw ex;
 
         } finally {
             if (ps != null) {
                 ps.close();
             }
-            entityManager.close();
+            connection.close();
         }
     }
 }

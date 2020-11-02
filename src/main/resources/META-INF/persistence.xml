@@ -253,8 +253,6 @@
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsLsoaLookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsMsoaLookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsPostcodeLookup</class>
-        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedLookup</class>
-        <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedDescriptionLink</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsOpcs4Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsIcd10Lookup</class>
         <class>org.endeavourhealth.core.database.rdbms.reference.models.RdbmsSnomedToBnfChapterLookup</class>
