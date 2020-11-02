@@ -858,13 +858,23 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
+            //below syntax does an insert, and if the insert fails, does an upsert but only if
+            //the new data_date is newer than what's on the database. Does in one transaction what would otherwise be several.
             String sql = "INSERT INTO last_data_received"
+                    + " (service_id, system_id, data_date, received_date, exchange_id)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " received_date = IF (VALUES(data_date) > data_date, VALUES(received_date), received_date),"
+                    + " exchange_id = IF (VALUES(data_date) > data_date, VALUES(exchange_id), exchange_id),"
+                    + " data_date = IF (VALUES(data_date) > data_date, VALUES(data_date), data_date)"; //the field being compared MUST be the last one updated;
+
+            /*String sql = "INSERT INTO last_data_received"
                     + " (service_id, system_id, data_date, received_date, exchange_id)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " data_date = VALUES(data_date),"
                     + " received_date = VALUES(received_date),"
-                    + " exchange_id = VALUES(exchange_id)";
+                    + " exchange_id = VALUES(exchange_id)";*/
 
             ps = connection.prepareStatement(sql);
 
@@ -947,13 +957,23 @@ public class RdbmsExchangeDal implements ExchangeDalI {
             SessionImpl session = (SessionImpl) entityManager.getDelegate();
             Connection connection = session.connection();
 
+            //below syntax does an insert, and if the insert fails, does an upsert but only if
+            //the new data_date is newer than what's on the database. Does in one transaction what would otherwise be several.
             String sql = "INSERT INTO last_data_processed"
+                    + " (service_id, system_id, data_date, processed_date, exchange_id)"
+                    + " VALUES (?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " processed_date = IF (VALUES(data_date) > data_date, VALUES(processed_date), processed_date),"
+                    + " exchange_id = IF (VALUES(data_date) > data_date, VALUES(exchange_id), exchange_id),"
+                    + " data_date = IF (VALUES(data_date) > data_date, VALUES(data_date), data_date)"; //the field being compared MUST be the last one updated
+
+            /*String sql = "INSERT INTO last_data_processed"
                     + " (service_id, system_id, data_date, processed_date, exchange_id)"
                     + " VALUES (?, ?, ?, ?, ?)"
                     + " ON DUPLICATE KEY UPDATE"
                     + " data_date = VALUES(data_date),"
                     + " processed_date = VALUES(processed_date),"
-                    + " exchange_id = VALUES(exchange_id)";
+                    + " exchange_id = VALUES(exchange_id)";*/
 
             ps = connection.prepareStatement(sql);
 
@@ -1033,9 +1053,16 @@ public class RdbmsExchangeDal implements ExchangeDalI {
         Connection connection = ConnectionManager.getAuditConnection();
         PreparedStatement ps = null;
         try {
+
+            //below syntax does an insert, and if the insert fails, does an upsert but only if
+            //the new data_date is newer than what's on the database. Does in one transaction what would otherwise be several.
             String sql = "INSERT INTO last_data_to_subscriber"
                     + " (subscriber_config_name, service_id, system_id, data_date, sent_date, exchange_id)"
-                    + " VALUES (?, ?, ?, ?, ?, ?)";
+                    + " VALUES (?, ?, ?, ?, ?, ?)"
+                    + " ON DUPLICATE KEY UPDATE"
+                    + " sent_date = IF (VALUES(data_date) > data_date, VALUES(sent_date), sent_date),"
+                    + " exchange_id = IF (VALUES(data_date) > data_date, VALUES(exchange_id), exchange_id),"
+                    + " data_date = IF (VALUES(data_date) > data_date, VALUES(data_date), data_date)"; //the field being compared MUST be the last one updated;
             ps = connection.prepareStatement(sql);
 
             int col = 1;

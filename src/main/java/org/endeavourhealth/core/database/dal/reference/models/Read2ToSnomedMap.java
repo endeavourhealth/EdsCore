@@ -1,7 +1,5 @@
 package org.endeavourhealth.core.database.dal.reference.models;
 
-import org.endeavourhealth.core.database.rdbms.reference.models.RdbmsRead2ToSnomedMap;
-
 import java.util.Date;
 
 public class Read2ToSnomedMap {
@@ -13,20 +11,13 @@ public class Read2ToSnomedMap {
     private Date effectiveDate;
     private int mapStatus;
 
-    public Read2ToSnomedMap() {}
-
-    public Read2ToSnomedMap(RdbmsRead2ToSnomedMap proxy) {
-        this.mapId = proxy.getMapId();
-        this.readCode = proxy.getReadCode();
-        this.termCode = proxy.getTermCode();
-        this.conceptId = proxy.getConceptId();
-        this.effectiveDate = proxy.getEffectiveDate();
-        this.mapStatus = proxy.getMapStatus();
+    public Read2ToSnomedMap() {
     }
 
     public String getMapId() {
         return mapId;
     }
+
     public void setMapId(String mapId) {
         this.mapId = mapId;
     }
@@ -34,6 +25,7 @@ public class Read2ToSnomedMap {
     public String getReadCode() {
         return readCode;
     }
+
     public void setReadCode(String readCode) {
         this.readCode = readCode;
     }
@@ -41,6 +33,7 @@ public class Read2ToSnomedMap {
     public String getTermCode() {
         return termCode;
     }
+
     public void setTermCode(String termCode) {
         this.termCode = termCode;
     }
@@ -48,6 +41,7 @@ public class Read2ToSnomedMap {
     public String getConceptId() {
         return conceptId;
     }
+
     public void setConceptId(String conceptId) {
         this.conceptId = conceptId;
     }
@@ -55,12 +49,27 @@ public class Read2ToSnomedMap {
     public Date getEffectiveDate() {
         return effectiveDate;
     }
-    public void setEffectiveDate(Date effectiveDate) { this.effectiveDate = effectiveDate; }
+
+    public void setEffectiveDate(Date effectiveDate) {
+        this.effectiveDate = effectiveDate;
+    }
 
     public int getMapStatus() {
         return mapStatus;
     }
+
     public void setMapStatus(int mapStatus) {
         this.mapStatus = mapStatus;
     }
+
+    @Override
+    public String toString() {
+        return "mapId = " + mapId + ", "
+                + "readCode = " + readCode + ", "
+                + "termCode = " + termCode + ", "
+                + "conceptId = " + conceptId + ", "
+                + "effectiveDate = " + effectiveDate + ", "
+                + "mapStatus = " + mapStatus;
+    }
+
 }
