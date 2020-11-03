@@ -6,6 +6,7 @@ import org.endeavourhealth.core.database.dal.publisherCommon.EmisCodeDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisClinicalCode;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisDrugCode;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
+import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,21 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
      */
     @Override
     public void updateClinicalCodeTable(String filePath, String validReadCodesFile, Date dataDate) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.setRetryDelaySeconds(30); //give it long enough for the other thing to finish
+
+        while (true) {
+            try {
+                updateClinicalCodeTableImpl(filePath, validReadCodesFile, dataDate);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    private void updateClinicalCodeTableImpl(String filePath, String validReadCodesFile, Date dataDate) throws Exception {
         long msStart = System.currentTimeMillis();
 
         //copy the file from S3 to local disk
@@ -209,6 +225,21 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
 
     @Override
     public void updateDrugCodeTable(String filePath, Date dataDate) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.setRetryDelaySeconds(30); //give it long enough for the other thing to finish
+
+        while (true) {
+            try {
+                updateDrugCodeTableImpl(filePath, dataDate);
+                break;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    private void updateDrugCodeTableImpl(String filePath, Date dataDate) throws Exception {
         long msStart = System.currentTimeMillis();
 
         //copy the file from S3 to local disk
