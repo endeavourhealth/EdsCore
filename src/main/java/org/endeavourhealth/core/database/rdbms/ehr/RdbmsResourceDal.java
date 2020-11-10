@@ -493,38 +493,70 @@ public class RdbmsResourceDal implements ResourceDalI {
             return;
         }
 
-        //if the next record has no json then it tells us the last one in this subset should be a delete
-        //and since two deletes can't be next to each other, we can then sort by alternating that
-        boolean wantDelete = !nextOneHasJson;
-
-        for (int i=sameDateEnd; i>=sameDateStart; i--) {
+        //SD-185 Vision sends two deletes for the same patient in the same file, and both end up on the DB
+        //with the same date time. So detect if our entire range is deletes and handle that differently to the existing logic
+        boolean allDeletes = true;
+        for (int i=sameDateStart; i<=sameDateEnd; i++) {
             ResourceWrapper w = history.get(i);
+            if (!w.isDeleted()) {
+                allDeletes = false;
+                break;
+            }
+        }
 
-            if (w.isDeleted() != wantDelete) {
+        if (allDeletes) {
 
-                int swapIndex = -1;
-                for (int j = i - 1; j >= sameDateStart; j--) {
-                    ResourceWrapper w2 = history.get(j);
-                    if (w2.isDeleted() == wantDelete) {
-                        swapIndex = j;
-                        break;
-                    }
+            //if they're all deletes then the first one should be the one with the JSON of the one that was present before that.
+            //So find the one with JSON and bump that to be the first one in the range.
+            LOG.trace("Got " + (range+1) + " deletes all with same datetime");
+            for (int i=sameDateStart+1; i<=sameDateEnd; i++) {
+                ResourceWrapper w = history.get(i);
+                if (w.getResourceData() != null) {
+                    history.remove(i);
+                    history.add(sameDateStart, w);
+                    LOG.trace("Moving index " + i + " to " + sameDateStart + " so delete with JSON is first");
+                    break;
                 }
-
-                if (swapIndex == -1) {
-                    //if we've not found one to swap with, something is wrong
-                    LOG.error("Failed to sort history for " + w.getResourceType() + " " + w.getResourceId() + " at index " + i + " for subset range " + sameDateStart + " to " + sameDateEnd);
-                    return;
-                }
-
-                //swap them around
-                ResourceWrapper w2 = history.get(swapIndex);
-                history.set(swapIndex, w);
-                history.set(i, w2);
             }
 
-            //the next one should be the opposite
-            wantDelete = !wantDelete;
+        } else {
+
+            //if they're not all deletes, then we should have one that's an upsert and one that's a delete
+            //and if the next record has no json then it tells us the last one in this subset should be a delete
+            //and since two deletes can't be next to each other, we can then sort by alternating that
+            LOG.trace("Got " + (range+1) + " deletes/upserts all with same datetime");
+            boolean wantDelete = !nextOneHasJson;
+
+            for (int i = sameDateEnd; i >= sameDateStart; i--) {
+                ResourceWrapper w = history.get(i);
+
+                if (w.isDeleted() != wantDelete) {
+
+                    int swapIndex = -1;
+                    for (int j = i - 1; j >= sameDateStart; j--) {
+                        ResourceWrapper w2 = history.get(j);
+                        if (w2.isDeleted() == wantDelete) {
+                            swapIndex = j;
+                            break;
+                        }
+                    }
+
+                    if (swapIndex == -1) {
+                        //if we've not found one to swap with, something is wrong
+                        LOG.error("Failed to sort history for " + w.getResourceType() + " " + w.getResourceId() + " at index " + i + " for subset range " + sameDateStart + " to " + sameDateEnd);
+                        return;
+                    }
+
+                    //swap them around
+                    ResourceWrapper w2 = history.get(swapIndex);
+                    history.set(swapIndex, w);
+                    history.set(i, w2);
+                    LOG.trace("Swapping position of " + i + " and " + swapIndex);
+                }
+
+                //the next one should be the opposite
+                wantDelete = !wantDelete;
+            }
         }
     }
 
