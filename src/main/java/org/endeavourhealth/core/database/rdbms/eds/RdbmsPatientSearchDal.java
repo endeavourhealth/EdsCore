@@ -699,6 +699,9 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
             //Vision
             s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_VISION_PATIENT_NUMBER);
 
+            //Bhrut
+            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_BHRUT_PAS_ID);
+
             //TPP
 
             //Adastra
