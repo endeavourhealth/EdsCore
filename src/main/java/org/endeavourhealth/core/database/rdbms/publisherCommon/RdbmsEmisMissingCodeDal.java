@@ -14,6 +14,33 @@ public class RdbmsEmisMissingCodeDal implements EmisMissingCodeDalI {
 
 
     @Override
+    public boolean isCurrentMissingCode(EmisMissingCodes errorCodeVals) throws Exception {
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT 1 FROM emis_missing_code_error"
+                    + " WHERE code_id = ? AND code_type = ? AND dt_fixed IS NULL";
+
+            ps = connection.prepareStatement(sql);
+
+            int col = 1;
+            ps.setLong(col++, errorCodeVals.getCodeId());
+            ps.setString(col++, errorCodeVals.getCodeType().getCodeValue());
+
+            ResultSet rs = ps.executeQuery();
+            boolean exists = rs.next();
+            return exists;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+
+    }
+
+    @Override
     public void saveMissingCodeError(EmisMissingCodes errorCodeVals) throws Exception {
 
         Connection connection = ConnectionManager.getPublisherCommonConnection();

@@ -9,6 +9,7 @@ import java.util.UUID;
 public interface EmisMissingCodeDalI {
 
     //Emis missing code
+    boolean isCurrentMissingCode(EmisMissingCodes emisMissingCodesVals) throws Exception;
     void saveMissingCodeError(EmisMissingCodes emisMissingCodesVals) throws Exception;
     Set<Long> retrieveMissingCodes(EmisCodeType emisCodeType, UUID serviceId) throws Exception;
     Set<String> retrievePatientGuidsForMissingCodes(Set<Long> emisMissingCodes, UUID serviceId) throws Exception;

@@ -683,30 +683,8 @@ public class RdbmsPatientSearchDal implements PatientSearchDalI {
 
     private static Set<String> getSearchableIdentifiers() {
         if (cachedSearchableIdentifiers == null) {
-            Set<String> s = new HashSet<>();
-
-            //common
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_NHSNUMBER);
-
-            //Cerner
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_BARTS_MRN_PATIENT_ID);
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_HOMERTON_MRN_PATIENT_ID);
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_NEWHAM_MRN_PATIENT_ID);
-
-            //Emis
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_EMIS_PATIENT_NUMBER);
-
-            //Vision
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_VISION_PATIENT_NUMBER);
-
-            //Bhrut
-            s.add(FhirIdentifierUri.IDENTIFIER_SYSTEM_BHRUT_PAS_ID);
-
-            //TPP
-
-            //Adastra
-
-            cachedSearchableIdentifiers = s;
+            Set<String> s = FhirIdentifierUri.getSearchablePatientIdentifiers();
+            cachedSearchableIdentifiers = new HashSet<>(s);
         }
         return cachedSearchableIdentifiers;
     }
