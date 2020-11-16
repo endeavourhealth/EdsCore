@@ -19,7 +19,7 @@ public class RdbmsEmisMissingCodeDal implements EmisMissingCodeDalI {
         PreparedStatement ps = null;
         try {
             String sql = "SELECT 1 FROM emis_missing_code_error"
-                    + " WHERE code_id = ? AND code_type = ? AND dt_fixed IS NULL";
+                    + " WHERE code_id = ? AND code_type = ? AND dt_fixed IS NULL LIMIT 1";
 
             ps = connection.prepareStatement(sql);
 
