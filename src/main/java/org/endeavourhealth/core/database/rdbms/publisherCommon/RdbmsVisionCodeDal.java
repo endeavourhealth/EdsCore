@@ -1,14 +1,12 @@
 package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import org.apache.commons.io.FilenameUtils;
-import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.VisionCodeDalI;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Date;
@@ -16,7 +14,7 @@ import java.util.Date;
 public class RdbmsVisionCodeDal implements VisionCodeDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsVisionCodeDal.class);
 
-    @Override
+    /*@Override
     public void updateLookupTable(String filePath, Date dataDate) throws Exception {
         DeadlockHandler h = new DeadlockHandler();
         h.setRetryDelaySeconds(60);
@@ -89,13 +87,13 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            /**
+            *//**
              read_code varchar(5) binary COMMENT 'read2 code itself',
              read_term varchar(255) null COMMENT 'term for read2 code',
              snomed_concept_id bigint COMMENT 'mapped snomed concept ID',
              is_vision_code boolean NOT NULL COMMENT 'whether true Read2 or locally added',
              dt_last_updated datetime NOT NULL,
-             */
+             *//*
 
             //update any records that previously existed, but have a changed term
             //LOG.debug("Updating existing records in target table tpp_ctv3_lookup_2");
@@ -128,6 +126,210 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
 
             //delete the temp file
             FileHelper.deleteFileFromTempDirIfNecessary(f);
+        }
+    }*/
+
+    @Override
+    public void updateRead2TermTable(String sourceFile, Date dataDate) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.setRetryDelaySeconds(60);
+        while (true) {
+            try {
+                updateRead2TermTableImpl(sourceFile, dataDate);
+                return;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    /**
+     * Loads a file of Vision Read2 codes and terms into the publisher_common DB
+     * file has headers: "Code", "Term", "UsageCount", "IsVisionCode"
+     *
+     * note: that the file being uploaded is created by the Vision transform and is on the local disk,
+     * and will be deleted as soon as this completes
+     *
+     * note 2: unlike similar tables, this table supports MULTIPLE codes having a mapping. The Vision data has several terms
+     * for many codes, so we cannot use it as a unique key. But we track the approx usage of each term, so can infer which is the preferred one.
+     */
+    private void updateRead2TermTableImpl(String filePath, Date dataDate) throws Exception {
+        long msStart = System.currentTimeMillis();
+
+        Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        try {
+            //turn on auto commit so we don't need to separately commit these large SQL operations
+            connection.setAutoCommit(true);
+
+            //create a temporary table to load the data into
+            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
+            String sql = "CREATE TABLE " + tempTableName + " ("
+                    + "Code varchar(255) binary, "
+                    + "Term varchar(255), "
+                    + "UsageCount bigint, "
+                    + "IsVisionCode boolean, "
+                    + "key_exists boolean DEFAULT FALSE, " //populated after the bulk load
+                    + "CONSTRAINT pk PRIMARY KEY (Code, Term), "
+                    + "KEY ix_key_exists (key_exists))";
+            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //bulk load temp table
+            sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
+                    + " INTO TABLE " + tempTableName
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
+                    + " LINES TERMINATED BY '\\r\\n'"
+                    + " IGNORE 1 LINES";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //work out which records already exist in the target table
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN vision_read2_code t"
+                    + " ON t.read_code = s.Code"
+                    + " AND t.read_term = s.Term" //code AND term make up the primary key
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //insert records into the target table where the staging has new records
+            sql = "INSERT IGNORE INTO vision_read2_code (read_code, read_term, is_vision_code, approx_usage, dt_last_updated)"
+                    + " SELECT Code, Term, IsVisionCode, UsageCount, " + ConnectionManager.formatDateString(dataDate, true)
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //update any records that previously existed, but with the revised usage count
+            sql = "UPDATE vision_read2_code t"
+                    + " INNER JOIN " + tempTableName + " s"
+                    + " ON t.read_code = s.Code"
+                    + " AND t.read_term = s.Term"
+                    + " SET t.approx_usage = t.approx_usage + s.UsageCount," //ADD TO the usage count
+                    + " t.is_vision_code = s.IsVisionCode,"
+                    + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
+                    + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true);
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //delete the temp table
+            //LOG.debug("Deleting temp table");
+            sql = "DROP TABLE " + tempTableName;
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            long msEnd = System.currentTimeMillis();
+            LOG.debug("Update of vision_read2_code Completed in " + ((msEnd-msStart)/1000) + "s");
+
+        } finally {
+            //MUST change this back to false
+            connection.setAutoCommit(false);
+            connection.close();
+        }
+    }
+
+    @Override
+    public void updateRead2ToSnomedMapTable(String sourceFile, Date dataDate) throws Exception {
+        DeadlockHandler h = new DeadlockHandler();
+        h.setRetryDelaySeconds(60);
+        while (true) {
+            try {
+                updateRead2ToSnomedMapTableImpl(sourceFile, dataDate);
+                return;
+
+            } catch (Exception ex) {
+                h.handleError(ex);
+            }
+        }
+    }
+
+    /**
+     * updates the Vision read2 to snomed mapping table using a file generated during the Vision transform
+     * file headers are: "Read2", "SnomedConcept", "DateLastUsed"
+     */
+    private void updateRead2ToSnomedMapTableImpl(String filePath, Date dataDate) throws Exception {
+        long msStart = System.currentTimeMillis();
+
+        Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        try {
+            //turn on auto commit so we don't need to separately commit these large SQL operations
+            connection.setAutoCommit(true);
+
+            //create a temporary table to load the data into
+            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
+            String sql = "CREATE TABLE " + tempTableName + " ("
+                    + "ReadCode varchar(255) binary, "
+                    + "SnomedConcept bigint, "
+                    + "DateLastUsed date, "
+                    + "key_exists boolean DEFAULT FALSE, " //populated after the bulk load
+                    + "CONSTRAINT pk PRIMARY KEY (ReadCode), "
+                    + "KEY ix_key_exists (key_exists))";
+            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //bulk load temp table
+            sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
+                    + " INTO TABLE " + tempTableName
+                    + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\b'" //escaping stops if going wrong if slashes are in the file
+                    + " LINES TERMINATED BY '\\r\\n'"
+                    + " IGNORE 1 LINES";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //work out which records already exist in the target table
+            sql = "UPDATE " + tempTableName + " s"
+                    + " INNER JOIN vision_read2_to_snomed_map t"
+                    + " ON t.read_code = s.ReadCode"
+                    + " SET s.key_exists = true";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //insert records into the target table where the staging has new records
+            sql = "INSERT IGNORE INTO vision_read2_to_snomed_map (read_code, snomed_concept_id, d_last_used, dt_last_updated)"
+                    + " SELECT ReadCode, SnomedConcept, DateLastUsed, " + ConnectionManager.formatDateString(dataDate, true)
+                    + " FROM " + tempTableName
+                    + " WHERE key_exists = false";
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //update any records that previously existed, but with the revised usage count
+            sql = "UPDATE vision_read2_to_snomed_map t"
+                    + " INNER JOIN " + tempTableName + " s"
+                    + " ON t.read_code = s.ReadCode"
+                    + " SET t.snomed_concept_id = s.SnomedConcept,"
+                    + " t.d_last_used = s.DateLastUsed,"
+                    + " t.dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true)
+                    + " WHERE t.dt_last_updated < " + ConnectionManager.formatDateString(dataDate, true)
+                    + " AND t.d_last_used < s.DateLastUsed"; //only update if BOTH dates are newer
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            //delete the temp table
+            //LOG.debug("Deleting temp table");
+            sql = "DROP TABLE " + tempTableName;
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+            long msEnd = System.currentTimeMillis();
+            LOG.debug("Update of vision_read2_code Completed in " + ((msEnd-msStart)/1000) + "s");
+
+        } finally {
+            //MUST change this back to false
+            connection.setAutoCommit(false);
+            connection.close();
         }
     }
 }
