@@ -4,6 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.EmisCodeDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisClinicalCode;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisClinicalCodeForIMUpdate;
 import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisDrugCode;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
@@ -16,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Date;
+import java.util.List;
 
 public class RdbmsEmisCodeDal implements EmisCodeDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisCodeDal.class);
@@ -436,6 +438,45 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             }
 
             return ret;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
+    @Override
+    public List<EmisClinicalCodeForIMUpdate> getClinicalCodesForIMUpdate() throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT read_term, read_code, snomed_concept_id,"
+                    + " is_emis_code, dt_last_updated"
+                    + " FROM emis_clinical_code";
+
+            ps = connection.prepareStatement(sql);
+            ps.executeQuery();
+            ResultSet resultSet = ps.executeQuery();
+
+            List<EmisClinicalCodeForIMUpdate> returnList = null;
+
+            while (resultSet.next()) {
+
+                EmisClinicalCodeForIMUpdate code = new EmisClinicalCodeForIMUpdate();
+
+                code.setReadTerm(resultSet.getString("read_term"));
+                code.setReadCode(resultSet.getString("read_code"));
+                code.setSnomedConceptId(resultSet.getLong("snomed_concept_id"));
+                code.setIsEmisCode(resultSet.getBoolean("is_emis_code"));
+                code.setDateLastUpdated(resultSet.getDate("dt_last_updated"));
+
+                returnList.add(code);
+            }
+
+            return returnList;
 
         } finally {
             if (ps != null) {

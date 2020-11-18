@@ -57,7 +57,8 @@ public class ConnectionManager {
         UserManager("db_user_manager", true, "UserManager"),
         DataSharingManager("db_data_sharing_manager", true, "DataSharingManager"),
         HL7v2Inbound("db_hl7v2_inbound", true, "HL7v2InboundDb"),
-        SftpReaderHashes("db_sftp_reader_hashes", true, "SftpReaderHashesDb");
+        SftpReaderHashes("db_sftp_reader_hashes", true, "SftpReaderHashesDb"),
+        InformationModel("db_information_model", true, "InformationModelDb");
 
         private String configName;
         private boolean singleInstance;
@@ -465,6 +466,8 @@ public class ConnectionManager {
                 configName = "hl7v2_inbound";
             } else if (dbName == Db.SftpReaderHashes) {
                 configName = "sftp_reader_hashes";
+            } else if (dbName == Db.InformationModel) {
+                configName = "information_model";
 
             } else {
                 throw new RuntimeException("Unknown database " + dbName);
@@ -710,12 +713,16 @@ public class ConnectionManager {
         return getEntityManager(Db.PublisherStaging, configName);
     }
 
-    public static EntityManager getDataGeneratorEntityManager () throws Exception {
+    public static EntityManager getDataGeneratorEntityManager() throws Exception {
         return getEntityManager(Db.DataGenerator);
     }
 
     public static EntityManager getKeyCloakEntityManager() throws Exception {
         return getEntityManager(Db.KeyCloak);
+    }
+
+    public static EntityManager getInformationModelEntityManager() throws Exception {
+        return getEntityManager(Db.InformationModel);
     }
 
     public static Connection getEdsConnection() throws Exception {
@@ -799,6 +806,10 @@ public class ConnectionManager {
 
     public static Connection getSftpReaderHashesConnection() throws Exception {
         return getConnection(Db.SftpReaderHashes);
+    }
+
+    public static Connection getInformationModelConnection() throws Exception {
+        return getConnection(Db.InformationModel);
     }
 
     /**
@@ -940,6 +951,10 @@ public class ConnectionManager {
 
     public static Connection getSftpReaderHashesNonPooledConnection() throws Exception {
         return getConnectionNonPooled(Db.SftpReaderHashes);
+    }
+
+    public static Connection getInformationModelNonPooledConnection() throws Exception {
+        return getConnectionNonPooled(Db.InformationModel);
     }
 
     /**

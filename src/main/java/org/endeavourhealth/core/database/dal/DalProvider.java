@@ -13,6 +13,7 @@ import org.endeavourhealth.core.database.dal.eds.PatientSearchDalI;
 import org.endeavourhealth.core.database.dal.ehr.CoreFilerDalI;
 import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
+import org.endeavourhealth.core.database.dal.informationmodel.EmisClinicalCodesIMUpdaterDalI;
 import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
@@ -33,6 +34,7 @@ import org.endeavourhealth.core.database.rdbms.eds.RdbmsPatientSearchDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsCoreFilerDal;
 import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
 import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal;
+import org.endeavourhealth.core.database.rdbms.informationmodel.RdbmsEmisClinicalCodesIMUpdaterDal;
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.*;
@@ -640,6 +642,8 @@ public class DalProvider {
         return new RdbmsSimplePropertyDal();
     }
 
-
+    public static EmisClinicalCodesIMUpdaterDalI factoryEmisClinicalCodesIMUpdaterDal() {
+        return new RdbmsEmisClinicalCodesIMUpdaterDal();
+    }
 
 }
