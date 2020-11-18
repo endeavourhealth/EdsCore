@@ -8,5 +8,4 @@ import java.util.List;
 public interface EmisClinicalCodesIMUpdaterDalI {
     void updateIMForEmisClinicalCodes(List<EmisClinicalCodeForIMUpdate> codeList) throws Exception;
 
-
 }

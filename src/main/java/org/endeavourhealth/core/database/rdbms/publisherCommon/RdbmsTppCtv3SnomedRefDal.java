@@ -3,6 +3,7 @@ package org.endeavourhealth.core.database.rdbms.publisherCommon;
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.common.utility.FileHelper;
 import org.endeavourhealth.core.database.dal.publisherCommon.TppCtv3SnomedRefDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppClinicalCodeForIMUpdate;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
@@ -10,8 +11,12 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppCtv3SnomedRefDal.class);
@@ -132,6 +137,44 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
 
             //delete the temp file
             FileHelper.deleteFileFromTempDirIfNecessary(f);
+        }
+    }
+
+    @Override
+    public List<TppClinicalCodeForIMUpdate> getClinicalCodesForIMUpdate() throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+        try {
+            String sql = "SELECT l.ctv3_term, l.ctv3_code, s.snomed_concept_id"
+                    + " FROM tpp_ctv3_lookup_2 l"
+                    + " LEFT OUTER JOIN tpp_ctv3_to_snomed s"
+                    + " ON s.ctv3_code = l.ctv3_code";
+
+            ps = connection.prepareStatement(sql);
+            ps.executeQuery();
+            ResultSet resultSet = ps.executeQuery();
+
+            List<TppClinicalCodeForIMUpdate> returnList = new ArrayList<>();
+
+            while (resultSet.next()) {
+
+                TppClinicalCodeForIMUpdate code = new TppClinicalCodeForIMUpdate();
+
+                code.setCtv3Term(resultSet.getString("ctv3_term"));
+                code.setCtv3Code(resultSet.getString("ctv3_code"));
+                code.setSnomedConceptId(resultSet.getLong("snomed_concept_id"));
+
+                returnList.add(code);
+            }
+
+            return returnList;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
         }
     }
 

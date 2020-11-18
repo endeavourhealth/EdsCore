@@ -1,56 +1,49 @@
 package org.endeavourhealth.core.database.rdbms.informationmodel;
 
-import org.endeavourhealth.core.database.dal.informationmodel.EmisClinicalCodesIMUpdaterDalI;
-import org.endeavourhealth.core.database.dal.publisherCommon.models.EmisClinicalCodeForIMUpdate;
+import org.endeavourhealth.core.database.dal.informationmodel.TppClinicalCodesIMUpdaterDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.TppClinicalCodeForIMUpdate;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 
-public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUpdaterDalI {
-    private static final Logger LOG = LoggerFactory.getLogger(RdbmsEmisClinicalCodesIMUpdaterDal.class);
+public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpdaterDalI {
+    private static final Logger LOG = LoggerFactory.getLogger(RdbmsTppClinicalCodesIMUpdaterDal.class);
 
     @Override
-    public void updateIMForEmisClinicalCodes(List<EmisClinicalCodeForIMUpdate> codeList) throws Exception {
+    public void updateIMForTppClinicalCodes(List<TppClinicalCodeForIMUpdate> codeList) throws Exception {
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
             //turn on auto commit
             connection.setAutoCommit(true);
 
-            String tempTableName = generateTempTableName("emis_clinical_codes");
+            String tempTableName = generateTempTableName("tpp_clinical_codes");
 
             String sql = "CREATE TABLE " + tempTableName + " ("
-                    + "read_term VARCHAR(500) DEFAULT NULL, "
-                    + "read_code VARCHAR(250) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL, "
-                    + "snomed_concept_id BIGINT(20) DEFAULT NULL, "
-                    + "is_emis_code TINYINT (1) NOT NULL, "
-                    + "dt_last_updated DATETIME NOT NULL)";
+                    + "ctv3_term VARCHAR(255) DEFAULT NULL, "
+                    + "ctv3_code VARCHAR(5) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL, "
+                    + "snomed_concept_id BIGINT(20) DEFAULT NULL)";
 
             Statement statement = connection.createStatement(); // one-off SQL due to table name
             statement.executeUpdate(sql);
             statement.close();
 
-            for (EmisClinicalCodeForIMUpdate code : codeList) {
+            for (TppClinicalCodeForIMUpdate code : codeList) {
 
-                String readTerm = code.getReadTerm();
-                String readCode = code.getReadCode();
+                String ctv3Term = code.getCtv3Term();
+                String ctv3Code = code.getCtv3Code();
                 Long snomedConceptId = code.getSnomedConceptId();
-                boolean isEmisCode = code.getIsEmisCode();
-                Date dateLastUpdated = code.getDateLastUpdated();
 
                 sql = "INSERT INTO " + tempTableName
                         + " SELECT "
-                        + readTerm + ", "
-                        + readCode + ", "
-                        + snomedConceptId + ", "
-                        + isEmisCode + ", "
-                        + dateLastUpdated;
+                        + ctv3Term + ", "
+                        + ctv3Code + ", "
+                        + snomedConceptId;
 
                 statement = connection.createStatement(); // one-off SQL due to table name
                 statement.executeUpdate(sql);
@@ -59,7 +52,7 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
             }
 
             /*
-            sql = "CALL emisToConceptUpdate(" + tempTableName + ")";
+            sql = "CALL tppToConceptUpdate(" + tempTableName + ")";
             statement = connection.createStatement();  // one-off SQL due to table name
             statement.executeUpdate(sql);
             statement.close();

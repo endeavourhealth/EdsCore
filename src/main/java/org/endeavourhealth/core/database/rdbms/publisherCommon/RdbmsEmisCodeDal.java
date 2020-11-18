@@ -16,6 +16,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -461,7 +462,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             ps.executeQuery();
             ResultSet resultSet = ps.executeQuery();
 
-            List<EmisClinicalCodeForIMUpdate> returnList = null;
+            List<EmisClinicalCodeForIMUpdate> returnList = new ArrayList<>();
 
             while (resultSet.next()) {
 
