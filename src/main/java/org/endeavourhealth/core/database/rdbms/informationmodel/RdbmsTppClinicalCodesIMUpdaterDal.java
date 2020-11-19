@@ -24,7 +24,7 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
 
             String tempTableName = generateTempTableName("tpp_clinical_codes");
 
-            String sql = "CREATE TABLE " + tempTableName + " ("
+            String sql = "CREATE TABLE `" + tempTableName + "` ("
                     + "ctv3_term VARCHAR(255) DEFAULT NULL, "
                     + "ctv3_code VARCHAR(5) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL, "
                     + "snomed_concept_id BIGINT(20) DEFAULT NULL)";
@@ -39,10 +39,10 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
                 String ctv3Code = code.getCtv3Code();
                 Long snomedConceptId = code.getSnomedConceptId();
 
-                sql = "INSERT INTO " + tempTableName
+                sql = "INSERT INTO `" + tempTableName + "`"
                         + " SELECT "
-                        + ctv3Term + ", "
-                        + ctv3Code + ", "
+                        + "'" + ctv3Term.replaceAll("'","''") + "', "
+                        + "'" + ctv3Code + "', "
                         + snomedConceptId;
 
                 statement = connection.createStatement(); // one-off SQL due to table name
@@ -63,7 +63,6 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
             statement.executeUpdate(sql);
             statement.close();
             */
-
 
         } finally {
             // turn off auto commit

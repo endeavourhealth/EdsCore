@@ -73,7 +73,6 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
             statement.close();
             */
 
-
         } finally {
             // turn off auto commit
             connection.setAutoCommit(false);

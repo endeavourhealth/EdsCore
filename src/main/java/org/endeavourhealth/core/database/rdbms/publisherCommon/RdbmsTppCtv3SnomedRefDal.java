@@ -149,7 +149,8 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             String sql = "SELECT l.ctv3_term, l.ctv3_code, s.snomed_concept_id"
                     + " FROM tpp_ctv3_lookup_2 l"
                     + " LEFT OUTER JOIN tpp_ctv3_to_snomed s"
-                    + " ON s.ctv3_code = l.ctv3_code";
+                    + " ON s.ctv3_code = l.ctv3_code"
+                    + " WHERE s.ctv3_code like 'Y%'";
 
             ps = connection.prepareStatement(sql);
             ps.executeQuery();
