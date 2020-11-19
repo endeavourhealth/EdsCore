@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
 
             String tempTableName = generateTempTableName("emis_clinical_codes");
 
-            String sql = "CREATE TABLE " + tempTableName + " ("
+            String sql = "CREATE TABLE `" + tempTableName + "` ("
                     + "read_term VARCHAR(500) DEFAULT NULL, "
                     + "read_code VARCHAR(250) CHARACTER SET latin1 COLLATE latin1_bin DEFAULT NULL, "
                     + "snomed_concept_id BIGINT(20) DEFAULT NULL, "
@@ -42,17 +43,18 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
                 String readCode = code.getReadCode();
                 Long snomedConceptId = code.getSnomedConceptId();
                 boolean isEmisCode = code.getIsEmisCode();
-                Date dateLastUpdated = code.getDateLastUpdated();
+                Timestamp dateLastUpdated = code.getDateLastUpdated();
 
-                sql = "INSERT INTO " + tempTableName
+                sql = "INSERT INTO `" + tempTableName + "`"
                         + " SELECT "
-                        + readTerm + ", "
-                        + readCode + ", "
-                        + snomedConceptId + ", "
-                        + isEmisCode + ", "
-                        + dateLastUpdated;
+                        + "'" + readTerm.replaceAll("'","''") + "', "
+                        + "'" + readCode + "', "
+                        + snomedConceptId + ","
+                        + isEmisCode + ","
+                        + "'" + dateLastUpdated + "'";
 
                 statement = connection.createStatement(); // one-off SQL due to table name
+                LOG.info(sql);
                 statement.executeUpdate(sql);
                 statement.close();
 

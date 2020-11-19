@@ -1,6 +1,6 @@
 package org.endeavourhealth.core.database.dal.publisherCommon.models;
 
-import java.sql.Date;
+import java.sql.Timestamp;
 
 public class EmisClinicalCodeForIMUpdate {
 
@@ -8,7 +8,7 @@ public class EmisClinicalCodeForIMUpdate {
     private String readCode;
     private Long snomedConceptId;
     private boolean isEmisCode;
-    private Date dateLastUpdated;
+    private Timestamp dateLastUpdated;
 
     public EmisClinicalCodeForIMUpdate() {
     }
@@ -45,11 +45,11 @@ public class EmisClinicalCodeForIMUpdate {
         isEmisCode = emisCode;
     }
 
-    public void setDateLastUpdated(Date dateLastUpdated) {
+    public void setDateLastUpdated(Timestamp dateLastUpdated) {
         this.dateLastUpdated = dateLastUpdated;
     }
 
-    public Date getDateLastUpdated() {
+    public Timestamp getDateLastUpdated() {
         return dateLastUpdated;
     }
 }
