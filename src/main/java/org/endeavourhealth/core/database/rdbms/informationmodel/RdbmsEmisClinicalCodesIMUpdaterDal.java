@@ -6,10 +6,7 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,9 +18,6 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
-            //turn on auto commit
-            connection.setAutoCommit(true);
-
             String tempTableName = generateTempTableName("emis_clinical_codes");
 
             String sql = "CREATE TABLE `" + tempTableName + "` ("
@@ -35,7 +29,12 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
 
             Statement statement = connection.createStatement(); // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
+
+            statement = connection.createStatement(
+                    ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            int i = 0;
 
             for (EmisClinicalCodeForIMUpdate code : codeList) {
 
@@ -48,17 +47,29 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
                 sql = "INSERT INTO `" + tempTableName + "`"
                         + " SELECT "
                         + "'" + readTerm.replaceAll("'","''") + "', "
-                        + "'" + readCode + "', "
+                        + "'" + readCode.replaceAll("'","''") + "', "
                         + snomedConceptId + ","
                         + isEmisCode + ","
                         + "'" + dateLastUpdated + "'";
 
-                statement = connection.createStatement(); // one-off SQL due to table name
-                LOG.info(sql);
-                statement.executeUpdate(sql);
-                statement.close();
+                try {
+                    i++;
+                    statement.addBatch(sql);
 
+                    if(i % 10000 == 0 ) {
+                        int[] executed = statement.executeBatch();
+                        LOG.info("Executed statements:" + executed.length);
+                        connection.commit();
+                        System.gc();
+                    }
+                } catch (SQLException e) {
+                    LOG.error("Reason: " + e.getMessage());
+                    break;
+                }
             }
+            int[] executed = statement.executeBatch();
+            LOG.info("Executed statements:" + executed.length);
+            connection.commit();
 
             /*
             sql = "CALL emisToConceptUpdate(" + tempTableName + ")";

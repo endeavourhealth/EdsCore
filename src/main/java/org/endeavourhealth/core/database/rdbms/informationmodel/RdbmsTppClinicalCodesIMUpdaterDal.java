@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
@@ -19,9 +21,6 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
-            //turn on auto commit
-            connection.setAutoCommit(true);
-
             String tempTableName = generateTempTableName("tpp_clinical_codes");
 
             String sql = "CREATE TABLE `" + tempTableName + "` ("
@@ -31,7 +30,12 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
 
             Statement statement = connection.createStatement(); // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
+
+            statement = connection.createStatement(
+                    ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            int i = 0;
 
             for (TppClinicalCodeForIMUpdate code : codeList) {
 
@@ -42,14 +46,26 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
                 sql = "INSERT INTO `" + tempTableName + "`"
                         + " SELECT "
                         + "'" + ctv3Term.replaceAll("'","''") + "', "
-                        + "'" + ctv3Code + "', "
+                        + "'" + ctv3Code.replaceAll("'","''") + "', "
                         + snomedConceptId;
 
-                statement = connection.createStatement(); // one-off SQL due to table name
-                statement.executeUpdate(sql);
-                statement.close();
-
+                try {
+                    i++;
+                    statement.addBatch(sql);
+                    if(i % 10000 == 0 ) {
+                        int[] executed = statement.executeBatch();
+                        LOG.info("Executed statements:" + executed.length);
+                        connection.commit();
+                        System.gc();
+                    }
+                } catch (SQLException e) {
+                    LOG.error("Reason: " + e.getMessage());
+                    break;
+                }
             }
+            int[] executed = statement.executeBatch();
+            LOG.info("Executed statements:" + executed.length);
+            connection.commit();
 
             /*
             sql = "CALL tppToConceptUpdate(" + tempTableName + ")";
