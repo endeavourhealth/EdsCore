@@ -2,14 +2,19 @@ package org.endeavourhealth.core.database.rdbms.publisherCommon;
 
 import org.apache.commons.io.FilenameUtils;
 import org.endeavourhealth.core.database.dal.publisherCommon.VisionCodeDalI;
+import org.endeavourhealth.core.database.dal.publisherCommon.models.VisionClinicalCodeForIMUpdate;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.DeadlockHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class RdbmsVisionCodeDal implements VisionCodeDalI {
     private static final Logger LOG = LoggerFactory.getLogger(RdbmsVisionCodeDal.class);
@@ -332,4 +337,45 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             connection.close();
         }
     }
+
+    public List<VisionClinicalCodeForIMUpdate> getClinicalCodesForIMUpdate() throws Exception {
+
+        Connection connection = ConnectionManager.getPublisherCommonConnection();
+        PreparedStatement ps = null;
+        try {
+
+            String sql = "SELECT c.read_term, c.read_code, c.is_vision_code, s.snomed_concept_id"
+                    + " FROM vision_read2_code c "
+                    + " LEFT OUTER JOIN vision_read2_to_snomed_map s"
+                    + " ON s.read_code = c.read_code"
+                    + " WHERE c.is_vision_code = 1";
+
+            ps = connection.prepareStatement(sql);
+            ps.executeQuery();
+            ResultSet resultSet = ps.executeQuery();
+
+            List<VisionClinicalCodeForIMUpdate> returnList = new ArrayList<>();
+
+            while (resultSet.next()) {
+
+                VisionClinicalCodeForIMUpdate code = new VisionClinicalCodeForIMUpdate();
+
+                code.setReadTerm(resultSet.getString("read_term"));
+                code.setReadCode(resultSet.getString("read_code"));
+                code.setSnomedConceptId(resultSet.getLong("snomed_concept_id"));
+                code.setIsVisionCode(resultSet.getBoolean("is_vision_code"));
+
+                returnList.add(code);
+            }
+
+            return returnList;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            connection.close();
+        }
+    }
+
 }

@@ -15,6 +15,7 @@ import org.endeavourhealth.core.database.dal.ehr.ResourceDalI;
 import org.endeavourhealth.core.database.dal.hl7receiver.Hl7ResourceIdDalI;
 import org.endeavourhealth.core.database.dal.informationmodel.EmisClinicalCodesIMUpdaterDalI;
 import org.endeavourhealth.core.database.dal.informationmodel.TppClinicalCodesIMUpdaterDalI;
+import org.endeavourhealth.core.database.dal.informationmodel.VisionClinicalCodesIMUpdaterDalI;
 import org.endeavourhealth.core.database.dal.jdbcreader.JDBCReaderDalI;
 import org.endeavourhealth.core.database.dal.logback.LogbackDalI;
 import org.endeavourhealth.core.database.dal.publisherCommon.*;
@@ -37,6 +38,7 @@ import org.endeavourhealth.core.database.rdbms.ehr.RdbmsResourceDal;
 import org.endeavourhealth.core.database.rdbms.hl7receiver.RdbmsHl7ResourceIdDal;
 import org.endeavourhealth.core.database.rdbms.informationmodel.RdbmsEmisClinicalCodesIMUpdaterDal;
 import org.endeavourhealth.core.database.rdbms.informationmodel.RdbmsTppClinicalCodesIMUpdaterDal;
+import org.endeavourhealth.core.database.rdbms.informationmodel.RdbmsVisionClinicalCodesIMUpdaterDal;
 import org.endeavourhealth.core.database.rdbms.jdbcreader.RdbmsJDBCReaderDal;
 import org.endeavourhealth.core.database.rdbms.logback.RdbmsLogbackDal;
 import org.endeavourhealth.core.database.rdbms.publisherCommon.*;
@@ -652,4 +654,7 @@ public class DalProvider {
         return new RdbmsTppClinicalCodesIMUpdaterDal();
     }
 
+    public static VisionClinicalCodesIMUpdaterDalI factoryVisionClinicalCodesIMUpdaterDal() {
+        return new RdbmsVisionClinicalCodesIMUpdaterDal();
+    }
 }
