@@ -2,8 +2,11 @@ package org.endeavourhealth.core.database.rdbms.datagenerator;
 
 import org.endeavourhealth.core.database.dal.datagenerator.SubscriberZipFileUUIDsDalI;
 import org.endeavourhealth.core.database.dal.datagenerator.models.RemoteFilingStatistics;
+import org.endeavourhealth.core.database.dal.datagenerator.models.RemoteFilingSubscriber;
 import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.endeavourhealth.core.database.rdbms.datagenerator.models.RdbmsSubscriberZipFileUUIDs;
+import org.hibernate.internal.SessionImpl;
+
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -12,6 +15,9 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import java.math.BigInteger;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -156,66 +162,121 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
     }
 
     @Override
-    public List<RemoteFilingStatistics> getStatistics(String timeframe) throws Exception {
+    public List<RemoteFilingSubscriber> getSubscribers() throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
+        PreparedStatement ps = null;
+        try {
+            SessionImpl session = (SessionImpl) entityManager.getDelegate();
+            Connection connection = session.connection();
+            String sql = "select subscriber_id, subscriber_live, definition "
+                    + "from subscriber_file_sender ";
+
+            ps = connection.prepareStatement(sql);
+
+            List<RemoteFilingSubscriber> subscribers = new ArrayList<>();
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int col = 1;
+
+                RemoteFilingSubscriber subscriber = new RemoteFilingSubscriber();
+                subscriber.setId(rs.getInt(col++));
+                subscriber.setIsLive(rs.getBoolean(col++));
+                subscriber.setJsonDefinition(rs.getString(col++));
+
+                subscribers.add(subscriber);
+            }
+
+            return subscribers;
+
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+            entityManager.close();
+        }
+    }
+
+    @Override
+    public List<RemoteFilingStatistics> getSubscriberStatistics(Integer subscriberId, String timeframe) throws Exception {
+
         List<RemoteFilingStatistics> stats = new ArrayList<>();
-        stats.add(getUnSentStats(timeframe));
-        stats.add(getSentStats(timeframe));
-        stats.add(getAwaitingProcessingStats(timeframe));
-        stats.add(getSuccessfullyFiledStats(timeframe));
-        stats.add(getFailedFilingStats(timeframe));
+
+        stats.add(getUnSentStats(timeframe, subscriberId));
+        stats.add(getSentStats(timeframe, subscriberId));
+        stats.add(getAwaitingProcessingStats(timeframe, subscriberId));
+        stats.add(getSuccessfullyFiledStats(timeframe, subscriberId));
+        stats.add(getFailedFilingStats(timeframe, subscriberId));
 
         return stats;
     }
 
-    private RemoteFilingStatistics getUnSentStats(String timeframe) throws Exception {
+    @Override
+    public List<RemoteFilingStatistics> getStatistics(String timeframe) throws Exception {
+        List<RemoteFilingStatistics> stats = new ArrayList<>();
+        stats.add(getUnSentStats(timeframe, null));
+        stats.add(getSentStats(timeframe, null));
+        stats.add(getAwaitingProcessingStats(timeframe, null));
+        stats.add(getSuccessfullyFiledStats(timeframe, null));
+        stats.add(getFailedFilingStats(timeframe, null));
+
+        return stats;
+    }
+
+    private RemoteFilingStatistics getUnSentStats(String timeframe, Integer subscriberId) throws Exception {
         String sql = "select 'Files awaiting sending',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.fileSent is null";
+                + " where s.subscriber_id = :subscriberId "
+                + " and s.fileSent is null ";
 
-        return executeSQL(sql, timeframe, true);
+        return executeSQL(sql, timeframe, true, subscriberId);
     }
 
-    private RemoteFilingStatistics getSentStats(String timeframe) throws Exception {
+    private RemoteFilingStatistics getSentStats(String timeframe, Integer subscriberId) throws Exception {
         String sql = "select 'Files sent',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.fileSent >= :date";
+                + " where s.subscriber_id = :subscriberId "
+                + " and s.fileSent >= :date";
 
-        return executeSQL(sql, timeframe, false);
+        return executeSQL(sql, timeframe, false, subscriberId);
     }
 
-    private RemoteFilingStatistics getAwaitingProcessingStats(String timeframe) throws Exception {
+    private RemoteFilingStatistics getAwaitingProcessingStats(String timeframe, Integer subscriberId) throws Exception {
         String sql = "select 'Awaiting processing',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.fileSent >= :date"
+                + " where s.subscriber_id = :subscriberId "
+                + " and s.fileSent >= :date"
                 + " and s.fileFilingAttempted is null";
 
-        return executeSQL(sql, timeframe, false);
+        return executeSQL(sql, timeframe, false, subscriberId);
     }
 
-    private RemoteFilingStatistics getSuccessfullyFiledStats(String timeframe) throws Exception {
+    private RemoteFilingStatistics getSuccessfullyFiledStats(String timeframe, Integer subscriberId) throws Exception {
         String sql = "select 'Successfully filed',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.fileSent >= :date"
+                + " where s.subscriber_id = :subscriberId "
+                + " and s.fileSent >= :date"
                 + " and s.fileFilingSuccess = 1";
 
-        return executeSQL(sql, timeframe, false);
+        return executeSQL(sql, timeframe, false, subscriberId);
     }
 
-    private RemoteFilingStatistics getFailedFilingStats(String timeframe) throws Exception {
+    private RemoteFilingStatistics getFailedFilingStats(String timeframe, Integer subscriberId) throws Exception {
         String sql = "select 'Failed filing',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.fileSent >= :date"
+                + " where s.subscriber_id = :subscriberId "
+                + " and s.fileSent >= :date"
                 + " and s.fileFilingSuccess = 0";
 
-        return executeSQL(sql, timeframe, false);
+        return executeSQL(sql, timeframe, false, subscriberId);
     }
 
-    private RemoteFilingStatistics executeSQL(String sql, String timeframe, Boolean ignoreDate) throws Exception {
+    private RemoteFilingStatistics executeSQL(String sql, String timeframe, Boolean ignoreDate, Integer subscriberId) throws Exception {
         EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
 
         Calendar cal = Calendar.getInstance();
@@ -233,6 +294,8 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         if (!ignoreDate) {
             query.setParameter("date", date);
         }
+
+        query.setParameter("subscriberId", subscriberId);
 
         try {
             List<Object[]> result = query.getResultList();
