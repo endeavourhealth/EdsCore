@@ -18,6 +18,7 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
+
             String tempTableName = generateTempTableName("emis_clinical_codes");
 
             String sql = "CREATE TABLE `" + tempTableName + "` ("
@@ -53,6 +54,7 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
                         + "'" + dateLastUpdated + "'";
 
                 try {
+
                     i++;
                     statement.addBatch(sql);
 
@@ -62,31 +64,32 @@ public class RdbmsEmisClinicalCodesIMUpdaterDal implements EmisClinicalCodesIMUp
                         connection.commit();
                         System.gc();
                     }
+
                 } catch (SQLException e) {
                     LOG.error("Reason: " + e.getMessage());
                     break;
                 }
             }
+
             int[] executed = statement.executeBatch();
             LOG.info("Executed statements:" + executed.length);
             connection.commit();
+            statement.close();
 
-            /*
-            sql = "CALL emisToConceptUpdate(" + tempTableName + ")";
+            sql = "CALL emisToConceptUpdate('`" + tempTableName + "`')";
             statement = connection.createStatement();  // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
 
-
-            sql = "DROP TABLE " + tempTableName;
+            sql = "DROP TABLE `" + tempTableName + "`";
             statement = connection.createStatement(); //one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
-            */
 
         } finally {
-            // turn off auto commit
-            connection.setAutoCommit(false);
+
             connection.close();
         }
     }

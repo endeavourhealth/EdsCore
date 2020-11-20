@@ -6,8 +6,7 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,8 +18,6 @@ public class RdbmsVisionClinicalCodesIMUpdaterDal implements VisionClinicalCodes
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
-            //turn on auto commit
-            connection.setAutoCommit(true);
 
             String tempTableName = generateTempTableName("vision_clinical_codes");
 
@@ -32,7 +29,12 @@ public class RdbmsVisionClinicalCodesIMUpdaterDal implements VisionClinicalCodes
 
             Statement statement = connection.createStatement(); // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
+
+            statement = connection.createStatement(
+                    ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            int i = 0;
 
             for (VisionClinicalCodeForIMUpdate code : codeList) {
 
@@ -44,7 +46,7 @@ public class RdbmsVisionClinicalCodesIMUpdaterDal implements VisionClinicalCodes
                 sql = "INSERT INTO `" + tempTableName + "`"
                         + " SELECT "
                         + "'" + readTerm.replaceAll("'","''") + "', "
-                        + "'" + readCode + "', "
+                        + "'" + readCode.replaceAll("'","''") + "', "
                         + snomedConceptId + ","
                         + isVisionCode;
 
@@ -53,24 +55,43 @@ public class RdbmsVisionClinicalCodesIMUpdaterDal implements VisionClinicalCodes
                 statement.executeUpdate(sql);
                 statement.close();
 
+                try {
+
+                    i++;
+                    statement.addBatch(sql);
+
+                    if(i % 10000 == 0 ) {
+                        int[] executed = statement.executeBatch();
+                        LOG.info("Executed statements:" + executed.length);
+                        connection.commit();
+                        System.gc();
+                    }
+
+                } catch (SQLException e) {
+                    LOG.error("Reason: " + e.getMessage());
+                    break;
+                }
             }
 
-            /*
-            sql = "CALL visionToConceptUpdate(" + tempTableName + ")";
+            int[] executed = statement.executeBatch();
+            LOG.info("Executed statements:" + executed.length);
+            connection.commit();
+            statement.close();
+
+            sql = "CALL visionToConceptUpdate('`" + tempTableName + "`')";
             statement = connection.createStatement();  // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
 
-
-            sql = "DROP TABLE " + tempTableName;
+            sql = "DROP TABLE `" + tempTableName + "`";
             statement = connection.createStatement(); //one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
-            */
 
         } finally {
-            // turn off auto commit
-            connection.setAutoCommit(false);
+
             connection.close();
         }
     }

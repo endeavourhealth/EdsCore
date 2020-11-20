@@ -6,10 +6,7 @@ import org.endeavourhealth.core.database.rdbms.ConnectionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +18,7 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
 
         Connection connection = ConnectionManager.getInformationModelConnection();
         try {
+
             String tempTableName = generateTempTableName("tpp_clinical_codes");
 
             String sql = "CREATE TABLE `" + tempTableName + "` ("
@@ -58,31 +56,32 @@ public class RdbmsTppClinicalCodesIMUpdaterDal implements TppClinicalCodesIMUpda
                         connection.commit();
                         System.gc();
                     }
+
                 } catch (SQLException e) {
                     LOG.error("Reason: " + e.getMessage());
                     break;
                 }
             }
+
             int[] executed = statement.executeBatch();
             LOG.info("Executed statements:" + executed.length);
             connection.commit();
+            statement.close();
 
-            /*
-            sql = "CALL tppToConceptUpdate(" + tempTableName + ")";
+            sql = "CALL tppToConceptUpdate('`" + tempTableName + "`')";
             statement = connection.createStatement();  // one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
 
-
-            sql = "DROP TABLE " + tempTableName;
+            sql = "DROP TABLE `" + tempTableName + "`";
             statement = connection.createStatement(); //one-off SQL due to table name
             statement.executeUpdate(sql);
+            connection.commit();
             statement.close();
-            */
 
         } finally {
-            // turn off auto commit
-            connection.setAutoCommit(false);
+
             connection.close();
         }
     }
