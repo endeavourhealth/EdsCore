@@ -227,7 +227,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         String sql = "select 'Files awaiting sending',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.subscriber_id = :subscriberId "
+                + " where s.subscriberId = :subscriberId "
                 + " and s.fileSent is null ";
 
         return executeSQL(sql, timeframe, true, subscriberId);
@@ -237,7 +237,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         String sql = "select 'Files sent',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.subscriber_id = :subscriberId "
+                + " where s.subscriberId = :subscriberId "
                 + " and s.fileSent >= :date";
 
         return executeSQL(sql, timeframe, false, subscriberId);
@@ -247,7 +247,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         String sql = "select 'Awaiting processing',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.subscriber_id = :subscriberId "
+                + " where s.subscriberId = :subscriberId "
                 + " and s.fileSent >= :date"
                 + " and s.fileFilingAttempted is null";
 
@@ -258,7 +258,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         String sql = "select 'Successfully filed',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.subscriber_id = :subscriberId "
+                + " where s.subscriberId = :subscriberId "
                 + " and s.fileSent >= :date"
                 + " and s.fileFilingSuccess = 1";
 
@@ -269,7 +269,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         String sql = "select 'Failed filing',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
-                + " where s.subscriber_id = :subscriberId "
+                + " where s.subscriberId = :subscriberId "
                 + " and s.fileSent >= :date"
                 + " and s.fileFilingSuccess = 0";
 
