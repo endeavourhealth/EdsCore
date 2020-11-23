@@ -2,8 +2,17 @@ package org.endeavourhealth.core.database.dal.datagenerator.models;
 
 public class RemoteFilingStatistics {
 
+    private Integer subscriberId;
     private String statisticsText = null;
     private String statisticsValue = null;
+
+    public Integer getSubscriberId() {
+        return subscriberId;
+    }
+
+    public void setSubscriberId(Integer subscriberId) {
+        this.subscriberId = subscriberId;
+    }
 
     public String getStatisticsText() {
         return statisticsText;

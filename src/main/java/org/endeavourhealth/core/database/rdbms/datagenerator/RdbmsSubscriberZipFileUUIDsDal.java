@@ -300,6 +300,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         try {
             List<Object[]> result = query.getResultList();
             RemoteFilingStatistics stats = new RemoteFilingStatistics();
+            stats.setSubscriberId(subscriberId);
             stats.setStatisticsText(result.get(0)[0].toString());
             stats.setStatisticsValue(result.get(0)[1].toString());
 
