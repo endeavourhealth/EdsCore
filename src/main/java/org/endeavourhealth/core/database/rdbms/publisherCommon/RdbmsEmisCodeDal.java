@@ -454,7 +454,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
         Connection connection = ConnectionManager.getPublisherCommonConnection();
         PreparedStatement ps = null;
         try {
-            String sql = "SELECT read_term, read_code, snomed_concept_id,"
+            String sql = "SELECT read_term, adjusted_code, snomed_concept_id,"
                     + " is_emis_code, dt_last_updated"
                     + " FROM emis_clinical_code "
                     + " WHERE is_emis_code = 1 ";
@@ -470,7 +470,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
                 EmisClinicalCodeForIMUpdate code = new EmisClinicalCodeForIMUpdate();
 
                 code.setReadTerm(resultSet.getString("read_term"));
-                code.setReadCode(resultSet.getString("read_code"));
+                code.setReadCode(resultSet.getString("adjusted_code"));
                 code.setSnomedConceptId(resultSet.getLong("snomed_concept_id"));
                 code.setIsEmisCode(resultSet.getBoolean("is_emis_code"));
                 code.setDateLastUpdated(resultSet.getTimestamp("dt_last_updated"));
