@@ -19,9 +19,11 @@ public interface SubscriberZipFileUUIDsDalI {
     RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(int subscriberId, String batchId, String queuedMessageId,
                                                                    String queuedMessageBody) throws Exception;
 
-    List<RemoteFilingStatistics> getStatistics(String timeframe) throws Exception;
+    List<RemoteFilingStatistics> getStatistics(String timeFrame) throws Exception;
 
-    List<RemoteFilingStatistics> getSubscriberStatistics(Integer subscriberId, String timeframe) throws Exception;
+    List<RemoteFilingStatistics> getSubscriberStatistics(Integer subscriberId, String timeFrame) throws Exception;
 
     List<RemoteFilingSubscriber> getSubscribers() throws Exception;
+
+    List<RdbmsSubscriberZipFileUUIDs> getFailedFilingUUIDEntities(String timeFrame, Integer subscriberId) throws Exception;
 }
