@@ -84,7 +84,7 @@ public class RdbmsTppMultilexLookupDal implements TppMultilexLookupDalI {
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier int, "
                     + "IDMultiLexProduct int, "
-                    + "DrugReadCode varchar(255), "
+                    + "DrugReadCode varchar(255) BINARY, "
                     + "DrugReadCodeDesc varchar(255), "
                     + "RemovedData int, "
                     + "key_exists boolean DEFAULT FALSE, "

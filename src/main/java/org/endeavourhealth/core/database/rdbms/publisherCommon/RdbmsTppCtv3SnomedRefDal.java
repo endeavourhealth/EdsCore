@@ -66,7 +66,7 @@ public class RdbmsTppCtv3SnomedRefDal implements TppCtv3SnomedRefDalI {
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "RowIdentifier varchar(20), "
                     + "IDOrganisationVisibleTo varchar(20), "
-                    + "Ctv3Code varchar(5) NOT NULL, "
+                    + "Ctv3Code varchar(5) BINARY NOT NULL, "
                     + "SnomedCode bigint(20) NOT NULL, "
                     + "dt_last_updated datetime NOT NULL, "
                     + "record_exists boolean DEFAULT FALSE, "
