@@ -66,7 +66,33 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         } finally {
             entityManager.close();
         }
+    }
 
+    public List<RdbmsSubscriberZipFileUUIDs> getPagedSubscriberZipFileUUIDsEntities(Integer subscriberId, Integer pageNumber, Integer pageSize) throws Exception {
+
+        EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
+
+        try {
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<RdbmsSubscriberZipFileUUIDs> cq = cb.createQuery(RdbmsSubscriberZipFileUUIDs.class);
+            Root<RdbmsSubscriberZipFileUUIDs> rootEntry = cq.from(RdbmsSubscriberZipFileUUIDs.class);
+            CriteriaQuery<RdbmsSubscriberZipFileUUIDs> all = cq.select(rootEntry);
+            cq.where(cb.equal(rootEntry.get("subscriberId"), subscriberId));
+            cq.orderBy(cb.asc(rootEntry.get("filingOrder")));
+            TypedQuery<RdbmsSubscriberZipFileUUIDs> allQuery = entityManager.createQuery(all);
+
+            allQuery.setFirstResult((pageNumber - 1) * pageSize);
+            allQuery.setMaxResults(pageSize);
+
+            List<RdbmsSubscriberZipFileUUIDs> ret = allQuery.getResultList();
+            return ret;
+
+        } catch (Exception ex) {
+            throw ex;
+
+        } finally {
+            entityManager.close();
+        }
     }
 
     public Long getTotalNumberOfSubscriberFiles() throws Exception {
@@ -76,6 +102,22 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         CriteriaQuery<Long> cq = cb.createQuery(Long.class);
         Root<RdbmsSubscriberZipFileUUIDs> rootEntry = cq.from(RdbmsSubscriberZipFileUUIDs.class);
 
+        cq.select((cb.countDistinct(rootEntry)));
+
+        Long ret = entityManager.createQuery(cq).getSingleResult();
+
+        entityManager.close();
+
+        return ret;
+    }
+
+    public Long getTotalNumberOfSubscriberFiles(Integer subscriberId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getDataGeneratorEntityManager();
+
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<RdbmsSubscriberZipFileUUIDs> rootEntry = cq.from(RdbmsSubscriberZipFileUUIDs.class);
+        cq.where(cb.equal(rootEntry.get("subscriberId"), subscriberId));
         cq.select((cb.countDistinct(rootEntry)));
 
         Long ret = entityManager.createQuery(cq).getSingleResult();

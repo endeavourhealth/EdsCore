@@ -12,7 +12,11 @@ public interface SubscriberZipFileUUIDsDalI {
 
     List<RdbmsSubscriberZipFileUUIDs> getPagedSubscriberZipFileUUIDsEntities(Integer pageNumber, Integer pageSize) throws Exception;
 
+    List<RdbmsSubscriberZipFileUUIDs> getPagedSubscriberZipFileUUIDsEntities(Integer subscriberId, Integer pageNumber, Integer pageSize) throws Exception;
+
     Long getTotalNumberOfSubscriberFiles() throws Exception;
+
+    Long getTotalNumberOfSubscriberFiles(Integer subscriberId) throws Exception;
 
     RdbmsSubscriberZipFileUUIDs createSubscriberZipFileUUIDsEntity(RdbmsSubscriberZipFileUUIDs rszfu) throws Exception;
 
