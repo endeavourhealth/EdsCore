@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "snomed_to_bnf_chapter_lookup")
@@ -12,6 +13,7 @@ public class RdbmsSnomedToBnfChapterLookup implements Serializable {
 
     private String snomedCode;
     private String bnfChapterCode;
+    private Date lastUpdated;
 
     public RdbmsSnomedToBnfChapterLookup() {}
 
@@ -32,5 +34,14 @@ public class RdbmsSnomedToBnfChapterLookup implements Serializable {
 
     public void setBnfChapterCode(String bnfChapterCode) {
         this.bnfChapterCode = bnfChapterCode;
+    }
+
+    @Column(name = "dt_last_updated", nullable = false)
+    public Date getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(Date lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 }
