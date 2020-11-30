@@ -126,7 +126,7 @@ public class RdbmsSnomedToBnfChapterDal implements SnomedToBnfChapterDalI {
             //bulk load temp table
             //LOAD DATA LOCAL INFILE for earlier versions of SQL
             LOG.debug("Starting bulk load into " + tempTableName);
-            sql = "LOAD DATA INFILE '" + filePath.replace("\\", "\\\\") + "'"
+            sql = "LOAD DATA LOCAL INFILE '" + filePath.replace("\\", "\\\\") + "'"
                     + " INTO TABLE " + tempTableName
                     + " FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\\\"' ESCAPED BY '\\\\'"
                     + " LINES TERMINATED BY '\\r\\n'"
