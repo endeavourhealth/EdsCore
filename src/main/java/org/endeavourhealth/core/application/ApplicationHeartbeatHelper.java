@@ -20,14 +20,15 @@ public class ApplicationHeartbeatHelper implements Runnable {
 
     private static ApplicationHeartbeatHelper instance;
 
+    private String cachedHostname = null;
     private ApplicationHeartbeatCallbackI callback = null;
     private AtomicInteger stop = new AtomicInteger();
 
-    public static void start() {
+    public static void start() throws Exception {
         start(null);
     }
 
-    public static void start(ApplicationHeartbeatCallbackI callback) {
+    public static void start(ApplicationHeartbeatCallbackI callback) throws Exception {
         if (instance != null) {
             throw new RuntimeException("ApplicationHeartbeat already started");
         }
@@ -38,7 +39,8 @@ public class ApplicationHeartbeatHelper implements Runnable {
         t.start();
     }
 
-    private ApplicationHeartbeatHelper(ApplicationHeartbeatCallbackI callback) {
+    private ApplicationHeartbeatHelper(ApplicationHeartbeatCallbackI callback) throws Exception {
+        this.cachedHostname = MetricsHelper.getHostName();
         this.callback = callback;
     }
 
@@ -75,7 +77,7 @@ public class ApplicationHeartbeatHelper implements Runnable {
                 h.setApplicationName(ConfigManager.getAppId()); //config manager is inited with app ID, so just use that
                 h.setApplicationInstanceName(ConfigManager.getAppSubId());
                 h.setTimestmp(new Date());
-                h.setHostName(MetricsHelper.getHostName());
+                h.setHostName(cachedHostname);
                 h.setMaxHeapMb(maxHeapMb);
                 h.setCurrentHeapMb(currentHeapMb);
                 h.setServerMemoryMb(serverMemoryMb);
