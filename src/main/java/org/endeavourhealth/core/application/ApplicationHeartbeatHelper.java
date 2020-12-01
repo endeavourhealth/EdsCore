@@ -48,57 +48,72 @@ public class ApplicationHeartbeatHelper implements Runnable {
     public void run() {
 
         Date dtStarted = new Date();
+        int consecutiveFailures = 0;
 
         try {
             while (!isStopped()) {
 
-                Runtime r = Runtime.getRuntime();
-                Integer maxHeapMb = new Integer((int)(r.maxMemory() / (1024L * 1024L)));
-                Integer currentHeapMb = new Integer((int)(r.totalMemory() / (1024L * 1024L)));
-                Integer serverMemoryMb = null;
-                Integer serverCpuUsagePercent = null;
-
-                //get Memory and CPU via JMX
                 try {
-                    com.sun.management.OperatingSystemMXBean b = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
-                    serverMemoryMb = new Integer((int)(b.getTotalPhysicalMemorySize() / (1024L * 1024L)));
-                    serverCpuUsagePercent = new Integer((int)(b.getSystemCpuLoad() * 100D));
+                    Runtime r = Runtime.getRuntime();
+                    Integer maxHeapMb = new Integer((int) (r.maxMemory() / (1024L * 1024L)));
+                    Integer currentHeapMb = new Integer((int) (r.totalMemory() / (1024L * 1024L)));
+                    Integer serverMemoryMb = null;
+                    Integer serverCpuUsagePercent = null;
 
-                } catch (Throwable t) {
-                    //the above will fail if run on a non-Oracle JVM, since the stuff we want is only available on their
-                    //implmentation of the SystemMX bean
+                    //get Memory and CPU via JMX
+                    try {
+                        com.sun.management.OperatingSystemMXBean b = (com.sun.management.OperatingSystemMXBean) ManagementFactory.getOperatingSystemMXBean();
+                        serverMemoryMb = new Integer((int) (b.getTotalPhysicalMemorySize() / (1024L * 1024L)));
+                        serverCpuUsagePercent = new Integer((int) (b.getSystemCpuLoad() * 100D));
+
+                    } catch (Throwable t) {
+                        //the above will fail if run on a non-Oracle JVM, since the stuff we want is only available on their
+                        //implmentation of the SystemMX bean
+                    }
+
+                    //get this fresh each time so we know if a jar has been deployed but a QR not restarted
+                    Date dtJar = findJarDateTime();
+                    //Date dtJar = null;
+
+                    ApplicationHeartbeat h = new ApplicationHeartbeat();
+                    h.setApplicationName(ConfigManager.getAppId()); //config manager is inited with app ID, so just use that
+                    h.setApplicationInstanceName(ConfigManager.getAppSubId());
+                    h.setTimestmp(new Date());
+                    h.setHostName(cachedHostname);
+                    h.setMaxHeapMb(maxHeapMb);
+                    h.setCurrentHeapMb(currentHeapMb);
+                    h.setServerMemoryMb(serverMemoryMb);
+                    h.setServerCpuUsagePercent(serverCpuUsagePercent);
+                    h.setDtStarted(dtStarted);
+                    h.setDtJar(dtJar);
+
+                    //and if we have a callback, then use it to work out if our app is "busy"
+                    if (callback != null) {
+                        callback.populateIsBusy(h);
+                        callback.populateInstanceNumber(h);
+                    }
+
+                    ApplicationHeartbeatDalI dal = DalProvider.factoryApplicationHeartbeatDal();
+                    dal.saveHeartbeat(h);
+
+                    //if we make it here, reset our failure count
+                    consecutiveFailures = 0;
+
+                } catch (Exception ex) {
+                    //SD-252 - have a few attempts before we exit the thread due to exceptions
+                    consecutiveFailures ++;
+                    if (consecutiveFailures >= 5) {
+                        LOG.error("Had " + consecutiveFailures + " with heartbeat so failing");
+                        throw ex;
+                    }
                 }
-
-                //get this fresh each time so we know if a jar has been deployed but a QR not restarted
-                Date dtJar = findJarDateTime();
-                //Date dtJar = null;
-
-                ApplicationHeartbeat h = new ApplicationHeartbeat();
-                h.setApplicationName(ConfigManager.getAppId()); //config manager is inited with app ID, so just use that
-                h.setApplicationInstanceName(ConfigManager.getAppSubId());
-                h.setTimestmp(new Date());
-                h.setHostName(cachedHostname);
-                h.setMaxHeapMb(maxHeapMb);
-                h.setCurrentHeapMb(currentHeapMb);
-                h.setServerMemoryMb(serverMemoryMb);
-                h.setServerCpuUsagePercent(serverCpuUsagePercent);
-                h.setDtStarted(dtStarted);
-                h.setDtJar(dtJar);
-
-                //and if we have a callback, then use it to work out if our app is "busy"
-                if (callback != null) {
-                    callback.populateIsBusy(h);
-                    callback.populateInstanceNumber(h);
-                }
-
-                ApplicationHeartbeatDalI dal = DalProvider.factoryApplicationHeartbeatDal();
-                dal.saveHeartbeat(h);
 
                 //sleep a minute
                 Thread.sleep(1000 * 60);
             }
-        } catch (Exception ex) {
-            LOG.error("", ex);
+
+        } catch (Exception ex2) {
+            LOG.error("", ex2);
         }
     }
 
