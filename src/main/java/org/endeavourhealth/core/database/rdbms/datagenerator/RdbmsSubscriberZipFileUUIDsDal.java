@@ -247,7 +247,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         stats.add(getUnSentStats(timeFrame, subscriberId));
         stats.add(getSentStats(timeFrame, subscriberId));
         stats.add(getAwaitingProcessingStats(timeFrame, subscriberId));
-        stats.add(getSuccessfullyFiledStats(timeFrame, subscriberId));
+        //stats.add(getSuccessfullyFiledStats(timeFrame, subscriberId));
         stats.add(getFailedFilingStats(timeFrame, subscriberId));
 
         return stats;
@@ -259,14 +259,14 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
         stats.add(getUnSentStats(timeFrame, null));
         stats.add(getSentStats(timeFrame, null));
         stats.add(getAwaitingProcessingStats(timeFrame, null));
-        stats.add(getSuccessfullyFiledStats(timeFrame, null));
+        //stats.add(getSuccessfullyFiledStats(timeFrame, null));
         stats.add(getFailedFilingStats(timeFrame, null));
 
         return stats;
     }
 
     private RemoteFilingStatistics getUnSentStats(String timeFrame, Integer subscriberId) throws Exception {
-        String sql = "select 'Files awaiting sending (total)',  count(s)"
+        String sql = "select 'File batches awaiting sending (total)',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
                 + " where s.fileSent is null";
@@ -278,7 +278,7 @@ public class RdbmsSubscriberZipFileUUIDsDal implements SubscriberZipFileUUIDsDal
     }
 
     private RemoteFilingStatistics getSentStats(String timeFrame, Integer subscriberId) throws Exception {
-        String sql = "select 'Files sent (time frame)',  count(s)"
+        String sql = "select 'Files batches sent (time frame)',  count(s)"
                 + " from"
                 + " RdbmsSubscriberZipFileUUIDs s"
                 + " where s.fileSent >= :date";
