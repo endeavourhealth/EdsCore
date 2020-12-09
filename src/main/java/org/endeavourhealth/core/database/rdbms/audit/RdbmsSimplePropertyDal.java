@@ -35,9 +35,16 @@ public class RdbmsSimplePropertyDal implements SimplePropertyDalI {
         PreparedStatement ps = null;
         try {
             if (propertyValue != null) {
-                String sql = "REPLACE INTO simple_property"
+                //changed SQL because replace into actually does a DELETE then INSERT, and
+                //I don't want to grant DELETE permissions everywhere.
+                /*String sql = "REPLACE INTO simple_property"
                         + " (application_name, application_instance_name, property_name, property_value)"
-                        + "VALUES (?, ?, ?, ?)";
+                        + "VALUES (?, ?, ?, ?)";*/
+                String sql = "INSERT INTO simple_property"
+                        + " (application_name, application_instance_name, property_name, property_value)"
+                        + " VALUES (?, ?, ?, ?)"
+                        + " ON DUPLICATE KEY UPDATE"
+                        + " property_value = VALUES(property_value)";
                 ps = connection.prepareStatement(sql);
 
                 int col = 1;
