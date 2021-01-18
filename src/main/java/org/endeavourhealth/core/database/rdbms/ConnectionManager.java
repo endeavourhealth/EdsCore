@@ -161,10 +161,8 @@ public class ConnectionManager {
 
                     try {
                         factory = createEntityManagerFactoryNewWay(dbName, instanceName);
-                    } catch (Exception e) {
-                        String msg = e.getMessage();
-                        LOG.error("Failed to get DB credentials new way for " + dbName + " " + instanceName + " so will get old way: " + msg);
-                        factory = createEntityManagerFactoryOldWay(dbName, instanceName);
+                    } catch (Exception ex) {
+                        throw new Exception("Failed to create entity manager for " + dbName + (instanceName != null ? " (instance " + instanceName + ")" : ""), ex);
                     }
 
                     entityManagerFactoryMap.put(cacheKey, factory);
@@ -311,182 +309,6 @@ public class ConnectionManager {
                 throw new IllegalArgumentException("Unsupported JSON element type for database " + configName + ": " + child.getNodeType());
             }
         }
-    }
-
-
-    /**
-     * legacy support for old-style config records for DB credentials, to be phased out on DDS Live
-     */
-    private static synchronized EntityManagerFactory createEntityManagerFactoryOldWay(Db dbName, String instanceName) throws Exception {
-
-        //adding this line to force compile-time checking for this class. Spent far too long investigating
-        //why this wasn't being found when it turned out to be that it had been removed from POM.xml,
-        //so adding this to ensure it's picked up during compile-time rather than run-time
-        org.hibernate.hikaricp.internal.HikariCPConnectionProvider p = null;
-
-        JsonNode json = findDatabaseConfigJsonOldWay(dbName, instanceName);
-
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("hibernate.temp.use_jdbc_metadata_defaults", "false"); //always turn this off (https://stackoverflow.com/questions/10075081/hibernate-slow-to-acquire-postgres-connection)
-
-        //moved this from persistence.xml since this property overrides the explicitly provided data source used in the new way
-        properties.put("hibernate.connection.provider_class", "org.hibernate.hikaricp.internal.HikariCPConnectionProvider");
-
-        Iterator<String> fieldNames = json.fieldNames();
-        while (fieldNames.hasNext()) {
-            String fieldName = fieldNames.next();
-            JsonNode child = json.get(fieldName);
-
-            if (fieldName.equals("url")) {
-                String url = child.asText();
-                properties.put("hibernate.hikari.dataSource.url", url);
-
-            } else if (fieldName.equals("username")) {
-                String user = child.asText();
-                properties.put("hibernate.hikari.dataSource.user", user);
-
-            } else if (fieldName.equals("password")) {
-                String pass = child.asText();
-                properties.put("hibernate.hikari.dataSource.password", pass);
-
-            } else if (fieldName.equals("class")) {
-                String cls = child.asText();
-                properties.put("hibernate.hikari.dataSourceClassName", cls);
-
-            } else if (fieldName.equals("dialect")) {
-                String dialect = child.asText();
-                properties.put("hibernate.dialect", dialect);
-
-            } else if (fieldName.equals("connection_properties")) {
-                populateConnectionPropertiesOldWay(child, properties, dbName, instanceName);
-
-            } else {
-                //ignore it, as it's nothing to do with the DB connection
-            }
-        }
-
-        String hibernatePersistenceUnit = dbName.getHibernatePersistenceUnitName();
-        EntityManagerFactory factory = Persistence.createEntityManagerFactory(hibernatePersistenceUnit, properties);
-
-        return factory;
-    }
-
-    private static void populateConnectionPropertiesOldWay(JsonNode connectionPropertiesRoot, Map<String, Object> properties, Db dbName, String instanceName) {
-
-        if (!connectionPropertiesRoot.isObject()) {
-            throw new IllegalArgumentException("connection_properties should be an object");
-        }
-
-        Iterator<String> fieldNames = connectionPropertiesRoot.fieldNames();
-        while (fieldNames.hasNext()) {
-            String fieldName = fieldNames.next();
-            JsonNode child = connectionPropertiesRoot.get(fieldName);
-
-            //if not one of the generally-used fields above, then just interpret as a
-            //properly named property, and just set in according to its type
-            if (child.isTextual()) {
-                String value = child.asText();
-                properties.put(fieldName, value);
-
-            } else if (child.isInt()) {
-                int value = child.asInt();
-                properties.put(fieldName, new Integer(value));
-
-            } else if (child.isBigInteger()) {
-                long value = child.asLong();
-                properties.put(fieldName, new Long(value));
-
-            } else if (child.isBoolean()) {
-                boolean value = child.asBoolean();
-                properties.put(fieldName, new Boolean(value));
-
-            } else {
-                throw new IllegalArgumentException("Unsupported JSON element type for database " + dbName + " " + instanceName + ": " + child.getNodeType());
-            }
-        }
-
-    }
-
-
-    private static JsonNode findDatabaseConfigJsonOldWay(Db dbName, String configName) throws Exception {
-
-        JsonNode json = null;
-        if (dbName == Db.SubscriberTransform) {
-            json = ConfigManager.getConfigurationAsJson(configName, "db_subscriber");
-
-        } else if (dbName == Db.PublisherTransform) {
-            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
-            if (json != null) {
-                json = json.get("transform");
-            }
-
-        } else if (dbName == Db.Ehr) {
-            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
-            if (json != null) {
-                json = json.get("core");
-            }
-
-        }  else if (dbName == Db.PublisherStaging) {
-            json = ConfigManager.getConfigurationAsJson(configName, "db_publisher");
-            if (json != null) {
-                json = json.get("staging");
-            }
-
-        } else if (dbName == Db.DataSharingManager) {
-            json = ConfigManager.getConfigurationAsJson("database", "data-sharing-manager");
-        } else if (dbName == Db.UserManager) {
-            json = ConfigManager.getConfigurationAsJson("database", "user-manager");
-        } else {
-
-            if (dbName == Db.Eds) {
-                configName = "eds";
-            } else if (dbName == Db.Reference) {
-                configName = "reference";
-            } else if (dbName == Db.Hl7Receiver) {
-                configName = "hl7_receiver_db";
-            } else if (dbName == Db.Admin) {
-                configName = "admin";
-            } else if (dbName == Db.Audit) {
-                configName = "audit";
-            } else if (dbName == Db.Logback) {
-                configName = "logback";
-            } else if (dbName == Db.JdbcReader) {
-                configName = "jdbcreader";
-            } else if (dbName == Db.PublisherCommon) {
-                configName = "publisher_common";
-            } else if (dbName == Db.FhirAudit) {
-                configName = "fhir_audit";
-            } else if (dbName == Db.PublisherStaging) {
-                configName = "staging";
-            } else if (dbName == Db.DataGenerator) {
-                configName = "data_generator";
-            } else if (dbName == Db.SftpReader) {
-                configName = "sftp_reader";
-            } else if (dbName == Db.HL7v2Inbound) {
-                configName = "hl7v2_inbound";
-            } else if (dbName == Db.SftpReaderHashes) {
-                configName = "sftp_reader_hashes";
-            } else if (dbName == Db.InformationModel) {
-                configName = "information_model";
-
-            } else {
-                throw new RuntimeException("Unknown database " + dbName);
-            }
-
-            /**
-
-             Enterprise("db_enterprise", false, "EnterpriseDb"),
-             Subscriber("db_subscriber", false, "SubscriberDb"),
-             */
-
-            json = ConfigManager.getConfigurationAsJson(configName, "db_common");
-        }
-
-        if (json == null) {
-            throw new Exception("No config JSON record found for database " + dbName);
-        }
-
-        return json;
     }
 
 
@@ -824,9 +646,8 @@ public class ConnectionManager {
         try {
             return openNonPooledConnectionNewWay(dbName, instanceName);
 
-        } catch (Exception e) {
-            LOG.error("Failed to get DB connection using new way so will fall back to old way - to stop this exception, change to use new style DB config", e);
-            return openNonPooledConnectionOldWay(dbName, instanceName);
+        } catch (Exception ex) {
+            throw new Exception("Failed to non-pooled connection for " + dbName + (instanceName != null ? " (instance " + instanceName + ")" : ""), ex);
         }
     }
 
@@ -841,37 +662,6 @@ public class ConnectionManager {
         String url = (String)properties.get("jdbcUrl");
         String username = (String)properties.get("username");
         String password = (String)properties.get("password");
-
-        Connection connection = DriverManager.getConnection(url, username, password);
-        connection.setAutoCommit(false); //so this matches the pooled connections
-        return connection;
-    }
-
-    private static Connection openNonPooledConnectionOldWay(Db dbName, String instanceName) throws Exception {
-        JsonNode json = findDatabaseConfigJsonOldWay(dbName, instanceName);
-
-        String url = null;
-        String username = null;
-        String password = null;
-
-        Iterator<String> fieldNames = json.fieldNames();
-        while (fieldNames.hasNext()) {
-            String fieldName = fieldNames.next();
-            JsonNode child = json.get(fieldName);
-
-            if (fieldName.equals("url")) {
-                url = child.asText();
-
-            } else if (fieldName.equals("username")) {
-                username = child.asText();
-
-            } else if (fieldName.equals("password")) {
-                password = child.asText();
-
-            } else {
-                //ignore it, as it's nothing to do with the DB connection
-            }
-        }
 
         Connection connection = DriverManager.getConnection(url, username, password);
         connection.setAutoCommit(false); //so this matches the pooled connections
