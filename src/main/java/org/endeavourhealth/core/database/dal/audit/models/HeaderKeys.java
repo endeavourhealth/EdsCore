@@ -32,9 +32,13 @@ public abstract class HeaderKeys {
     public static final String SubscriberConfigNames = "SubscriberConfigs";
     public static final String SubscriberBatch = "SubscriberBatch";
     //public static final String SharingAgreementIds = "SharingAgreements";
+    public static final String EmisPatientGuids = "EmisPatientGuids"; //used to restrict processing of Emis exchanges to certain patients
+
+    //sent by SFTP Reader
     public static final String IsBulk = "is-bulk"; //note that this matches the lower-case parameter sent by the SFTP Reader
     public static final String TotalFileSize = "file-total-size"; //note that this matches the lower-case parameter sent by the SFTP Reader
-    public static final String EmisPatientGuids = "EmisPatientGuids"; //used to restrict processing of Emis exchanges to certain patients
+    public static final String ExtractDate = "extract-date";
+    public static final String ExtractCutoff = "extract-cutoff";
 
     //control
     public static final String AllowQueueing = "AllowQueueing";
