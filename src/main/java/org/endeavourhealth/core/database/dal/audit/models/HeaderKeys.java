@@ -39,6 +39,7 @@ public abstract class HeaderKeys {
     public static final String TotalFileSize = "file-total-size"; //note that this matches the lower-case parameter sent by the SFTP Reader
     public static final String ExtractDate = "extract-date";
     public static final String ExtractCutoff = "extract-cutoff";
+    public static final String HasPatientData = "has-patient-data";
 
     //control
     public static final String AllowQueueing = "AllowQueueing";
