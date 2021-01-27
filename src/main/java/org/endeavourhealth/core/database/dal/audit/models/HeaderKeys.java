@@ -22,7 +22,7 @@ public abstract class HeaderKeys {
     public static final String SenderSystemUuid = "SenderSystemUuid";
 
     //derived from the body
-    public static final String DataDate = "DataDate"; //date of the date being published
+    public static final String DataDate = "DataDate"; //date of the date being published (copied from extract-date)
 
     // PublisherTransform
     public static final String BatchIdsJson = "BatchIds";

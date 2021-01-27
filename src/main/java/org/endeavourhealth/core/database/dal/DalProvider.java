@@ -657,4 +657,8 @@ public class DalProvider {
     public static VisionClinicalCodesIMUpdaterDalI factoryVisionClinicalCodesIMUpdaterDal() {
         return new RdbmsVisionClinicalCodesIMUpdaterDal();
     }
+
+    public static LastDataDalI factoryLastDataDal() {
+        return new RdbmsLastDataDal();
+    }
 }

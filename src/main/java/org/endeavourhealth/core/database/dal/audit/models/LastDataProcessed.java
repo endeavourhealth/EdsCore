@@ -1,26 +1,17 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsLastDataProcessed;
-
 import java.util.Date;
 import java.util.UUID;
 
 public class LastDataProcessed {
     private UUID serviceId;
     private UUID systemId;
-    private Date dataDate;
     private Date processedDate;
     private UUID exchangeId;
+    private Date extractDate;
+    private Date extractCutoff;
 
     public LastDataProcessed() {
-    }
-
-    public LastDataProcessed(RdbmsLastDataProcessed proxy) {
-        this.serviceId = UUID.fromString(proxy.getServiceId());
-        this.systemId = UUID.fromString(proxy.getSystemId());
-        this.dataDate = proxy.getDataDate();
-        this.processedDate = proxy.getProcessedDate();
-        this.exchangeId = UUID.fromString(proxy.getExchangeId());
     }
 
     public UUID getServiceId() {
@@ -39,14 +30,6 @@ public class LastDataProcessed {
         this.systemId = systemId;
     }
 
-    public Date getDataDate() {
-        return dataDate;
-    }
-
-    public void setDataDate(Date dataDate) {
-        this.dataDate = dataDate;
-    }
-
     public Date getProcessedDate() {
         return processedDate;
     }
@@ -61,6 +44,33 @@ public class LastDataProcessed {
 
     public void setExchangeId(UUID exchangeId) {
         this.exchangeId = exchangeId;
+    }
+
+    public Date getExtractDate() {
+        return extractDate;
+    }
+
+    public void setExtractDate(Date extractDate) {
+        this.extractDate = extractDate;
+    }
+
+    public Date getExtractCutoff() {
+        return extractCutoff;
+    }
+
+    public void setExtractCutoff(Date extractCutoff) {
+        this.extractCutoff = extractCutoff;
+    }
+
+
+    @Override
+    public String toString() {
+        return "serviceId [" + serviceId + "], "
+                + "systemId [" + systemId + "], "
+                + "extractDate [" + extractDate + "], "
+                + "extractCutoff [" + extractCutoff + "], "
+                + "processedDate [" + processedDate + "], "
+                + "exchangeId [" + exchangeId + "]";
     }
 }
 

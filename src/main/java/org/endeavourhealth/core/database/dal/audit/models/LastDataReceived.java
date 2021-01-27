@@ -1,26 +1,17 @@
 package org.endeavourhealth.core.database.dal.audit.models;
 
-import org.endeavourhealth.core.database.rdbms.audit.models.RdbmsLastDataReceived;
-
 import java.util.Date;
 import java.util.UUID;
 
 public class LastDataReceived {
     private UUID serviceId;
     private UUID systemId;
-    private Date dataDate;
     private Date receivedDate;
     private UUID exchangeId;
+    private Date extractDate;
+    private Date extractCutoff;
 
     public LastDataReceived() {
-    }
-
-    public LastDataReceived(RdbmsLastDataReceived proxy) {
-        this.serviceId = UUID.fromString(proxy.getServiceId());
-        this.systemId = UUID.fromString(proxy.getSystemId());
-        this.dataDate = proxy.getDataDate();
-        this.receivedDate = proxy.getReceivedDate();
-        this.exchangeId = UUID.fromString(proxy.getExchangeId());
     }
 
     public UUID getServiceId() {
@@ -39,14 +30,6 @@ public class LastDataReceived {
         this.systemId = systemId;
     }
 
-    public Date getDataDate() {
-        return dataDate;
-    }
-
-    public void setDataDate(Date dataDate) {
-        this.dataDate = dataDate;
-    }
-
     public Date getReceivedDate() {
         return receivedDate;
     }
@@ -61,5 +44,32 @@ public class LastDataReceived {
 
     public void setExchangeId(UUID exchangeId) {
         this.exchangeId = exchangeId;
+    }
+
+    public Date getExtractDate() {
+        return extractDate;
+    }
+
+    public void setExtractDate(Date extractDate) {
+        this.extractDate = extractDate;
+    }
+
+    public Date getExtractCutoff() {
+        return extractCutoff;
+    }
+
+    public void setExtractCutoff(Date extractCutoff) {
+        this.extractCutoff = extractCutoff;
+    }
+
+
+    @Override
+    public String toString() {
+        return "serviceId [" + serviceId + "], "
+                + "systemId [" + systemId + "], "
+                + "extractDate [" + extractDate + "], "
+                + "extractCutoff [" + extractCutoff + "], "
+                + "receivedDate [" + receivedDate + "], "
+                + "exchangeId [" + exchangeId + "]";
     }
 }

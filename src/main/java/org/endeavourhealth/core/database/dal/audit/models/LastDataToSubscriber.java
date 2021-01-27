@@ -7,9 +7,10 @@ public class LastDataToSubscriber {
     private String subscriberConfigName;
     private UUID serviceId;
     private UUID systemId;
-    private Date dataDate; //date of the source data (not the date received into DDS)
     private Date sentDate; //date applied/sent to the subscriber
     private UUID exchangeId;
+    private Date extractDate;
+    private Date extractCutoff;
 
     public LastDataToSubscriber() {
     }
@@ -38,14 +39,6 @@ public class LastDataToSubscriber {
         this.systemId = systemId;
     }
 
-    public Date getDataDate() {
-        return dataDate;
-    }
-
-    public void setDataDate(Date dataDate) {
-        this.dataDate = dataDate;
-    }
-
     public Date getSentDate() {
         return sentDate;
     }
@@ -62,12 +55,29 @@ public class LastDataToSubscriber {
         this.exchangeId = exchangeId;
     }
 
+    public Date getExtractDate() {
+        return extractDate;
+    }
+
+    public void setExtractDate(Date extractDate) {
+        this.extractDate = extractDate;
+    }
+
+    public Date getExtractCutoff() {
+        return extractCutoff;
+    }
+
+    public void setExtractCutoff(Date extractCutoff) {
+        this.extractCutoff = extractCutoff;
+    }
+
     @Override
     public String toString() {
         return "subscriberConfigName [" + subscriberConfigName + "], "
                 + "serviceId [" + serviceId + "], "
                 + "systemId [" + systemId + "], "
-                + "dataDate [" + dataDate + "], "
+                + "extractDate [" + extractDate + "], "
+                + "extractCutoff [" + extractCutoff + "], "
                 + "sentDate [" + sentDate + "], "
                 + "exchangeId [" + exchangeId + "]";
     }

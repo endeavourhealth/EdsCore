@@ -201,6 +201,19 @@ public class Exchange {
         }
     }
 
+    /**
+     * version of the above fns that takes a default so we don't have to deal with returning null
+     */
+    public boolean getHeaderAsBoolean(String key, boolean defaultVal) {
+        String s = getHeader(key);
+        if (Strings.isNullOrEmpty(s)) {
+            return defaultVal;
+        } else {
+            return Boolean.parseBoolean(s);
+        }
+    }
+
+
     public List<String> getHeaderAsStringList(String headerKey) throws Exception {
         String[] arr = getHeaderAsStringArray(headerKey);
         if (arr == null) {

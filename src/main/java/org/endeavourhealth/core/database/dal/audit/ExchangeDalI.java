@@ -39,18 +39,6 @@ public interface ExchangeDalI {
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId) throws Exception;
     List<ExchangeSubscriberTransformAudit> getSubscriberTransformAudits(UUID exchangeId, UUID exchangeBatchId) throws Exception;
 
-    void save(LastDataReceived dataReceived) throws Exception;
-    List<LastDataReceived> getLastDataReceived() throws Exception;
-    List<LastDataReceived> getLastDataReceived(UUID serviceId) throws Exception;
-
-    void save(LastDataProcessed dataProcessed) throws Exception;
-    List<LastDataProcessed> getLastDataProcessed() throws Exception;
-    List<LastDataProcessed> getLastDataProcessed(UUID serviceId) throws Exception;
-
-    void save(LastDataToSubscriber dataSent) throws Exception;
-    List<LastDataToSubscriber> getLastDataToSubscriber() throws Exception;
-    List<LastDataToSubscriber> getLastDataToSubscriber(UUID serviceId) throws Exception;
-    List<LastDataToSubscriber> getLastDataToSubscriber(String subscriberConfigName) throws Exception;
 
     void save(ExchangeSubscriberSendAudit subscriberSendAudit) throws Exception;
     List<ExchangeSubscriberSendAudit> getSubscriberSendAudits(UUID exchangeId, UUID batchId, String subscriberConfigName) throws Exception;
