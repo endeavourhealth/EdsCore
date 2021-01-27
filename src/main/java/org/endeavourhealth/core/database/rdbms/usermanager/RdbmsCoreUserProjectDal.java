@@ -121,6 +121,28 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
 
     }
 
+    public List<UserProjectEntity> getUserProjectsForUser(String userId) throws Exception {
+        EntityManager entityManager = ConnectionManager.getUmEntityManager();
+
+        try {
+            String sql = "select up" +
+                    " from UserProjectEntity up" +
+                    " where up.userId = :userId" +
+                    " and up.isDeleted = 0";
+
+            Query query = entityManager.createQuery(sql);
+
+            query.setParameter("userId", userId);
+
+            List<UserProjectEntity> results = query.getResultList();
+
+            return results;
+        } finally {
+            entityManager.close();
+        }
+
+    }
+
     public void setCurrentDefaultProject(String userId, String userProjectId) throws Exception {
         EntityManager entityManager = ConnectionManager.getUmEntityManager();
 

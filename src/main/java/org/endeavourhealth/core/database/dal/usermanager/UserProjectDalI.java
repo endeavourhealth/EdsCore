@@ -20,5 +20,6 @@ public interface UserProjectDalI {
     public UserProjectEntity getDefaultProject(String userId) throws Exception;
     public UserProjectEntity getUserProject(String userProjectId) throws Exception;
     public List<UserProjectEntity> getUserProjectEntities(String userId) throws Exception;
+    public List<UserProjectEntity> getUserProjectsForUser(String userId) throws Exception;
 
 }

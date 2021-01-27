@@ -379,4 +379,54 @@ public class RdbmsCoreProjectDal implements ProjectDalI {
         return validProjects;
     }
 
+    @Override
+    public boolean isProjectActive(String projectUUID) throws Exception {
+
+        List<String> projectList = new ArrayList<>();
+        projectList.add(projectUUID);
+        List<ProjectEntity> projects = ProjectCache.getProjectDetails(projectList);
+
+        LocalDate today = LocalDate.now(ZoneId.systemDefault());
+
+        java.sql.Date sqlTomorrow = java.sql.Date.valueOf(today.plusDays(1)); // for before comparison below
+        java.sql.Date sqlToday = java.sql.Date.valueOf(today);
+
+        List<ProjectEntity> validProjects = projects.stream()
+                .filter(p -> (p.getProjectStatusId() != null && p.getProjectStatusId() == 0) // Active
+                        && (p.getStartDate() != null && p.getStartDate().before(sqlTomorrow) && (p.getEndDate() == null || p.getEndDate().after(sqlToday)))
+                        && p.getAuthorisedBy() != null && p.getAuthorisedDate() != null)
+                .collect(Collectors.toList());
+
+        if (validProjects.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public List<String> getPublishersForProjectWithActiveCheck(String projectId, boolean checkActive) throws Exception {
+
+        List<String> pubOdsCodes = new ArrayList<>();
+
+        boolean validProject = isProjectActive(projectId);
+
+        // if not just return an empty list
+        if (!validProject) {
+            return pubOdsCodes;
+        }
+
+        // get all the publishers for a project
+        List<String> projectPublishers = masterMappingRepository.getChildMappings(projectId,
+                MapType.PROJECT.getMapType(), MapType.PUBLISHER.getMapType());
+
+        // get publisher details
+        List<OrganisationEntity> pubsInProject = OrganisationCache.getOrganisationDetails(projectPublishers);
+
+        // return the ods codes
+        pubOdsCodes = pubsInProject.stream().map(OrganisationEntity::getOdsCode).collect(Collectors.toList());
+
+        return pubOdsCodes;
+    }
+
 }

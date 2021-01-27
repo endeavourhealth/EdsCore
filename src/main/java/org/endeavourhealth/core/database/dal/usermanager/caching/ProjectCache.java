@@ -22,6 +22,7 @@ public class ProjectCache {
     private static Map<String, List<String>> allPublishersForProjectWithSubCheck = new ConcurrentHashMap<>();
     private static Map<String, List<ProjectEntity>> allProjectsForSubscriberODS = new ConcurrentHashMap<>();
     private static Map<String, List<ProjectEntity>> validDistributionProjectsForPublisher = new ConcurrentHashMap<>();
+    private static Map<String, List<String>> allPublishersForActiveProject = new ConcurrentHashMap<>();
 
     private static ProjectDalI repository = DalProvider.factoryDSMProjectDal();
     private static ProjectApplicationPolicyDalI ProjectAppPolicyRepository = DalProvider.factoryDSMProjectApplicationPolicyDal();
@@ -123,6 +124,20 @@ public class ProjectCache {
         return pubOdsCodes;
     }
 
+    public static List<String> getAllPublishersForValidProject(String projectId, boolean checkActive) throws Exception {
+        String key = projectId + ":" + String.valueOf(checkActive);
+
+        List<String> pubOdsCodes = allPublishersForActiveProject.get(key);
+        if (pubOdsCodes == null) {
+            pubOdsCodes = repository.getPublishersForProjectWithActiveCheck(projectId, checkActive);
+            allPublishersForActiveProject.put(key, pubOdsCodes);
+        }
+
+        CacheManager.startScheduler();
+
+        return pubOdsCodes;
+    }
+
     public static List<ProjectEntity> getAllProjectsForSubscriberOrg(String odsCode) throws Exception {
 
         List<ProjectEntity> projects = allProjectsForSubscriberODS.get(odsCode);
@@ -157,6 +172,7 @@ public class ProjectCache {
         projectApplicationPolicyMap.remove(projectId);
         allProjectsForAllChildRegion.clear();
         allPublishersForProjectWithSubCheck.clear();
+        allPublishersForActiveProject.clear();
     }
 
     public static void flushCache() throws Exception {
@@ -167,5 +183,6 @@ public class ProjectCache {
         allPublishersForProjectWithSubCheck.clear();
         allProjectsForSubscriberODS.clear();
         validDistributionProjectsForPublisher.clear();
+        allPublishersForActiveProject.clear();
     }
 }

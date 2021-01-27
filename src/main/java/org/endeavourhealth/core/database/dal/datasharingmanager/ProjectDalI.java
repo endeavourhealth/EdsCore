@@ -27,5 +27,6 @@ public interface ProjectDalI {
     public List<String> getPublishersForProject(String projectId, String requesterOdsCode) throws Exception;
     public List<ProjectEntity> getAllProjectsForSubscriber(String odsCode) throws Exception;
     public List<ProjectEntity> getValidDistributionProjectsForPublisher(String publisherOdsCode) throws Exception;
-
+    public boolean isProjectActive(String projectUUID) throws Exception;
+    public List<String> getPublishersForProjectWithActiveCheck(String projectId, boolean checkActive) throws Exception;
 }

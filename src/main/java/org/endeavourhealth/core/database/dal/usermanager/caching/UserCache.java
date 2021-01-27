@@ -28,6 +28,7 @@ public class UserCache {
     private static Map<String, Boolean> externalUserApplicationAccessMap = new ConcurrentHashMap<>();
     private static Map<String, UserRegionEntity> userRegionMap = new ConcurrentHashMap<>();
     private static Map<String, UserProjectEntity> userProjectMap = new ConcurrentHashMap<>();
+    private static Map<String, List<UserProjectEntity>> userProjectUserMap = new ConcurrentHashMap<>();
 
     private static UserApplicationPolicyDalI userAppPolicyRepository = DalProvider.factoryUMUserApplicationPolicyDal();
     private static UserProjectDalI userProjectRepository = DalProvider.factoryUMUserProjectDal();
@@ -126,6 +127,20 @@ public class UserCache {
         return foundUserProject;
     }
 
+    public static List<UserProjectEntity> getUserProjectForUserId(String userId) throws Exception {
+        List<UserProjectEntity> foundUserProjects = userProjectUserMap.get(userId);
+
+        if (foundUserProjects == null) {
+            List<UserProjectEntity> userProj = userProjectRepository.getUserProjectsForUser(userId);
+            foundUserProjects = userProj;
+            userProjectUserMap.put(userId, userProj);
+        }
+
+        CacheManager.startScheduler();
+
+        return foundUserProjects;
+    }
+
     public static UserRegionEntity getUserRegion(String userId) throws Exception {
 
         UserRegionEntity foundRegion = userRegionMap.get(userId);
@@ -178,6 +193,7 @@ public class UserCache {
         userMap.remove(userId);
         userRegionMap.remove(userId);
         userProjectMap.clear();
+        userProjectUserMap.remove(userId);
     }
 
     public static void flushCache() throws Exception {
@@ -188,5 +204,6 @@ public class UserCache {
         userRegionMap.clear();
         userProjectMap.clear();
         externalUserApplicationAccessMap.clear();
+        userProjectUserMap.clear();
     }
 }
