@@ -50,11 +50,6 @@ public class RdbmsVisionClinicalCodesIMUpdaterDal implements VisionClinicalCodes
                         + snomedConceptId + ","
                         + isVisionCode;
 
-                statement = connection.createStatement(); // one-off SQL due to table name
-                LOG.info(sql);
-                statement.executeUpdate(sql);
-                statement.close();
-
                 try {
 
                     i++;

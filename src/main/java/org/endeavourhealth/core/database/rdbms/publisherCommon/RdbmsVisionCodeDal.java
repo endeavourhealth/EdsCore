@@ -348,7 +348,9 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
                     + " FROM vision_read2_code c "
                     + " LEFT OUTER JOIN vision_read2_to_snomed_map s"
                     + " ON s.read_code = c.read_code"
-                    + " WHERE c.is_vision_code = 1";
+                    + " WHERE c.is_vision_code = 1"
+                    + " GROUP BY c.read_code"
+                    + " ORDER BY c.read_code asc, approx_usage desc";
 
             ps = connection.prepareStatement(sql);
             ps.executeQuery();
