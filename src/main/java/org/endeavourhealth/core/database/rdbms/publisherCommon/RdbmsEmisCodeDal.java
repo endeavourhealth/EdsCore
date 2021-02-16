@@ -201,13 +201,13 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.close();
 
             //delete the temp table
-            //LOG.debug("Deleting temp table");
+            LOG.debug("Deleting temp table: " + tempTableName);
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
 
-            //LOG.debug("Deleting extra temp table");
+            LOG.debug("Deleting extra temp table: " + extraTempTableName);
             sql = "DROP TABLE " + extraTempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
@@ -318,7 +318,7 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.close();
 
             //delete the temp table
-            //LOG.debug("Deleting temp table");
+            LOG.debug("Deleting temp table: " + tempTableName);
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);

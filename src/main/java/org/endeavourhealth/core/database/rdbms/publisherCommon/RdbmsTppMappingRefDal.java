@@ -138,7 +138,7 @@ public class RdbmsTppMappingRefDal implements TppMappingRefDalI {
             statement.close();
 
             //delete the temp table
-            //LOG.debug("Deleting temp table");
+            LOG.debug("Deleting temp table: " + tempTableName);
             sql = "DROP TABLE " + tempTableName;
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
