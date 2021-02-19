@@ -176,9 +176,32 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
+            //SD-378 - removed this REPLACE INTO and replaced with the below two statements. Doing a REPLACE INTO results in a MySQL delete and insert,
+            //which is slow and locks the table and causes problems when multiple Queue Readers are doing it at the same time. Changed
+            //do to an UPDATE and then an INSERT IGNORE. Gives same results but less chance of locking.
+            /*sql = "REPLACE INTO emis_clinical_code_hiearchy (code_id, parent_code_id, dt_last_updated)"
+                    + " SELECT"
+                    + " s.CodeId,"
+                    + " s.ParentCodeId,"
+                    + " " + ConnectionManager.formatDateString(dataDate, true)
+                    + " FROM " + tempTableName + " s "
+                    + " WHERE s.ParentCodeId != ''"; //all known ones have parents, but this will stop ones without parents causing problems
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();*/
+
+            //update any existing ones with the latest date
+            sql = "UPDATE emis_clinical_code_hiearchy h"
+                    + " INNER JOIN " + tempTableName + " s"
+                    + " ON s.CodeId = h.code_id"
+                    + " AND s.ParentCodeId = h.parent_code_id"
+                    + " SET dt_last_updated = " + ConnectionManager.formatDateString(dataDate, true);
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
             //insert any new codes into the hierarchy table
-            //and replace any existing ones with a new version with the latest date
-            sql = "REPLACE INTO emis_clinical_code_hiearchy (code_id, parent_code_id, dt_last_updated)"
+            sql = "INSERT IGNORE INTO emis_clinical_code_hiearchy (code_id, parent_code_id, dt_last_updated)"
                     + " SELECT"
                     + " s.CodeId,"
                     + " s.ParentCodeId,"
@@ -188,6 +211,8 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
+
+
 
             //delete any existing records from the hierarchy table in case a code has been moved
             //since the above SQL updates the dt_last_updated for any codes in the extract, if there's any code ID
