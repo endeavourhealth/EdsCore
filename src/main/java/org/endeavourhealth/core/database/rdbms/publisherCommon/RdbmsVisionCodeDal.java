@@ -163,12 +163,12 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
         long msStart = System.currentTimeMillis();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "Code varchar(255) binary, "
                     + "Term varchar(255), "
@@ -223,13 +223,6 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of vision_read2_code Completed in " + ((msEnd-msStart)/1000) + "s");
 
@@ -237,6 +230,9 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.PublisherCommon);
+
         }
     }
 
@@ -263,12 +259,12 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
         long msStart = System.currentTimeMillis();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "ReadCode varchar(255) binary, "
                     + "SnomedConcept bigint, "
@@ -321,13 +317,6 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of vision_read2_code Completed in " + ((msEnd-msStart)/1000) + "s");
 
@@ -335,6 +324,8 @@ public class RdbmsVisionCodeDal implements VisionCodeDalI {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.PublisherCommon);
         }
     }
 

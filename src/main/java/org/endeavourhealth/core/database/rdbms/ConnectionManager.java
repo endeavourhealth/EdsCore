@@ -25,6 +25,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -777,6 +778,33 @@ public class ConnectionManager {
             return "'" + d.format(formatter) + "'";
         } else {
             return d.format(formatter);
+        }
+    }
+
+    public static void dropTempTable(String tableName, Db dbName) {
+
+        Connection connection = null;
+
+        try {
+            connection = ConnectionManager.getConnectionNonPooled(dbName);
+            connection.setAutoCommit(true);
+
+            LOG.debug("Deleting temp table: " + tableName);
+            String sql = "DROP TABLE " + tableName;
+            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement.executeUpdate(sql);
+            statement.close();
+
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(false);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage());
+                }
+            }
         }
     }
 }

@@ -100,12 +100,12 @@ public class RdbmsSnomedToBnfChapterDal implements SnomedToBnfChapterDalI {
         long msStart = System.currentTimeMillis();
 
         Connection connection = ConnectionManager.getReferenceNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             LOG.debug("Loading " + filePath + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "BNF_Code  varchar (30) , "
@@ -164,19 +164,14 @@ public class RdbmsSnomedToBnfChapterDal implements SnomedToBnfChapterDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of snomed_to_bnf_chapter_lookup Completed in " + ((msEnd-msStart)/1000) + "s");
         } finally {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.Reference);
         }
     }
 }

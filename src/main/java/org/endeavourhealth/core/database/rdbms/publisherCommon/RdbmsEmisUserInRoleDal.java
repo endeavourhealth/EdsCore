@@ -148,12 +148,12 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
         filePath = f.getAbsolutePath();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "UserInRoleGuid varchar(255), "
@@ -242,13 +242,6 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of emis_user_in_role Completed in " + ((msEnd-msStart)/1000) + "s");
 
@@ -256,6 +249,8 @@ public class RdbmsEmisUserInRoleDal implements EmisUserInRoleDalI {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.PublisherCommon);
 
             //delete the temp file
             FileHelper.deleteFileFromTempDirIfNecessary(f);

@@ -51,12 +51,16 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
         filePath = f.getAbsolutePath();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
+        //we also have a second file, containing additional columns that we've generated in the code
+        String extraTempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(validReadCodesFile));
+
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
+            
             //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "CodeId bigint, "
@@ -88,8 +92,6 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //we also have a second file, containing additional columns that we've generated in the code
-            String extraTempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(validReadCodesFile));
             //LOG.debug("Loading " + validReadCodesFile + " into " + extraTempTableName);
             sql = "CREATE TABLE " + extraTempTableName + " ("
                     + "CodeId bigint, "
@@ -225,19 +227,6 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
-            LOG.debug("Deleting extra temp table: " + extraTempTableName);
-            sql = "DROP TABLE " + extraTempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of emis_clinical_code Completed in " + ((msEnd-msStart)/1000) + "s");
 
@@ -245,6 +234,9 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.PublisherCommon);
+            ConnectionManager.dropTempTable(extraTempTableName, ConnectionManager.Db.PublisherCommon);
 
             //delete the temp file
             FileHelper.deleteFileFromTempDirIfNecessary(f);
@@ -275,12 +267,12 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
         filePath = f.getAbsolutePath();
 
         Connection connection = ConnectionManager.getPublisherCommonNonPooledConnection();
+        //create a temporary table to load the data into
+        String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
         try {
             //turn on auto commit so we don't need to separately commit these large SQL operations
             connection.setAutoCommit(true);
 
-            //create a temporary table to load the data into
-            String tempTableName = ConnectionManager.generateTempTableName(FilenameUtils.getBaseName(filePath));
             //LOG.debug("Loading " + f + " into " + tempTableName);
             String sql = "CREATE TABLE " + tempTableName + " ("
                     + "CodeId bigint, "
@@ -342,13 +334,6 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             statement.executeUpdate(sql);
             statement.close();
 
-            //delete the temp table
-            LOG.debug("Deleting temp table: " + tempTableName);
-            sql = "DROP TABLE " + tempTableName;
-            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
-            statement.executeUpdate(sql);
-            statement.close();
-
             long msEnd = System.currentTimeMillis();
             LOG.debug("Update of emis_drug_code Completed in " + ((msEnd-msStart)/1000) + "s");
 
@@ -356,6 +341,8 @@ public class RdbmsEmisCodeDal implements EmisCodeDalI {
             //MUST change this back to false
             connection.setAutoCommit(false);
             connection.close();
+
+            ConnectionManager.dropTempTable(tempTableName, ConnectionManager.Db.PublisherCommon);
 
             //delete the temp file
             FileHelper.deleteFileFromTempDirIfNecessary(f);
