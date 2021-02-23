@@ -787,20 +787,20 @@ public class ConnectionManager {
 
         try {
             connection = ConnectionManager.getConnectionNonPooled(dbName);
-            connection.setAutoCommit(true);
 
             LOG.debug("Deleting temp table: " + tableName);
             String sql = "DROP TABLE " + tableName;
             Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
             statement.close();
+            connection.commit();
 
         } catch (Exception e) {
             LOG.error(e.getMessage());
         } finally {
             if (connection != null) {
                 try {
-                    connection.setAutoCommit(false);
+                    connection.close();
                 } catch (Exception e) {
                     LOG.error(e.getMessage());
                 }
