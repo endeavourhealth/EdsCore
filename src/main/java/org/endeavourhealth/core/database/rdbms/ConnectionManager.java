@@ -784,20 +784,33 @@ public class ConnectionManager {
     public static void dropTempTable(String tableName, Db dbName) {
 
         Connection connection = null;
+        Statement statement = null;
 
         try {
             connection = ConnectionManager.getConnectionNonPooled(dbName);
 
             LOG.debug("Deleting temp table: " + tableName);
             String sql = "DROP TABLE " + tableName;
-            Statement statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
+            statement = connection.createStatement(); //one-off SQL due to table name, so don't use prepared statement
             statement.executeUpdate(sql);
-            statement.close();
             connection.commit();
 
         } catch (Exception e) {
+            try {
+                LOG.error(e.getMessage());
+                connection.rollback();
+            } catch (Exception ex) {
+                LOG.error(ex.getMessage());
+            }
             LOG.error(e.getMessage());
         } finally {
+            if (statement != null) {
+                try {
+                    statement.close();
+                } catch (Exception e) {
+                    LOG.error(e.getMessage());
+                }
+            }
             if (connection != null) {
                 try {
                     connection.close();
