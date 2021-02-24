@@ -6,8 +6,7 @@ import org.endeavourhealth.core.database.dal.DalProvider;
 import org.endeavourhealth.core.database.dal.usermanager.UserApplicationPolicyDalI;
 import org.endeavourhealth.core.database.dal.usermanager.UserProjectDalI;
 import org.endeavourhealth.core.database.dal.usermanager.UserRegionDalI;
-import org.endeavourhealth.core.database.rdbms.usermanager.RdbmsCoreUserProjectDal;
-import org.endeavourhealth.core.database.rdbms.usermanager.RdbmsCoreUserRegionDal;
+import org.endeavourhealth.core.database.dal.usermanager.models.JsonApplicationPolicyAttribute;
 import org.endeavourhealth.core.database.rdbms.usermanager.models.UserApplicationPolicyEntity;
 import org.endeavourhealth.core.database.rdbms.usermanager.models.UserProjectEntity;
 import org.endeavourhealth.core.database.rdbms.usermanager.models.UserRegionEntity;
@@ -26,9 +25,11 @@ public class UserCache {
     private static Map<String, UserApplicationPolicyEntity> userApplicationPolicyMap = new ConcurrentHashMap<>();
     private static Map<String, Boolean> userProjectApplicationAccessMap = new ConcurrentHashMap<>();
     private static Map<String, Boolean> externalUserApplicationAccessMap = new ConcurrentHashMap<>();
+    private static Map<String, Boolean> userProjectApplicationAttributeAccessMap = new ConcurrentHashMap<>();
     private static Map<String, UserRegionEntity> userRegionMap = new ConcurrentHashMap<>();
     private static Map<String, UserProjectEntity> userProjectMap = new ConcurrentHashMap<>();
     private static Map<String, List<UserProjectEntity>> userProjectUserMap = new ConcurrentHashMap<>();
+    private static Map<String, List<JsonApplicationPolicyAttribute>> userProjectMergedAttributeMap = new ConcurrentHashMap<>();
 
     private static UserApplicationPolicyDalI userAppPolicyRepository = DalProvider.factoryUMUserApplicationPolicyDal();
     private static UserProjectDalI userProjectRepository = DalProvider.factoryUMUserProjectDal();
@@ -171,6 +172,34 @@ public class UserCache {
         return accessToApp;
     }
 
+    public static Boolean getUserProjectApplicationAttributeAccess(String userId, String projectId, String appName, String attributeName) throws Exception {
+        String upa = userId + "|" + projectId + "|" + appName + "|" + attributeName;
+
+        Boolean accessToApp = userProjectApplicationAttributeAccessMap.get(upa);
+        if (accessToApp == null) {
+            accessToApp = userProjectRepository.checkUserProjectApplicationAttributeAccess(userId, projectId, appName, attributeName);
+            userProjectApplicationAttributeAccessMap.put(upa, accessToApp);
+        }
+
+        CacheManager.startScheduler();
+
+        return accessToApp;
+    }
+
+    public static List<JsonApplicationPolicyAttribute> getUserProjectMergedAttributes(String userId, String projectId) throws Exception {
+        String upa = userId + "|" + projectId;
+
+        List<JsonApplicationPolicyAttribute> mergedAttributes = userProjectMergedAttributeMap.get(upa);
+        if (mergedAttributes == null) {
+            mergedAttributes = userProjectRepository.getUserProjectsMergedAttributes(userId, projectId);
+            userProjectMergedAttributeMap.put(upa, mergedAttributes);
+        }
+
+        CacheManager.startScheduler();
+
+        return mergedAttributes;
+    }
+
     public static Boolean getExternalUserApplicationAccess(String userId, String appName) throws Exception {
         String upa = userId + "|" + appName;
 
@@ -190,6 +219,7 @@ public class UserCache {
         userApplicationPolicyIdMap.remove(userId);
         userProjectApplicationAccessMap.remove(userId);
         externalUserApplicationAccessMap.remove(userId);
+        userProjectApplicationAttributeAccessMap.remove(userId);
         userMap.remove(userId);
         userRegionMap.remove(userId);
         userProjectMap.clear();
@@ -205,5 +235,6 @@ public class UserCache {
         userProjectMap.clear();
         externalUserApplicationAccessMap.clear();
         userProjectUserMap.clear();
+        userProjectApplicationAttributeAccessMap.clear();
     }
 }

@@ -31,6 +31,32 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
                                                      String projectId,
                                                      String applicationName) throws Exception {
 
+        List<JsonApplicationPolicyAttribute> mergedAttributes = getMergedAttributes(userId, projectId);
+
+        if (mergedAttributes.stream().anyMatch(a -> a.getApplication().equals(applicationName))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public Boolean checkUserProjectApplicationAttributeAccess(String userId,
+                                                     String projectId,
+                                                     String applicationName, String attributeName) throws Exception {
+
+        List<JsonApplicationPolicyAttribute> mergedAttributes = getMergedAttributes(userId, projectId);
+
+        java.util.function.Predicate<JsonApplicationPolicyAttribute> appName = a -> a.getApplication().equals(applicationName);
+        java.util.function.Predicate<JsonApplicationPolicyAttribute> attName = a -> a.getApplicationAccessProfileName().equals(attributeName);
+
+        if (mergedAttributes.stream().anyMatch(a -> appName.and(attName).test(a))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private List<JsonApplicationPolicyAttribute> getMergedAttributes(String userId, String projectId) throws Exception {
         List<JsonApplicationPolicyAttribute> mergedAttributes = new ArrayList<>();
 
         String userAppPolicy = UserCache.getUserApplicationPolicyId(userId);
@@ -41,7 +67,7 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
             mergedAttributes = ApplicationPolicyCache.getApplicationPolicyAttributes(userAppPolicy);
         } else {
             List<JsonApplicationPolicyAttribute> userAttributes = ApplicationPolicyCache.getApplicationPolicyAttributes(userAppPolicy);
-            List<JsonApplicationPolicyAttribute> projectAttributes = ApplicationPolicyCache.getApplicationPolicyAttributes(userAppPolicy);
+            List<JsonApplicationPolicyAttribute> projectAttributes = ApplicationPolicyCache.getApplicationPolicyAttributes(projectAppPolicy);
 
             for (JsonApplicationPolicyAttribute attribute : projectAttributes) {
                 if (userAttributes.stream().filter(a -> a.getApplicationAccessProfileId().equals(attribute.getApplicationAccessProfileId())).findFirst().isPresent()) {
@@ -51,11 +77,7 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
             }
         }
 
-        if (mergedAttributes.stream().anyMatch(a -> a.getApplication().equals(applicationName))) {
-            return true;
-        }
-
-        return false;
+        return mergedAttributes;
     }
 
     @Override
@@ -141,6 +163,14 @@ public class RdbmsCoreUserProjectDal implements UserProjectDalI {
             entityManager.close();
         }
 
+    }
+
+    @Override
+    public List<JsonApplicationPolicyAttribute> getUserProjectsMergedAttributes(String userId, String projectId) throws Exception {
+
+        List<JsonApplicationPolicyAttribute> mergedAttributes = getMergedAttributes(userId, projectId);
+
+        return mergedAttributes;
     }
 
     public void setCurrentDefaultProject(String userId, String userProjectId) throws Exception {
